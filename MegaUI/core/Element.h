@@ -12,17 +12,19 @@ namespace YY
 {
 	namespace MegaUI
 	{
-#define _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(_CLASS_NAME, _BASE_CLASS, _CALSS_INFO_TYPE, _PROPERTY_TABLE)\
+#define _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(_CLASS_NAME, _BASE_CLASS, _CLASS_INFO_TYPE,                 \
+		                                        _DEFAULT_CREATE_FLAGS, _PROPERTY_TABLE)                     \
 		protected:                                                                                          \
 			friend ClassInfoBase<_CLASS_NAME>;                                                              \
-            typedef _CALSS_INFO_TYPE ClassInfoType;                                                         \
 			struct StaticClassInfo                                                                          \
 			{                                                                                               \
-				using BaseElement = _BASE_CLASS;                                                            \
-				constexpr static raw_const_string pszClassInfoName = # _CLASS_NAME;                         \
-				constexpr static unsigned uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT);   \
+	            using ClassInfoType = _CLASS_INFO_TYPE;                                                     \
+				using BaseElement =_BASE_CLASS;                                                             \
+                constexpr static uint32_t fDefaultCreate = _DEFAULT_CREATE_FLAGS;                           \
+				constexpr static raw_const_string_t pszClassInfoName = # _CLASS_NAME;                       \
+				constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT);   \
                                                                                                             \
-				_CALSS_INFO_TYPE* pClassInfoPtr;                                                            \
+				ClassInfoType* pClassInfoPtr;                                                               \
                                                                                                             \
 				union                                                                                       \
 				{                                                                                           \
@@ -65,7 +67,7 @@ namespace YY
 		}                                                                \
 		HRESULT __fastcall _CLASS_NAME::Register()                       \
 		{                                                                \
-			return _CLASS_NAME::ClassInfoType::Register();               \
+			return _CLASS_NAME::StaticClassInfo::ClassInfoType::Register();               \
 		}                                                                \
 		HRESULT __fastcall _CLASS_NAME::UnRegister()                     \
 		{                                                                \
@@ -94,7 +96,7 @@ namespace YY
 	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                  ChangedFun                        pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
 	_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::_OnParentPropertyChanged, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, _peLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
-	_APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                            nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, _dSpecLayoutPos), 0, 0),  ValueType::int32)
+	_APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                          nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, _dSpecLayoutPos), 0, 0),  ValueType::int32_t)
 
 
 		template<typename _Class>
@@ -103,7 +105,7 @@ namespace YY
 
 		class Element
 		{
-			_APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
+			_APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 		private:
 			// 所有 Local 值的
 			DynamicArray<Value*> _LocalPropValue;
@@ -114,6 +116,11 @@ namespace YY
 			// Cached layout position
 			int32_t _dSpecLayoutPos;
 		public:
+			static HRESULT WINAPI Create(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike, Element** ppOut);
+
+			HRESULT __fastcall Initialize(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike);
+
+
 			Value* __fastcall GetValue(const PropertyInfo& Prop, PropertyIndicies eIndicies, bool bUpdateCache);
 
 			//只能修改 Local Value
@@ -122,9 +129,6 @@ namespace YY
 			Element* GetParent();
 
 			virtual void __fastcall OnPropertyChanged(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);
-
-			HRESULT __fastcall Initialize(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike);
-
 		protected:
 			// Value Update
 			HRESULT __fastcall _PreSourceChange(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);

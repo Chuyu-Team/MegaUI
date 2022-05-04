@@ -11,12 +11,26 @@ namespace YY
 		class DynamicArray : protected std::vector<T, YY::MegaUI::allocator<T>>
 		{
 		public:
-			size_t __fastcall GetSize()
+			uint_t __fastcall GetSize()
 			{
 				return this->size();
 			}
+			
+			HRESULT __fastcall Reserve(uint_t uNewCapacity)
+			{
+				try
+				{
+					this->reserve(uNewCapacity);
 
-			HRESULT __fastcall Resize(size_t NewSize)
+					return S_OK;
+				}
+				catch (const std::exception&)
+				{
+					return E_OUTOFMEMORY;
+				}
+			}
+			
+			HRESULT __fastcall Resize(uint_t NewSize)
 			{
 				try
 				{
@@ -29,7 +43,7 @@ namespace YY
 				}
 			}
 
-			T* __fastcall GetItemPtr(size_t Index)
+			T* __fastcall GetItemPtr(uint_t Index)
 			{
 				if (this->size() <= Index)
 					return nullptr;
@@ -37,7 +51,7 @@ namespace YY
 				return this->data() + Index;
 			}
 
-			HRESULT __fastcall SetItem(size_t Index, const T& NewItem)
+			HRESULT __fastcall SetItem(uint_t Index, const T& NewItem)
 			{
 				auto pItem = GetItemPtr(Index);
 				if (!pItem)
@@ -47,7 +61,7 @@ namespace YY
 				return S_OK;
 			}
 
-			HRESULT __fastcall SetItem(size_t Index, T&& NewItem)
+			HRESULT __fastcall SetItem(uint_t Index, T&& NewItem)
 			{
 				auto pItem = GetItemPtr(Index);
 				if (!pItem)
@@ -83,7 +97,7 @@ namespace YY
 				}
 			}
 
-			HRESULT __fastcall Insert(size_t Index, const T& NewItem)
+			HRESULT __fastcall Insert(uint_t Index, const T& NewItem)
 			{
 				const auto Size = this->size();
 
@@ -104,7 +118,7 @@ namespace YY
 				}
 			}
 
-			HRESULT __fastcall Insert(size_t Index, T&& NewItem)
+			HRESULT __fastcall Insert(uint_t Index, T&& NewItem)
 			{
 				const auto Size = this->size();
 
@@ -123,6 +137,36 @@ namespace YY
 				{
 					return E_OUTOFMEMORY;
 				}
+			}
+
+			auto begin() noexcept
+			{
+				return std::vector<T, YY::MegaUI::allocator<T>>::begin();
+			}
+
+			auto end() noexcept
+			{
+				return std::vector<T, YY::MegaUI::allocator<T>>::end();
+			}
+
+			auto _Unchecked_begin() noexcept
+			{
+				return std::vector<T, YY::MegaUI::allocator<T>>::_Unchecked_begin();
+			}
+
+			auto _Unchecked_begin() const noexcept
+			{
+				return std::vector<T, YY::MegaUI::allocator<T>>::_Unchecked_begin();
+			}
+
+			auto _Unchecked_end() noexcept
+			{
+				return std::vector<T, YY::MegaUI::allocator<T>>::_Unchecked_end();
+			}
+
+			auto _Unchecked_end() const noexcept
+			{
+				return std::vector<T, YY::MegaUI::allocator<T>>::_Unchecked_end();
 			}
 		};
 

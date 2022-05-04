@@ -12,18 +12,21 @@ namespace YY
 {
     namespace MegaUI
     {
-        typedef ::int8_t int8_t;
-        typedef ::int16_t int16_t;
-        typedef ::int32_t int32_t;
-        typedef ::int64_t int64_t;
+        using ::int8_t;
+        using ::int16_t;
+        using ::int32_t;
+        using ::int64_t;
 
-        typedef ::uint8_t uint8_t;
-        typedef ::uint16_t uint16_t;
-        typedef ::uint32_t uint32_t;
-        typedef ::uint64_t uint64_t;
+        using ::uint8_t;
+        using ::uint16_t;
+        using ::uint32_t;
+        using ::uint64_t;
 
-        typedef ::intmax_t intmax_t;
-        typedef ::uintmax_t uintmax_t;
+        using ::intmax_t;
+        using ::uintmax_t;
+
+        using ::intptr_t;
+        typedef size_t uintptr_t;
 
         typedef ::intptr_t int_t;
         typedef ::size_t uint_t;
@@ -54,50 +57,58 @@ namespace YY
         constexpr auto int_max = INTPTR_MAX;
         constexpr auto uint_max = UINTPTR_MAX;
 
+        // ANSI字符
+        typedef char char_t;
+
+
 #ifdef __cpp_lib_char8_t
         // UTF8 字符
-        typedef char8_t u8char;
+        typedef char8_t u8char_t;
 #else
         // UTF8 字符
-        typedef uint8_t u8char;
+        typedef uint8_t u8char_t;
 #endif
 
         
 #ifdef _WIN32
         // UTF16字符
-        typedef wchar_t u16char;
+        typedef wchar_t u16char_t;
 #else
         // UTF16字符
-        typedef char16_t u16char;
+        typedef char16_t u16char_t;
 #endif
 
         // UTF32字符
-        typedef char32_t u32char;
+        typedef char32_t u32char_t;
 
 
 #ifdef _WIN32
         // 当前平台的推荐Unicode字符
-        typedef u16char uchar_t;
+        typedef u16char_t uchar_t;
 #else
         // 当前平台的推荐字符
-        typedef u8char uchar_t;
+        typedef u8char_t uchar_t;
 #endif
         
-        typedef _Null_terminated_ char* raw_string;
-        typedef _Null_terminated_ const char* raw_const_string;
+        typedef _Null_terminated_ char_t* raw_string_t;
+        typedef _Null_terminated_ const char_t* raw_const_string_t;
 
-        typedef _Null_terminated_ u8char* raw_u8string;
-        typedef _Null_terminated_ const u8char* raw_const_u8string;
+        typedef _Null_terminated_ u8char_t* raw_u8string;
+        typedef _Null_terminated_ const u8char_t* raw_const_u8string_t;
 
-        typedef _Null_terminated_ u16char* raw_u18string;
-        typedef _Null_terminated_ const u16char* raw_const_u16string;
+        typedef _Null_terminated_ u16char_t* raw_u18string_t;
+        typedef _Null_terminated_ const u16char_t* raw_const_u16string_t;
 
-        typedef _Null_terminated_ u32char* raw_u32string;
-        typedef _Null_terminated_ const u32char* raw_const_u32string;
+        typedef _Null_terminated_ u32char_t* raw_u32string_t;
+        typedef _Null_terminated_ const u32char_t* raw_const_u32string_t;
 
         // 当前平台的推荐的Unicode字符串类型
-        typedef _Null_terminated_ uchar_t* raw_ustring;
+        typedef _Null_terminated_ uchar_t* raw_ustring_t;
         // 当前平台的推荐的只读Unicode字符串类型
-        typedef _Null_terminated_ const uchar_t* raw_const_ustring;
+        typedef _Null_terminated_ const uchar_t* raw_const_ustring_t;
+
+
+        // 字节
+        typedef unsigned char byte_t;
     }
 }

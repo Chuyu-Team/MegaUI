@@ -15,7 +15,7 @@ namespace YY
 
 		struct EnumMap
 		{
-			raw_const_string pszEnum;
+			raw_const_string_t pszEnum;
 			int32_t nEnum;
 		};
 
@@ -120,7 +120,7 @@ namespace YY
 		struct PropertyInfo
 		{
 			// 属性的名称，给XML解析器使用
-			raw_const_string pszName;
+			raw_const_string_t pszName;
 			// PropertyFlag标记组合
 			uint32_t   fFlags;
 			// PropertyGroup标记组合
@@ -185,7 +185,7 @@ namespace YY
           | (uint64_t((uint32_t)_SPECIFIED) << 39) | (uint64_t((uint32_t)_HAS_SPECIFIED_BIT) << 50) | (uint64_t((uint32_t)_HAS_SPECIFIED) << 53) }
 
 #define _MEGA_UI_PROP_BIND_INT(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
-		_MEGA_UI_PROP_BIND_VALUE(ValueType::int32, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
+		_MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
 
 #define _MEGA_UI_PROP_BIND_ELEMENT(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
 		_MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)

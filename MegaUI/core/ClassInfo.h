@@ -18,7 +18,7 @@ namespace YY
 			virtual uint32_t __fastcall AddRef() = 0;
 			virtual uint32_t __fastcall Release() = 0;
 
-			virtual raw_const_string __fastcall GetClassName() = 0;
+			virtual raw_const_string_t __fastcall GetClassName() = 0;
 			virtual IClassInfo* __fastcall GetBaseClass() = 0;
 
 			virtual HRESULT __fastcall CreateInstance(Element* pElem, intptr_t* pCookies, Element** ppElem) = 0;
@@ -33,6 +33,12 @@ namespace YY
 			HRESULT __fastcall _RegisterClass(bool bExplicitRegister);
 			HRESULT __fastcall _UnregisterClass(bool bExplicitRegister);
 		};
+
+		IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_string_t pszClassName);
+
+		HRESULT __fastcall UnRegisterAllControls();
+
+
 
 
 		template<typename _Class>
@@ -69,7 +75,7 @@ namespace YY
 				return uNewRef;
 			}
 
-			virtual raw_const_string __fastcall GetClassName()  override
+			virtual raw_const_string_t __fastcall GetClassName()  override
 			{
 				return _Class::StaticClassInfo::pszClassInfoName;
 			}
@@ -79,9 +85,9 @@ namespace YY
 				return _Class::StaticClassInfo::BaseElement::GetStaticClassInfo();
 			}
 
-			virtual HRESULT __fastcall CreateInstance(Element* pElem, intptr_t* pCookies, Element** ppElem) override
+			virtual HRESULT __fastcall CreateInstance(Element* pTopLevelElem, intptr_t* pCookies, Element** ppOutElem) override
 			{
-				return E_NOTIMPL;
+				return _Class::Create(_Class::StaticClassInfo::fDefaultCreate, pTopLevelElem, pCookies, ppOutElem);
 			}
 
 			static constexpr uint32_t GetPropertyInfoCount()
@@ -168,19 +174,18 @@ namespace YY
 				{
 					pClassInfo->AddRef();
 
-					if (!bExplicitRegister)
-						return S_OK;
-
-					hr = pClassInfo->_RegisterClass(bExplicitRegister);
-					if (FAILED(hr))
+					if (bExplicitRegister)
 					{
-						pClassInfo->Release();
+						hr = pClassInfo->_RegisterClass(true);
+
+						if (FAILED(hr))
+							pClassInfo->Release();
 					}
 				}
 				else
 				{
 					// 这里不会增加引用计数
-					auto pTmp = HNewAndZero<_Class::ClassInfoType>();
+					auto pTmp = HNewAndZero<_Class::StaticClassInfo::ClassInfoType>();
 					if (!pTmp)
 						return E_OUTOFMEMORY;
 
@@ -258,7 +263,7 @@ namespace YY
 				return uNewRef;
 			}
 
-			virtual raw_const_string __fastcall GetClassName()  override
+			virtual raw_const_string_t __fastcall GetClassName()  override
 			{
 				return Element::StaticClassInfo::pszClassInfoName;
 			}
@@ -268,9 +273,9 @@ namespace YY
 				return nullptr;
 			}
 
-			virtual HRESULT __fastcall CreateInstance(Element* pElem, intptr_t* pCookies, Element** ppElem) override
+			virtual HRESULT __fastcall CreateInstance(Element* pTopLevelElem, intptr_t* pCookies, Element** ppOutElem) override
 			{
-				return E_NOTIMPL;
+				return Element::Create(Element::StaticClassInfo::fDefaultCreate, pTopLevelElem, pCookies, ppOutElem);
 			}
 
 			static constexpr uint32_t GetPropertyInfoCount()
@@ -350,7 +355,7 @@ namespace YY
 
 					if (bExplicitRegister)
 					{
-						pClassInfo->_RegisterClass(bExplicitRegister);
+						hr = pClassInfo->_RegisterClass(true);
 						if (FAILED(hr))
 						{
 							pClassInfo->Release();
@@ -360,7 +365,7 @@ namespace YY
 				else
 				{
 					// 这里不会增加引用计数
-					auto pTmp = HNewAndZero<Element::ClassInfoType>();
+					auto pTmp = HNewAndZero<Element::StaticClassInfo::ClassInfoType>();
 					if (!pTmp)
 						return E_OUTOFMEMORY;
 

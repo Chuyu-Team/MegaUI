@@ -221,7 +221,7 @@ namespace YY
 
 						switch ((ValueType)pProp->BindCacheInfo.eType)
 						{
-						case ValueType::int32:
+						case ValueType::int32_t:
 							pRetValue = Value::CreateInt32(*(int32_t*)pCache);
 							break;
 						case ValueType::boolean:
@@ -273,7 +273,7 @@ namespace YY
 
 						switch ((ValueType)pProp->BindCacheInfo.eType)
 						{
-						case ValueType::int32:
+						case ValueType::int32_t:
 							*(int32_t*)pCache = pNewValue->GetInt32();
 							break;
 						case ValueType::boolean:

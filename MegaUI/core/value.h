@@ -15,9 +15,9 @@ namespace YY
 		typedef DynamicArray<Element*> ElementList;
 
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
-        _APPLY(int32,       int32_t,            _int32Value) \
+        _APPLY(int32_t,     int32_t,            _int32Value) \
         _APPLY(boolean,     bool,               _boolValue)  \
-        _APPLY(raw_ustring, raw_const_ustring,  _pszValue )  \
+        _APPLY(raw_ustring, raw_const_ustring_t,_pszValue )  \
         _APPLY(POINT,       POINT,              _ptVal    )  \
         _APPLY(SIZE,        SIZE,               _sizeVal  )  \
         _APPLY(RECT,        RECT,               _rectVal  )  \
@@ -104,7 +104,7 @@ namespace YY
 			template<int32_t iValue>
 			static Value* __fastcall GetInt32ConstValue()
 			{
-				_RETUNR_CONST_VALUE(ValueType::int32, iValue);
+				_RETUNR_CONST_VALUE(ValueType::int32_t, iValue);
 			}
 
 			static Value* __fastcall GetAtomZero();
@@ -133,13 +133,13 @@ namespace YY
 			static Value* __fastcall CreateBool(bool bValue);
 			static Value* __fastcall CreateElementRef(Element* peValue);
 			static Value* __fastcall CreateElementList(ElementList* peListValue);
-			static Value* __fastcall CreateString(raw_const_ustring pszValue, HINSTANCE hResLoad = NULL);
+			static Value* __fastcall CreateString(raw_const_ustring_t pszValue, HINSTANCE hResLoad = NULL);
 			static Value* __fastcall CreatePoint(int32_t x, int32_t y);
 			static Value* __fastcall CreateSize(int32_t cx, int32_t cy);
 			static Value* __fastcall CreateRect(int32_t left, int32_t top, int32_t right, int32_t bottom);
 			static Value* __fastcall CreateDFCFill(uint32_t uType, uint32_t uState);
-			static Value* __fastcall CreateAtom(raw_const_ustring pszValue);
-			static Value* __fastcall CreateCursor(raw_const_ustring pszValue);
+			static Value* __fastcall CreateAtom(raw_const_ustring_t pszValue);
+			static Value* __fastcall CreateCursor(raw_const_ustring_t pszValue);
 			static Value* __fastcall CreateCursor(HCURSOR hValue);
 
 
