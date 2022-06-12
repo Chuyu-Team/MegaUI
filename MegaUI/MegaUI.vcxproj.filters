@@ -51,6 +51,24 @@
     <ClInclude Include="base\MegaUITypeInt.h">
       <Filter>UI\base</Filter>
     </ClInclude>
+    <ClInclude Include="core\DeferCycle.h">
+      <Filter>UI\core</Filter>
+    </ClInclude>
+    <ClInclude Include="base\String.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Interlocked.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\ErrorCode.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Encoding.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\StringView.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -68,5 +86,13 @@
     <ClCompile Include="core\ClassInfo.cpp">
       <Filter>UI\core</Filter>
     </ClCompile>
+    <ClCompile Include="base\String.cpp">
+      <Filter>UI\base</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="MegaUI.natvis">
+      <Filter>资源文件</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

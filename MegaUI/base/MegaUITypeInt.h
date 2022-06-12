@@ -58,10 +58,10 @@ namespace YY
         constexpr auto uint_max = UINTPTR_MAX;
 
         // ANSI字符
-        typedef char char_t;
+        typedef char achar_t;
 
 
-#ifdef __cpp_lib_char8_t
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         // UTF8 字符
         typedef char8_t u8char_t;
 #else
@@ -69,29 +69,30 @@ namespace YY
         typedef uint8_t u8char_t;
 #endif
 
-        
 #ifdef _WIN32
-        // UTF16字符
+        // UTF16字符，Windows平台 wchar_t，就是UTF16
         typedef wchar_t u16char_t;
-#else
-        // UTF16字符
-        typedef char16_t u16char_t;
-#endif
 
         // UTF32字符
         typedef char32_t u32char_t;
 
-
-#ifdef _WIN32
         // 当前平台的推荐Unicode字符
         typedef u16char_t uchar_t;
 #else
+        // UTF16字符
+        typedef char16_t u16char_t;
+
+        // UTF32字符
+        typedef wchar_t u32char_t;
+
         // 当前平台的推荐字符
         typedef u8char_t uchar_t;
+
+        static_assert(sizeof(wchar_t) == 4, "wchar_t UTF32")
 #endif
         
-        typedef _Null_terminated_ char_t* raw_string_t;
-        typedef _Null_terminated_ const char_t* raw_const_string_t;
+        typedef _Null_terminated_ achar_t* raw_astring_t;
+        typedef _Null_terminated_ const achar_t* raw_const_astring_t;
 
         typedef _Null_terminated_ u8char_t* raw_u8string;
         typedef _Null_terminated_ const u8char_t* raw_const_u8string_t;
@@ -107,8 +108,27 @@ namespace YY
         // 当前平台的推荐的只读Unicode字符串类型
         typedef _Null_terminated_ const uchar_t* raw_const_ustring_t;
 
+#define _U8S(S) u8 ## S
+
+#ifdef _WIN32
+#define _U16S(S) L ## S
+#else
+#define _U16S(S) u ## S
+#endif
+
+
+#define _U32S(S) U ## S
+
+#ifdef _WIN32
+#define _S(S) _U16S(S)
+#else
+#define _S(S) _U8S(S)
+#endif
 
         // 字节
         typedef unsigned char byte_t;
+
+
+        typedef _Return_type_success_(return >= 0) long HRESULT;
     }
 }

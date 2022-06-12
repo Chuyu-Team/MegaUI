@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="YY::MegaUI::StringView&lt;*&gt;" Priority="MediumLow">
+        <Intrinsic Name="GetSize" Expression="_cchString" />
+        <Intrinsic Name="GetEncoding" Expression="eEncoding" />
+        <DisplayString Condition="GetEncoding() == YY::MegaUI::Encoding::UTF8">{ (YY::MegaUI::uint_t)_szString,x } u8{ _szString,s8 }</DisplayString>
+        <DisplayString Condition="GetEncoding() != YY::MegaUI::Encoding::UTF8">{ _szString }</DisplayString>
+        <StringView Condition="GetEncoding() == YY::MegaUI::Encoding::UTF8">_szString,s8</StringView>
+        <StringView Condition="GetEncoding() != YY::MegaUI::Encoding::UTF8">_szString</StringView>
+        <Expand>
+            <Item Name="[Size]" ExcludeView="simple">GetSize()</Item>
+            <Item Name="[Encoding]" ExcludeView="simple">GetEncoding()</Item>
+            <ArrayItems>
+                <Size>GetSize()</Size>
+                <ValuePointer>_szString</ValuePointer>
+            </ArrayItems>
+        </Expand>
+
+    </Type>
+    <Type Name="YY::MegaUI::StringBase&lt;*&gt;" Priority="MediumLow">
+        <Intrinsic Name="GetSize" Expression="((YY::MegaUI::uint_t*)_szString)[-1]" />
+        <Intrinsic Name="GetCapacity" Expression="((YY::MegaUI::uint_t*)_szString)[-2]" />
+        <Intrinsic Name="GetRef" Expression="((uint32_t*)_szString)[-(sizeof(YY::MegaUI::uint_t)/sizeof(uint32_t) * 2 +1)]" />
+        <!--YY::MegaUI::Encoding-->
+        <Intrinsic Name="GetEncoding" Expression="YY::MegaUI::Encoding(((uint16_t*)_szString)[-(sizeof(YY::MegaUI::uint_t)/sizeof(uint16_t) * 2 +3)])" />
+        <DisplayString Condition="eEncoding == YY::MegaUI::Encoding::UTF8">{ (YY::MegaUI::uint_t)_szString,x } u8{ _szString,s8 }</DisplayString>
+        <DisplayString Condition="eEncoding != YY::MegaUI::Encoding::UTF8">{ _szString }</DisplayString>
+        <StringView Condition="eEncoding == YY::MegaUI::Encoding::UTF8">_szString,s8</StringView>
+        <StringView Condition="eEncoding != YY::MegaUI::Encoding::UTF8">_szString</StringView>
+        <Expand>
+            <Item Name="[Size]" ExcludeView="simple">GetSize()</Item>
+            <Item Name="[Capacity]" ExcludeView="simple">GetCapacity()</Item>
+            <Item Name="[Ref]" ExcludeView="simple">GetRef()</Item>
+            <Item Name="[Encoding]" Condition="eEncoding == YY::MegaUI::Encoding::ANSI_DEFAULT" ExcludeView="simple">GetEncoding()</Item>
+            <Item Name="[Encoding]" Condition="eEncoding != YY::MegaUI::Encoding::ANSI_DEFAULT" ExcludeView="simple">eEncoding</Item>
+            <ArrayItems>
+                <Size>GetSize()</Size>
+                <ValuePointer>_szString</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="YY::MegaUI::String" Priority="MediumLow">
+        <Intrinsic Name="GetSize" Expression="((YY::MegaUI::uint_t*)szANSI._szString)[-1]" />
+        
+        <Intrinsic Name="GetCapacity" Expression="((YY::MegaUI::uint_t*)szANSI._szString)[-2]" />
+        <Intrinsic Name="GetRef" Expression="((uint32_t*)szANSI._szString)[-(sizeof(YY::MegaUI::uint_t)/sizeof(uint32_t) * 2 +1)]" />
+        <!--YY::MegaUI::Encoding-->
+        <Intrinsic Name="GetEncoding" Expression="YY::MegaUI::Encoding(((uint16_t*)szANSI._szString)[-(sizeof(YY::MegaUI::uint_t)/sizeof(uint16_t) * 2 +3)])" />
+        <Intrinsic Name="IsANSI" Expression="GetEncoding() != YY::MegaUI::Encoding::UTF8 &amp;&amp; GetEncoding() != YY::MegaUI::Encoding::UTF16LE &amp;&amp; GetEncoding() != YY::MegaUI::Encoding::UTF16BE &amp;&amp; GetEncoding() != YY::MegaUI::Encoding::UTF32LE &amp;&amp; GetEncoding() != YY::MegaUI::Encoding::UTF32BE" />
+
+
+        <DisplayString Condition="GetEncoding() == YY::MegaUI::Encoding::UTF8">{ (YY::MegaUI::uint_t)szUTF8._szString,x } u8{ szUTF8._szString,s8 }</DisplayString>
+        <DisplayString Condition="GetEncoding() == YY::MegaUI::Encoding::UTF16LE || GetEncoding() == YY::MegaUI::Encoding::UTF16BE">{ szUTF16._szString }</DisplayString>
+        <DisplayString Condition="GetEncoding() == YY::MegaUI::Encoding::UTF32LE || GetEncoding() == YY::MegaUI::Encoding::UTF32BE">{ szUTF32._szString }</DisplayString>
+        <DisplayString Condition="IsANSI()">{ szANSI._szString }</DisplayString>
+        <StringView Condition="GetEncoding() == YY::MegaUI::Encoding::UTF8">szUTF8._szString,s8</StringView>
+        <StringView Condition="GetEncoding() == YY::MegaUI::Encoding::UTF16LE || GetEncoding() == YY::MegaUI::Encoding::UTF16BE">szUTF16._szString</StringView>
+        <StringView Condition="GetEncoding() == YY::MegaUI::Encoding::UTF32LE || GetEncoding() == YY::MegaUI::Encoding::UTF32BE">szUTF32._szString</StringView>
+        <StringView Condition="IsANSI()">szANSI._szString</StringView>
+        <Expand>
+            <Item Name="[Size]" ExcludeView="simple">GetSize()</Item>
+            <Item Name="[Capacity]" ExcludeView="simple">GetCapacity()</Item>
+            <Item Name="[Ref]" ExcludeView="simple">GetRef()</Item>
+            <Item Name="[Encoding]" ExcludeView="simple">GetEncoding()</Item>
+            <ArrayItems>
+                <Size>GetSize()</Size>
+                <ValuePointer Condition="IsANSI()">szANSI._szString</ValuePointer>
+                <ValuePointer Condition="GetEncoding() == YY::MegaUI::Encoding::UTF8">szUTF8._szString</ValuePointer>
+                <ValuePointer Condition="GetEncoding() == YY::MegaUI::Encoding::UTF16LE || GetEncoding() == YY::MegaUI::Encoding::UTF16BE">szUTF16._szString</ValuePointer>
+                <ValuePointer Condition="GetEncoding() == YY::MegaUI::Encoding::UTF32LE || GetEncoding() == YY::MegaUI::Encoding::UTF32BE">szUTF32._szString</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+</AutoVisualizer>
