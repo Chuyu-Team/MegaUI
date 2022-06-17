@@ -1,0 +1,53 @@
+﻿# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+Language:	Cpp
+BasedOnStyle: Microsoft
+
+IndentWidth:	4
+AccessModifierOffset:	-4
+IndentAccessModifiers : false
+PointerAlignment: Left
+ReferenceAlignment : Left
+
+# 命名空间缩进
+NamespaceIndentation : All
+CompactNamespaces : false
+
+# tab宽度
+TabWidth:	4
+# 使用tab字符: Never, ForIndentation, ForContinuationAndIndentation, Always
+UseTab:	Never
+# false表示函数实参要么都在同一行，要么都各自一行
+BinPackArguments:	false
+# false表示所有形参要么都在同一行，要么都各自一行
+BinPackParameters:	false
+IndentWrappedFunctionNames:	false
+AlignArrayOfStructures: Left
+# AlignAfterOpenBracket: BlockIndent
+AlwaysBreakAfterReturnType: All
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterFunction : true
+    AfterNamespace : true
+    AfterUnion : true
+    AfterExternBlock : true
+    BeforeElse : true
+    BeforeWhile : false
+    SplitEmptyFunction : true
+    SplitEmptyRecord : true
+    AfterCaseLabel : true
+    AfterControlStatement: Always
+    BeforeLambdaBody : true
+
+BreakConstructorInitializers : BeforeComma
+BreakInheritanceList : BeforeComma
+
+EmptyLineBeforeAccessModifier  : LogicalBlock
+FixNamespaceComments : true
+
+# Cpp11BracedListStyle : false
+
+# AlignEscapedNewlines : Right
+
+AllowAllParametersOfDeclarationOnNextLine : false
