@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <vector>
 
+#include "MegaUITypeInt.h"
 #include "alloc.h"
 
 namespace YY

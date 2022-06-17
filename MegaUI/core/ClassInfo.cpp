@@ -10,7 +10,7 @@ namespace YY
     {
         struct hash_raw_const_string
         {
-            size_t operator()(raw_const_string_t _Keyval) const noexcept
+            size_t operator()(raw_const_astring_t _Keyval) const noexcept
             {
                 return std::_Hash_array_representation(_Keyval, strlen(_Keyval));
             }
@@ -18,7 +18,7 @@ namespace YY
 
         struct equal_to_raw_const_string
         {
-            bool operator()(raw_const_string_t _Left, raw_const_string_t _Right) const
+            bool operator()(raw_const_astring_t _Left, raw_const_astring_t _Right) const
             {
                 return strcmp(_Left, _Right) == 0;
             }
@@ -31,7 +31,7 @@ namespace YY
             uint32_t uRef;
         };
 
-        typedef std::unordered_map<raw_const_string_t, RegisterClassInfo, hash_raw_const_string, equal_to_raw_const_string, YY::MegaUI::allocator<std::pair<const raw_const_string_t, RegisterClassInfo>>> RegisterClassInfoHashMap;
+        typedef std::unordered_map<raw_const_astring_t, RegisterClassInfo, hash_raw_const_string, equal_to_raw_const_string, YY::MegaUI::allocator<std::pair<const raw_const_astring_t, RegisterClassInfo>>> RegisterClassInfoHashMap;
 
         static RegisterClassInfoHashMap g_ClassMap;
 
@@ -41,7 +41,7 @@ namespace YY
         {
             auto szClassName = GetClassName();
 
-            
+
             std::pair<RegisterClassInfoHashMap::iterator, bool> InsertIter;
 
             try
@@ -98,7 +98,7 @@ namespace YY
             return S_OK;
         }
         
-        IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_string_t pszClassName)
+        IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_astring_t pszClassName)
         {
             if (!pszClassName)
                 return nullptr;

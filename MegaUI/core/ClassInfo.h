@@ -8,6 +8,9 @@
 #include "Element.h"
 
 
+#pragma pack(push)
+#pragma pack()
+
 namespace YY
 {
 	namespace MegaUI
@@ -18,7 +21,7 @@ namespace YY
 			virtual uint32_t __fastcall AddRef() = 0;
 			virtual uint32_t __fastcall Release() = 0;
 
-			virtual raw_const_string_t __fastcall GetClassName() = 0;
+			virtual raw_const_astring_t __fastcall GetClassName() = 0;
 			virtual IClassInfo* __fastcall GetBaseClass() = 0;
 
 			virtual HRESULT __fastcall CreateInstance(Element* pElem, intptr_t* pCookies, Element** ppElem) = 0;
@@ -34,7 +37,7 @@ namespace YY
 			HRESULT __fastcall _UnregisterClass(bool bExplicitRegister);
 		};
 
-		IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_string_t pszClassName);
+		IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_astring_t pszClassName);
 
 		HRESULT __fastcall UnRegisterAllControls();
 
@@ -57,9 +60,9 @@ namespace YY
 			}
 
 			virtual uint32_t __fastcall AddRef() override
-			{
-				return ++uRef;
-			}
+            {
+                return ++uRef;
+            }
 
 			virtual uint32_t __fastcall Release() override
 			{
@@ -71,11 +74,11 @@ namespace YY
 					_Class::ClassInfoData.pClassInfoPtr = nullptr;
 					HDelete(this);
 				}
-
+				
 				return uNewRef;
 			}
 
-			virtual raw_const_string_t __fastcall GetClassName()  override
+			virtual raw_const_astring_t __fastcall GetClassName()  override
 			{
 				return _Class::StaticClassInfo::pszClassInfoName;
 			}
@@ -263,7 +266,7 @@ namespace YY
 				return uNewRef;
 			}
 
-			virtual raw_const_string_t __fastcall GetClassName()  override
+			virtual raw_const_astring_t __fastcall GetClassName()  override
 			{
 				return Element::StaticClassInfo::pszClassInfoName;
 			}
@@ -403,3 +406,5 @@ namespace YY
 		};
 	}
 }
+
+#pragma pack(pop)

@@ -2,11 +2,15 @@
 #include <Windows.h>
 #include "value.h"
 #include "Property.h"
+#include "DeferCycle.h"
 
 // Global layout positions
 #define LP_None         -3
 #define LP_Absolute     -2
 #define LP_Auto         -1
+
+#pragma pack(push)
+#pragma pack()
 
 namespace YY
 {
@@ -21,7 +25,7 @@ namespace YY
 	            using ClassInfoType = _CLASS_INFO_TYPE;                                                     \
 				using BaseElement =_BASE_CLASS;                                                             \
                 constexpr static uint32_t fDefaultCreate = _DEFAULT_CREATE_FLAGS;                           \
-				constexpr static raw_const_string_t pszClassInfoName = # _CLASS_NAME;                       \
+				constexpr static raw_const_astring_t pszClassInfoName = # _CLASS_NAME;                      \
 				constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT);   \
                                                                                                             \
 				ClassInfoType* pClassInfoPtr;                                                               \
@@ -118,7 +122,7 @@ namespace YY
 		public:
 			static HRESULT WINAPI Create(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike, Element** ppOut);
 
-			HRESULT __fastcall Initialize(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike);
+            HRESULT __fastcall Initialize(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike);
 
 
 			Value* __fastcall GetValue(const PropertyInfo& Prop, PropertyIndicies eIndicies, bool bUpdateCache);
@@ -129,6 +133,10 @@ namespace YY
 			Element* GetParent();
 
 			virtual void __fastcall OnPropertyChanged(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);
+
+			DeferCycle* __fastcall GetDeferObject();
+			void __fastcall StartDefer(intptr_t* pCooike);
+			void __fastcall EndDefer(intptr_t Cookie);
 		protected:
 			// Value Update
 			HRESULT __fastcall _PreSourceChange(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);
@@ -140,3 +148,5 @@ namespace YY
 		};
 	}
 }
+
+#pragma pack(pop)

@@ -4,6 +4,9 @@
 
 #include "..\base\MegaUITypeInt.h"
 
+#pragma pack(push)
+#pragma pack()
+
 namespace YY
 {
 	namespace MegaUI
@@ -15,7 +18,7 @@ namespace YY
 
 		struct EnumMap
 		{
-			raw_const_string_t pszEnum;
+			raw_const_astring_t pszEnum;
 			int32_t nEnum;
 		};
 
@@ -120,7 +123,7 @@ namespace YY
 		struct PropertyInfo
 		{
 			// 属性的名称，给XML解析器使用
-			raw_const_string_t pszName;
+			raw_const_astring_t pszName;
 			// PropertyFlag标记组合
 			uint32_t   fFlags;
 			// PropertyGroup标记组合
@@ -216,3 +219,5 @@ namespace YY
 
 	} //namespace MegaUI
 }//namespace YY
+
+#pragma pack(pop)

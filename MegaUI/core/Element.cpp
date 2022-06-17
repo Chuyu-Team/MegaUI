@@ -161,6 +161,35 @@ namespace YY
 			if (Prop.pFunOnPropertyChanged)
 				(this->*Prop.pFunOnPropertyChanged)(Prop, eIndicies, pvOld, pvNew);
 		}
+
+		void __fastcall Element::StartDefer(intptr_t* pCooike)
+		{
+			if (!pCooike)
+			{
+				throw std::exception("pCooike == nullptr", 0);
+				return;
+			}
+
+			if (auto pDeferCycle = GetDeferObject())
+			{
+				++pDeferCycle->uEnter;
+
+
+				// 随便写一个值，看起来比较特殊就可以了
+				*pCooike = 0x12345;
+
+				pDeferCycle->AddRef();
+			}
+		}
+
+		void __fastcall Element::EndDefer(intptr_t Cookie)
+		{
+			if (Cookie != 0x12345)
+			{
+				throw std::exception("Cookie Error", 0);
+				return;
+			}
+		}
 		
 		PropertyCustomCacheResult __fastcall Element::_PropertyGeneralCache(PropertyCustomCacheActionMode eMode, PropertyCustomCacheActionInfo* pInfo)
 		{
