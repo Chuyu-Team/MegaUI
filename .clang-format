@@ -1,30 +1,48 @@
 ﻿# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
 Language:	Cpp
-BasedOnStyle: Microsoft
+# BasedOnStyle: Microsoft
 
-IndentWidth:	4
-AccessModifierOffset:	-4
+Standard : c++14
+
+IndentWidth : 4
+AccessModifierOffset : -4
 IndentAccessModifiers : false
 PointerAlignment: Left
 ReferenceAlignment : Left
+ColumnLimit : 0
+
+TabWidth:	4
+UseTab:	Never
 
 # 命名空间缩进
 NamespaceIndentation : All
 CompactNamespaces : false
+# 命名空间结束添加 注释 // namespace XXX
+FixNamespaceComments : true
 
-# tab宽度
-TabWidth:	4
-# 使用tab字符: Never, ForIndentation, ForContinuationAndIndentation, Always
-UseTab:	Never
-# false表示函数实参要么都在同一行，要么都各自一行
-BinPackArguments:	false
-# false表示所有形参要么都在同一行，要么都各自一行
-BinPackParameters:	false
+
 IndentWrappedFunctionNames:	false
+
 AlignArrayOfStructures: Left
-# AlignAfterOpenBracket: BlockIndent
-AlwaysBreakAfterReturnType: All
+
+# public结束后有一个回车
+EmptyLineBeforeAccessModifier  : LogicalBlock
+
+
+BreakConstructorInitializers : BeforeComma
+BreakInheritanceList : BeforeComma
+# template后面不要有空格
+SpaceAfterTemplateKeyword : false
+
+# Cpp11BracedListStyle : false
+
+# AlignEscapedNewlines : DontAlign
+# SpaceBeforeCpp11BracedList : true
+
+# AllowAllParametersOfDeclarationOnNextLine : false
+SortUsingDeclarations : false
+SortIncludes : Never
 
 BreakBeforeBraces: Custom
 BraceWrapping:
@@ -39,15 +57,6 @@ BraceWrapping:
     AfterCaseLabel : true
     AfterControlStatement: Always
     BeforeLambdaBody : true
-
-BreakConstructorInitializers : BeforeComma
-BreakInheritanceList : BeforeComma
-
-EmptyLineBeforeAccessModifier  : LogicalBlock
-FixNamespaceComments : true
-
-# Cpp11BracedListStyle : false
-
-# AlignEscapedNewlines : Right
-
-AllowAllParametersOfDeclarationOnNextLine : false
+    AfterClass  : true
+    AfterStruct : true
+    AfterEnum : true

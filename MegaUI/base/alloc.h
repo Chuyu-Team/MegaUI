@@ -6,71 +6,89 @@
 
 namespace YY
 {
-	namespace MegaUI
-	{
-		inline void* __cdecl HAlloc(uint_t s)
-		{
-			return malloc(s);
-		}
+    namespace MegaUI
+    {
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        _CRTALLOCATOR
+        inline void* __cdecl HAlloc(_In_ uint_t _Size)
+        {
+            return malloc(_Size);
+        }
 
-		inline void* __cdecl HAllocAndZero(uint_t s)
-		{
-			return calloc(1, s);
-		}
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        _CRTALLOCATOR
+        inline void* __cdecl HAllocAndZero(_In_ uint_t _Size)
+        {
+            return calloc(1, _Size);
+        }
 
-		inline void* __cdecl HReAlloc(void* p, uint_t s)
-		{
-			return realloc(p, s);
-		}
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        _CRTALLOCATOR
+        inline void* __cdecl HReAlloc(_Pre_maybenull_ _Post_invalid_ void* _Block, _In_ uint_t _Size)
+        {
+            return realloc(_Block, _Size);
+        }
+        
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        _CRTALLOCATOR
+        inline void* __cdecl HReAllocAndZero(_Pre_maybenull_ _Post_invalid_ void* _Block, _In_ uint_t _Size)
+        {
+            return _recalloc(_Block, 1, _Size);
+        }
 
-		inline void* __cdecl HReAllocAndZero(void* p, uint_t s)
-		{
-			return _recalloc(p, 1, s);
-		}
+        inline void __cdecl HFree(_Pre_maybenull_ _Post_invalid_ void* _Block)
+        {
+            free(_Block);
+        }
 
-		inline void __cdecl HFree(void* p)
-		{
-			free(p);
-		}
+        template<typename T>
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        _CRTALLOCATOR
+        inline T* HNew()
+        {
+            T* _p = (T*)HAlloc(sizeof(T));
+            if (_p)
+                new (_p) T;
 
-		template <typename T> inline T* HNew()
-		{
-			T* p = (T*)HAlloc(sizeof(T));
-			if (p)
-				new(p) T;
+            return _p;
+        }
 
-			return p;
-		}
+        template<typename T>
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        _CRTALLOCATOR
+        inline T* __cdecl HNewAndZero()
+        {
+            T* _p = (T*)HAllocAndZero(sizeof(T));
+            if (_p)
+                new (_p) T;
 
-		template <typename T> inline T* HNewAndZero()
-		{
-			T* p = (T*)HAllocAndZero(sizeof(T));
-			if (p)
-				new(p) T;
+            return _p;
+        }
 
-			return p;
-		}
+        template<typename T>
+        inline void __cdecl HDelete(_Pre_maybenull_ _Post_invalid_ T* _p)
+        {
+            if (_p)
+            {
+                _p->~T();
+                HFree(_p);
+            }
+        }
 
-		template <typename T> inline void HDelete(T* p)
-		{
-			p->~T();
-			HFree(p);
-		}
+        template<class _Ty>
+        class allocator : public std::allocator<_Ty>
+        {
+        public:
+            _Ty* __cdecl allocate(const uint_t _Count)
+            {
+                return HAlloc(_Count * sizeof(_Ty));
+            }
 
-		template <class _Ty>
-		class allocator : public std::allocator<_Ty>
-		{
-		public:
-			_Ty* allocate(const uint_t _Count)
-			{
-				return HAlloc(_Count * sizeof(_Ty));
-			}
+            void __cdecl deallocate(_Ty* const _Ptr, const uint_t _Count)
+            {
+                HFree(_Ptr);
+            }
+        };
 
-			void deallocate(_Ty* const _Ptr, const uint_t _Count)
-			{
-				HFree(_Ptr);
-			}
-		};
-
-	}
-}
+    } // namespace MegaUI
+} // namespace YY

@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#define __MEGA_UI_PACKING 4
+
 namespace YY
 {
     namespace MegaUI

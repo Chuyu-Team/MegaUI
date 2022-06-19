@@ -4,6 +4,8 @@
 #include "MegaUITypeInt.h"
 #include "alloc.h"
 
+#pragma pack(push, __MEGA_UI_PACKING)
+
 namespace YY
 {
 	namespace MegaUI
@@ -173,3 +175,5 @@ namespace YY
 
 	}
 }
+
+#pragma pack(pop)

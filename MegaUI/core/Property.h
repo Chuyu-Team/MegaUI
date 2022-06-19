@@ -4,8 +4,7 @@
 
 #include "..\base\MegaUITypeInt.h"
 
-#pragma pack(push)
-#pragma pack()
+#pragma pack(push, __MEGA_UI_PACKING)
 
 namespace YY
 {

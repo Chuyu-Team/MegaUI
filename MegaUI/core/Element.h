@@ -9,8 +9,7 @@
 #define LP_Absolute     -2
 #define LP_Auto         -1
 
-#pragma pack(push)
-#pragma pack()
+#pragma pack(push, __MEGA_UI_PACKING)
 
 namespace YY
 {
@@ -25,7 +24,7 @@ namespace YY
 	            using ClassInfoType = _CLASS_INFO_TYPE;                                                     \
 				using BaseElement =_BASE_CLASS;                                                             \
                 constexpr static uint32_t fDefaultCreate = _DEFAULT_CREATE_FLAGS;                           \
-				constexpr static raw_const_astring_t pszClassInfoName = # _CLASS_NAME;                      \
+				constexpr static raw_const_astring_t szClassName = # _CLASS_NAME;                           \
 				constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT);   \
                                                                                                             \
 				ClassInfoType* pClassInfoPtr;                                                               \
@@ -41,10 +40,10 @@ namespace YY
 				};                                                                                          \
 			};                                                                                              \
                                                                                                             \
-			static StaticClassInfo ClassInfoData;                                                           \
+			static StaticClassInfo g_ClassInfoData;                                                         \
 		public:                                                                                             \
-			virtual IClassInfo* __fastcall GetClassInfo();                                                  \
-			static IClassInfo* __fastcall GetStaticClassInfo();                                             \
+			virtual IClassInfo* __fastcall GetElementClassInfo();                                           \
+			static IClassInfo* __fastcall GetStaticElementClassInfo();                                      \
 			static HRESULT __fastcall Register();                                                           \
 			static HRESULT __fastcall UnRegister();
 
@@ -52,7 +51,7 @@ namespace YY
 #define _APPLY_MEGA_UI_STATIC_CALSS_INFO(_CLASS_NAME, _PROPERTY_TABLE)   \
 		_PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST);        \
                                                                          \
-		_CLASS_NAME::StaticClassInfo _CLASS_NAME::ClassInfoData =        \
+		_CLASS_NAME::StaticClassInfo _CLASS_NAME::g_ClassInfoData =      \
 		{                                                                \
 			nullptr,                                                     \
 			{                                                            \
@@ -61,13 +60,13 @@ namespace YY
 				}                                                        \
 			}                                                            \
 		};                                                               \
-		IClassInfo* __fastcall _CLASS_NAME::GetClassInfo()               \
+		IClassInfo* __fastcall _CLASS_NAME::GetElementClassInfo()        \
 		{                                                                \
-			return ClassInfoData.pClassInfoPtr;                          \
+			return g_ClassInfoData.pClassInfoPtr;                        \
 		}                                                                \
-		IClassInfo* __fastcall _CLASS_NAME::GetStaticClassInfo()         \
+		IClassInfo* __fastcall _CLASS_NAME::GetStaticElementClassInfo()  \
 		{                                                                \
-			return ClassInfoData.pClassInfoPtr;                          \
+			return g_ClassInfoData.pClassInfoPtr;                        \
 		}                                                                \
 		HRESULT __fastcall _CLASS_NAME::Register()                       \
 		{                                                                \
@@ -75,9 +74,9 @@ namespace YY
 		}                                                                \
 		HRESULT __fastcall _CLASS_NAME::UnRegister()                     \
 		{                                                                \
-			if (!ClassInfoData.pClassInfoPtr)                            \
+			if (!g_ClassInfoData.pClassInfoPtr)                          \
 				return S_FALSE;                                          \
-			return ClassInfoData.pClassInfoPtr->UnRegister();            \
+			return g_ClassInfoData.pClassInfoPtr->UnRegister();          \
 		}
 
 

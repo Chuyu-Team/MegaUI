@@ -37,118 +37,111 @@ namespace YY
 
 
 
-        HRESULT __fastcall IClassInfo::_RegisterClass(bool bExplicitRegister)
+        HRESULT __fastcall IClassInfo::RegisterClassInternal(bool _bExplicitRegister)
         {
-            auto szClassName = GetClassName();
-
-
-            std::pair<RegisterClassInfoHashMap::iterator, bool> InsertIter;
+            std::pair<RegisterClassInfoHashMap::iterator, bool> _itInsert;
 
             try
             {
-                InsertIter = g_ClassMap.insert(std::make_pair(szClassName, RegisterClassInfo{ this }));
+                _itInsert = g_ClassMap.insert(std::make_pair(GetName(), RegisterClassInfo{this}));
             }
             catch (const std::exception&)
             {
                 return E_OUTOFMEMORY;
             }
 
-            auto& RegisterInfo = InsertIter.first->second;
+            auto& _RegisterInfo = _itInsert.first->second;
 
-            if (!InsertIter.second)
+            if (!_itInsert.second)
             {
                 // Class name相同，但是不是一个 ClassInfo，这种情况我们应该返回错误
-                if (RegisterInfo.pClassInfo != this)
+                if (_RegisterInfo.pClassInfo != this)
                     return E_ABORT;
             }
 
-            if (bExplicitRegister)
+            if (_bExplicitRegister)
             {
-                ++RegisterInfo.uRef;
+                ++_RegisterInfo.uRef;
             }
 
             return S_OK;
         }
         
-        HRESULT __fastcall IClassInfo::_UnregisterClass(bool bExplicitRegister)
+        HRESULT __fastcall IClassInfo::UnregisterClassInternal(bool _bExplicitRegister)
         {
-            auto szClassName = GetClassName();
-            if (!szClassName)
-                return E_UNEXPECTED;
+            auto _it = g_ClassMap.find(GetName());
 
-            auto IterItem = g_ClassMap.find(szClassName);
-
-            if (IterItem == g_ClassMap.end())
+            if (_it == g_ClassMap.end())
                 return S_FALSE;
 
-            auto& RegisterInfo = IterItem->second;
+            auto& _RegisterInfo = _it->second;
 
-            if (bExplicitRegister)
+            if (_bExplicitRegister)
             {
-                if(RegisterInfo.uRef == 0)
+                if (_RegisterInfo.uRef == 0)
                     return S_FALSE;
 
-                --RegisterInfo.uRef;
+                --_RegisterInfo.uRef;
             }
             else
             {
-                g_ClassMap.erase(IterItem);
+                g_ClassMap.erase(_it);
             }
 
             return S_OK;
         }
         
-        IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_astring_t pszClassName)
+        IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_astring_t _szClassName)
         {
-            if (!pszClassName)
+            if (!_szClassName)
                 return nullptr;
 
-            auto iter = g_ClassMap.find(pszClassName);
-            if(iter == g_ClassMap.end())
+            auto _it = g_ClassMap.find(_szClassName);
+            if (_it == g_ClassMap.end())
                 return nullptr;
 
-            return iter->second.pClassInfo;
+            return _it->second.pClassInfo;
         }
 
         HRESULT __fastcall UnRegisterAllControls()
         {
-            DynamicArray<RegisterClassInfo> vecTopRegisterClassInfo;
-            auto hr = vecTopRegisterClassInfo.Reserve(g_ClassMap.size());
-            if (FAILED(hr))
-                return hr;
+            DynamicArray<RegisterClassInfo> _vecTopRegisterClassInfo;
+            auto _hr = _vecTopRegisterClassInfo.Reserve(g_ClassMap.size());
+            if (FAILED(_hr))
+                return _hr;
 
 
-            for(auto& Info : g_ClassMap)
+            for(auto& _Info : g_ClassMap)
             {
-                if (Info.second.uRef)
+                if (_Info.second.uRef)
                 {
-                    hr = vecTopRegisterClassInfo.Add(Info.second);
+                    _hr = _vecTopRegisterClassInfo.Add(_Info.second);
 
-                    if (FAILED(hr))
-                        return hr;
+                    if (FAILED(_hr))
+                        return _hr;
                 }
             }
 
-            for (auto& Info : vecTopRegisterClassInfo)
+            for (auto& _Info : _vecTopRegisterClassInfo)
             {
-                for (; Info.uRef; --Info.uRef)
+                for (; _Info.uRef; --_Info.uRef)
                 {
-                    auto TmpHr = Info.pClassInfo->UnRegister();
-                    if (FAILED(TmpHr))
+                    auto _hrUnRegister = _Info.pClassInfo->UnRegister();
+                    if (FAILED(_hrUnRegister))
                     {
-                        hr = TmpHr;
+                        _hr = _hrUnRegister;
                         break;
                     }
                 }
             }
 
             // 根据预期，Map应该是空的
-            if (SUCCEEDED(hr) && g_ClassMap.empty() == false)
+            if (SUCCEEDED(_hr) && g_ClassMap.empty() == false)
             {
-                hr = E_FAIL;
+                _hr = E_FAIL;
             }
 
-            return hr;
+            return _hr;
         }
     }
 }

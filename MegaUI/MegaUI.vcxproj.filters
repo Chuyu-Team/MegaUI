@@ -54,7 +54,7 @@
     <ClInclude Include="core\DeferCycle.h">
       <Filter>UI\core</Filter>
     </ClInclude>
-    <ClInclude Include="base\String.h">
+    <ClInclude Include="base\StringBase.h">
       <Filter>UI\base</Filter>
     </ClInclude>
     <ClInclude Include="base\Interlocked.h">
@@ -67,6 +67,12 @@
       <Filter>UI\base</Filter>
     </ClInclude>
     <ClInclude Include="base\StringView.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\StringTransform.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\String.h">
       <Filter>UI\base</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,7 +92,7 @@
     <ClCompile Include="core\ClassInfo.cpp">
       <Filter>UI\core</Filter>
     </ClCompile>
-    <ClCompile Include="base\String.cpp">
+    <ClCompile Include="base\StringTransform.cpp">
       <Filter>UI\base</Filter>
     </ClCompile>
   </ItemGroup>

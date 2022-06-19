@@ -23,7 +23,7 @@ namespace YY
 				eIndicies = (PropertyIndicies)(Prop.fFlags & PF_TypeBits);
 
 
-			const auto iIndex = GetClassInfo()->GetPropertyInfoIndex(Prop);
+			const auto iIndex = GetElementClassInfo()->GetPropertyInfoIndex(Prop);
 			if (iIndex < 0)
 				return Value::GetUnavailable();
 
@@ -123,7 +123,7 @@ namespace YY
 			if (Prop.fFlags & PF_ReadOnly)
 				return E_NOTIMPL;
 
-			const auto iIndex = GetClassInfo()->GetPropertyInfoIndex(Prop);
+			const auto iIndex = GetElementClassInfo()->GetPropertyInfoIndex(Prop);
 			if (iIndex < 0)
 				return E_NOT_SET;
 

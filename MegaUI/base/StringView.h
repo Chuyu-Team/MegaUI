@@ -7,53 +7,55 @@
 #include "MegaUITypeInt.h"
 #include "Encoding.h"
 
+#pragma pack(push, __MEGA_UI_PACKING)
+
 namespace YY
 {
 	namespace MegaUI
 	{
-		__forceinline constexpr uint_t __fastcall GetStringLength(const achar_t* szString)
+		__forceinline constexpr uint_t __fastcall GetStringLength(const achar_t* _szSrc)
 		{
-			return szString ? strlen(szString) : 0;
+            return _szSrc ? strlen(_szSrc) : 0;
 		}
 
-		__forceinline constexpr uint_t __fastcall GetStringLength(const u8char_t* szString)
+		__forceinline constexpr uint_t __fastcall GetStringLength(const u8char_t* _szSrc)
 		{
-			return szString ? strlen((const char*)szString) : 0;
+            return _szSrc ? strlen((const char*)_szSrc) : 0;
 		}
 
-		__forceinline constexpr uint_t __fastcall GetStringLength(const u16char_t* szString)
+		__forceinline constexpr uint_t __fastcall GetStringLength(const u16char_t* _szSrc)
 		{
-			return szString ? wcslen(szString) : 0;
+            return _szSrc ? wcslen(_szSrc) : 0;
 		}
 
-		__forceinline constexpr uint_t __fastcall GetStringLength(const u32char_t* szString)
+		__forceinline constexpr uint_t __fastcall GetStringLength(const u32char_t* _szSrc)
 		{
-			if (!szString)
+            if (!_szSrc)
 				return 0;
-			auto pScan = szString;
-			for (; *pScan; ++pScan);
+            auto _pScan = _szSrc;
+			for (; *_pScan; ++_pScan);
 
-			return pScan - szString;
+			return _pScan - _szSrc;
 		}
 
-		__forceinline constexpr bool __fastcall IsEmptyString(const achar_t* szString)
+		__forceinline constexpr bool __fastcall IsEmptyString(const achar_t* _szSrc)
 		{
-			return szString == nullptr || szString[0] == achar_t('\0');
+            return _szSrc == nullptr || _szSrc[0] == achar_t('\0');
 		}
 
-		__forceinline constexpr bool __fastcall IsEmptyString(const u8char_t* szString)
+		__forceinline constexpr bool __fastcall IsEmptyString(const u8char_t* _szSrc)
 		{
-			return szString == nullptr || szString[0] == u8char_t('\0');
+            return _szSrc == nullptr || _szSrc[0] == u8char_t('\0');
 		}
 
-		__forceinline constexpr bool __fastcall IsEmptyString(const u16char_t* szString)
+		__forceinline constexpr bool __fastcall IsEmptyString(const u16char_t* _szSrc)
 		{
-			return szString == nullptr || szString[0] == u16char_t('\0');
+            return _szSrc == nullptr || _szSrc[0] == u16char_t('\0');
 		}
 
-		__forceinline constexpr bool __fastcall IsEmptyString(const u32char_t* szString)
+		__forceinline constexpr bool __fastcall IsEmptyString(const u32char_t* _szSrc)
 		{
-			return szString == nullptr || szString[0] == u32char_t('\0');
+            return _szSrc == nullptr || _szSrc[0] == u32char_t('\0');
 		}
 
         __forceinline auto __cdecl GetStringFormatLength(
@@ -122,31 +124,31 @@ namespace YY
 		private:
 			constexpr static Encoding eEncoding = _eEncoding;
 
-			_Field_z_ const char_t* _szString;
-			uint_t _cchString;
+			const char_t* szString;
+			uint_t cchString;
 		public:
 			StringView()
-				: _szString(nullptr)
-				, _cchString(0)
+                : szString(nullptr)
+				, cchString(0)
 			{
 			}
 
-			StringView(_In_reads_opt_(cchSrc) const char_t* szSrc, _In_ uint_t cchSrc)
-				: _szString(szSrc)
-				, _cchString(cchSrc)
+			StringView(_In_reads_opt_(cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+                : szString(_szSrc)
+                , cchString(_szSrc ? _cchSrc : 0)
 			{
 			}
 
-			StringView(_In_opt_z_ const char_t* szSrc)
-				: _szString(szSrc)
-				, _cchString(GetStringLength(szSrc))
+			StringView(_In_opt_z_ const char_t* _szSrc)
+				: szString(_szSrc)
+				, cchString(GetStringLength(_szSrc))
 			{
 			}
 
-			template<uint_t ArrayCount>
-			StringView(const char_t (&szSrc)[ArrayCount])
-				: _szString(szSrc)
-				, _cchString(ArrayCount - 1)
+			template<uint_t _uArrayCount>
+            StringView(const char_t (&_szSrc)[_uArrayCount])
+                : szString(_szSrc)
+                , cchString(_uArrayCount - 1)
 			{
 			}
 
@@ -157,27 +159,27 @@ namespace YY
 
 			__forceinline uint_t __fastcall GetSize() const
 			{
-				return _cchString;
+				return cchString;
 			}
 
-			__forceinline _Ret_maybenull_z_ const char_t* __fastcall GetConstString() const
+			__forceinline _Ret_maybenull_ const char_t* __fastcall GetConstString() const
 			{
-				return _szString;
+				return szString;
 			}
 
-			__forceinline char_t __fastcall operator[](_In_ uint_t uIndex) const
+			__forceinline char_t __fastcall operator[](_In_ uint_t _uIndex) const
 			{
-				_ASSERTE(uIndex < GetSize());
+				_ASSERTE(_uIndex < GetSize());
 
-				return _szString[uIndex];
+				return szString[_uIndex];
 			}
 
-			__forceinline _Ret_maybenull_z_ const char_t* __fastcall begin() const
+			__forceinline const char_t* __fastcall begin() const
 			{
 				return this->GetConstString();
 			}
 
-			__forceinline _Ret_maybenull_z_ const char_t* __fastcall end() const
+			__forceinline const char_t* __fastcall end() const
 			{
 				return this->GetConstString() + this->GetSize();
 			}
@@ -267,3 +269,5 @@ namespace YY
 		typedef StringView<u32char_t, Encoding::UTF32> u32StringView;
 	}
 }
+
+#pragma pack(pop)

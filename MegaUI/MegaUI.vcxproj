@@ -161,6 +161,8 @@
     <ClInclude Include="base\Interlocked.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />
     <ClInclude Include="base\String.h" />
+    <ClInclude Include="base\StringBase.h" />
+    <ClInclude Include="base\StringTransform.h" />
     <ClInclude Include="base\StringView.h" />
     <ClInclude Include="core\ClassInfo.h" />
     <ClInclude Include="core\DeferCycle.h" />
@@ -171,7 +173,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base\String.cpp" />
+    <ClCompile Include="base\StringTransform.cpp" />
     <ClCompile Include="core\ClassInfo.cpp" />
     <ClCompile Include="core\Element.cpp" />
     <ClCompile Include="core\value.cpp" />
