@@ -408,7 +408,7 @@ namespace YY
             HRESULT __fastcall SetString(const aStringView& _szSrc)
             {
                 if (!IsANSI())
-                    _ClearAndUpdateEncoding(Encoding::ANSI_DEFAULT);
+                    _ClearAndUpdateEncoding(Encoding::ANSI);
 
                 auto _hr = szANSI.SetString(_szSrc);
                 if (FAILED(_hr))
@@ -419,7 +419,7 @@ namespace YY
             HRESULT __fastcall SetString(const aString& _szSrc)
             {
                 if (!IsANSI())
-                    _ClearAndUpdateEncoding(Encoding::ANSI_DEFAULT);
+                    _ClearAndUpdateEncoding(Encoding::ANSI);
 
                 return szANSI.SetString(_szSrc);
             }
@@ -777,7 +777,7 @@ namespace YY
                 case Encoding::UTF32BE:
                     szUTF32BE.Clear();
                     break;
-                case YY::MegaUI::Encoding::ANSI_DEFAULT:
+                case Encoding::ANSI:
                     szANSI.Clear();
                     break;
                 default:

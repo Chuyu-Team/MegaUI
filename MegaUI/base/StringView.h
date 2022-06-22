@@ -122,10 +122,9 @@ namespace YY
 		public:
 			using char_t = _char_t;
 		private:
-			constexpr static Encoding eEncoding = _eEncoding;
-
 			const char_t* szString;
 			uint_t cchString;
+            constexpr static Encoding eEncoding = _eEncoding;
 		public:
 			StringView()
                 : szString(nullptr)
@@ -133,7 +132,7 @@ namespace YY
 			{
 			}
 
-			StringView(_In_reads_opt_(cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+			StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
                 : szString(_szSrc)
                 , cchString(_szSrc ? _cchSrc : 0)
 			{
@@ -186,40 +185,40 @@ namespace YY
 		};
 
 		template<>
-		class StringView<achar_t, Encoding::ANSI_DEFAULT>
+        class StringView<achar_t, Encoding::ANSI>
 		{
 		public:
 			using char_t = achar_t;
 		private:
-			_Field_z_ const char_t* _szString;
-			uint_t _cchString;
+			const char_t* szString;
+			uint_t cchString;
 			Encoding eEncoding;
 		public:
 			StringView()
-				: _szString(nullptr)
-				, _cchString(0)
-				, eEncoding(Encoding::ANSI_DEFAULT)
+				: szString(nullptr)
+				, cchString(0)
+                , eEncoding(Encoding::ANSI)
 			{
 			}
 
-			StringView(_In_reads_opt_(cchSrc) const char_t* szSrc, _In_ uint_t cchSrc, _In_ Encoding _eEncoding = Encoding::ANSI_DEFAULT)
-				: _szString(szSrc)
-				, _cchString(cchSrc)
+			StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc, _In_ Encoding _eEncoding = Encoding::ANSI)
+				: szString(_szSrc)
+                , cchString(_cchSrc)
 				, eEncoding(_eEncoding)
 			{
 			}
 
-			StringView(_In_opt_z_ const char_t* szSrc, _In_ Encoding _eEncoding = Encoding::ANSI_DEFAULT)
-				: _szString(szSrc)
-				, _cchString(GetStringLength(szSrc))
+			StringView(_In_opt_z_ const char_t* _szSrc, _In_ Encoding _eEncoding = Encoding::ANSI)
+				: szString(_szSrc)
+				, cchString(GetStringLength(_szSrc))
 				, eEncoding(_eEncoding)
 			{
 			}
 
-			template<uint_t ArrayCount>
-			StringView(const char_t (&szSrc)[ArrayCount], _In_ Encoding _eEncoding = Encoding::ANSI_DEFAULT)
-				: _szString(szSrc)
-				, _cchString(ArrayCount - 1)
+			template<uint_t _uArrayCount>
+            StringView(const char_t (&_szSrc)[_uArrayCount], _In_ Encoding _eEncoding = Encoding::ANSI)
+				: szString(_szSrc)
+                , cchString(_uArrayCount - 1)
 				, eEncoding(_eEncoding)
 			{
 			}
@@ -231,34 +230,34 @@ namespace YY
 
 			__forceinline uint_t __fastcall GetSize() const
 			{
-				return _cchString;
+				return cchString;
 			}
 
 			__forceinline _Ret_maybenull_z_ const char_t* __fastcall GetConstString() const
 			{
-				return _szString;
+				return szString;
 			}
 
-			__forceinline char_t __fastcall operator[](_In_ uint_t uIndex) const
+			__forceinline char_t __fastcall operator[](_In_ uint_t _uIndex) const
 			{
-				_ASSERTE(uIndex < GetSize());
+                _ASSERTE(_uIndex < GetSize());
 
-				return _szString[uIndex];
+				return szString[_uIndex];
 			}
 
-			__forceinline  _Ret_maybenull_z_ const char_t* __fastcall begin() const
+			__forceinline const char_t* __fastcall begin() const
 			{
 				return this->GetConstString();
 			}
 
-			__forceinline  _Ret_maybenull_z_ const char_t* __fastcall end() const
+			__forceinline const char_t* __fastcall end() const
 			{
 				return this->GetConstString() + this->GetSize();
 			}
 		};
 
 
-		typedef StringView<achar_t, Encoding::ANSI_DEFAULT> aStringView;
+		typedef StringView<achar_t, Encoding::ANSI> aStringView;
 		typedef StringView<u8char_t, Encoding::UTF8> u8StringView;
 		typedef StringView<u16char_t, Encoding::UTF16LE> u16StringLEView;
 		typedef StringView<u16char_t, Encoding::UTF16BE> u16StringBEView;

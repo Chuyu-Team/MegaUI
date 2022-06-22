@@ -471,7 +471,7 @@ namespace YY
 
             Encoding __fastcall GetEncoding() const
             {
-                return eEncoding != Encoding::ANSI_DEFAULT ? eEncoding : Encoding(GetInternalStringData()->eEncoding);
+                return eEncoding != Encoding::ANSI ? eEncoding : Encoding(GetInternalStringData()->eEncoding);
             }
 
             HRESULT __fastcall SetANSIEncoding(_In_ Encoding _eNewEncoding)
@@ -479,7 +479,7 @@ namespace YY
                 if (GetEncoding() == _eNewEncoding)
                     return S_OK;
 
-                if (eEncoding != Encoding::ANSI_DEFAULT)
+                if (eEncoding != Encoding::ANSI)
                 {
                     // Unicode系列无法设置 ANSI代码页
                     return E_NOINTERFACE;
@@ -757,7 +757,7 @@ namespace YY
             }
         };
 
-        typedef StringBase<achar_t, Encoding::ANSI_DEFAULT> aString;
+        typedef StringBase<achar_t, Encoding::ANSI> aString;
         typedef StringBase<u8char_t, Encoding::UTF8> u8String;
         typedef StringBase<u16char_t, Encoding::UTF16LE> u16StringLE;
         typedef StringBase<u16char_t, Encoding::UTF16BE> u16StringBE;

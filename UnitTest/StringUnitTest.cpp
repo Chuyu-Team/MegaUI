@@ -27,7 +27,7 @@ namespace UnitTest
 
 				YY::MegaUI::String Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
-				Assert::IsTrue(Tmp2.GetEncoding() == YY::MegaUI::Encoding::ANSI_DEFAULT);
+				Assert::IsTrue(Tmp2.GetEncoding() == YY::MegaUI::Encoding::ANSI);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 #undef _TEST_TEXT
 			}

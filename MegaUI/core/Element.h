@@ -42,8 +42,8 @@ namespace YY
                                                                                                             \
 			static StaticClassInfo g_ClassInfoData;                                                         \
 		public:                                                                                             \
-			virtual IClassInfo* __fastcall GetElementClassInfo();                                           \
-			static IClassInfo* __fastcall GetStaticElementClassInfo();                                      \
+			virtual IClassInfo* __fastcall GetControlClassInfo();                                           \
+			static IClassInfo* __fastcall GetStaticControlClassInfo();                                      \
 			static HRESULT __fastcall Register();                                                           \
 			static HRESULT __fastcall UnRegister();
 
@@ -60,11 +60,11 @@ namespace YY
 				}                                                        \
 			}                                                            \
 		};                                                               \
-		IClassInfo* __fastcall _CLASS_NAME::GetElementClassInfo()        \
+		IClassInfo* __fastcall _CLASS_NAME::GetControlClassInfo()        \
 		{                                                                \
 			return g_ClassInfoData.pClassInfoPtr;                        \
 		}                                                                \
-		IClassInfo* __fastcall _CLASS_NAME::GetStaticElementClassInfo()  \
+		IClassInfo* __fastcall _CLASS_NAME::GetStaticControlClassInfo()  \
 		{                                                                \
 			return g_ClassInfoData.pClassInfoPtr;                        \
 		}                                                                \
@@ -98,8 +98,8 @@ namespace YY
 
 	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                  ChangedFun                        pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
-	_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::_OnParentPropertyChanged, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, _peLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
-	_APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                          nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, _dSpecLayoutPos), 0, 0),  ValueType::int32_t)
+	_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
+	_APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                          nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0, 0), ValueType::int32_t)
 
 
 		template<typename _Class>
@@ -111,39 +111,52 @@ namespace YY
 			_APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 		private:
 			// 所有 Local 值的
-			DynamicArray<Value*> _LocalPropValue;
+			DynamicArray<Value*> LocalPropValue;
 
 			// Local Parent
-			Element* _peLocParent;
+			Element* pLocParent;
 
 			// Cached layout position
-			int32_t _dSpecLayoutPos;
+			int32_t iSpecLayoutPos;
 		public:
-			static HRESULT WINAPI Create(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike, Element** ppOut);
+            static HRESULT WINAPI Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
-            HRESULT __fastcall Initialize(uint32_t fCreate, Element* pTopLevel, intptr_t* pCooike);
+            HRESULT __fastcall Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
+			/// <summary>
+			/// 根据属性获取Value
+			/// </summary>
+			/// <param name="_Prop"></param>
+			/// <param name="_eIndicies"></param>
+			/// <param name="_bUpdateCache">如果为true，那么重新获取值并刷新缓存，如果为 false则直接从缓存返回数据。</param>
+			/// <returns>如果返回，则返回 Unavailable。
+			/// 如果未设置，则返回 Unset</returns>
+			_Ret_notnull_ Value* __fastcall GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ bool _bUpdateCache);
+			
+            /// <summary>
+            /// 修改 Local Value
+            /// </summary>
+            /// <param name="_Prop">元数据</param>
+            /// <param name="_eIndicies">只能为 PI_Local</param>
+            /// <param name="_pValue">需要设置的新值</param>
+            /// <returns></returns>
+            HRESULT __fastcall SetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pValue);
 
-			Value* __fastcall GetValue(const PropertyInfo& Prop, PropertyIndicies eIndicies, bool bUpdateCache);
+			_Ret_maybenull_ Element* __fastcall GetParent();
 
-			//只能修改 Local Value
-			HRESULT __fastcall SetValue(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pValue);
-
-			Element* GetParent();
-
-			virtual void __fastcall OnPropertyChanged(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);
+			virtual void __fastcall OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
 
 			DeferCycle* __fastcall GetDeferObject();
-			void __fastcall StartDefer(intptr_t* pCooike);
-			void __fastcall EndDefer(intptr_t Cookie);
+            void __fastcall StartDefer(_In_ intptr_t* _pCooike);
+            void __fastcall EndDefer(_In_ intptr_t _Cookie);
 		protected:
 			// Value Update
-			HRESULT __fastcall _PreSourceChange(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);
-			HRESULT __fastcall _PostSourceChange();
+            HRESULT __fastcall PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
+			HRESULT __fastcall PostSourceChange();
 
-			PropertyCustomCacheResult __fastcall _PropertyGeneralCache(PropertyCustomCacheActionMode eMode, PropertyCustomCacheActionInfo* pInfo);
+			PropertyCustomCacheResult __fastcall PropertyGeneralCache(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCacheActionInfo* _pInfo);
 
-			void __fastcall _OnParentPropertyChanged(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);
+			void __fastcall OnParentPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
 		};
 	}
 }

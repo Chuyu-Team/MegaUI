@@ -31,6 +31,7 @@
 | 字符               | ch        | `char chDriveLetter;` | char，wchar_t 统一。
 | 带符号整形         | i         | `int64_t iSize;`      | int8_t、int16_t、int32_t均适用，不考虑长度。
 | 无符号整形         | u         | `uint64_t uSize;`     | uint8_t、uint16_t、uint32_t均适用，不考虑长度。
+| Flags              | f         | `uint32_t fMark;`     | 
 | Buffer变量的字节数 | cb        | `uint32_t cbBuffer;`  | 必须为无符号数，不考虑长度。
 | Buffer变量元素个数 | c         | `uint32_t cBuffer;`   | 必须为无符号数，不考虑长度。
 | Buffer变量字符数   | cch       | `uint32_t cchBuffer;` | 与`c` 类似，只是更加明确为字符数量。

@@ -35,10 +35,10 @@ BreakInheritanceList : BeforeComma
 # template后面不要有空格
 SpaceAfterTemplateKeyword : false
 
-# Cpp11BracedListStyle : false
+Cpp11BracedListStyle : true
 
 # AlignEscapedNewlines : DontAlign
-# SpaceBeforeCpp11BracedList : true
+SpaceBeforeCpp11BracedList : true
 
 # AllowAllParametersOfDeclarationOnNextLine : false
 SortUsingDeclarations : false
@@ -60,3 +60,8 @@ BraceWrapping:
     AfterClass  : true
     AfterStruct : true
     AfterEnum : true
+
+SpaceBeforeParens : ControlStatements
+
+SpaceBeforeCaseColon : false
+SpacesInContainerLiterals : true

@@ -116,8 +116,8 @@ namespace YY
 			SkipAll            = 0xFFFFFFFF,
 		};
 
-		typedef void (__fastcall Element::* FunTypeOnPropertyChanged)(const PropertyInfo& Prop, PropertyIndicies eIndicies, Value* pvOld, Value* pvNew);
-		typedef PropertyCustomCacheResult (__fastcall Element::* FunTypePropertyCustomCache)(PropertyCustomCacheActionMode eMode, PropertyCustomCacheActionInfo* pInfo);
+		typedef void (__fastcall Element::*FunTypeOnPropertyChanged)(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, Value* _pOldValue, Value* _pNewValue);
+        typedef PropertyCustomCacheResult (__fastcall Element::*FunTypePropertyCustomCache)(PropertyCustomCacheActionMode _eMode, PropertyCustomCacheActionInfo* _pInfo);
 
 		struct PropertyInfo
 		{

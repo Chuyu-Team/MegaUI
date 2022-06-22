@@ -7,7 +7,7 @@ namespace YY
         enum class Encoding
         {
             // 使用默认代码页的ANSI，具体取决与运行环境
-            ANSI_DEFAULT = 0,
+            ANSI = 0,
 
             GB2312 = 936,
             // 小端编码方式的 UTF16
@@ -31,9 +31,9 @@ namespace YY
             UTF8 = 65001,
         };
 
-        __inline bool __fastcall IsANSI(Encoding eEncoding)
+        __inline bool __fastcall IsANSI(Encoding _eEncoding)
         {
-            switch (eEncoding)
+            switch (_eEncoding)
             {
             case Encoding::UTF8:
             case Encoding::UTF16LE:
