@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "value.h"
 
+#pragma warning(disable : 28251)
+
 namespace YY
 {
     namespace MegaUI
@@ -62,7 +64,15 @@ namespace YY
 
         Value* __fastcall Value::GetStringNull()
         {
-            _RETUNR_CONST_VALUE(ValueType::raw_ustring, nullptr);
+            static const ConstValue<const uchar_t*> g_StringNull =
+            {
+                (uint_t)ValueType::uString,
+                1,
+                uint_t(-1),
+                uString::StringData::GetEmtpyStringData()->GetStringBuffer(),
+            };
+
+            return (Value*)&g_StringNull;
         }
 
         Value* __fastcall Value::GetUnavailable()

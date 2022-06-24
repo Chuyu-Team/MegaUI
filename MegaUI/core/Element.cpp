@@ -4,6 +4,9 @@
 #include "value.h"
 #include "ClassInfo.h"
 
+#pragma warning(disable : 28251)
+#pragma warning(disable : 26812)
+
 namespace YY
 {
 	namespace MegaUI

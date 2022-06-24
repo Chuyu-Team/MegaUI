@@ -34,9 +34,9 @@ namespace YY
 
             virtual _Ret_maybenull_ const PropertyInfo* __fastcall EnumPropertyInfo(_In_ uint32_t _uIndex) = 0;
 
-            virtual _Success_(return >= 0) int32_t __fastcall GetPropertyInfoIndex(const PropertyInfo& _Prop) = 0;
+            virtual _Success_(return >= 0) int32_t __fastcall GetPropertyInfoIndex(_In_ const PropertyInfo& _Prop) = 0;
 
-            virtual bool __fastcall IsValidProperty(const PropertyInfo& _Prop) = 0;
+            virtual bool __fastcall IsValidProperty(_In_ const PropertyInfo& _Prop) = 0;
 
             virtual bool __fastcall IsSubclassOf(_In_ IClassInfo* _pClassInfo) = 0;
 

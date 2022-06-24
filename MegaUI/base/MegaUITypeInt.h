@@ -132,5 +132,5 @@ namespace YY
 
 
         typedef _Return_type_success_(return >= 0) long HRESULT;
-    }
-}
+    } // namespace MegaUI
+} // namespace YY

@@ -119,7 +119,7 @@ namespace YY
 			// Cached layout position
 			int32_t iSpecLayoutPos;
 		public:
-            static HRESULT WINAPI Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
+            static HRESULT __fastcall Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
             HRESULT __fastcall Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
@@ -146,7 +146,7 @@ namespace YY
 
 			virtual void __fastcall OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
 
-			DeferCycle* __fastcall GetDeferObject();
+			_Ret_maybenull_ DeferCycle* __fastcall GetDeferObject();
             void __fastcall StartDefer(_In_ intptr_t* _pCooike);
             void __fastcall EndDefer(_In_ intptr_t _Cookie);
 		protected:

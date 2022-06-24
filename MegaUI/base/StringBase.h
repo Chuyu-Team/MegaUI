@@ -573,7 +573,6 @@ namespace YY
                 return this->GetConstString() + this->GetSize();
             }
 
-        private:
             enum StringDataFlags
             {
                 // 缓冲区是独占的，阻止共享
@@ -675,7 +674,7 @@ namespace YY
                     return _pNewStringData;
                 }
 
-                static _Ret_notnull_ StringData* __fastcall GetEmtpyStringData()
+                constexpr static _Ret_notnull_ StringData* __fastcall GetEmtpyStringData()
                 {
                     struct StaticStringData
                     {
@@ -684,8 +683,8 @@ namespace YY
                     };
 
                     const static StaticStringData g_EmptyStringData =
-                    {
-                        {{0, uint16_t(_eEncoding), uint32_max}, 0, 0}
+                        {
+                            {{0, uint16_t(_eEncoding), uint32_max}, 0, 0}
                     };
                     return const_cast<StringData*>(&g_EmptyStringData.Base);
                 }
@@ -731,7 +730,8 @@ namespace YY
                     return uRef > 1;
                 }
             };
-
+            
+        private:
             _Ret_notnull_ StringData* __fastcall GetInternalStringData() const
             {
                 return reinterpret_cast<StringData*>(szString) - 1;
@@ -768,6 +768,9 @@ namespace YY
         typedef StringBase<u32char_t, Encoding::UTF32> u32String;
 
         typedef StringBase<wchar_t, Encoding::UTFW> wString;
+
+        // 默认最佳的Unicode编码字符串
+        typedef StringBase<uchar_t, DetaultEncoding<uchar_t>::eEncoding> uString;
 
     } // namespace MegaUI
 } // namespace YY

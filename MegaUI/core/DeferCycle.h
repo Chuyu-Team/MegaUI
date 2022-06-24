@@ -26,8 +26,8 @@ namespace YY
             Element* pElement;
             PropertyInfo* pProp;
             
-            Value* pvOld;
-            Value* pvNew;
+            Value* pOldValue;
+            Value* pNewValue;
             DepRecs dr;
             int32_t iPrevElRec;
         };
@@ -35,7 +35,7 @@ namespace YY
         // Group notifications: deferred until EndDefer and coalesced
         struct GCRecord
         {
-            Element* pe;
+            Element* pElement;
             uint32_t fGroups;
         };
 
@@ -68,14 +68,14 @@ namespace YY
 
             uint32_t __fastcall Release()
             {
-                const auto uRefNew = --uRef;
+                const auto _uRefNew = --uRef;
 
-                if (uRefNew == 0)
+                if (_uRefNew == 0)
                 {
                     HDelete(this);
                 }
 
-                return uRefNew;
+                return _uRefNew;
             }
         };
     }

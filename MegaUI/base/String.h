@@ -152,12 +152,12 @@ namespace YY
 
             Encoding __fastcall GetEncoding()
             {
-                return Encoding(_GetInternalStringData()->eEncoding);
+                return Encoding(GetInternalStringData()->eEncoding);
             }
 
             HRESULT __fastcall SetEncoding(Encoding _eEncoding)
             {
-                auto _pStringData = _GetInternalStringData();
+                auto _pStringData = GetInternalStringData();
                 const auto _eOldEncoding = Encoding(_pStringData->eEncoding);
 
                 if (_eOldEncoding == _eEncoding)
@@ -165,13 +165,13 @@ namespace YY
 
                 if (_pStringData->uSize == 0)
                 {
-                    _ClearAndUpdateEncoding(_eEncoding);
+                    ClearAndUpdateEncoding(_eEncoding);
 
                     if (_pStringData->IsShared() == false)
                     {
                         // 当数据独占时，我们直接更新 eEncoding 值即可。
-                        const auto OldCharSize = _GetCharSize(_eOldEncoding);
-                        const auto NewCharSize = _GetCharSize(_eEncoding);
+                        const auto OldCharSize = GetCharSize(_eOldEncoding);
+                        const auto NewCharSize = GetCharSize(_eEncoding);
 
                         if (OldCharSize != NewCharSize)
                         {
@@ -408,7 +408,7 @@ namespace YY
             HRESULT __fastcall SetString(const aStringView& _szSrc)
             {
                 if (!IsANSI())
-                    _ClearAndUpdateEncoding(Encoding::ANSI);
+                    ClearAndUpdateEncoding(Encoding::ANSI);
 
                 auto _hr = szANSI.SetString(_szSrc);
                 if (FAILED(_hr))
@@ -419,7 +419,7 @@ namespace YY
             HRESULT __fastcall SetString(const aString& _szSrc)
             {
                 if (!IsANSI())
-                    _ClearAndUpdateEncoding(Encoding::ANSI);
+                    ClearAndUpdateEncoding(Encoding::ANSI);
 
                 return szANSI.SetString(_szSrc);
             }
@@ -431,14 +431,14 @@ namespace YY
 
             HRESULT __fastcall SetString(const u8StringView& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF8);
+                ClearAndUpdateEncoding(Encoding::UTF8);
 
                 return szUTF8.SetString(_szSrc);
             }
 
             HRESULT __fastcall SetString(const u8String& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF8);
+                ClearAndUpdateEncoding(Encoding::UTF8);
 
                 return szUTF8.SetString(_szSrc);
             }
@@ -450,35 +450,35 @@ namespace YY
 
             HRESULT __fastcall SetString(_In_reads_opt_(_cchSrc) const char16_t* _szSrc, _In_ uint_t _cchSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF16LE);
+                ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16.SetString((u16char_t*)_szSrc, _cchSrc);
             }
 
             HRESULT __fastcall SetString(_In_opt_z_ const char16_t* _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF16LE);
+                ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16.SetString((u16char_t*)_szSrc);
             }
 
             HRESULT __fastcall SetString(const u16StringLEView& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF16LE);
+                ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16LE.SetString(_szSrc);
             }
 
             HRESULT __fastcall SetString(const u16StringBEView& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF16BE);
+                ClearAndUpdateEncoding(Encoding::UTF16BE);
 
                 return szUTF16BE.SetString(_szSrc);
             }
 
             HRESULT __fastcall SetString(const u16StringLE& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF16LE);
+                ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16LE.SetString(_szSrc);
             }
@@ -490,7 +490,7 @@ namespace YY
 
             HRESULT __fastcall SetString(const u16StringBE& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF16BE);
+                ClearAndUpdateEncoding(Encoding::UTF16BE);
 
                 return szUTF16BE.SetString(_szSrc);
             }
@@ -502,35 +502,35 @@ namespace YY
 
             HRESULT __fastcall SetString(_In_reads_opt_(_cchSrc) const char32_t* _szSrc, _In_ uint_t _cchSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF32LE);
+                ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32.SetString(_szSrc, _cchSrc);
             }
 
             HRESULT __fastcall SetString(_In_opt_z_ const char32_t* _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF32LE);
+                ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32.SetString(_szSrc);
             }
 
             HRESULT __fastcall SetString(const u32StringLEView& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF32LE);
+                ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32LE.SetString(_szSrc);
             }
 
             HRESULT __fastcall SetString(const u32StringBEView& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF32BE);
+                ClearAndUpdateEncoding(Encoding::UTF32BE);
 
                 return szUTF32BE.SetString(_szSrc);
             }
 
             HRESULT __fastcall SetString(const u32StringLE& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF32LE);
+                ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32LE.SetString(_szSrc);
             }
@@ -542,7 +542,7 @@ namespace YY
 
             HRESULT __fastcall SetString(const u32StringBE& _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTF32BE);
+                ClearAndUpdateEncoding(Encoding::UTF32BE);
 
                 return szUTF32BE.SetString(_szSrc);
             }
@@ -554,54 +554,55 @@ namespace YY
 
             HRESULT __fastcall SetString(_In_reads_opt_(_cchSrc) const wchar_t* _szSrc, _In_ uint_t _cchSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTFW);
+                ClearAndUpdateEncoding(Encoding::UTFW);
 
                 return szUTFW.SetString(_szSrc, _cchSrc);
             }
 
             HRESULT __fastcall SetString(_In_opt_z_ const wchar_t* _szSrc)
             {
-                _ClearAndUpdateEncoding(Encoding::UTFW);
+                ClearAndUpdateEncoding(Encoding::UTFW);
 
                 return szUTFW.SetString(_szSrc);
             }
 
             HRESULT __fastcall AppendString(const aStringView& _szSrc)
             {
-                return _AppendStringT(_szSrc);
+                return AppendStringT(_szSrc);
             }
 
             HRESULT __fastcall AppendString(const u8StringView& _szSrc)
             {
-                return _AppendStringT(_szSrc);
+                return AppendStringT(_szSrc);
             }
 
             HRESULT __fastcall AppendString(const u16StringLEView& _szSrc)
             {
-                return _AppendStringT(_szSrc);
+                return AppendStringT(_szSrc);
             }
 
             HRESULT __fastcall AppendString(const u16StringBEView& _szSrc)
             {
-                return _AppendStringT(_szSrc);
+                return AppendStringT(_szSrc);
             }
 
             HRESULT __fastcall AppendString(const u32StringLEView& _szSrc)
             {
-                return _AppendStringT(_szSrc);
+                return AppendStringT(_szSrc);
             }
 
             HRESULT __fastcall AppendString(const u32StringBEView& _szSrc)
             {
-                return _AppendStringT(_szSrc);
+                return AppendStringT(_szSrc);
             }
 
-            HRESULT __fastcall GetString(aString* _pszDst)
+            HRESULT __fastcall GetString(_Out_ aString* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
 
-                auto _eDstEncoding = _pszDst->GetEncoding();
+                #pragma warning(suppress : 6001)
+                const auto _eDstEncoding = _pszDst->GetEncoding();
                 _pszDst->Clear();
 
                 switch (GetEncoding())
@@ -626,7 +627,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall GetString(u8String* _pszDst)
+            HRESULT __fastcall GetString(_Out_ u8String* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -650,7 +651,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall GetString(u16StringLE* _pszDst)
+            HRESULT __fastcall GetString(_Out_ u16StringLE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -674,7 +675,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall GetString(u16StringBE* _pszDst)
+            HRESULT __fastcall GetString(_Out_ u16StringBE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -698,7 +699,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall GetString(u32StringLE* _pszDst)
+            HRESULT __fastcall GetString(_Out_ u32StringLE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -722,7 +723,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall GetString(u32StringBE* _pszDst)
+            HRESULT __fastcall GetString(_Out_ u32StringBE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -748,13 +749,12 @@ namespace YY
 
             uint_t __fastcall GetSize()
             {
-                // 长度大家都是一样的，所以随便返回一个即可
-                return _GetInternalStringData()->uSize;
+                return GetInternalStringData()->uSize;
             }
 
             void __fastcall Clear()
             {
-                auto _pStringData = szANSI.GetInternalStringData();
+                auto _pStringData = GetInternalStringData();
                 if (_pStringData->uSize == 0)
                     return;
 
@@ -788,14 +788,14 @@ namespace YY
             }
 
         private:
-            aString::StringData* __fastcall _GetInternalStringData()
+            aString::StringData* __fastcall GetInternalStringData()
             {
                 // 因为所有编码的字符串长度 以及 缓冲区大小格式都是一样的，
-                // 所以随便取一个 _GetInternalStringData 就可以了。
+                // 所以随便取一个 GetInternalStringData 就可以了。
                 return szANSI.GetInternalStringData();
             }
 
-            static constexpr uint32_t __fastcall _GetCharSize(Encoding eEncoding)
+            static constexpr uint32_t __fastcall GetCharSize(Encoding eEncoding)
             {
                 // 因为独占缓冲区，所以直接切换 Encoding 类型
                 switch (eEncoding)
@@ -816,9 +816,9 @@ namespace YY
                 return YY::MegaUI::IsANSI(GetEncoding());
             }
 
-            HRESULT __fastcall _ClearAndUpdateEncoding(Encoding _eEncoding)
+            HRESULT __fastcall ClearAndUpdateEncoding(Encoding _eEncoding)
             {
-                auto _pStringData = _GetInternalStringData();
+                auto _pStringData = GetInternalStringData();
                 auto _eOldEncoding = Encoding(_pStringData->eEncoding);
                 if (_eOldEncoding == _eEncoding)
                     return S_OK;
@@ -849,8 +849,8 @@ namespace YY
                 }
                 else
                 {
-                    const auto _uOldCharSize = _GetCharSize(_eOldEncoding);
-                    const auto _uNewCharSize = _GetCharSize(_eEncoding);
+                    const auto _uOldCharSize = GetCharSize(_eOldEncoding);
+                    const auto _uNewCharSize = GetCharSize(_eEncoding);
 
                     if (_uOldCharSize != _uNewCharSize)
                     {
@@ -865,7 +865,7 @@ namespace YY
             }
 
             template<class string_t>
-            __forceinline HRESULT __fastcall _AppendStringT(const string_t& _szSrc)
+            __forceinline HRESULT __fastcall AppendStringT(const string_t& _szSrc)
             {
                 if (_szSrc.GetSize() == 0)
                     return S_OK;

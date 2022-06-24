@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 
+#pragma warning(disable : 28251)
+
 namespace YY
 {
     namespace MegaUI

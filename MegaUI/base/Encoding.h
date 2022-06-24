@@ -31,6 +31,34 @@ namespace YY
             UTF8 = 65001,
         };
 
+        template<class T>
+        struct DetaultEncoding;
+
+        template<>
+        struct DetaultEncoding<achar_t>
+        {
+            static constexpr Encoding eEncoding = Encoding::ANSI;
+        };
+
+        template<>
+        struct DetaultEncoding<u8char_t>
+        {
+            static constexpr Encoding eEncoding = Encoding::UTF8;
+        };
+        
+        template<>
+        struct DetaultEncoding<u16char_t>
+        {
+            static constexpr Encoding eEncoding = Encoding::UTF16;
+        };
+
+        template<>
+        struct DetaultEncoding<u32char_t>
+        {
+            static constexpr Encoding eEncoding = Encoding::UTF32;
+        };
+
+
         __inline bool __fastcall IsANSI(Encoding _eEncoding)
         {
             switch (_eEncoding)

@@ -4,6 +4,8 @@
 
 #include <Windows.h>
 
+#pragma warning(disable : 28251)
+
 namespace YY
 {
     namespace MegaUI
@@ -22,7 +24,7 @@ namespace YY
         {
         public:
             template<typename StringA, typename StringB>
-            static HRESULT __fastcall TransformEndian(const StringA& _szSrc, _Inout_ StringB* _pszDst)
+            static HRESULT __fastcall TransformEndian(_In_ const StringA& _szSrc, _Inout_ StringB* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -53,7 +55,7 @@ namespace YY
             }
 
             template<typename StringA, typename StringB>
-            static HRESULT __fastcall TransformEndian(StringA&& _szSrc, _Inout_ StringB* _pszDst)
+            static HRESULT __fastcall TransformEndian(_In_ StringA&& _szSrc, _Inout_ StringB* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -68,7 +70,7 @@ namespace YY
                 if (_cchOldDst == 0)
                 {
                     // Dst初始状态为空，所以我们可以尝试使用move语义
-                    auto _szSrcBuffer = _szSrc.LockBuffer(_cchDst);
+                    auto _szSrcBuffer = _szSrc.LockBuffer(_cchSrc);
                     if (!_szSrcBuffer)
                         return E_OUTOFMEMORY;
 

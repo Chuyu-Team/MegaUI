@@ -6,149 +6,158 @@
 
 #include "..\base\MegaUITypeInt.h"
 #include "..\base\DynamicArray.h"
+#include "..\base\StringBase.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
 namespace YY
 {
-	namespace MegaUI
-	{
-		class Element;
-		typedef DynamicArray<Element*> ElementList;
+    namespace MegaUI
+    {
+        class Element;
+        typedef DynamicArray<Element*> ElementList;
 
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
-        _APPLY(int32_t,     int32_t,            _int32Value) \
-        _APPLY(boolean,     bool,               _boolValue)  \
-        _APPLY(raw_ustring, raw_const_ustring_t,_pszValue )  \
-        _APPLY(POINT,       POINT,              _ptVal    )  \
-        _APPLY(SIZE,        SIZE,               _sizeVal  )  \
-        _APPLY(RECT,        RECT,               _rectVal  )  \
-        _APPLY(Element,     Element*,           _peleValue)  \
-        _APPLY(ElementList, ElementList*,       _peListVal)  \
-        _APPLY(ATOM,        ATOM,               _atomVal  )  \
-        _APPLY(HCURSOR,     HCURSOR,            _cursorVal)
+        _APPLY(int32_t,     int32_t,             int32Value) \
+        _APPLY(boolean,     bool,                boolValue)  \
+        _APPLY(uString,     uString,             szValue  )  \
+        _APPLY(POINT,       POINT,               ptVal    )  \
+        _APPLY(SIZE,        SIZE,                sizeVal  )  \
+        _APPLY(RECT,        RECT,                rectVal  )  \
+        _APPLY(Element,     Element*,            peleValue)  \
+        _APPLY(ElementList, ElementList*,        peListVal)  \
+        _APPLY(ATOM,        ATOM,                atomVal  )  \
+        _APPLY(HCURSOR,     HCURSOR,             cursorVal)
 
 		enum class ValueType
-		{
-			// 此值不可用
-			Unavailable = -2,
-			// 尚未设置
-			Unset       = -1,
-			// 什么也没有
-			Null        = 0,
-			
+        {
+            // 此值不可用
+            Unavailable = -2,
+            // 尚未设置
+            Unset       = -1,
+            // 什么也没有
+            Null        = 0,
+
 #define _APPLY(_eTYPE, _TYPE, _VAR) _eTYPE,
-			_MEGA_UI_VALUE_TPYE_MAP(_APPLY)
+            _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
 #undef _APPLY
-		};
+        };
 
 		class Value
-		{
-		private:
-			uint_t  _eType : 6;
-			// 不要释放内部缓冲区
-			uint_t _bSkipFree : 1;
+        {
+        private:
+            uint_t eType : 6;
+            // 不要释放内部缓冲区
+            uint_t bSkipFree : 1;
 #ifdef _WIN64
-			uint_t   _cRef : 57;
+            uint_t cRef : 57;
 #else
-			uint_t   _cRef : 25;
+            uint_t cRef : 25;
 #endif
-			union
-			{
+            union
+            {
 #define _APPLY(_eTYPE, _TYPE, _VAR) _TYPE _VAR;
-				_MEGA_UI_VALUE_TPYE_MAP(_APPLY)
+                _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
 #undef _APPLY
-			};
+            };
 
-
-			template<typename _Type>
-			struct ConstValue
-			{
-				uint_t  _eType : 6;
-				uint_t _bSkipFree : 1;
+            template<typename _Type>
+            struct ConstValue
+            {
+                uint_t eType : 6;
+                uint_t bSkipFree : 1;
 #ifdef _WIN64
-				uint_t   _cRef : 57;
+                uint_t cRef : 57;
 #else
-				uint_t   _cRef : 25;
+                uint_t cRef : 25;
 #endif
-				_Type _Value;
-			};
+                _Type Value;
+            };
 
-			template<>
-			struct ConstValue<void>
-			{
-				uint_t  _eType : 6;
-				uint_t _bSkipFree : 1;
+            template<>
+            struct ConstValue<void>
+            {
+                uint_t eType : 6;
+                uint_t bSkipFree : 1;
 #ifdef _WIN64
-				uint_t   _cRef : 57;
+                uint_t cRef : 57;
 #else
-				uint_t   _cRef : 25;
+                uint_t cRef : 25;
 #endif
-			};
+            };
 
-#define _APPLY(_eTYPE, _TYPE, _VAR) template<> struct ValueTypeToType<ValueType::_eTYPE> { using _Type = _TYPE; using ConstValue = ConstValue<_Type>; };
-			template<ValueType eType>
-			struct ValueTypeToType
-			{
-				using _Type = void;
-				using ConstValue = ConstValue<_Type>;
-			};
-			_MEGA_UI_VALUE_TPYE_MAP(_APPLY)
+#define _APPLY(_eTYPE, _TYPE, _VAR)           \
+    template<>                                \
+    struct ValueTypeToType<ValueType::_eTYPE> \
+    {                                         \
+        using _Type = _TYPE;                  \
+        using ConstValue = ConstValue<_Type>; \
+    };
+            template<ValueType eType>
+            struct ValueTypeToType
+            {
+                using _Type = void;
+                using ConstValue = ConstValue<_Type>;
+            };
+            _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
 #undef _APPLY
 
-#define _DEFINE_CONST_VALUE(_VAR, _eTYPE, ...) static constexpr const ValueTypeToType<_eTYPE>::ConstValue _VAR = { (uint_t)_eTYPE, 1, uint_t(-1), __VA_ARGS__ }
+#define _DEFINE_CONST_VALUE(_VAR, _eTYPE, ...) static constexpr const ValueTypeToType<_eTYPE>::ConstValue _VAR = {(uint_t)_eTYPE, 1, uint_t(-1), __VA_ARGS__}
 
-#define _RETUNR_CONST_VALUE(_eTYPE, ...)               \
-        _DEFINE_CONST_VALUE(Ret, _eTYPE, __VA_ARGS__); \
-        return (Value*)&Ret;
+#define _RETUNR_CONST_VALUE(_eTYPE, ...)           \
+    _DEFINE_CONST_VALUE(Ret, _eTYPE, __VA_ARGS__); \
+    return (Value*)&Ret;
 
-		public:
-			template<int32_t iValue>
-			static Value* __fastcall GetInt32ConstValue()
-			{
-				_RETUNR_CONST_VALUE(ValueType::int32_t, iValue);
-			}
+        public:
+            Value() = delete;
+            ~Value() = delete;
 
-			static Value* __fastcall GetAtomZero();
-			static Value* __fastcall GetBoolFalse();
-			static Value* __fastcall GetBoolTrue();
-			static Value* __fastcall GetColorTrans();
-			static Value* __fastcall GetCursorNull();
-			static Value* __fastcall GetElListNull();
-			static Value* __fastcall GetElementNull();
-			static Value* __fastcall GetInt32Zero();
-			static Value* __fastcall GetNull();
-			static Value* __fastcall GetPointZero();
-			static Value* __fastcall GetRectZero();
-			static Value* __fastcall GetSizeZero();
-			static Value* __fastcall GetStringNull();
-			static Value* __fastcall GetUnavailable();
-			static Value* __fastcall GetUnset();
+            template<int32_t iValue>
+            static _Ret_notnull_ Value* __fastcall GetInt32ConstValue()
+            {
+                _RETUNR_CONST_VALUE(ValueType::int32_t, iValue);
+            }
 
-			void __fastcall AddRef();
-			void __fastcall Release();
-			bool __fastcall IsEqual(Value* pv);
-			ValueType __fastcall GetType();
+            static _Ret_notnull_ Value* __fastcall GetAtomZero();
+            static _Ret_notnull_ Value* __fastcall GetBoolFalse();
+            static _Ret_notnull_ Value* __fastcall GetBoolTrue();
+            static _Ret_notnull_ Value* __fastcall GetColorTrans();
+            static _Ret_notnull_ Value* __fastcall GetCursorNull();
+            static _Ret_notnull_ Value* __fastcall GetElListNull();
+            static _Ret_notnull_ Value* __fastcall GetElementNull();
+            static _Ret_notnull_ Value* __fastcall GetInt32Zero();
+            static _Ret_notnull_ Value* __fastcall GetNull();
+            static _Ret_notnull_ Value* __fastcall GetPointZero();
+            static _Ret_notnull_ Value* __fastcall GetRectZero();
+            static _Ret_notnull_ Value* __fastcall GetSizeZero();
+            static _Ret_notnull_ Value* __fastcall GetStringNull();
+            static _Ret_notnull_ Value* __fastcall GetUnavailable();
+            static _Ret_notnull_ Value* __fastcall GetUnset();
 
-			// Value creation methods
-			static Value* __fastcall CreateInt32(int32_t iValue);
-			static Value* __fastcall CreateBool(bool bValue);
-			static Value* __fastcall CreateElementRef(Element* peValue);
-			static Value* __fastcall CreateElementList(ElementList* peListValue);
-			static Value* __fastcall CreateString(raw_const_ustring_t pszValue, HINSTANCE hResLoad = NULL);
-			static Value* __fastcall CreatePoint(int32_t x, int32_t y);
-			static Value* __fastcall CreateSize(int32_t cx, int32_t cy);
-			static Value* __fastcall CreateRect(int32_t left, int32_t top, int32_t right, int32_t bottom);
-			static Value* __fastcall CreateDFCFill(uint32_t uType, uint32_t uState);
-			static Value* __fastcall CreateAtom(raw_const_ustring_t pszValue);
-			static Value* __fastcall CreateCursor(raw_const_ustring_t pszValue);
-			static Value* __fastcall CreateCursor(HCURSOR hValue);
+            void __fastcall AddRef();
+            void __fastcall Release();
+            bool __fastcall IsEqual(_In_ Value* pValue);
+            ValueType __fastcall GetType();
 
+            // Value creation methods
+            static _Ret_maybenull_ Value* __fastcall CreateInt32(_In_ int32_t _iValue);
+            static _Ret_notnull_   Value* __fastcall CreateBool(_In_ bool _bValue);
+            static _Ret_maybenull_ Value* __fastcall CreateElementRef(_In_opt_ Element* _pValue);
+            static _Ret_maybenull_ Value* __fastcall CreateElementList(_In_opt_ ElementList* _pListValue);
+            static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uString _szValue);
+            static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
+            static _Ret_maybenull_ Value* __fastcall CreatePoint(_In_ int32_t _iX, _In_ int32_t _iY);
+            static _Ret_maybenull_ Value* __fastcall CreateSize(_In_ int32_t _iCX, _In_ int32_t _iCY);
+            static _Ret_maybenull_ Value* __fastcall CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
+            static _Ret_maybenull_ Value* __fastcall CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
+            static _Ret_maybenull_ Value* __fastcall CreateAtom(_In_z_ raw_const_ustring_t _szValue);
+            static _Ret_maybenull_ Value* __fastcall CreateCursor(_In_z_ raw_const_ustring_t _szValue);
+            static _Ret_maybenull_ Value* __fastcall CreateCursor(_In_ HCURSOR hValue);
 
-			int32_t __fastcall GetInt32();
-			bool __fastcall GetBool();
-		};
-	}
-}
+            int32_t __fastcall GetInt32();
+            bool __fastcall GetBool();
+        };
+    } // namespace MegaUI
+} // namespace YY
 
 #pragma pack(pop)
