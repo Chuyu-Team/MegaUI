@@ -75,6 +75,9 @@
     <ClInclude Include="base\String.h">
       <Filter>UI\base</Filter>
     </ClInclude>
+    <ClInclude Include="base\Exception.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

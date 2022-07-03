@@ -15,7 +15,17 @@ namespace YY
                 return _InterlockedIncrement(reinterpret_cast<long volatile*>(_Addend));
             }
 
+            __forceinline int32_t __fastcall Increment(int32_t* _Addend)
+            {
+                return _InterlockedIncrement(reinterpret_cast<long volatile*>(_Addend));
+            }
+
             __forceinline uint32_t __fastcall Decrement(uint32_t* _Addend)
+            {
+                return _InterlockedDecrement(reinterpret_cast<long volatile*>(_Addend));
+            }
+            
+            __forceinline int32_t __fastcall Decrement(int32_t* _Addend)
             {
                 return _InterlockedDecrement(reinterpret_cast<long volatile*>(_Addend));
             }

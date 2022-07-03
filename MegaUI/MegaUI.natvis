@@ -71,4 +71,21 @@
             </ArrayItems>
         </Expand>
     </Type>
+    <Type Name="YY::MegaUI::DynamicArray&lt;*&gt;" Priority="MediumLow">
+        <Intrinsic Name="GetSize" Expression="pData ? ((YY::MegaUI::uint_t*)pData)[-1] : 0" />
+        <Intrinsic Name="GetCapacity" Expression="pData ? ((YY::MegaUI::uint_t*)pData)[-2] : 0" />
+        <Intrinsic Name="GetRefRaw" Expression="pData ? ((int32_t*)pData)[-(sizeof(YY::MegaUI::uint_t)/sizeof(int32_t) * 2 +1)] : 0" />
+        <Intrinsic Name="GetRef" Expression="GetRefRaw() > 0 ? GetRefRaw() : 1" />
+        <Intrinsic Name="GetLockCount" Expression="GetRefRaw() >= 0 ? 0 : GetRefRaw() * -1" />
+        <DisplayString>{{ Size={GetSize()} }}</DisplayString>
+        <Expand>
+            <Item Name="[Capacity]" ExcludeView="simple">GetCapacity()</Item>
+            <Item Name="[Ref]" ExcludeView="simple">GetRef()</Item>
+            <Item Name="[LockCount]" ExcludeView="simple">GetLockCount()</Item>
+            <ArrayItems>
+                <Size>GetSize()</Size>
+                <ValuePointer>pData</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
 </AutoVisualizer>

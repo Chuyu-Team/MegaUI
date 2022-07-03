@@ -42,9 +42,9 @@ namespace YY
         class DeferCycle
         {
         public:
-            DynamicArray<GCRecord> vecGroupChangeNormalPriority;
-            DynamicArray<GCRecord> vecGroupChangeLowPriority;
-            DynamicArray<PCRecord> vecPropertyChanged;
+            DynamicArray<GCRecord, false, false> vecGroupChangeNormalPriority;
+            DynamicArray<GCRecord, false, false> vecGroupChangeLowPriority;
+            DynamicArray<PCRecord, false, false> vecPropertyChanged;
 
             // StartDefer的进入次数
             uint32_t uEnter;

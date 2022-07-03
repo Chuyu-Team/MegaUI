@@ -107,7 +107,7 @@ namespace YY
 
         HRESULT __fastcall UnRegisterAllControls()
         {
-            DynamicArray<RegisterClassInfo> _vecTopRegisterClassInfo;
+            DynamicArray<RegisterClassInfo, false, false> _vecTopRegisterClassInfo;
             auto _hr = _vecTopRegisterClassInfo.Reserve(g_ClassMap.size());
             if (FAILED(_hr))
                 return _hr;

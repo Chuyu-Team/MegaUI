@@ -15,7 +15,7 @@ namespace YY
     namespace MegaUI
     {
         class Element;
-        typedef DynamicArray<Element*> ElementList;
+        typedef DynamicArray<Element*, true, false> ElementList;
 
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
         _APPLY(int32_t,     int32_t,             int32Value) \

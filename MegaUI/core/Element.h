@@ -111,7 +111,7 @@ namespace YY
 			_APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 		private:
 			// 所有 Local 值的
-			DynamicArray<Value*> LocalPropValue;
+			DynamicArray<Value*, false, false> LocalPropValue;
 
 			// Local Parent
 			Element* pLocParent;
