@@ -6,6 +6,7 @@
 #include "ErrorCode.h"
 #include "Encoding.h"
 #include "StringView.h"
+#include "Exception.h"
 
 /*
 
@@ -22,7 +23,7 @@
 √  多线程写入，多个线程写入各自的String对象，但是他们是同一个引用。
 
 
-LockBuffer 与 UnlockBuffer 必须成对出现，不能重入
+LockBuffer 与 UnlockBuffer 必须成对出现。
 
 
 */
@@ -163,7 +164,9 @@ namespace YY
             StringBase(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
                 : szString(StringData::GetEmtpyStringData()->GetStringBuffer())
             {
-                SetString(_szSrc, _cchSrc);
+                auto _hr = SetString(_szSrc, _cchSrc);
+                if (FAILED(_hr))
+                    throw Exception(_S("StringBase构造失败。"), _hr);
             }
 
             StringBase(_In_opt_z_ const char_t* _szSrc)
@@ -171,7 +174,9 @@ namespace YY
             {
                 if (!IsEmptyString(_szSrc))
                 {
-                    SetString(_szSrc);
+                    auto _hr = SetString(_szSrc);
+                    if (FAILED(_hr))
+                        throw Exception(_S("StringBase构造失败。"), _hr);
                 }
             }
 
@@ -179,23 +184,29 @@ namespace YY
             StringBase(const char_t (&_szSrc)[_uArrayCount])
                 : szString(StringData::GetEmtpyStringData()->GetStringBuffer())
             {
-                SetString(_szSrc, _uArrayCount - 1);
+                auto _hr = SetString(_szSrc, _uArrayCount - 1);
+                if (FAILED(_hr))
+                    throw Exception(_S("StringBase构造失败。"), _hr);
             }
 
             StringBase(const StringView_t& _szSrc)
                 : szString(StringData::GetEmtpyStringData()->GetStringBuffer())
             {
-                SetString(_szSrc.GetConstString(), _szSrc.GetSize());
+                auto _hr = SetString(_szSrc.GetConstString(), _szSrc.GetSize());
+                if (FAILED(_hr))
+                    throw Exception(_S("StringBase构造失败。"), _hr);
             }
 
             StringBase(const StringBase& _szSrc)
             {
                 auto _pStringDataOld = const_cast<StringBase&>(_szSrc).GetInternalStringData();
 
-                if ((_pStringDataOld->fFlags & StringDataFlags::Exclusive))
+                if (_pStringDataOld->IsLocked())
                 {
                     szString = StringData::GetEmtpyStringData()->GetStringBuffer();
-                    SetString(_pStringDataOld->GetStringBuffer(), _pStringDataOld->uSize);
+                    auto _hr = SetString(_pStringDataOld->GetStringBuffer(), _pStringDataOld->uSize);
+                    if (FAILED(_hr))
+                        throw Exception(_S("StringBase构造失败。"), _hr);
                 }
                 else
                 {
@@ -234,12 +245,6 @@ namespace YY
             {
                 auto _pInternalStringData = GetInternalStringData();
 
-                // 锁定只能增加一次
-                _ASSERTE((_pInternalStringData->fFlags & StringDataFlags::Exclusive) == 0);
-
-                if (_pInternalStringData->fFlags & StringDataFlags::Exclusive)
-                    return nullptr;
-
                 if (_uCapacity < _pInternalStringData->uSize)
                     _uCapacity = _pInternalStringData->uSize;
 
@@ -263,6 +268,12 @@ namespace YY
                 }
                 else if (_uCapacity > _pInternalStringData->uCapacity)
                 {
+                    if (_pInternalStringData->IsLocked())
+                    {
+                        throw Exception(_S("缓冲区已经锁定，无法调用 ReallocStringData。"));
+                        return nullptr;
+                    }
+
                     //当前缓冲区独享，并且需要扩容
                     _pInternalStringData = StringData::ReallocStringData(_pInternalStringData, _uCapacity);
                     if (!_pInternalStringData)
@@ -272,7 +283,7 @@ namespace YY
                 }
 
                 if (!_pInternalStringData->IsReadOnly())
-                    _pInternalStringData->fFlags |= StringDataFlags::Exclusive;
+                    _pInternalStringData->Lock();
 
                 return szString;
             }
@@ -283,15 +294,20 @@ namespace YY
 
                 if (!_pInternalStringData->IsReadOnly())
                 {
-                    _ASSERTE((_pInternalStringData->fFlags & StringDataFlags::Exclusive) != 0);
+                    if (!_pInternalStringData->IsLocked())
+                    {
+                        throw Exception(_S("缓冲区并未锁定，无法 UnlockBuffer。"));
+                        return;
+                    }
+
                     _ASSERTE(_uNewSize <= _pInternalStringData->uCapacity);
 
                     if (_pInternalStringData->uCapacity < _uNewSize)
                         _uNewSize = _pInternalStringData->uCapacity;
 
-                    _pInternalStringData->fFlags &= ~StringDataFlags::Exclusive;
                     _pInternalStringData->uSize = _uNewSize;
                     szString[_uNewSize] = char_t('\0');
+                    _pInternalStringData->Unlock();
                 }
             }
 
@@ -301,8 +317,7 @@ namespace YY
 
                 if (!_pInternalStringData->IsReadOnly())
                 {
-                    _ASSERTE((_pInternalStringData->fFlags & StringDataFlags::Exclusive) != 0);
-                    _pInternalStringData->fFlags &= ~StringDataFlags::Exclusive;
+                    _pInternalStringData->Unlock();
                 }
             }
 
@@ -363,7 +378,7 @@ namespace YY
                 {
                     auto _pStringDataOld = const_cast<StringBase&>(_szSrc).GetInternalStringData();
 
-                    if ((_pStringDataOld->fFlags & StringDataFlags::Exclusive))
+                    if (_pStringDataOld->IsLocked())
                     {
                         return SetString(_pStringDataOld->GetStringBuffer(), _pStringDataOld->uSize);
                     }
@@ -380,6 +395,12 @@ namespace YY
             {
                 if (szString != _szSrc.szString)
                 {
+                    if (_szSrc.GetInternalStringData()->IsLocked())
+                    {
+                        throw Exception(_S("StringBase处于锁定状态，无法进行移动语义。"));
+                        return E_UNEXPECTED;
+                    }
+
                     auto _pNewData = _szSrc.Detach();
 
                     Attach(_pNewData);
@@ -526,39 +547,54 @@ namespace YY
 
             StringBase& __fastcall operator=(_In_opt_z_ const char_t* _szSrc)
             {
-                SetString(_szSrc);
+                auto _hr = SetString(_szSrc);
+                if (FAILED(hr))
+                    throw Exception(_S("SetString失败！"), _hr);
+
                 return *this;
             }
 
             StringBase& __fastcall operator=(const StringBase& _szSrc)
             {
-                SetString(_szSrc);
+                auto _hr = SetString(_szSrc);
+                if (FAILED(_hr))
+                    throw Exception(_S("SetString失败！"), _hr);
+
                 return *this;
             }
 
             StringBase& __fastcall operator=(StringBase&& _szSrc) noexcept
             {
-                SetString(std::move(_szSrc));
+                auto _hr = SetString(std::move(_szSrc));
+                if (FAILED(_hr))
+                    throw Exception(_S("SetString失败！"), _hr);
+
                 return *this;
             }
 
             StringBase& __fastcall operator+=(_In_opt_z_ const char_t* _szSrc) noexcept
             {
-                AppendString(_szSrc);
+                auto _hr = AppendString(_szSrc);
+                if (FAILED(_hr))
+                    throw Exception(_S("AppendString失败！"), _hr);
 
                 return *this;
             }
 
             StringBase& __fastcall operator+=(const StringBase& _szSrc) noexcept
             {
-                AppendString(_szSrc);
+                auto _hr = AppendString(_szSrc);
+                if (FAILED(_hr))
+                    throw Exception(_S("AppendString失败！"), _hr);
 
                 return *this;
             }
 
             StringBase& __fastcall operator+=(_In_ char_t _ch) noexcept
             {
-                AppendChar(_ch);
+                auto _hr = AppendChar(_ch);
+                if (FAILED(_hr))
+                    throw Exception(_S("AppendChar失败！"), _hr);
 
                 return *this;
             }
@@ -573,22 +609,18 @@ namespace YY
                 return this->GetConstString() + this->GetSize();
             }
 
-            enum StringDataFlags
-            {
-                // 缓冲区是独占的，阻止共享
-                Exclusive = 0x00000001,
-            };
-
             struct StringData
             {
                 union
                 {
                     struct
                     {
+                        // 暂不使用
                         uint16_t fMarks;
                         uint16_t eEncoding;
-                        // 这块内存的引用次数
-                        uint32_t uRef;
+                        // 如果 >= 0，那么表示这块内存的引用次数
+                        // 如果  < 0，那么表示这块内存的锁定次数，内存锁定时，内存引用计数隐式为 1。
+                        int32_t iRef;
                     };
                     uint32_t fFlags;
                     uint64_t uRawData;
@@ -665,7 +697,7 @@ namespace YY
 
                     _pNewStringData->fMarks = 0;
                     _pNewStringData->eEncoding = uint16_t(_eEncoding);
-                    _pNewStringData->uRef = 1u;
+                    _pNewStringData->iRef = 1;
                     _pNewStringData->uCapacity = _uAllocLength - 1;
                     _pNewStringData->uSize = 0u;
 
@@ -683,8 +715,8 @@ namespace YY
                     };
 
                     const static StaticStringData g_EmptyStringData =
-                        {
-                            {{0, uint16_t(_eEncoding), uint32_max}, 0, 0}
+                    {
+                        { {0, uint16_t(_eEncoding), int32_max}, 0, 0 }
                     };
                     return const_cast<StringData*>(&g_EmptyStringData.Base);
                 }
@@ -698,36 +730,98 @@ namespace YY
                 {
                     if (IsReadOnly())
                     {
-                        return uint32_max;
+                        return int32_max;
                     }
 
-                    return YY::MegaUI::Interlocked::Increment(&uRef);
+                    if (iRef < 0)
+                    {
+                        throw Exception(_S("缓冲区锁定时无法共享。"));
+                        return 1;
+                    }
+
+                    return (uint32_t)YY::MegaUI::Interlocked::Increment(&iRef);
                 }
 
                 uint32_t __fastcall Release()
                 {
                     if (IsReadOnly())
                     {
-                        return uint32_max;
+                        return int32_max;
                     }
 
-                    const auto uRefNew = YY::MegaUI::Interlocked::Decrement(&uRef);
+                    if (iRef < 0)
+                    {
+                        // 锁定时 隐含 内容引用计数 为 1，所以 Release 后将释放。
+                        HFree(this);
+                        return 0;
+                    }
+
+                    const auto uRefNew = YY::MegaUI::Interlocked::Decrement(&iRef);
                     if (uRefNew == 0)
                     {
                         HFree(this);
                     }
 
-                    return uRefNew;
+                    return (uint32_t)uRefNew;
                 }
 
                 bool __fastcall IsReadOnly()
                 {
-                    return uRef == uint32_max;
+                    return iRef == int32_max;
                 }
 
                 bool __fastcall IsShared()
                 {
-                    return uRef > 1;
+                    return iRef > 1;
+                }
+
+                void __fastcall Lock()
+                {
+                    if (iRef > 1 || iRef == 0)
+                    {
+                        throw Exception(_S("仅在非共享状态才允许锁定缓冲区。"));
+                        return;
+                    }
+
+                    if (iRef == 1)
+                    {
+                        iRef = -1;
+                    }
+                    else
+                    {
+                        --iRef;
+                    }
+                }
+
+                void __fastcall Unlock()
+                {
+                    if (iRef >= 0)
+                    {
+                        throw Exception(_S("缓冲区并未锁定，无法 Unlock。"));
+                        return;
+                    }
+
+                    if (iRef == -1)
+                    {
+                        iRef = 1;
+                    }
+                    else
+                    {
+                        ++iRef;
+                    }
+                }
+
+                bool __fastcall IsLocked()
+                {
+                    return iRef < 0;
+                }
+
+                uint_t __fastcall GetLockedCount()
+                {
+                    if (iRef >= 0)
+                        return 0;
+
+                    return iRef * -1;
                 }
             };
             
