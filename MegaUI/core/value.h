@@ -24,10 +24,10 @@ namespace YY
         _APPLY(POINT,       POINT,               ptVal    )  \
         _APPLY(SIZE,        SIZE,                sizeVal  )  \
         _APPLY(RECT,        RECT,                rectVal  )  \
-        _APPLY(Element,     Element*,            peleValue)  \
-        _APPLY(ElementList, ElementList*,        peListVal)  \
-        _APPLY(ATOM,        ATOM,                atomVal  )  \
-        _APPLY(HCURSOR,     HCURSOR,             cursorVal)
+        _APPLY(Element,     Element*,            pEleValue)  \
+        _APPLY(ElementList, ElementList,         ListVal  )  \
+        _APPLY(ATOM,        ATOM,                uAtomVal )  \
+        _APPLY(HCURSOR,     HCURSOR,             hCursorVal)
 
 		enum class ValueType
         {
@@ -45,17 +45,27 @@ namespace YY
 
 		class Value
         {
-        private:
-            uint_t eType : 6;
-            // 不要释放内部缓冲区
-            uint_t bSkipFree : 1;
-#ifdef _WIN64
-            uint_t cRef : 57;
-#else
-            uint_t cRef : 25;
-#endif
+        protected:
             union
             {
+                struct
+                {
+                    uint_t eType : 6;
+                    // 不要释放内部缓冲区
+                    uint_t bSkipFree : 1;
+#ifdef _WIN64
+                    uint_t cRef : 57;
+#else
+                    uint_t cRef : 25;
+#endif
+                };
+
+                uint_t uRawType;
+            };
+
+            union
+            {
+                byte_t RawBuffer[1];
 #define _APPLY(_eTYPE, _TYPE, _VAR) _TYPE _VAR;
                 _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
 #undef _APPLY
@@ -121,7 +131,7 @@ namespace YY
             static _Ret_notnull_ Value* __fastcall GetAtomZero();
             static _Ret_notnull_ Value* __fastcall GetBoolFalse();
             static _Ret_notnull_ Value* __fastcall GetBoolTrue();
-            static _Ret_notnull_ Value* __fastcall GetColorTrans();
+            //static _Ret_notnull_ Value* __fastcall GetColorTrans();
             static _Ret_notnull_ Value* __fastcall GetCursorNull();
             static _Ret_notnull_ Value* __fastcall GetElListNull();
             static _Ret_notnull_ Value* __fastcall GetElementNull();
@@ -143,19 +153,56 @@ namespace YY
             static _Ret_maybenull_ Value* __fastcall CreateInt32(_In_ int32_t _iValue);
             static _Ret_notnull_   Value* __fastcall CreateBool(_In_ bool _bValue);
             static _Ret_maybenull_ Value* __fastcall CreateElementRef(_In_opt_ Element* _pValue);
-            static _Ret_maybenull_ Value* __fastcall CreateElementList(_In_opt_ ElementList* _pListValue);
-            static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uString _szValue);
-            static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
+            static _Ret_maybenull_ Value* __fastcall CreateElementList(_In_ const ElementList& _pListValue);
+            static _Ret_maybenull_ Value* __fastcall CreateString(_In_ const uString& _szValue);
+            //static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
             static _Ret_maybenull_ Value* __fastcall CreatePoint(_In_ int32_t _iX, _In_ int32_t _iY);
             static _Ret_maybenull_ Value* __fastcall CreateSize(_In_ int32_t _iCX, _In_ int32_t _iCY);
             static _Ret_maybenull_ Value* __fastcall CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
-            static _Ret_maybenull_ Value* __fastcall CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
+            //static _Ret_maybenull_ Value* __fastcall CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
             static _Ret_maybenull_ Value* __fastcall CreateAtom(_In_z_ raw_const_ustring_t _szValue);
+            static _Ret_maybenull_ Value* __fastcall CreateAtom(_In_ ATOM _uAtomValue);
             static _Ret_maybenull_ Value* __fastcall CreateCursor(_In_z_ raw_const_ustring_t _szValue);
-            static _Ret_maybenull_ Value* __fastcall CreateCursor(_In_ HCURSOR hValue);
+            static _Ret_maybenull_ Value* __fastcall CreateCursor(_In_ HCURSOR _hCursorValue);
 
             int32_t __fastcall GetInt32();
             bool __fastcall GetBool();
+        };
+
+        
+        template<ValueType _eType>
+        class ValueIs : public Value
+        {
+        private:
+            constexpr static ValueType eType = _eType;
+        public:
+            ValueIs() = delete;
+            ValueIs(const ValueIs&) = delete;
+            ~ValueIs() = delete;
+
+            using _ValueType = typename ValueTypeToType<eType>::_Type;
+
+            static ValueIs* __fastcall BuildByValue(Value* _pValue)
+            {
+                if (!_pValue)
+                    return nullptr;
+
+                if (_pValue->GetType() != eType)
+                    return nullptr;
+
+                _pValue->AddRef();
+                return (ValueIs*)_pValue;
+            }
+
+            __forceinline const _ValueType& __fastcall GetValue()
+            {
+                return *(_ValueType*)RawBuffer;
+            }
+
+            __forceinline operator const _ValueType&()
+            {
+                return GetValue();
+            }
         };
     } // namespace MegaUI
 } // namespace YY

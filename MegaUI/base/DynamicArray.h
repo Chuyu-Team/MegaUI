@@ -522,6 +522,22 @@ namespace YY
                 return pData + GetSize();
             }
             
+            bool __fastcall operator==(const DynamicArray& _Array) const
+            {
+                auto _Size = GetSize();
+
+                if (_Size != _Array.GetSize())
+                    return false;
+
+                for (uint_t i = 0; i != _Size;++i)
+                {
+                    if (pData[i] != _Array.pData[i])
+                        return false;
+                }
+
+                return true;
+            }
+
             struct SharedData
             {
                 // 暂不使用

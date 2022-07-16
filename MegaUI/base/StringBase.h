@@ -548,7 +548,7 @@ namespace YY
             StringBase& __fastcall operator=(_In_opt_z_ const char_t* _szSrc)
             {
                 auto _hr = SetString(_szSrc);
-                if (FAILED(hr))
+                if (FAILED(_hr))
                     throw Exception(_S("SetString失败！"), _hr);
 
                 return *this;
