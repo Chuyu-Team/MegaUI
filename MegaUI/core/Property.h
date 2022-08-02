@@ -40,12 +40,16 @@ namespace YY
 
 		enum PropertyFlag
 		{
+            PF_HasLocal     = 0x00,
+            PF_HasSpecified = 0x01,
+            PF_HasComputed  = 0x02,
+
 			// 仅支持 PI_Local
-			PF_LocalOnly = 0x00,
+            PF_LocalOnly = PF_HasLocal,
 			// 支持 PI_Local 以及 PI_Specified
-			PF_Normal    = 0x01,
+			PF_Normal    = PF_HasLocal | PF_HasSpecified,
 			// 支持 PI_Local、PI_Specified 以及 PI_Computed
-			PF_TriLevel  = 0x02,
+			PF_TriLevel  = PF_HasLocal | PF_HasSpecified | PF_HasComputed,
 			// 他是掩位，
 			PF_TypeBits  = 0x03,
 
@@ -58,141 +62,166 @@ namespace YY
 
 		};
 
-		enum PropertyGroup
-		{
-			// Normal priority
-			PG_AffectsDesiredSize       = 0x00000001,
-			PG_AffectsParentDesiredSize = 0x00000002,
-			PG_AffectsLayout            = 0x00000004,
-			PG_AffectsParentLayout      = 0x00000008,
+		inline PropertyFlag __fastcall PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
+        {
+            switch (_eIndicies)
+            {
+            default:
+            case PropertyIndicies::PI_Local:
+                return PF_HasLocal;
+                break;
+            case PropertyIndicies::PI_Specified:
+                return PropertyFlag(PF_HasLocal | PF_HasSpecified);
+                break;
+            case PropertyIndicies::PI_Computed:
+                return PropertyFlag(PF_HasLocal | PF_HasSpecified | PF_HasComputed);
+                break;
+            }
+        }
 
-			PG_NormalPriMask            = 0x0000FFFF,
+        enum PropertyGroup
+        {
+            // Normal priority
+            PG_AffectsDesiredSize = 0x00000001,
+            PG_AffectsParentDesiredSize = 0x00000002,
+            PG_AffectsLayout = 0x00000004,
+            PG_AffectsParentLayout = 0x00000008,
 
-			// Low priority
-			PG_AffectsBounds            = 0x00010000,    
-			PG_AffectsDisplay           = 0x00020000,
+            PG_NormalPriMask = 0x0000FFFF,
 
-			PG_LowPriMask               = 0xFFFF0000,
-		};
+            // Low priority
+            PG_AffectsBounds = 0x00010000,
+            PG_AffectsDisplay = 0x00020000,
 
-		enum class PropertyCustomCacheActionMode
-		{
-			GetValue = 0,
-			UpdateValue,
-		};
+            PG_LowPriMask = 0xFFFF0000,
+        };
 
-		struct PropertyInfo;
+        enum class PropertyCustomCacheActionMode
+        {
+            GetValue = 0,
+            UpdateValue,
+        };
 
-		struct PropertyCustomCacheActionInfo
-		{
-			const PropertyInfo* pProp;
-			PropertyIndicies eIndicies;
-			union
-			{
-				// GetValue
-				struct
-				{
-					Value* pRetValue;
-					bool bUsingCache;
-				} GetValueInfo;
+        struct PropertyInfo;
 
-				// UpdateValue
-				struct
-				{
-					Value* pNewValue;
-				} UpdateValueInfo;
-			};
-		};
+        struct PropertyCustomCacheActionInfo
+        {
+            const PropertyInfo* pProp;
+            PropertyIndicies eIndicies;
+            union
+            {
+                // GetValue
+                struct
+                {
+                    Value* pRetValue;
+                    bool bUsingCache;
+                } GetValueInfo;
 
-		enum PropertyCustomCacheResult
-		{
-			SkipNone           = 0x00000000,
-			// 跳过 _LocalPropValue 的查询。
-			SkipLocalPropValue = 0x00000001,
-			// 跳过从属性表的查询。
-			SkipCascade        = 0x00000002,
-			// 跳过从父节点的查询
-			SkipInherit        = 0x00000004,
-			SkipAll            = 0xFFFFFFFF,
-		};
+                // UpdateValue
+                struct
+                {
+                    Value* pNewValue;
+                } UpdateValueInfo;
+            };
+        };
 
-		typedef void (__fastcall Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
+        enum PropertyCustomCacheResult
+        {
+            SkipNone = 0x00000000,
+            // 跳过 _LocalPropValue 的查询。
+            SkipLocalPropValue = 0x00000001,
+            // 跳过从属性表的查询。
+            SkipCascade = 0x00000002,
+            // 跳过从父节点的查询
+            SkipInherit = 0x00000004,
+            SkipAll = 0xFFFFFFFF,
+        };
+
+        typedef void (__fastcall Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
         typedef PropertyCustomCacheResult (__fastcall Element::*FunTypePropertyCustomCache)(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCacheActionInfo* _pInfo);
 
-		struct PropertyInfo
-		{
-			// 属性的名称，给XML解析器使用
-			raw_const_astring_t pszName;
-			// PropertyFlag标记组合
-			uint32_t   fFlags;
-			// PropertyGroup标记组合
-			uint32_t   fGroups;
-			// 一串列表，以 eNull 结束
-			const ValueType* ppValidValues;
-			// 一串枚举值，以 { nullptr, 0 } 结束
-			const EnumMap* pEnumMaps;
-			// 默认值的初始化函数
-			Value* (__fastcall* pFunDefaultValue)();
-			// 当值发生更改时，会调用此函数
-			FunTypeOnPropertyChanged pFunOnPropertyChanged;
-			// 该属性绑定的缓存属性，如果没有绑定，那么直接使用 _LocalPropValue
-			union
-			{
-				//占位
-				uint64_t uRaw;
-				// 自定义的属性值缓存函数，当需要高度定制时，可以使用
-				FunTypePropertyCustomCache pFunPropertyCustomCache;
-				struct
-				{
-					// 如果为 0，那么值表示函数指针 _pFunPropertyCustomCache
-					// 如果为 1，那么表示 这个 struct 生效
-					uint16_t bValueMapOrCustomPropFun : 1;
-					// 当前缓存区的类型，等价于 ValueType
-					uint16_t eType : 7;
-					// 当 _eType 类型为 bool 时使用，bit中有效的标记位数
-					uint16_t LocalValueBit : 3;
-					// 指向 Local 值缓冲区偏移
-					uint16_t OffsetToLocalValue : 11;
-					uint16_t HasLocalValueCacheBit : 3;
-					// 指向一个bool值缓冲区，如果已经缓存了Local的结果，那么为 true
-					uint16_t OffsetToHasLocalCache : 11;
-					// 当 _eType 类型为 bool 时使用
-					uint16_t SpecifiedValueBit : 3;
-					// 指向 Specified 值缓冲区偏移
-					uint16_t OffsetToSpecifiedValue : 11;
-					uint16_t HasSpecifiedValueCacheBit : 3;
-					// 指向一个bool值缓冲区，如果已经缓存了Specified的结果，那么为 true
-					uint16_t OffsetToHasSpecifiedValueCache : 11;
-				};
-			} BindCacheInfo;
-		};
+        struct PropertyInfo
+        {
+            // 属性的名称，给XML解析器使用
+            raw_const_astring_t pszName;
+            // PropertyFlag标记组合
+            uint32_t fFlags;
+            // PropertyGroup标记组合
+            uint32_t fGroups;
+            // 一串列表，以 eNull 结束
+            const ValueType* ppValidValues;
+            // 一串枚举值，以 { nullptr, 0 } 结束
+            const EnumMap* pEnumMaps;
+            // 默认值的初始化函数
+            Value*(__fastcall* pFunDefaultValue)();
+            // 当值发生更改时，会调用此函数
+            FunTypeOnPropertyChanged pFunOnPropertyChanged;
+            // 该属性绑定的缓存属性，如果没有绑定，那么直接使用 _LocalPropValue
+            union
+            {
+                //占位
+                uint64_t uRaw;
+                // 自定义的属性值缓存函数，当需要高度定制时，可以使用
+                FunTypePropertyCustomCache pFunPropertyCustomCache;
+                struct
+                {
+                    // 当前缓存区的类型，等价于 ValueType
+                    uint32_t eType : 7;
+                    // 当 _eType 类型为 bool 时使用，bit中有效的标记位数
+                    uint32_t LocalValueBit : 3;
+                    // 指向 Local 值缓冲区偏移
+                    uint32_t OffsetToLocalValue : 11;
+                    // 指向一个bool值缓冲区，如果已经缓存了Local的结果，那么为 true
+                    uint32_t OffsetToHasLocalCache : 11;
+                    uint32_t HasLocalValueCacheBit : 3;
+                    // 当 _eType 类型为 bool 时使用
+                    uint32_t SpecifiedValueBit : 3;
+                    // 指向 Specified 值缓冲区偏移
+                    uint32_t OffsetToSpecifiedValue : 11;
+                    uint32_t HasSpecifiedValueCacheBit : 3;
+                    // 指向一个bool值缓冲区，如果已经缓存了Specified的结果，那么为 true
+                    uint32_t OffsetToHasSpecifiedValueCache : 11;
+                    // 如果为 0，那么值表示函数指针 _pFunPropertyCustomCache
+                    // 如果为 1，那么表示 这个 struct 生效
+                    uint32_t bValueMapOrCustomPropFun : 1;
+                };
+            } BindCacheInfo;
+        };
 
-		template<class _T1, class _T2>
-		__inline constexpr _T1 __GetMegaUICallback(_T2 p2)
-		{
-			union
-			{
-				_T2 p2;
-				_T1 p1;
-			} __data{ p2 };
+        template<class _T1, class _T2>
+        __inline constexpr _T1 __GetMegaUICallback(_T2 p2)
+        {
+            union
+            {
+                _T2 p2;
+                _T1 p1;
+            } __data{ p2 };
 
-			return __data.p1;
-		}
-
-
+            return __data.p1;
+        }
 
 #define _MEGA_UI_PROP_BIND_VALUE(_VALUE_TYPE, _LOCAL, _LOCAL_BIT, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _SPECIFIED_BIT, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
-        { uint64_t(1) | (uint64_t((uint32_t)_VALUE_TYPE) << 1) | (uint64_t((uint32_t)_LOCAL_BIT) << 8) | (uint64_t((uint32_t)_LOCAL) << 11)               \
-		  | (uint64_t((uint32_t)_HAS_LOCAL_BIT) << 22) | (uint64_t((uint32_t)_HAS_LOCAL) << 25) | (uint64_t((uint32_t)_SPECIFIED_BIT) << 36) \
-          | (uint64_t((uint32_t)_SPECIFIED) << 39) | (uint64_t((uint32_t)_HAS_SPECIFIED_BIT) << 50) | (uint64_t((uint32_t)_HAS_SPECIFIED) << 53) }
+        { (uint64_t(_VALUE_TYPE) << 0) | (uint64_t(_LOCAL_BIT) << 7) | (uint64_t(_LOCAL) << 10)               \
+		  | (uint64_t(_HAS_LOCAL) << 21) | (uint64_t(_HAS_LOCAL_BIT) << 32) | (uint64_t(_SPECIFIED_BIT) << 35) \
+          | (uint64_t(_SPECIFIED) << 38) | (uint64_t(_HAS_SPECIFIED_BIT) << 49) | (uint64_t(_HAS_SPECIFIED) << 52) | (uint64_t(1) << 63) }
 
 #define _MEGA_UI_PROP_BIND_INT(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
-		_MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
+        _MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
 
 #define _MEGA_UI_PROP_BIND_ELEMENT(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
-		_MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
+        _MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
 
-		
+#define _MEGA_UI_PROP_BIND_POINT(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
+        _MEGA_UI_PROP_BIND_VALUE(ValueType::POINT, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
+
+#define _MEGA_UI_PROP_BIND_SIZE(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
+        _MEGA_UI_PROP_BIND_VALUE(ValueType::SIZE, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
+
+#define _MEGA_UI_PROP_BIND_NONE() {}
+
+#define _MEGA_UI_PROP_BIND_CUSTOM(_FUN) (__GetMegaUICallback<uint64_t>(_FUN))
+
+
 //#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _ENUM, ...) static PropertyInfo _CRT_CONCATENATE(_PRO_NAME, Prop);
 #define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _ENUM, _BIND_INT, ...) const PropertyInfo _CRT_CONCATENATE(_PRO_NAME, Prop);
 #define _APPLY_MEGA_UI_PROPERTY_COUNT(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _ENUM, _BIND_INT, ...) + 1

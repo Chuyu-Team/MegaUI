@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include <Windows.h>
+#include <d2d1.h>
+
+
 #include "value.h"
 #include "Property.h"
 #include "DeferCycle.h"
@@ -9,43 +12,51 @@
 #define LP_Absolute     -2
 #define LP_Auto         -1
 
+
+// Layout cycle queue modes
+#define LC_Pass 0
+#define LC_Unknow1 1
+#define LC_Normal 2
+#define LC_Optimize 3
+
+
 #pragma pack(push, __MEGA_UI_PACKING)
 
 namespace YY
 {
-	namespace MegaUI
-	{
+    namespace MegaUI
+    {
 #define _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(_CLASS_NAME, _BASE_CLASS, _CLASS_INFO_TYPE,                 \
-		                                        _DEFAULT_CREATE_FLAGS, _PROPERTY_TABLE)                     \
-		protected:                                                                                          \
-			friend ClassInfoBase<_CLASS_NAME>;                                                              \
-			struct StaticClassInfo                                                                          \
-			{                                                                                               \
+                                                _DEFAULT_CREATE_FLAGS, _PROPERTY_TABLE)                     \
+        protected:                                                                                          \
+            friend ClassInfoBase<_CLASS_NAME>;                                                              \
+            struct StaticClassInfo                                                                          \
+            {                                                                                               \
 	            using ClassInfoType = _CLASS_INFO_TYPE;                                                     \
 				using BaseElement =_BASE_CLASS;                                                             \
                 constexpr static uint32_t fDefaultCreate = _DEFAULT_CREATE_FLAGS;                           \
-				constexpr static raw_const_astring_t szClassName = # _CLASS_NAME;                           \
-				constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT);   \
+                constexpr static raw_const_astring_t szClassName = #_CLASS_NAME;                           \
+                constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT);   \
                                                                                                             \
-				ClassInfoType* pClassInfoPtr;                                                               \
+                ClassInfoType* pClassInfoPtr;                                                               \
                                                                                                             \
-				union                                                                                       \
-				{                                                                                           \
-					struct                                                                                  \
-					{                                                                                       \
-						_PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_EXTERN);                                    \
-					};                                                                                      \
+                union                                                                                       \
+                {                                                                                           \
+                    struct                                                                                  \
+                    {                                                                                       \
+                        _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_EXTERN);                                    \
+                    };                                                                                      \
                                                                                                             \
-					const PropertyInfo Props[uPropsCount];                                                  \
-				};                                                                                          \
-			};                                                                                              \
+                    const PropertyInfo Props[uPropsCount];                                                  \
+                };                                                                                          \
+            };                                                                                              \
                                                                                                             \
-			static StaticClassInfo g_ClassInfoData;                                                         \
+            static StaticClassInfo g_ClassInfoData;                                                         \
 		public:                                                                                             \
-			virtual IClassInfo* __fastcall GetControlClassInfo();                                           \
-			static IClassInfo* __fastcall GetStaticControlClassInfo();                                      \
-			static HRESULT __fastcall Register();                                                           \
-			static HRESULT __fastcall UnRegister();
+            virtual IClassInfo* __fastcall GetControlClassInfo();                                           \
+            static IClassInfo* __fastcall GetStaticControlClassInfo();                                      \
+            static HRESULT __fastcall Register();                                                           \
+            static HRESULT __fastcall UnRegister();
 
 
 #define _APPLY_MEGA_UI_STATIC_CALSS_INFO(_CLASS_NAME, _PROPERTY_TABLE)   \
@@ -67,58 +78,132 @@ namespace YY
 		IClassInfo* __fastcall _CLASS_NAME::GetStaticControlClassInfo()  \
 		{                                                                \
 			return g_ClassInfoData.pClassInfoPtr;                        \
-		}                                                                \
-		HRESULT __fastcall _CLASS_NAME::Register()                       \
-		{                                                                \
-			return _CLASS_NAME::StaticClassInfo::ClassInfoType::Register();               \
-		}                                                                \
-		HRESULT __fastcall _CLASS_NAME::UnRegister()                     \
-		{                                                                \
-			if (!g_ClassInfoData.pClassInfoPtr)                          \
-				return S_FALSE;                                          \
-			return g_ClassInfoData.pClassInfoPtr->UnRegister();          \
-		}
+        }                                                                \
+        HRESULT __fastcall _CLASS_NAME::Register()                       \
+        {                                                                \
+            return _CLASS_NAME::StaticClassInfo::ClassInfoType::Register();               \
+        }                                                                \
+        HRESULT __fastcall _CLASS_NAME::UnRegister()                     \
+        {                                                                \
+            if (!g_ClassInfoData.pClassInfoPtr)                          \
+                return S_FALSE;                                          \
+            return g_ClassInfoData.pClassInfoPtr->UnRegister();          \
+        }
 
 
 #if 0
 		_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout, Value::GetElementNull,            nullptr, ValueType::eElement) \
 		_APPLY(Children,       PF_Normal | PF_ReadOnly,               PG_AffectsDesiredSize | PG_AffectsLayout, Value::GetElListNull,             nullptr, ValueType::eElementList) \
-		_APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                        Value::GetBoolFalse,              nullptr, ValueType::eBool) \
-		_APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                    Value::GetIntConstValue<-1>,      nullptr, ValueType::eInt) \
-		_APPLY(Height,         PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                    Value::GetIntConstValue<-1>,      nullptr, ValueType::eInt) \
-		_APPLY(X,              PF_Normal,                             0,                                        Value::GetIntZero,                nullptr, ValueType::eInt) \
-		_APPLY(Y,              PF_Normal,                             0,                                        Value::GetIntZero,                nullptr, ValueType::eInt) \
-		_APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                         Value::GetPointZero,              nullptr, ValueType::ePoint) \
-		_APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,      Value::GetSizeZero,               nullptr, ValueType::eSize) \
-		_APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                        Value::GetPointZero,              nullptr, ValueType::ePoint) \
-		_APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                        Value::GetSizeZero,               nullptr, ValueType::eSize) \
-		_APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,           PG_AffectsLayout | PG_AffectsParentLayout, Value::GetSizeZero,               nullptr, ValueType::eSize) \
-		_APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                        Value::GetSizeZero,               nullptr, ValueType::eSize) 
+		_APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                        Value::GetBoolFalse,              nullptr, ValueType::eBool)
 #endif
 
+    // clang-format off
 	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                  ChangedFun                        pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
-	_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
-	_APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                          nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0, 0), ValueType::int32_t)
-
+    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
+    _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                           nullptr,                           nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0, 0, 0), ValueType::ElementList) \
+    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                         nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0, 0), ValueType::int32_t) \
+    _APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
+    _APPLY(Height,         PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
+    _APPLY(X,              PF_Normal,                             0,                                              &Value::GetInt32Zero,              nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
+    _APPLY(Y,              PF_Normal,                             0,                                              &Value::GetInt32Zero,              nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
+    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::GetPointZero,              nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::POINT  ) \
+    _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetExtentPropertyCustomCache),             ValueType::SIZE   ) \
+    _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetPointZero,              nullptr,                           nullptr, _MEGA_UI_PROP_BIND_POINT(UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0, 0, 0), ValueType::POINT  ) \
+    _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocSizeInLayout), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
+    _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
+    _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
+    _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetLayoutNull,             nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Layout   ) 
+    // clang-format on
 
 		template<typename _Class>
 		class ClassInfoBase;
 
 
+        struct NavReference
+        {
+            UINT cbSize;
+            Element* pElement;
+            RECT* pRect;
+
+            NavReference(Element* _pElement, RECT* _pRect = nullptr)
+                : cbSize(sizeof(NavReference))
+                , pElement(_pElement)
+                , pRect(_pRect)
+            {
+            }
+        };
+
 		class Element
 		{
 			_APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 		private:
+            // _pvmLocal
 			// 所有 Local 值的
 			DynamicArray<Value*, false, false> LocalPropValue;
+            
+            ElementList vecLocChildren;
 
-			// Local Parent
+            // 正常优先级的组 0x10
+            int32_t _iGCSlot;
+            // 低优先级的组 0x14
+            int32_t _iGCLPSlot;
+            // v18
+            int32_t _iPCTail;
+            
+            // StartDefer 时保存的内容
+            DeferCycle* pDeferObject;
+            
+            // 顶层 Element，所有的Defer将发送到顶层 Element
+            Element* pTopLevel;
+			
+            // Local Parent
 			Element* pLocParent;
 
-			// Cached layout position
-			int32_t iSpecLayoutPos;
+            // 0x2C
+            // Position in layout local
+            POINT LocPosInLayout;
+            // 0x34 LayoutSize
+            // Size in layout local
+            SIZE LocSizeInLayout;
+            // 0x3C
+            // Desired size local
+            SIZE LocDesiredSize;
+            // 0x44 DesiredSize
+            // Last desired size constraint local
+            SIZE LocLastDesiredSizeConstraint;
+            
+            // 0x4C LayoutPos
+            // Cached Layout Position
+            int32_t iSpecLayoutPos;
+            
+
+            //bits
+            uint32_t bSelfLayout : 1;
+            uint32_t bNeedsDSUpdate : 1;
+            
+            // UINT8 LayoutType : 2;
+            uint32_t fNeedsLayout : 2;
+
+
+            // 边框宽度，四个方向，左上右下
+            RECT SpecBorderThickness = {};
+            // 内边距
+            RECT SpecPadding = {};
+
+            //Layout* pLayout = nullptr;
+
+            // 最小限制
+            SIZE SpecMinSize = {};
 		public:
+            Element();
+
+			Element(const Element&) = delete;
+
+			virtual ~Element();
+
+			Element& operator=(const Element&) = delete;
+
             static HRESULT __fastcall Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
             HRESULT __fastcall Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
@@ -143,20 +228,88 @@ namespace YY
             HRESULT __fastcall SetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pValue);
 
 			_Ret_maybenull_ Element* __fastcall GetParent();
+            
+            int32_t __fastcall GetLayoutPos();
+            HRESULT __fastcall SetLayoutPos(int32_t _iLayoutPos);
+
+            int32_t __fastcall GetWidth();
+            HRESULT __fastcall SetWidth(int32_t _iWidth);
+
+            int32_t __fastcall GetHeight();
+            HRESULT __fastcall SetHeight(int32_t _iHeight);
+
+            int32_t __fastcall GetX();
+            HRESULT __fastcall SetX(int32_t _iX);
+            
+            int32_t __fastcall GetY();
+            HRESULT __fastcall SetY(int32_t _iY);
+
+            ValueIs<ValueType::POINT>* __fastcall GetLocation();
+
+            SIZE __fastcall GetExtent();
+
+            ValueIs<ValueType::Layout>* GetLayout();
+
 
 			virtual void __fastcall OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
 
-			_Ret_maybenull_ DeferCycle* __fastcall GetDeferObject();
-            void __fastcall StartDefer(_In_ intptr_t* _pCooike);
+            /// <summary>
+            /// 用于通知 PropertyGroup 的状态
+            /// </summary>
+            /// <param name="_fGroups">PropertyGroup的组合</param>
+            void __fastcall OnGroupChanged(uint32_t _fGroups);
+
+            /// <summary>
+            /// 获取顶层 Element，便于 StartDefer，如果未设置 pTopLevel，则自身为顶层 Element
+            /// </summary>
+            /// <returns></returns>
+            _Ret_notnull_ Element* __fastcall GetTopLevel();
+			_Ret_maybenull_ DeferCycle* __fastcall GetDeferObject(_In_ bool _bAllowCreate = true);
+            void __fastcall StartDefer(_Out_ intptr_t* _pCooike);
             void __fastcall EndDefer(_In_ intptr_t _Cookie);
+			
+            ElementList __fastcall GetChildren();
+
+            virtual void __fastcall Paint(_In_ ID2D1RenderTarget* _pRenderTarget, _In_ const RECT& _Bounds);
+
+            virtual SIZE __fastcall GetContentSize(SIZE _ConstraintSize);
+            virtual SIZE __fastcall SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);
+            virtual void __fastcall SelfLayoutDoLayout(SIZE _ConstraintSize);
 		protected:
 			// Value Update
             HRESULT __fastcall PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
 			HRESULT __fastcall PostSourceChange();
+            HRESULT __fastcall GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, Value* _pNewValue, DeferCycle* _pDeferCycle);
+
+            static HRESULT __fastcall AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
+
+            static void __fastcall VoidPCNotifyTree(int, DeferCycle*);
 
 			PropertyCustomCacheResult __fastcall PropertyGeneralCache(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCacheActionInfo* _pInfo);
 
 			void __fastcall OnParentPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
+            
+            void __fastcall FlushDesiredSize(DeferCycle* _pDeferCycle);
+
+            void __fastcall FlushLayout(DeferCycle* _pDeferCycle);
+
+            static bool __fastcall SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle);
+
+            static void __fastcall TransferGroupFlags(Element* pElement, uint32_t _fGroups);
+            
+            static bool __fastcall MarkElementForDesiredSize(Element* _pElement);
+
+            static bool __fastcall MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew);
+
+            bool __fastcall SetNeedsLayout(uint32_t _fNeedsLayoutNew);
+
+            SIZE __fastcall UpdateDesiredSize(SIZE _ConstraintSize);
+
+            void __fastcall UpdateLayoutPosition(POINT _LayoutPosition);
+            
+            void __fastcall UpdateLayoutSize(SIZE _LayoutSize);
+
+            PropertyCustomCacheResult __fastcall GetExtentPropertyCustomCache(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCacheActionInfo* _pInfo);
 		};
 	}
 }

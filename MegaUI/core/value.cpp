@@ -92,6 +92,11 @@ namespace YY
         {
             _RETUNR_CONST_VALUE(ValueType::Unset);
         }
+
+        Value* __fastcall Value::GetLayoutNull()
+        {
+            _RETUNR_CONST_VALUE(ValueType::Layout, nullptr);
+        }
         
         void __fastcall Value::AddRef()
         {
@@ -109,7 +114,7 @@ namespace YY
 
             // 等效于 cRef >= 2
             // 0x100 = 0x80 * 2
-            if (_InterlockedExchangeAdd(&uRawType, uint_t(-int_t(0x80))) >= uint_t(0x100Fu))
+            if (_InterlockedExchangeAdd(&uRawType, uint_t(-int_t(0x80))) >= uint_t(0x100u))
                 return;
 
             // 引用计数归零
@@ -363,6 +368,14 @@ namespace YY
                 throw Exception();
 
             return boolValue;
+        }
+        
+        SIZE __fastcall Value::GetSize()
+        {
+            if (GetType() != ValueType::SIZE)
+                throw Exception();
+
+            return sizeVal;
         }
     }
 }

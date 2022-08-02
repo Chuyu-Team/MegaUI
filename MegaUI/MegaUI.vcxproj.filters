@@ -22,6 +22,9 @@
     <Filter Include="UI\base">
       <UniqueIdentifier>{9cad59f1-53c0-49d1-a714-f2e6e6e552bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Host">
+      <UniqueIdentifier>{f4dca592-1dfc-411a-8de3-cfb1f82aca73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -78,6 +81,15 @@
     <ClInclude Include="base\Exception.h">
       <Filter>UI\base</Filter>
     </ClInclude>
+    <ClInclude Include="Host\NativeWindowHost.h">
+      <Filter>UI\Host</Filter>
+    </ClInclude>
+    <ClInclude Include="base\HashSet.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Layout.h">
+      <Filter>UI\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -97,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="base\StringTransform.cpp">
       <Filter>UI\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Host\NativeWindowHost.cpp">
+      <Filter>UI\Host</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

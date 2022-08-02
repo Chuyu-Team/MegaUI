@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "..\base\DynamicArray.h"
+#include "..\base\HashSet.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -21,11 +22,17 @@ namespace YY
 
         struct PCRecord
         {
-            bool bVoid;
-            int32_t iIndex;
+            PropertyIndicies iIndex;
             Element* pElement;
-            PropertyInfo* pProp;
-            
+            // ppi
+            const PropertyInfo* pProp;
+            //bool bVoid;
+            uint8_t iRefCount;
+            bool vA;
+            bool vB;
+
+            // 0xC
+            long vC;
             Value* pOldValue;
             Value* pNewValue;
             DepRecs dr;
@@ -42,23 +49,44 @@ namespace YY
         class DeferCycle
         {
         public:
+            // pdaGC
             DynamicArray<GCRecord, false, false> vecGroupChangeNormalPriority;
+            // pdaGCLP
             DynamicArray<GCRecord, false, false> vecGroupChangeLowPriority;
+            // pdaPC
             DynamicArray<PCRecord, false, false> vecPropertyChanged;
+
+            HashSet<Element*, 12> LayoutRootPendingSet;
+            HashSet<Element*, 12> UpdateDesiredSizeRootPendingSet;
 
             // StartDefer的进入次数
             uint32_t uEnter;
             // 已经进入 EndDefer？
             bool bFiring;
-            // 
-            uint32_t uGroupChangeNormalPriorityFireIndex;
+            // iGCPtr
+            uint32_t uGroupChangeNormalPriorityFireCount;
             //int32_t iGCLPPtr;
-            uint32_t uGroupChangeLowPriorityFireIndex;
-            int32_t iPCPtr;
-            int32_t iPCSSUpdate;
-            int32_t cPCEnter;
+            uint32_t uGroupChangeLowPriorityFireCount;
+            //int32_t iPCPtr;
+            uint32_t uPropertyChangedFireCount;
+            //int32_t iPCSSUpdate;
+            uint32_t uPropertyChangedPostSourceCount;
+            //int32_t cPCEnter;
+            uint32_t uPropertyChangeEnter;
             // 当前内存区域的引用计数，如果为 0，则销毁此对象
             uint32_t uRef;
+
+            DeferCycle()
+                : uEnter(0u)
+                , bFiring(false)
+                , uGroupChangeNormalPriorityFireCount(0u)
+                , uGroupChangeLowPriorityFireCount(0u)
+                , uPropertyChangedFireCount(0u)
+                , uPropertyChangedPostSourceCount(0u)
+                , uPropertyChangeEnter(0u)
+                , uRef(0)
+            {
+            }
 
 
             uint32_t __fastcall AddRef()

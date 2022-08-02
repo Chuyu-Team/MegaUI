@@ -17,6 +17,8 @@ namespace YY
         class Element;
         typedef DynamicArray<Element*, true, false> ElementList;
 
+        class Layout;
+
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
         _APPLY(int32_t,     int32_t,             int32Value) \
         _APPLY(boolean,     bool,                boolValue)  \
@@ -27,7 +29,8 @@ namespace YY
         _APPLY(Element,     Element*,            pEleValue)  \
         _APPLY(ElementList, ElementList,         ListVal  )  \
         _APPLY(ATOM,        ATOM,                uAtomVal )  \
-        _APPLY(HCURSOR,     HCURSOR,             hCursorVal)
+        _APPLY(HCURSOR,     HCURSOR,             hCursorVal) \
+        _APPLY(Layout,      Layout*,             pLayout   )
 
 		enum class ValueType
         {
@@ -143,6 +146,7 @@ namespace YY
             static _Ret_notnull_ Value* __fastcall GetStringNull();
             static _Ret_notnull_ Value* __fastcall GetUnavailable();
             static _Ret_notnull_ Value* __fastcall GetUnset();
+            static _Ret_notnull_ Value* __fastcall GetLayoutNull();
 
             void __fastcall AddRef();
             void __fastcall Release();
@@ -157,7 +161,18 @@ namespace YY
             static _Ret_maybenull_ Value* __fastcall CreateString(_In_ const uString& _szValue);
             //static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
             static _Ret_maybenull_ Value* __fastcall CreatePoint(_In_ int32_t _iX, _In_ int32_t _iY);
+            
+            __inline static _Ret_maybenull_ Value* __fastcall CreatePoint(_In_ POINT _Point)
+            {
+                return CreatePoint(_Point.x, _Point.y);
+            }
+
             static _Ret_maybenull_ Value* __fastcall CreateSize(_In_ int32_t _iCX, _In_ int32_t _iCY);
+
+            __inline static _Ret_maybenull_ Value* __fastcall CreateSize(_In_ SIZE _Size)
+            {
+                return CreateSize(_Size.cx, _Size.cy);
+            }
             static _Ret_maybenull_ Value* __fastcall CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
             //static _Ret_maybenull_ Value* __fastcall CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
             static _Ret_maybenull_ Value* __fastcall CreateAtom(_In_z_ raw_const_ustring_t _szValue);
@@ -167,6 +182,7 @@ namespace YY
 
             int32_t __fastcall GetInt32();
             bool __fastcall GetBool();
+            SIZE __fastcall GetSize();
         };
 
         

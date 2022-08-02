@@ -298,6 +298,14 @@ namespace YY
                 return S_OK;
             }
 
+            _Ret_maybenull_ SharedPoint __fastcall GetItemPtr(uint_t _uIndex)
+            {
+                if (GetSize() <= _uIndex)
+                    return nullptr;
+
+                return pData + _uIndex;
+            }
+
             _Ret_maybenull_ const T* __fastcall GetItemPtr(uint_t _uIndex) const
             {
                 if (GetSize() <= _uIndex)
@@ -403,6 +411,24 @@ namespace YY
                 _pSharedData->uSize = _uNewSize;
                 _pSharedData->Unlock();
                 return S_OK;
+            }
+
+            T* __fastcall AddAndGetPtr(uint_t* _puIndex = nullptr)
+            {
+                auto _uIndex = GetSize();
+                auto _uNewSize = _uIndex + 1;
+
+                auto _pSharedData = LockSharedData(_uNewSize);
+                if (!_pSharedData)
+                    return nullptr;
+                if (_puIndex)
+                    *_puIndex = _uIndex;
+                auto _pItem = _pSharedData->GetData() + _uIndex;
+
+                Constructor::Init(_pItem, 1);
+                _pSharedData->uSize = _uNewSize;
+                _pSharedData->Unlock();
+                return _pItem;
             }
 
             HRESULT __fastcall Insert(uint_t _uIndex, const T& _NewItem)
