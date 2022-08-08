@@ -7,6 +7,8 @@
 #include "..\base\MegaUITypeInt.h"
 #include "..\base\DynamicArray.h"
 #include "..\base\StringBase.h"
+#include "..\base\Color.h"
+#include "..\base\Rect.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -25,12 +27,13 @@ namespace YY
         _APPLY(uString,     uString,             szValue  )  \
         _APPLY(POINT,       POINT,               ptVal    )  \
         _APPLY(SIZE,        SIZE,                sizeVal  )  \
-        _APPLY(RECT,        RECT,                rectVal  )  \
+        _APPLY(Rect,        Rect,                rectVal  )  \
         _APPLY(Element,     Element*,            pEleValue)  \
         _APPLY(ElementList, ElementList,         ListVal  )  \
         _APPLY(ATOM,        ATOM,                uAtomVal )  \
         _APPLY(HCURSOR,     HCURSOR,             hCursorVal) \
-        _APPLY(Layout,      Layout*,             pLayout   )
+        _APPLY(Layout,      Layout*,             pLayout  )  \
+        _APPLY(Color,       Color,               ColorValue)
 
 		enum class ValueType
         {
@@ -45,179 +48,254 @@ namespace YY
             _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
 #undef _APPLY
         };
+        
+        template<typename _Type>
+        struct ConstValueSharedData
+        {
+            uint_t eType : 6;
+            uint_t bSkipFree : 1;
+#ifdef _WIN64
+            uint_t cRef : 57;
+#else
+            uint_t cRef : 25;
+#endif
+            _Type Value;
+        };
+
+        template<>
+        struct ConstValueSharedData<void>
+        {
+            uint_t eType : 6;
+            uint_t bSkipFree : 1;
+#ifdef _WIN64
+            uint_t cRef : 57;
+#else
+            uint_t cRef : 25;
+#endif
+        };
+
+#define _APPLY(_eTYPE, _TYPE, _VAR)           \
+        template<>                                \
+        struct ValueTypeToType<ValueType::_eTYPE> \
+        {                                         \
+            using _Type = _TYPE;                  \
+            using SharedData = ConstValueSharedData<_Type>; \
+        };
+
+        template<ValueType eType>
+        struct ValueTypeToType
+        {
+            using _Type = void;
+            using SharedData = ConstValueSharedData<_Type>;
+        };
+        _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
+#undef _APPLY
+
+#define _DEFINE_CONST_VALUE(_VAR, _eTYPE, ...) static constexpr const ValueTypeToType<_eTYPE>::SharedData _VAR = {(uint_t)_eTYPE, 1, uint_t(-1), __VA_ARGS__}
+
+#define _RETUNR_CONST_VALUE(_eTYPE, ...)               \
+        _DEFINE_CONST_VALUE(Ret, _eTYPE, __VA_ARGS__); \
+        return Value((Value::SharedData*)(&Ret));
 
 		class Value
         {
-        protected:
-            union
+        public:
+            struct SharedData
             {
-                struct
+                union
                 {
-                    uint_t eType : 6;
-                    // 不要释放内部缓冲区
-                    uint_t bSkipFree : 1;
+                    struct
+                    {
+                        uint_t eType : 6;
+                        // 不要释放内部缓冲区
+                        uint_t bSkipFree : 1;
 #ifdef _WIN64
-                    uint_t cRef : 57;
+                        uint_t cRef : 57;
 #else
-                    uint_t cRef : 25;
+                        uint_t cRef : 25;
 #endif
+                    };
+
+                    uint_t uRawType;
                 };
 
-                uint_t uRawType;
-            };
-
-            union
-            {
-                byte_t RawBuffer[1];
+                union
+                {
+                    byte_t RawBuffer[1];
 #define _APPLY(_eTYPE, _TYPE, _VAR) _TYPE _VAR;
-                _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
+                    _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
 #undef _APPLY
+                };
+
+                SharedData() = delete;
+                SharedData(const SharedData&) = delete;
+                ~SharedData() = delete;
+
+                SharedData& operator=(const SharedData&) = delete;
+
+
+                void __fastcall AddRef();
+                void __fastcall Release();
             };
 
-            template<typename _Type>
-            struct ConstValue
-            {
-                uint_t eType : 6;
-                uint_t bSkipFree : 1;
-#ifdef _WIN64
-                uint_t cRef : 57;
-#else
-                uint_t cRef : 25;
-#endif
-                _Type Value;
-            };
-
-            template<>
-            struct ConstValue<void>
-            {
-                uint_t eType : 6;
-                uint_t bSkipFree : 1;
-#ifdef _WIN64
-                uint_t cRef : 57;
-#else
-                uint_t cRef : 25;
-#endif
-            };
-
-#define _APPLY(_eTYPE, _TYPE, _VAR)           \
-    template<>                                \
-    struct ValueTypeToType<ValueType::_eTYPE> \
-    {                                         \
-        using _Type = _TYPE;                  \
-        using ConstValue = ConstValue<_Type>; \
-    };
-            template<ValueType eType>
-            struct ValueTypeToType
-            {
-                using _Type = void;
-                using ConstValue = ConstValue<_Type>;
-            };
-            _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
-#undef _APPLY
-
-#define _DEFINE_CONST_VALUE(_VAR, _eTYPE, ...) static constexpr const ValueTypeToType<_eTYPE>::ConstValue _VAR = {(uint_t)_eTYPE, 1, uint_t(-1), __VA_ARGS__}
-
-#define _RETUNR_CONST_VALUE(_eTYPE, ...)           \
-    _DEFINE_CONST_VALUE(Ret, _eTYPE, __VA_ARGS__); \
-    return (Value*)&Ret;
+        private:
+            SharedData* pSharedData;
 
         public:
-            Value() = delete;
-            ~Value() = delete;
+            Value(SharedData* _pSharedData = nullptr)
+                : pSharedData(_pSharedData)
+            {
+            }
+
+            Value(const Value& _Other)
+                : pSharedData(_Other.pSharedData)
+            {
+                if (pSharedData)
+                    pSharedData->AddRef();
+            }
+
+            Value(Value&& _Other) noexcept
+                : pSharedData(_Other.pSharedData)
+            {
+                _Other.pSharedData = nullptr;
+            }
+
+            ~Value()
+            {
+                if (pSharedData)
+                    pSharedData->Release();
+            }
+            
+            Value& __fastcall operator=(const Value& _Other);
+            
+            Value& __fastcall operator=(Value&& _Other) noexcept;
+            
+            Value& __fastcall operator=(std::nullptr_t);
+
+            bool __fastcall operator==(_In_ const Value& _Other) const;
+
+            bool __fastcall operator!=(_In_ const Value& _Other) const;
+
+            bool __fastcall operator==(std::nullptr_t) const;
+            
+            bool __fastcall operator!=(std::nullptr_t) const;
 
             template<int32_t iValue>
-            static _Ret_notnull_ Value* __fastcall GetInt32ConstValue()
+            static Value __fastcall GetInt32ConstValue()
             {
                 _RETUNR_CONST_VALUE(ValueType::int32_t, iValue);
             }
 
-            static _Ret_notnull_ Value* __fastcall GetAtomZero();
-            static _Ret_notnull_ Value* __fastcall GetBoolFalse();
-            static _Ret_notnull_ Value* __fastcall GetBoolTrue();
+            static Value __fastcall GetAtomZero();
+            static Value __fastcall GetBoolFalse();
+            static Value __fastcall GetBoolTrue();
             //static _Ret_notnull_ Value* __fastcall GetColorTrans();
-            static _Ret_notnull_ Value* __fastcall GetCursorNull();
-            static _Ret_notnull_ Value* __fastcall GetElListNull();
-            static _Ret_notnull_ Value* __fastcall GetElementNull();
-            static _Ret_notnull_ Value* __fastcall GetInt32Zero();
-            static _Ret_notnull_ Value* __fastcall GetNull();
-            static _Ret_notnull_ Value* __fastcall GetPointZero();
-            static _Ret_notnull_ Value* __fastcall GetRectZero();
-            static _Ret_notnull_ Value* __fastcall GetSizeZero();
-            static _Ret_notnull_ Value* __fastcall GetStringNull();
-            static _Ret_notnull_ Value* __fastcall GetUnavailable();
-            static _Ret_notnull_ Value* __fastcall GetUnset();
-            static _Ret_notnull_ Value* __fastcall GetLayoutNull();
+            static Value __fastcall GetCursorNull();
+            static Value __fastcall GetElListNull();
+            static Value __fastcall GetElementNull();
+            static Value __fastcall GetInt32Zero();
+            static Value __fastcall GetNull();
+            static Value __fastcall GetPointZero();
+            static Value __fastcall GetRectZero();
+            static Value __fastcall GetSizeZero();
+            static Value __fastcall GetStringNull();
+            static Value __fastcall GetUnavailable();
+            static Value __fastcall GetUnset();
+            static Value __fastcall GetLayoutNull();
+            static Value __fastcall GetColorTransparant();
 
-            void __fastcall AddRef();
-            void __fastcall Release();
-            bool __fastcall IsEqual(_In_ Value* pValue);
+
             ValueType __fastcall GetType();
 
             // Value creation methods
-            static _Ret_maybenull_ Value* __fastcall CreateInt32(_In_ int32_t _iValue);
-            static _Ret_notnull_   Value* __fastcall CreateBool(_In_ bool _bValue);
-            static _Ret_maybenull_ Value* __fastcall CreateElementRef(_In_opt_ Element* _pValue);
-            static _Ret_maybenull_ Value* __fastcall CreateElementList(_In_ const ElementList& _pListValue);
-            static _Ret_maybenull_ Value* __fastcall CreateString(_In_ const uString& _szValue);
+            static Value __fastcall CreateInt32(_In_ int32_t _iValue);
+            static Value __fastcall CreateBool(_In_ bool _bValue);
+            static Value __fastcall CreateElementRef(_In_opt_ Element* _pValue);
+            static Value __fastcall CreateElementList(_In_ const ElementList& _pListValue);
+            static Value __fastcall CreateString(_In_ const uString& _szValue);
             //static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
-            static _Ret_maybenull_ Value* __fastcall CreatePoint(_In_ int32_t _iX, _In_ int32_t _iY);
+            static Value __fastcall CreatePoint(_In_ int32_t _iX, _In_ int32_t _iY);
             
-            __inline static _Ret_maybenull_ Value* __fastcall CreatePoint(_In_ POINT _Point)
+            __inline static Value __fastcall CreatePoint(_In_ POINT _Point)
             {
                 return CreatePoint(_Point.x, _Point.y);
             }
 
-            static _Ret_maybenull_ Value* __fastcall CreateSize(_In_ int32_t _iCX, _In_ int32_t _iCY);
+            static Value __fastcall CreateSize(_In_ int32_t _iCX, _In_ int32_t _iCY);
 
-            __inline static _Ret_maybenull_ Value* __fastcall CreateSize(_In_ SIZE _Size)
+            __inline static Value __fastcall CreateSize(_In_ SIZE _Size)
             {
                 return CreateSize(_Size.cx, _Size.cy);
             }
-            static _Ret_maybenull_ Value* __fastcall CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
+            static Value __fastcall CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
             //static _Ret_maybenull_ Value* __fastcall CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
-            static _Ret_maybenull_ Value* __fastcall CreateAtom(_In_z_ raw_const_ustring_t _szValue);
-            static _Ret_maybenull_ Value* __fastcall CreateAtom(_In_ ATOM _uAtomValue);
-            static _Ret_maybenull_ Value* __fastcall CreateCursor(_In_z_ raw_const_ustring_t _szValue);
-            static _Ret_maybenull_ Value* __fastcall CreateCursor(_In_ HCURSOR _hCursorValue);
+            static Value __fastcall CreateAtom(_In_z_ raw_const_ustring_t _szValue);
+            static Value __fastcall CreateAtom(_In_ ATOM _uAtomValue);
+            static Value __fastcall CreateCursor(_In_z_ raw_const_ustring_t _szValue);
+            static Value __fastcall CreateCursor(_In_ HCURSOR _hCursorValue);
+
+            __inline static Value __fastcall CreateColorARGB(_In_ uint8_t _Alpha, _In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
+            {
+                return CreateColorRGBA((COLORREF(_Red) << 0) | (COLORREF(_Green) << 8) | (COLORREF(_Blue) << 16) | (COLORREF(_Alpha) << 24));
+            }
+            
+            __inline static Value __fastcall CreateColorRGB(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
+            {
+                return CreateColorRGBA((COLORREF(_Red) << 0) | (COLORREF(_Green) << 8) | (COLORREF(_Blue) << 16) | (COLORREF(0xFFu) << 24));
+            }
+            
+            __inline static Value __fastcall CreateColor(_In_ Color Color)
+            {
+                return CreateColorRGBA(Color.ColorRGBA);
+            }
+            
+            __inline static Value __fastcall CreateColorRGB(_In_ COLORREF ColorRGB)
+            {
+                return CreateColorRGBA(ColorRGB | (0xFFu << 24));
+            }
+
+            static Value __fastcall CreateColorRGBA(_In_ COLORREF ColorRGBA);
+            
 
             int32_t __fastcall GetInt32();
             bool __fastcall GetBool();
             SIZE __fastcall GetSize();
+            POINT __fastcall GetPoint();
+            uint8_t* __fastcall GetRawBuffer();
+            Color __fastcall GetColor();
         };
 
-        
         template<ValueType _eType>
         class ValueIs : public Value
         {
         private:
             constexpr static ValueType eType = _eType;
         public:
-            ValueIs() = delete;
-            ValueIs(const ValueIs&) = delete;
-            ~ValueIs() = delete;
+            using _Type = typename ValueTypeToType<eType>::_Type;
 
-            using _ValueType = typename ValueTypeToType<eType>::_Type;
-
-            static ValueIs* __fastcall BuildByValue(Value* _pValue)
+            ValueIs(const Value& _Other)
+                : Value(_Other)
             {
-                if (!_pValue)
-                    return nullptr;
-
-                if (_pValue->GetType() != eType)
-                    return nullptr;
-
-                _pValue->AddRef();
-                return (ValueIs*)_pValue;
             }
 
-            __forceinline const _ValueType& __fastcall GetValue()
+            ValueIs(Value&& _Other)
+                : Value(std::move(_Other))
             {
-                return *(_ValueType*)RawBuffer;
             }
 
-            __forceinline operator const _ValueType&()
+            bool __fastcall HasValue()
             {
-                return GetValue();
+                return GetType() == eType;
+            }
+
+            _Type& __fastcall GetValue()
+            {
+                if (!HasValue())
+                {
+                    throw Exception();
+                }
+
+                return *(_Type*)GetRawBuffer();
             }
         };
     } // namespace MegaUI

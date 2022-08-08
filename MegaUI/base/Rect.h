@@ -1,0 +1,102 @@
+﻿#pragma once
+#include <Windows.h>
+#include <d2d1.h>
+
+#include "MegaUITypeInt.h"
+
+#pragma pack(push, __MEGA_UI_PACKING)
+
+namespace YY
+{
+    namespace MegaUI
+    {
+        class Rect : public RECT
+        {
+        public:
+            __inline constexpr Rect()
+                : RECT {}
+            {
+            }
+
+            __inline constexpr Rect(const RECT& _Other)
+                : RECT {_Other}
+            {
+            }
+
+            __inline constexpr Rect(const POINT& _Point, const SIZE& _Size)
+                : RECT {_Point.x, _Point.y, _Point.x + _Size.cx, _Point.y + _Size.cy}
+            {
+            }
+
+            __inline constexpr Rect(int32_t _Left, int32_t _Top, int32_t _Right, int32_t _Bottom)
+                : RECT {_Left, _Top, _Right, _Bottom}
+            {
+            }
+
+            __inline Rect& __fastcall operator=(const RECT& _Other)
+            {
+                left = _Other.left;
+                top = _Other.top;
+                right = _Other.right;
+                bottom = _Other.bottom;
+                return *this;
+            }
+
+            __inline Rect& __fastcall operator|=(const RECT& _Other)
+            {
+                UnionRect(this, this, &_Other);
+                return *this;
+            }
+
+            __inline Rect& __fastcall operator&=(const RECT& _Other)
+            {
+                IntersectRect(this, this, &_Other);
+                return *this;
+            }
+
+            __inline Rect& __fastcall operator-=(const RECT& _Other)
+            {
+                SubtractRect(this, this, &_Other);
+                return *this;
+            }
+
+            __inline bool __fastcall operator==(const RECT& _Other)
+            {
+                return EqualRect(this, &_Other);
+            }
+
+
+            __fastcall operator D2D_RECT_F() const
+            {
+                D2D_RECT_F _RectF;
+                _RectF.left = left;
+                _RectF.top = top;
+                _RectF.right = right;
+                _RectF.bottom = bottom;
+                return _RectF;
+            }
+        };
+
+
+        __inline Rect __fastcall operator|(const Rect& _Left, const Rect& _Rigth)
+        {
+            Rect _Tmp;
+            UnionRect(&_Tmp, &_Left, &_Rigth);
+            return _Tmp;
+        }
+
+        __inline Rect __fastcall operator&(const Rect& _Left, const Rect& _Rigth)
+        {
+            Rect _Tmp;
+            IntersectRect(&_Tmp, &_Left, &_Rigth);
+            return _Tmp;
+        }
+        
+        __inline Rect __fastcall operator-(const Rect& _Left, const Rect& _Rigth)
+        {
+            Rect _Tmp;
+            SubtractRect(&_Tmp, &_Left, &_Rigth);
+            return _Tmp;
+        }
+    }
+} // namespace YY

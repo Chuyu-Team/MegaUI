@@ -90,6 +90,12 @@
     <ClInclude Include="core\Layout.h">
       <Filter>UI\core</Filter>
     </ClInclude>
+    <ClInclude Include="base\Color.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Rect.h">
+      <Filter>UI\base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

@@ -70,7 +70,7 @@ namespace YY
             return S_OK;
         }
 
-		Value* __fastcall Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
+		Value __fastcall Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
         {
             if (_eIndicies >= PropertyIndicies::PI_MAX)
                 return Value::GetUnavailable();
@@ -86,7 +86,7 @@ namespace YY
             if (_iIndex < 0)
                 return Value::GetUnavailable();
 
-            Value* _pValue = Value::GetUnset();
+            Value _pValue = Value::GetUnset();
 
             FunTypePropertyCustomCache _pFunPropertyCache = nullptr;
 
@@ -98,16 +98,18 @@ namespace YY
                 {
                     _pFunPropertyCache = _Prop.BindCacheInfo.bValueMapOrCustomPropFun ? &Element::PropertyGeneralCache : _Prop.BindCacheInfo.pFunPropertyCustomCache;
 
-                    PropertyCustomCacheActionInfo _Info = { &_Prop, _eIndicies };
-                    _Info.GetValueInfo.bUsingCache = _bUpdateCache == false;
+                    PropertyCustomCacheGetValueAction _Info;
+                    _Info.pProp = &_Prop;
+                    _Info.eIndicies = _eIndicies;
+                    _Info.bUsingCache = _bUpdateCache == false;
 
                     _CacheResult = (this->*_pFunPropertyCache)(PropertyCustomCacheActionMode::GetValue, &_Info);
 
-                    if (_Info.GetValueInfo.pRetValue)
+                    if (_Info.RetValue != nullptr)
                     {
-                        _pValue = _Info.GetValueInfo.pRetValue;
+                        _pValue = std::move(_Info.RetValue);
 
-                        if (_pValue->GetType() != ValueType::Unset)
+                        if (_pValue.GetType() != ValueType::Unset)
                             break;
                     }
                 }
@@ -115,10 +117,10 @@ namespace YY
                 // 走 _LocalPropValue，这是一种通用逻辑
                 if ((_CacheResult & SkipLocalPropValue) == 0)
                 {
-                    if (auto _ppValue = LocalPropValue.GetItemPtr(_iIndex))
+                    auto _ppValue = LocalPropValue.GetItemPtr(_iIndex);
+                    if (_ppValue && *_ppValue != nullptr)
                     {
                         _pValue = *_ppValue;
-                        _pValue->AddRef();
                         break;
                     }
                 }
@@ -139,9 +141,9 @@ namespace YY
                     {
                         auto pValueByParent = _pParent->GetValue(_Prop, _eIndicies, false);
 
-                        if (pValueByParent && _pValue->GetType() >= ValueType::Null)
+                        if (pValueByParent != nullptr && _pValue.GetType() >= ValueType::Null)
                         {
-                            _pValue = pValueByParent;
+                            _pValue = std::move(pValueByParent);
                             break;
                         }
                     }
@@ -152,24 +154,26 @@ namespace YY
 
             } while (false);
 
-            if (_pFunPropertyCache && _pValue && _pValue->GetType() >= ValueType::Null && (_Prop.fFlags & PF_ReadOnly) == 0 && _bUpdateCache)
+            if (_pFunPropertyCache && _pValue.GetType() >= ValueType::Null && (_Prop.fFlags & PF_ReadOnly) == 0 && _bUpdateCache)
             {
-                PropertyCustomCacheActionInfo _Info = { &_Prop, _eIndicies };
-                _Info.UpdateValueInfo.pNewValue = _pValue;
+                PropertyCustomCacheUpdateValueAction _Info;
+                _Info.pProp = &_Prop;
+                _Info.eIndicies = _eIndicies;
+                _Info.InputNewValue = _pValue;
 
                 (this->*_pFunPropertyCache)(PropertyCustomCacheActionMode::UpdateValue, &_Info);
             }
 
-            if (!_pValue)
+            if (_pValue == nullptr)
                 _pValue = Value::GetUnset();
 
             return _pValue;
         }
 
-        HRESULT __fastcall Element::SetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, Value* _pValue)
+        HRESULT __fastcall Element::SetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pValue)
         {
-            if (!_pValue)
-                return E_POINTER;
+            if (_pValue == nullptr)
+                return E_INVALIDARG;
 
             if (_eIndicies != PropertyIndicies::PI_Local)
                 return E_NOTIMPL;
@@ -184,10 +188,10 @@ namespace YY
             const auto _uIndex = (size_t)_iIndex;
 
             auto _pvOld = GetValue(_Prop, _eIndicies, false);
-            if (!_pvOld)
+            if (_pvOld == nullptr)
                 return E_OUTOFMEMORY;
 
-            if (_pvOld->IsEqual(_pValue))
+            if (_pvOld == _pValue)
                 return S_OK;
 
             PreSourceChange(_Prop, _eIndicies, _pvOld, _pValue);
@@ -198,12 +202,6 @@ namespace YY
 
             if (SUCCEEDED(_hr))
                 _hr = LocalPropValue.SetItem(_uIndex, _pValue);
-
-            if (SUCCEEDED(_hr))
-            {
-                _pValue->AddRef();
-                _pvOld->Release();
-            }
 
             PostSourceChange();
 
@@ -223,123 +221,105 @@ namespace YY
         HRESULT __fastcall Element::SetLayoutPos(int32_t _iLayoutPos)
         {
             auto _pValue = Value::CreateInt32(_iLayoutPos);
-            if (!_pValue)
+            if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            auto _hr = SetValue(Element::g_ClassInfoData.LayoutPosProp, PropertyIndicies::PI_Local, _pValue);
-            _pValue->Release();
-            return _hr;
+            return SetValue(Element::g_ClassInfoData.LayoutPosProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __fastcall Element::GetWidth()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.WidthProp, PropertyIndicies::PI_Specified, false);
-            if (!_pValue)
+            if (_pValue == nullptr)
             {
                 throw Exception();
                 return -1;
             }
-
-            auto _iValue = _pValue->GetInt32();
-            _pValue->Release();
-            return _iValue;
+            return _pValue.GetInt32();
         }
 
         HRESULT __fastcall Element::SetWidth(int32_t _iWidth)
         {
             auto _pValue = Value::CreateInt32(_iWidth);
-            if (!_pValue)
+            if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            auto _hr = SetValue(Element::g_ClassInfoData.WidthProp, PropertyIndicies::PI_Local, _pValue);
-            _pValue->Release();
-            return _hr;
+            return SetValue(Element::g_ClassInfoData.WidthProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __fastcall Element::GetHeight()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.HeightProp, PropertyIndicies::PI_Specified, false);
-            if (!_pValue)
+            if (_pValue == nullptr)
             {
                 throw Exception();
                 return -1;
             }
-
-            auto _iValue = _pValue->GetInt32();
-            _pValue->Release();
-            return _iValue;
+            return _pValue.GetInt32();
         }
 
         HRESULT __fastcall Element::SetHeight(int32_t _iHeight)
         {
             auto _pValue = Value::CreateInt32(_iHeight);
-            if (!_pValue)
+            if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            auto _hr = SetValue(Element::g_ClassInfoData.HeightProp, PropertyIndicies::PI_Local, _pValue);
-            _pValue->Release();
-            return _hr;
+            return SetValue(Element::g_ClassInfoData.HeightProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __fastcall Element::GetX()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.XProp, PropertyIndicies::PI_Specified, false);
-            if (!_pValue)
+            if (_pValue == nullptr)
             {
                 throw Exception();
                 return -1;
             }
 
-            auto _iValue = _pValue->GetInt32();
-            _pValue->Release();
-            return _iValue;
+            return _pValue.GetInt32();
         }
 
         HRESULT __fastcall Element::SetX(int32_t _iX)
         {
             auto _pValue = Value::CreateInt32(_iX);
-            if (!_pValue)
+            if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            auto _hr = SetValue(Element::g_ClassInfoData.XProp, PropertyIndicies::PI_Local, _pValue);
-            _pValue->Release();
-            return _hr;
+            return SetValue(Element::g_ClassInfoData.XProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __fastcall Element::GetY()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.YProp, PropertyIndicies::PI_Specified, false);
-            if (!_pValue)
+            if (_pValue == nullptr)
             {
                 throw Exception();
                 return -1;
             }
 
-            auto _iValue = _pValue->GetInt32();
-            _pValue->Release();
-            return _iValue;
+            return _pValue.GetInt32();
         }
 
         HRESULT __fastcall Element::SetY(int32_t _iY)
         {
             auto _pValue = Value::CreateInt32(_iY);
-            if (!_pValue)
+            if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            auto _hr = SetValue(Element::g_ClassInfoData.YProp, PropertyIndicies::PI_Local, _pValue);
-            _pValue->Release();
-            return _hr;
+            return SetValue(Element::g_ClassInfoData.YProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        ValueIs<ValueType::POINT>* __fastcall Element::GetLocation()
+        POINT __fastcall Element::GetLocation()
         {
+            POINT _Location = {};
             auto _pValue = GetValue(Element::g_ClassInfoData.LocationProp, PropertyIndicies::PI_Local, false);
-            if (!_pValue)
-                return nullptr;
 
-            auto _pRet = ValueIs<ValueType::POINT>::BuildByValue(_pValue);
-            _pValue->Release();
-            return _pRet;
+            if (_pValue != nullptr)
+            {
+                _Location = _pValue.GetPoint();
+            }
+
+            return _Location;
         }
 
         SIZE __fastcall Element::GetExtent()
@@ -347,28 +327,22 @@ namespace YY
             SIZE _Extent = {};
 
             auto _pValue = GetValue(Element::g_ClassInfoData.ExtentProp, PropertyIndicies::PI_Local, false);
-            if (_pValue)
+            if (_pValue != nullptr)
             {
-                _Extent = _pValue->GetSize();
-                _pValue->Release();
+                _Extent = _pValue.GetSize();
             }
             return _Extent;
         }
 
-        ValueIs<ValueType::Layout>* Element::GetLayout()
+        ValueIs<ValueType::Layout> __fastcall Element::GetLayout()
         {
-            auto _pValue = GetValue(Element::g_ClassInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
-            if (!_pValue)
-                return nullptr;
-            auto _pRet = ValueIs<ValueType::Layout>::BuildByValue(_pValue);
-            _pValue->Release();
-            return _pRet;
+            return GetValue(Element::g_ClassInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
         }
 
-		void __fastcall Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, Value* _pOldValue, Value* _pNewValue)
+		void __fastcall Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
             if (_Prop.pFunOnPropertyChanged)
-                (this->*_Prop.pFunOnPropertyChanged)(_Prop, _eIndicies, _pOldValue, _pNewValue);
+                (this->*_Prop.pFunOnPropertyChanged)(_Prop, _eIndicies, _OldValue, _NewValue);
         }
 
         void __fastcall Element::OnGroupChanged(uint32_t _fGroups)
@@ -582,17 +556,26 @@ namespace YY
             --_pDeferCycle->uEnter;
 		}
         
-        void __fastcall Element::Paint(_In_ ID2D1RenderTarget* _pRenderTarget, _In_ const RECT& _Bounds)
+        void __fastcall Element::Paint(_In_ ID2D1RenderTarget* _pRenderTarget, _In_ const Rect& _Bounds)
         {
-            ATL::CComPtr<ID2D1SolidColorBrush> m_pBlackBrush;
-            auto hr = _pRenderTarget->CreateSolidColorBrush(
-                D2D1::ColorF(D2D1::ColorF::DarkRed),
-                &m_pBlackBrush);
+            auto Background = GetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false);
 
-            if (FAILED(hr))
+            if (Background == nullptr)
                 return;
 
-            _pRenderTarget->FillRectangle(D2D1::RectF(_Bounds.left, _Bounds.top, _Bounds.right, _Bounds.bottom), m_pBlackBrush);
+            if (Background.GetType() == ValueType::Color)
+            {
+                ATL::CComPtr<ID2D1SolidColorBrush> m_pBlackBrush;
+                auto hr = _pRenderTarget->CreateSolidColorBrush(
+                   /* D2D1::ColorF(D2D1::ColorF::DarkRed)*/
+                    Background.GetColor(),
+                    &m_pBlackBrush);
+
+                if (FAILED(hr))
+                    return;
+
+                _pRenderTarget->FillRectangle(_Bounds, m_pBlackBrush);
+            }
         }
 
         SIZE __fastcall Element::GetContentSize(SIZE _ConstraintSize)
@@ -617,7 +600,7 @@ namespace YY
             return vecLocChildren;
         }
 
-        HRESULT __fastcall Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue)
+        HRESULT __fastcall Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
         {
             if (_pOldValue == nullptr)
                 return E_INVALIDARG;
@@ -644,12 +627,10 @@ namespace YY
             _pPCRecord->iPrevElRec = _pPCRecord->pElement->_iPCTail;
             _pPCRecord->pElement->_iPCTail = TempInt;
 
-            _pOldValue->AddRef();
             _pPCRecord->pOldValue = _pOldValue;
 
             if (_eIndicies == PropertyIndicies::PI_Specified)
             {
-                _pNewValue->AddRef();
                 _pPCRecord->pNewValue = _pNewValue;
             }
             else
@@ -698,7 +679,6 @@ namespace YY
                                 pctmp = pcj;
                                 p2a = j;
                                 pcj->pOldValue = pValue;
-                                pValue->AddRef();
                             }
                             else
                             {
@@ -717,8 +697,6 @@ namespace YY
                         j = pcj->iPrevElRec;
 
                     } while (j >= i);
-
-                    pValue->Release();
                 }
             }
 
@@ -750,10 +728,10 @@ namespace YY
                     }
                     else
                     {
-                        if (!pc->pNewValue)
+                        if (pc->pNewValue == nullptr)
                             pc->pNewValue = pc->pElement->GetValue(*pc->pProp, pc->iIndex, true);
 
-                        if (pc->pOldValue->IsEqual(pc->pNewValue))
+                        if (pc->pOldValue == pc->pNewValue)
                         {
                             pc->iRefCount = 1;
 
@@ -794,10 +772,8 @@ namespace YY
 
                         pPCRecord = pDeferObject->vecPropertyChanged.GetItemPtr(pDeferObject->uPropertyChangedFireCount);
 
-                        pPCRecord->pOldValue->Release();
                         pPCRecord->pOldValue = nullptr;
 
-                        pPCRecord->pNewValue->Release();
                         pPCRecord->pNewValue = nullptr;
 
                         pPCRecord->iRefCount = 0;
@@ -825,7 +801,7 @@ namespace YY
             return bSuccess != 0 ? 0x800403EB : 0;
         }
 
-        HRESULT __fastcall Element::GetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, Value* _pNewValue, DeferCycle* _pDeferCycle)
+        HRESULT __fastcall Element::GetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
         {
             HRESULT _hrLast = S_OK;
 
@@ -849,7 +825,7 @@ namespace YY
                             continue;
                         
                         auto ppValue = _pChild->LocalPropValue.GetItemPtr(_iPropIndex);
-                        if (ppValue && *ppValue)
+                        if (ppValue && *ppValue != nullptr)
                             continue;
 
                         auto hr = AddDependency(_pChild, _Prop, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
@@ -919,18 +895,9 @@ namespace YY
                 {
                     if (--pr->iRefCount)
                         return;
-
-                    if (pr->pOldValue)
-                    {
-                        pr->pOldValue->Release();
-                        pr->pOldValue = nullptr;
-                    }
-
-                    if (pr->pNewValue)
-                    {
-                        pr->pNewValue->Release();
-                        pr->pNewValue = nullptr;
-                    }
+                    
+                    pr->pOldValue = nullptr;
+                    pr->pNewValue = nullptr;
 
                     for (int i = 0; i != pr->dr.cDepCnt; ++i)
                         VoidPCNotifyTree(pr->dr.iDepPos + i, p2);
@@ -1081,16 +1048,16 @@ namespace YY
 
         PropertyCustomCacheResult __fastcall Element::PropertyGeneralCache(
             PropertyCustomCacheActionMode _eMode,
-            PropertyCustomCacheActionInfo* _pInfo)
+            PropertyCustomCachenBaseAction* _pBaseInfo)
 		{
             uint16_t _uOffsetToCache = 0;
             uint16_t _uOffsetToHasCache = 0;
             uint8_t _uCacheBit;
             uint8_t _uHasCacheBit;
 
-			auto _pProp = _pInfo->pProp;
+			auto _pProp = _pBaseInfo->pProp;
 
-			switch (_pInfo->eIndicies)
+			switch (_pBaseInfo->eIndicies)
 			{
 			case PropertyIndicies::PI_Computed:
 			case PropertyIndicies::PI_Specified:
@@ -1115,7 +1082,8 @@ namespace YY
 
 			if (_eMode == PropertyCustomCacheActionMode::GetValue)
 			{
-                Value* _pRetValue = nullptr;
+                auto _pInfo = (PropertyCustomCacheGetValueAction*)_pBaseInfo;
+                Value _pRetValue;
 
 				do
 				{
@@ -1124,7 +1092,7 @@ namespace YY
 
 					// 如果属性是 PF_ReadOnly，那么它必然不会实际走到 _LocalPropValue 里面去，必须走 缓存
 					// 如果 _UsingCache == true，那么我们可以走缓存
-                    if ((_pProp->fFlags & PF_ReadOnly) || _pInfo->GetValueInfo.bUsingCache)
+                    if ((_pProp->fFlags & PF_ReadOnly) || _pInfo->bUsingCache)
 					{
 						// 检测实际是否存在缓存，如果检测到没有缓存，那么直接返回
                         if (_uOffsetToHasCache)
@@ -1152,12 +1120,12 @@ namespace YY
 							break;
 						}
 
-                        if (!_pRetValue)
+                        if (_pRetValue != nullptr)
                             _pRetValue = Value::GetUnset();
 					}
 				} while (false);
 				
-				_pInfo->GetValueInfo.pRetValue = _pRetValue;
+				_pInfo->RetValue = std::move(_pRetValue);
 
 				if (_pProp->fFlags & PF_ReadOnly)
 				{
@@ -1168,17 +1136,19 @@ namespace YY
 			}
             else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
 			{
+                auto _pInfo = (PropertyCustomCacheUpdateValueAction*)_pBaseInfo;
+
 				do
 				{
                     if (_uOffsetToCache == 0)
 						break;
 
-					auto _pNewValue = _pInfo->UpdateValueInfo.pNewValue;
+					auto& _pNewValue = _pInfo->InputNewValue;
 
-					if (!_pNewValue)
+					if (_pNewValue == nullptr)
 						break;
 
-					if (_pNewValue->GetType() == ValueType::Unset)
+					if (_pNewValue.GetType() == ValueType::Unset)
 					{
                         if (_uOffsetToHasCache == 0)
 							break;
@@ -1187,7 +1157,7 @@ namespace YY
 
 						_uHasCache &= ~(1 << _uHasCacheBit);
 					}
-                    else if (_pNewValue->GetType() == (ValueType)_pProp->BindCacheInfo.eType)
+                    else if (_pNewValue.GetType() == (ValueType)_pProp->BindCacheInfo.eType)
 					{
 						// 标记缓存已经被设置
 						auto& _uHasCache = *((uint8_t*)this + _uOffsetToHasCache);
@@ -1198,10 +1168,10 @@ namespace YY
 						switch ((ValueType)_pProp->BindCacheInfo.eType)
 						{
 						case ValueType::int32_t:
-                            *(int32_t*)_pCache = _pNewValue->GetInt32();
+                            *(int32_t*)_pCache = _pNewValue.GetInt32();
 							break;
 						case ValueType::boolean:
-							if (_pNewValue->GetBool())
+							if (_pNewValue.GetBool())
 							{
                                 *_pCache |= (1 << _uCacheBit);
 							}
@@ -1221,7 +1191,7 @@ namespace YY
 			return PropertyCustomCacheResult::SkipNone;
 		}
 		
-		void __fastcall Element::OnParentPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, Value* _pOldValue, Value* pNewValue)
+		void __fastcall Element::OnParentPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
 			
 		}
@@ -1270,8 +1240,8 @@ namespace YY
 
             if (_fNeedsLayout == LC_Normal)
             {
-                auto _pLayout = GetLayout();
-                if ((_pLayout && _pLayout->GetValue()) || bSelfLayout)
+                auto _Layout = GetLayout();
+                if ((_Layout.HasValue() && _Layout.GetValue()) || bSelfLayout)
                 {
                     auto Extent = GetExtent();
 
@@ -1290,11 +1260,8 @@ namespace YY
                     if (bSelfLayout)
                         SelfLayoutDoLayout(Extent);
                     else
-                        _pLayout->GetValue()->DoLayout(this, Extent.cx, Extent.cy);
+                        _Layout.GetValue()->DoLayout(this, Extent.cx, Extent.cy);
                 }
-
-                if (_pLayout)
-                    _pLayout->Release();
 
                 for (auto pChildren : GetChildren())
                 {
@@ -1332,7 +1299,7 @@ namespace YY
                     auto pSizeOld = Value::CreateSize(LocDesiredSize);
                     auto pSizeNew = Value::CreateSize(_ConstraintSize);
 
-                    if (pSizeNew)
+                    if (pSizeNew != nullptr)
                     {
                         PreSourceChange(Element::g_ClassInfoData.LastDesiredSizeConstraintProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
 
@@ -1341,12 +1308,6 @@ namespace YY
 
                         PostSourceChange();
                     }
-
-                    if (pSizeNew)
-                        pSizeNew->Release();
-
-                    if (pSizeOld)
-                        pSizeOld->Release();
                 }
 
                 auto nWidth = GetWidth();
@@ -1450,9 +1411,6 @@ namespace YY
                 LocLastDesiredSizeConstraint = sizeDesired;
 
                 PostSourceChange();
-
-                pSizeNew->Release();
-                pSizeOld->Release();
             }
             else
             {
@@ -1461,11 +1419,13 @@ namespace YY
             return sizeDesired;
         }
         
-        PropertyCustomCacheResult __fastcall Element::GetExtentPropertyCustomCache(PropertyCustomCacheActionMode _eMode, PropertyCustomCacheActionInfo* _pInfo)
+        PropertyCustomCacheResult __fastcall Element::GetExtentProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
         {
             if (_eMode == PropertyCustomCacheActionMode::GetValue)
             {
-                auto& pExtentValue = _pInfo->GetValueInfo.pRetValue;
+                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
+
+                auto& pExtentValue = _pGetValueInfo->RetValue;
 
                 if (pLocParent && iSpecLayoutPos != LP_Absolute)
                 {
@@ -1479,28 +1439,44 @@ namespace YY
             return PropertyCustomCacheResult::SkipAll;
         }
 
+        PropertyCustomCacheResult __fastcall Element::GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo)
+        {
+            if (_eMode == PropertyCustomCacheActionMode::GetValue)
+            {
+                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
+
+                auto& _Location = _pGetValueInfo->RetValue;
+
+                if (pLocParent && iSpecLayoutPos != LP_Absolute)
+                {
+                    _Location = Value::CreatePoint(LocPosInLayout);
+                }
+                else
+                {
+                    _Location = Value::CreatePoint(GetX(), GetY());
+                }
+            }
+            return PropertyCustomCacheResult::SkipAll;
+        }
+
         void __fastcall Element::UpdateLayoutPosition(POINT _LayoutPosition)
         {
             if (LocPosInLayout.x == _LayoutPosition.x && LocPosInLayout.y == _LayoutPosition.y)
                 return;
 
             auto _pPointOld = Value::CreatePoint(LocPosInLayout);
-            if (!_pPointOld)
+            if (_pPointOld == nullptr)
                 return;
 
             auto _pPointNew = Value::CreatePoint(_LayoutPosition);
-            if (_pPointNew)
-            {
-                PreSourceChange(Element::g_ClassInfoData.PosInLayoutProp, PropertyIndicies::PI_Local, _pPointOld, _pPointNew);
+            if (_pPointNew == nullptr)
+                return;
 
-                LocPosInLayout = _LayoutPosition;
+            PreSourceChange(Element::g_ClassInfoData.PosInLayoutProp, PropertyIndicies::PI_Local, _pPointOld, _pPointNew);
 
-                PostSourceChange();
+            LocPosInLayout = _LayoutPosition;
 
-                _pPointNew->Release();
-            }
-
-            _pPointOld->Release();
+            PostSourceChange();
         }
 
         void __fastcall Element::UpdateLayoutSize(SIZE _LayoutSize)
@@ -1509,22 +1485,18 @@ namespace YY
                 return;
             
             auto _pSizeOld = Value::CreateSize(LocSizeInLayout);
-            if (!_pSizeOld)
+            if (_pSizeOld == nullptr)
                 return;
 
             auto _pSizeNew = Value::CreateSize(_LayoutSize);
-            if (_pSizeNew)
-            {
-                PreSourceChange(Element::g_ClassInfoData.SizeInLayoutProp, PropertyIndicies::PI_Local, _pSizeOld, _pSizeNew);
+            if (_pSizeNew == nullptr)
+                return;
 
-                LocSizeInLayout = _LayoutSize;
+            PreSourceChange(Element::g_ClassInfoData.SizeInLayoutProp, PropertyIndicies::PI_Local, _pSizeOld, _pSizeNew);
 
-                PostSourceChange();
+            LocSizeInLayout = _LayoutSize;
 
-                _pSizeNew->Release();
-            }
-
-            _pSizeOld->Release();
+            PostSourceChange();
         }
 	}
 }

@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\alloc.h" />
+    <ClInclude Include="base\Color.h" />
     <ClInclude Include="base\Encoding.h" />
     <ClInclude Include="base\DynamicArray.h" />
     <ClInclude Include="base\ErrorCode.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="base\HashSet.h" />
     <ClInclude Include="base\Interlocked.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />
+    <ClInclude Include="base\Rect.h" />
     <ClInclude Include="base\String.h" />
     <ClInclude Include="base\StringBase.h" />
     <ClInclude Include="base\StringTransform.h" />

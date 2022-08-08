@@ -16,8 +16,8 @@ namespace YY
         // Track dependency records in PC list
         struct DepRecs
         {
-            int32_t iDepPos;
-            int32_t cDepCnt;
+            int32_t iDepPos = 0;
+            int32_t cDepCnt = 0;
         };
 
         struct PCRecord
@@ -33,8 +33,8 @@ namespace YY
 
             // 0xC
             long vC;
-            Value* pOldValue;
-            Value* pNewValue;
+            Value pOldValue;
+            Value pNewValue;
             DepRecs dr;
             int32_t iPrevElRec;
         };
@@ -54,7 +54,7 @@ namespace YY
             // pdaGCLP
             DynamicArray<GCRecord, false, false> vecGroupChangeLowPriority;
             // pdaPC
-            DynamicArray<PCRecord, false, false> vecPropertyChanged;
+            DynamicArray<PCRecord, false, true> vecPropertyChanged;
 
             HashSet<Element*, 12> LayoutRootPendingSet;
             HashSet<Element*, 12> UpdateDesiredSizeRootPendingSet;

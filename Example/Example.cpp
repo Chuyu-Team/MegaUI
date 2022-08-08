@@ -24,6 +24,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     YY::MegaUI::Element::Create(0, nullptr, nullptr, &p);
 
+    p->SetValue(YY::MegaUI::Element::g_ClassInfoData.BackgroundProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateColorRGB(RGB(255,0,0)));
+
     _pWindows->SetHost(p);
 
     _pWindows->ShowWindow(SW_SHOW);

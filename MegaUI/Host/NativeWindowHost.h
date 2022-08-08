@@ -85,6 +85,13 @@ namespace YY
             HRESULT __fastcall InitializeD2D();
 
             HRESULT __fastcall OnPaint();
+            
+            HRESULT __fastcall PaintElement(
+                _In_ ID2D1BitmapRenderTarget* _pCompatibleRenderTarget,
+                _In_ Element* _pElement,
+                _In_ const Rect& _ParentBounds,
+                _In_ const Rect& _ParentPaintRect
+                );
 
             HRESULT __fastcall InitializeRenderTarget();
 

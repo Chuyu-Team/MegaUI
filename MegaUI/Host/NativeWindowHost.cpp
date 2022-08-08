@@ -274,13 +274,9 @@ namespace YY
 
                 
                 auto _RenderTargetSize = m_pRenderTarget->GetSize();
-
-                if (pHost)
-                {
-                    auto _Extent = pHost->GetExtent();
-
-                    pHost->Paint(m_pCompatibleRenderTarget, { 0, 0, _Extent.cx, _Extent.cy });
-                }
+                Rect _Bounds(0, 0, _RenderTargetSize.width, _RenderTargetSize.height);
+                PaintElement(m_pCompatibleRenderTarget, pHost, _Bounds, _Bounds);
+                
                 //m_pCompatibleRenderTarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, _RenderTargetSize.width, _RenderTargetSize.height), m_pBlackBrush);
 
 
@@ -307,6 +303,45 @@ namespace YY
             }
 
             return hr;
+        }
+
+        HRESULT __fastcall NativeWindowHost::PaintElement(ID2D1BitmapRenderTarget* _pCompatibleRenderTarget, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
+        {
+            if (_pCompatibleRenderTarget == nullptr || _pElement == nullptr)
+                return E_INVALIDARG;
+
+            auto _Location = _pElement->GetLocation();
+            auto _Extent = _pElement->GetExtent();
+
+            Rect _BoundsElement;
+            _BoundsElement.left = _ParentBounds.left + _Location.x;
+            _BoundsElement.right = _BoundsElement.left + _Extent.cx;
+
+            _BoundsElement.top = _ParentBounds.top + _Location.y;
+            _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
+            
+            // 如果没有交集，那么我们可以不绘制
+            Rect _PaintRect;
+            if (!IntersectRect(&_PaintRect, &_ParentPaintRect, &_BoundsElement))
+                return S_OK;
+
+            const auto _bNeedClip = _PaintRect == _BoundsElement;
+            if (_bNeedClip)
+            {
+                m_pCompatibleRenderTarget->PushAxisAlignedClip(_PaintRect, D2D1_ANTIALIAS_MODE_ALIASED);
+            }
+
+            _pElement->Paint(m_pCompatibleRenderTarget, _BoundsElement);
+
+            if (_bNeedClip)
+                m_pCompatibleRenderTarget->PopAxisAlignedClip();
+
+            for (auto pItem : _pElement->GetChildren())
+            {
+                PaintElement(_pCompatibleRenderTarget, pItem, _BoundsElement, _ParentPaintRect);
+            }
+
+            return S_OK;
         }
 
         HRESULT __fastcall NativeWindowHost::InitializeRenderTarget()

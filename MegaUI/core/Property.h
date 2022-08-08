@@ -3,6 +3,7 @@
 #include <Windows.h>
 
 #include "..\base\MegaUITypeInt.h"
+#include "..\core\value.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -104,25 +105,21 @@ namespace YY
 
         struct PropertyInfo;
 
-        struct PropertyCustomCacheActionInfo
+        struct PropertyCustomCachenBaseAction
         {
             const PropertyInfo* pProp;
             PropertyIndicies eIndicies;
-            union
-            {
-                // GetValue
-                struct
-                {
-                    Value* pRetValue;
-                    bool bUsingCache;
-                } GetValueInfo;
+        };
 
-                // UpdateValue
-                struct
-                {
-                    Value* pNewValue;
-                } UpdateValueInfo;
-            };
+        struct PropertyCustomCacheGetValueAction : public PropertyCustomCachenBaseAction
+        {
+            Value RetValue;
+            bool bUsingCache;
+        };
+
+        struct PropertyCustomCacheUpdateValueAction : public PropertyCustomCachenBaseAction
+        {
+            Value InputNewValue;
         };
 
         enum PropertyCustomCacheResult
@@ -137,8 +134,8 @@ namespace YY
             SkipAll = 0xFFFFFFFF,
         };
 
-        typedef void (__fastcall Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value* _pOldValue, _In_ Value* _pNewValue);
-        typedef PropertyCustomCacheResult (__fastcall Element::*FunTypePropertyCustomCache)(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCacheActionInfo* _pInfo);
+        typedef void (__fastcall Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+        typedef PropertyCustomCacheResult (__fastcall Element::*FunTypePropertyCustomCache)(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
         struct PropertyInfo
         {
@@ -153,7 +150,7 @@ namespace YY
             // 一串枚举值，以 { nullptr, 0 } 结束
             const EnumMap* pEnumMaps;
             // 默认值的初始化函数
-            Value*(__fastcall* pFunDefaultValue)();
+            Value (__fastcall* pFunDefaultValue)();
             // 当值发生更改时，会调用此函数
             FunTypeOnPropertyChanged pFunOnPropertyChanged;
             // 该属性绑定的缓存属性，如果没有绑定，那么直接使用 _LocalPropValue
