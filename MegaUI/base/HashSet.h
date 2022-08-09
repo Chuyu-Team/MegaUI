@@ -81,6 +81,37 @@ namespace YY
 
                 return S_OK;
             }
+
+            HRESULT __fastcall Remove(_Key _pKey)
+            {
+                const auto _uIndex = reinterpret_cast<uint_t>(_pKey) % _uBuckets;
+                HashSetEntry* _pLastEntry = nullptr;
+
+                for (auto _pEntry = pBuckets[_uIndex]; _pEntry; _pEntry = _pEntry->pNext)
+                {
+                    if (_pEntry->Data == _pKey)
+                    {
+                        auto _pNext = _pEntry->pNext;
+
+                        if (_pLastEntry)
+                        {
+                            _pLastEntry->pNext = _pNext;
+                        }
+                        else
+                        {
+                            pBuckets[_uIndex] = _pNext;
+                        }
+
+                        HFree(_pEntry);
+
+                        return S_OK;
+                    }
+
+                    _pLastEntry = _pEntry;
+                }
+
+                return S_FALSE;
+            }
         };
     }
 } // namespace YY

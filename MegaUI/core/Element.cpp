@@ -595,14 +595,318 @@ namespace YY
             // 仅给子类留一个口，什么也不用做
         }
 
+        void __fastcall Element::Detach(DeferCycle* _pDeferCycle)
+        {
+            _pDeferCycle->UpdateDesiredSizeRootPendingSet.Remove(this);
+            _pDeferCycle->LayoutRootPendingSet.Remove(this);
+
+            if (_iGCSlot != -1)
+            {
+                _pDeferCycle->vecGroupChangeNormalPriority.GetItemPtr(_iGCSlot)->pElement = nullptr;
+                _pDeferCycle->Release();
+                _iGCSlot = -1;
+            }
+
+            if (_iGCLPSlot != -1)
+            {
+                _pDeferCycle->vecGroupChangeLowPriority.GetItemPtr(_iGCLPSlot)->pElement = nullptr;
+                _pDeferCycle->Release();
+                _iGCLPSlot = -1;
+            }
+
+            if (_iPCTail != -1)
+            {
+                for (size_t index = _iPCTail; index >= _pDeferCycle->uPropertyChangedFireCount;)
+                {
+                    auto pItem = _pDeferCycle->vecPropertyChanged.GetItemPtr(index);
+
+                    if (pItem->iRefCount)
+                    {
+                        pItem->pElement = nullptr;
+                        pItem->iRefCount = 0;
+                        pItem->pNewValue = nullptr;
+                        pItem->pOldValue = nullptr;
+
+                        _pDeferCycle->Release();
+                    }
+
+                    index = pItem->iPrevElRec;
+                }
+
+                _iPCTail = -1;
+            }
+        }
+
         ElementList __fastcall Element::GetChildren()
         {
             return vecLocChildren;
         }
 
+        HRESULT __fastcall Element::Insert(Element** _ppChildren, uint32_t _cChildren, uint32_t _uInsert)
+        {
+            if (_cChildren == 0)
+                return S_OK;
+
+            if (_ppChildren == nullptr)
+                return E_INVALIDARG;
+
+            auto _OldChildrenList = GetChildren();
+            const auto _cOldChildrenList = _OldChildrenList.GetSize();
+
+            if (_cOldChildrenList < _uInsert)
+                return E_INVALIDARG;
+
+            ElementList _NewChildrenList;
+            auto _hr = _NewChildrenList.Reserve(_cOldChildrenList + _cChildren);
+            if (FAILED(_hr))
+                return _hr;
+
+            auto _NewParentValue = Value::CreateElementRef(this);
+            if (_NewParentValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            HREFTYPE hr = S_OK;
+
+            do
+            {
+                for (uint32_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
+                {
+                    auto _pTmp = _ppChildren[_uIndex];
+                    if (_pTmp == nullptr || _pTmp == this)
+                        continue;
+
+                    if (_pTmp->pLocParent)
+                    {
+                        _pTmp->pLocParent->Remove(_pTmp);
+                    }
+                    else if (GetDeferObject(false) != _pTmp->pDeferObject && _pTmp->pDeferObject)
+                    {
+                        _pTmp->Detach(_pTmp->pDeferObject);
+                        _pTmp->pDeferObject->Release();
+                        _pTmp->pDeferObject = nullptr;
+                    }
+                }
+
+                _NewChildrenList.Add(_OldChildrenList.GetData(), _uInsert);
+
+                uint32_t _uLastIndex = _uInsert;
+
+                for (uint32_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
+                {
+                    auto _pTmp = _ppChildren[_uIndex];
+                    if (_pTmp == nullptr || _pTmp == this)
+                        continue;
+
+                    _pTmp->_iIndex = _uLastIndex;
+                    _NewChildrenList.Add(_pTmp);
+                    ++_uLastIndex;
+                }
+
+                for (uint32_t _uIndex = _uInsert; _uIndex != _cOldChildrenList; ++_uIndex)
+                {
+                    auto _pTmp = _OldChildrenList[_uIndex];
+                    _pTmp->_iIndex = _uLastIndex;
+                    _NewChildrenList.Add(_pTmp);
+                    ++_uLastIndex;
+                }
+
+                if (_NewChildrenList.GetSize() == _OldChildrenList.GetSize())
+                    break;
+
+                auto _NewChildrenValue = Value::CreateElementList(_NewChildrenList);
+                if (_NewChildrenValue == nullptr)
+                {
+                    hr = E_OUTOFMEMORY;
+                    break;
+                }
+
+                auto _OldChildrenValue = Value::CreateElementList(_OldChildrenList);
+                if (_OldChildrenValue == nullptr)
+                {
+                    hr = E_OUTOFMEMORY;
+                    break;
+                }
+                intptr_t Cooike = 0;
+
+                StartDefer(&Cooike);
+                
+                // 更新 ChildrenProp
+                PreSourceChange(Element::g_ClassInfoData.ChildrenProp, PropertyIndicies::PI_Local, _OldChildrenValue, _NewChildrenValue);
+                vecLocChildren.SetArray(std::move(_NewChildrenList));
+                PostSourceChange();
+
+                auto _pDeferObject = GetDeferObject();
+
+                for (uint32_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
+                {
+                    auto _pTmp = _ppChildren[_uIndex];
+                    if (_pTmp == nullptr || _pTmp == this)
+                        continue;
+
+                    if (auto p = _pTmp->pDeferObject)
+                    {
+                        p->Release();
+                    }
+
+                    _pTmp->pDeferObject = _pDeferObject;
+                    _pDeferObject->AddRef();
+                    
+                    _pTmp->PreSourceChange(Element::g_ClassInfoData.ParentProp, PropertyIndicies::PI_Local, Value::GetElementNull(), _NewParentValue);
+
+                    _pTmp->pLocParent = this;
+                    _pTmp->pTopLevel = this;
+
+                    _pTmp->PostSourceChange();
+
+                    _pTmp->pDeferObject->Release();
+                    _pTmp->pDeferObject = nullptr;
+                }
+                
+                EndDefer(Cooike);
+
+            } while (false);
+
+            if (FAILED(hr))
+            {
+                auto _OldSize = _OldChildrenList.GetSize();
+                for (uint32_t _uIndex = _uInsert; _uIndex != _OldSize; ++_uIndex)
+                {
+                    _OldChildrenList[_uIndex]->_iIndex = _uIndex;
+                }
+            }
+
+            return hr;
+        }
+        
+        HRESULT __fastcall Element::Remove(Element** _ppChildren, uint32_t _cChildren)
+        {
+            if (_cChildren == 0)
+                return S_OK;
+
+            if (_ppChildren == nullptr)
+                return E_INVALIDARG;
+            
+            auto _ChildrenOld = GetChildren();
+            if (_ChildrenOld.GetSize() == 0)
+                return S_FALSE;
+
+            uint32_t _uRemoveCount = 0u;
+
+            for (auto _Index = 0u; _Index != _cChildren; ++_Index)
+            {
+                auto _pItem = _ppChildren[_Index];
+                if (_pItem == nullptr)
+                    continue;
+
+                if (_pItem->GetParent() != this)
+                    continue;
+
+                _pItem->_iIndex = -1;
+                ++_uRemoveCount;
+            }
+
+            if (_uRemoveCount == 0)
+                return S_FALSE;
+
+            HRESULT hr = S_OK;
+
+            do
+            {
+                ElementList _ChildrenNew;
+                auto _uSizeNew = _ChildrenOld.GetSize() - _uRemoveCount;
+
+                if (_uSizeNew)
+                {
+                    auto _pBuffer = _ChildrenNew.LockBufferAndSetSize(_uSizeNew);
+                    if (!_pBuffer)
+                    {
+                        hr = E_OUTOFMEMORY;
+                        break;
+                    }
+
+                    for (auto _pItem : _ChildrenOld)
+                    {
+                        if (_pItem->_iIndex == -1)
+                            continue;
+
+                         _pItem->_iIndex = _pBuffer - _ChildrenNew.GetData();
+                        *_pBuffer = _pItem;
+                        ++_pBuffer;
+                    }
+
+                    _ChildrenNew.UnlockBuffer();
+                }
+
+                auto _ChildrenValueOld = Value::CreateElementList(_ChildrenOld);
+                if (_ChildrenValueOld == nullptr)
+                {
+                    hr = E_OUTOFMEMORY;
+                    break;
+                }
+
+                auto _ChildrenValueNew = Value::CreateElementList(_ChildrenNew);
+                if (_ChildrenValueNew == nullptr)
+                {
+                    hr = E_OUTOFMEMORY;
+                    break;
+                }
+
+                auto _OldParentValue = Value::CreateElementRef(this);
+                if (_OldParentValue == nullptr)
+                {
+                    hr = E_OUTOFMEMORY;
+                    break;
+                }
+
+                intptr_t _CookiePtr;
+                StartDefer(&_CookiePtr);
+
+                PreSourceChange(Element::g_ClassInfoData.ChildrenProp, PropertyIndicies::PI_Local, _ChildrenValueOld, _ChildrenValueNew);
+                vecLocChildren.SetArray(std::move(_ChildrenNew));
+                PostSourceChange();
+
+
+                auto _pDeferObject = GetDeferObject();
+
+                for (auto _Index = 0u; _Index != _cChildren; ++_Index)
+                {
+                    auto _pItem = _ppChildren[_Index];
+                    if (_pItem == nullptr)
+                        continue;
+
+                    if (_pItem->GetParent() != this)
+                        continue;
+
+                    if (_pItem->pDeferObject == nullptr)
+                    {
+                        _pItem->pDeferObject = _pDeferObject;
+                        _pDeferObject->AddRef();
+                    }
+                    
+                    _pItem->PreSourceChange(Element::g_ClassInfoData.ParentProp, PropertyIndicies::PI_Local, _OldParentValue, Value::GetElementNull());
+                    _pItem->pLocParent = nullptr;
+                    _pItem->pTopLevel = nullptr;
+                    PostSourceChange();
+                }
+
+                EndDefer(_CookiePtr);
+            } while (false);
+
+            if (FAILED(hr))
+            {
+                // 回滚操作
+                for (auto& _pItem : _ChildrenOld)
+                {
+                    _pItem->_iIndex = &_pItem - _ChildrenOld.GetData();
+                }
+            }
+
+            return hr;
+        }
+
         HRESULT __fastcall Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
         {
-            if (_pOldValue == nullptr)
+            if (_pOldValue == nullptr || _pNewValue == nullptr)
                 return E_INVALIDARG;
 
             auto _pDeferObject = GetDeferObject();

@@ -400,14 +400,25 @@ namespace YY
 
             HRESULT __fastcall Add(const T& _NewItem)
             {
+                return Add(&_NewItem, 1);
+            }
+
+            HRESULT __fastcall Add(_In_ const T* _pSrc, _In_ uint_t _uCount)
+            {
+                if (_uCount == 0)
+                    return S_OK;
+
+                if (!_pSrc)
+                    return E_INVALIDARG;
+
                 auto _uIndex = GetSize();
-                auto _uNewSize = _uIndex + 1;
+                auto _uNewSize = _uIndex + _uCount;
 
                 auto _pSharedData = LockSharedData(_uNewSize);
                 if (!_pSharedData)
                     return E_OUTOFMEMORY;
 
-                Constructor::Init(_pSharedData->GetData() + _uIndex, &_NewItem, 1);
+                Constructor::Init(_pSharedData->GetData() + _uIndex, _pSrc, _uCount);
                 _pSharedData->uSize = _uNewSize;
                 _pSharedData->Unlock();
                 return S_OK;
@@ -501,6 +512,11 @@ namespace YY
             SharedPoint __fastcall GetData() noexcept
             {
                 return pData;
+            }
+
+            auto& __fastcall operator[](_In_ uint_t _uIndex)
+            {
+                return GetData()[_uIndex];
             }
 
             const T* __fastcall GetData() const noexcept

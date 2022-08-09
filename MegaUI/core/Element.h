@@ -143,6 +143,9 @@ namespace YY
 			DynamicArray<Value, false, true> LocalPropValue;
             
             ElementList vecLocChildren;
+            
+            // 0x8 Index
+            int32_t _iIndex = -1;
 
             // 正常优先级的组 0x10
             int32_t _iGCSlot;
@@ -270,11 +273,25 @@ namespace YY
 			
             ElementList __fastcall GetChildren();
 
+            HRESULT __fastcall Insert(_In_reads_(_cChildren) Element** _ppChildren, _In_ uint32_t _cChildren, _In_ uint32_t _uInsert);
+
+            __inline HRESULT __fastcall Remove(_In_ Element* _pChild)
+            {
+                if (!_pChild)
+                    return E_INVALIDARG;
+
+                return Remove(&_pChild, 1);
+            }
+
+            virtual HRESULT __fastcall Remove(_In_reads_(_cChildren) Element** _ppChildren, _In_ uint32_t _cChildren);
+
             virtual void __fastcall Paint(_In_ ID2D1RenderTarget* _pRenderTarget, _In_ const Rect& _Bounds);
 
             virtual SIZE __fastcall GetContentSize(SIZE _ConstraintSize);
             virtual SIZE __fastcall SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);
             virtual void __fastcall SelfLayoutDoLayout(SIZE _ConstraintSize);
+
+            void __fastcall Detach(DeferCycle* _pDeferCycle);
 		protected:
 			// Value Update
             HRESULT __fastcall PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
