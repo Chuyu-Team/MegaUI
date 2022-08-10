@@ -418,7 +418,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateColorRGBA(COLORREF ColorRGBA)
+        Value __fastcall Value::CreateColor(Color _Color)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -426,7 +426,7 @@ namespace YY
                 pValue->eType = uint_t(ValueType::Color);
                 pValue->bSkipFree = 0;
                 pValue->cRef = 1;
-                pValue->ColorValue.ColorRGBA = ColorRGBA;
+                pValue->ColorValue = _Color;
             }
             return Value(pValue);
         }

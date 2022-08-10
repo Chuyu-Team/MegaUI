@@ -642,7 +642,7 @@ namespace YY
             return vecLocChildren;
         }
 
-        HRESULT __fastcall Element::Insert(Element** _ppChildren, uint32_t _cChildren, uint32_t _uInsert)
+        HRESULT __fastcall Element::Insert(Element* const* _ppChildren, uint32_t _cChildren, uint32_t _uInsert)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -778,7 +778,7 @@ namespace YY
             return hr;
         }
         
-        HRESULT __fastcall Element::Remove(Element** _ppChildren, uint32_t _cChildren)
+        HRESULT __fastcall Element::Remove(Element* const* _ppChildren, uint32_t _cChildren)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -1419,12 +1419,24 @@ namespace YY
 						case ValueType::boolean:
                             _pRetValue = Value::CreateBool((*(uint8_t*)_pCache) & (1 << _uCacheBit));
 							break;
+                        case ValueType::Color:
+                            _pRetValue = Value::CreateColor(*(Color*)_pCache);
+                            break;
+                        case ValueType::POINT:
+                            _pRetValue = Value::CreatePoint(*(POINT*)_pCache);
+                            break;
+                        case ValueType::SIZE:
+                            _pRetValue = Value::CreateSize(*(SIZE*)_pCache);
+                            break;
+                        case ValueType::Rect:
+                            _pRetValue = Value::CreateRect(*(Rect*)_pCache);
+                            break;
 						default:
                             _pRetValue = Value::GetNull();
 							break;
 						}
 
-                        if (_pRetValue != nullptr)
+                        if (_pRetValue == nullptr)
                             _pRetValue = Value::GetUnset();
 					}
 				} while (false);
@@ -1464,18 +1476,23 @@ namespace YY
                     else if (_pNewValue.GetType() == (ValueType)_pProp->BindCacheInfo.eType)
 					{
 						// 标记缓存已经被设置
-						auto& _uHasCache = *((uint8_t*)this + _uOffsetToHasCache);
-						_uHasCache |= (1 << _uHasCacheBit);
+                        if (_uOffsetToHasCache)
+                        {
+                            auto& _uHasCache = *((uint8_t*)this + _uOffsetToHasCache);
+                            _uHasCache |= (1 << _uHasCacheBit);
+                        }
 
 						auto _pCache = (char*)this + _uOffsetToCache;
+
+                        auto _pDataBuyffer = _pNewValue.GetRawBuffer();
 
 						switch ((ValueType)_pProp->BindCacheInfo.eType)
 						{
 						case ValueType::int32_t:
-                            *(int32_t*)_pCache = _pNewValue.GetInt32();
+                            *(int32_t*)_pCache = *(int32_t*)_pDataBuyffer;
 							break;
 						case ValueType::boolean:
-							if (_pNewValue.GetBool())
+                            if (*(bool*)_pDataBuyffer)
 							{
                                 *_pCache |= (1 << _uCacheBit);
 							}
@@ -1484,6 +1501,18 @@ namespace YY
                                 *_pCache &= ~(1 << _uCacheBit);
 							}
 							break;
+                        case ValueType::Color:
+                            *(Color*)_pCache = *(Color*)_pDataBuyffer;
+                            break;
+                        case ValueType::POINT:
+                            *(POINT*)_pCache = *(POINT*)_pDataBuyffer;
+                            break;
+                        case ValueType::SIZE:
+                            *(SIZE*)_pCache = *(SIZE*)_pDataBuyffer;
+                            break;
+                        case ValueType::Rect:
+                            *(Rect*)_pCache = *(Rect*)_pDataBuyffer;
+                            break;
 						default:
 							break;
 						}
@@ -1534,7 +1563,6 @@ namespace YY
 
         void __fastcall Element::FlushLayout(DeferCycle* _pDeferCycle)
         {
-            /// TODO
             auto _fNeedsLayout = fNeedsLayout;
 
             if (fNeedsLayout == LC_Pass)

@@ -64,7 +64,11 @@ namespace YY
             {
                 return EqualRect(this, &_Other);
             }
-
+            
+            __inline bool __fastcall operator!=(const RECT& _Other)
+            {
+                return EqualRect(this, &_Other) == FALSE;
+            }
 
             __fastcall operator D2D_RECT_F() const
             {

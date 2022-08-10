@@ -325,7 +325,7 @@ namespace YY
             if (!IntersectRect(&_PaintRect, &_ParentPaintRect, &_BoundsElement))
                 return S_OK;
 
-            const auto _bNeedClip = _PaintRect == _BoundsElement;
+            const auto _bNeedClip = _PaintRect != _BoundsElement;
             if (_bNeedClip)
             {
                 m_pCompatibleRenderTarget->PushAxisAlignedClip(_PaintRect, D2D1_ANTIALIAS_MODE_ALIASED);

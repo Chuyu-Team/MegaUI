@@ -228,34 +228,20 @@ namespace YY
                 return CreateSize(_Size.cx, _Size.cy);
             }
             static Value __fastcall CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
+            
+            __inline static Value __fastcall CreateRect(_In_ const Rect& _Rect)
+            {
+                return CreateRect(_Rect.left, _Rect.top, _Rect.right, _Rect.bottom);
+            }
+
+
             //static _Ret_maybenull_ Value* __fastcall CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
             static Value __fastcall CreateAtom(_In_z_ raw_const_ustring_t _szValue);
             static Value __fastcall CreateAtom(_In_ ATOM _uAtomValue);
             static Value __fastcall CreateCursor(_In_z_ raw_const_ustring_t _szValue);
             static Value __fastcall CreateCursor(_In_ HCURSOR _hCursorValue);
-
-            __inline static Value __fastcall CreateColorARGB(_In_ uint8_t _Alpha, _In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
-            {
-                return CreateColorRGBA((COLORREF(_Red) << 0) | (COLORREF(_Green) << 8) | (COLORREF(_Blue) << 16) | (COLORREF(_Alpha) << 24));
-            }
             
-            __inline static Value __fastcall CreateColorRGB(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
-            {
-                return CreateColorRGBA((COLORREF(_Red) << 0) | (COLORREF(_Green) << 8) | (COLORREF(_Blue) << 16) | (COLORREF(0xFFu) << 24));
-            }
-            
-            __inline static Value __fastcall CreateColor(_In_ Color Color)
-            {
-                return CreateColorRGBA(Color.ColorRGBA);
-            }
-            
-            __inline static Value __fastcall CreateColorRGB(_In_ COLORREF ColorRGB)
-            {
-                return CreateColorRGBA(ColorRGB | (0xFFu << 24));
-            }
-
-            static Value __fastcall CreateColorRGBA(_In_ COLORREF ColorRGBA);
-            
+            static Value __fastcall CreateColor(_In_ Color _Color);
 
             int32_t __fastcall GetInt32();
             bool __fastcall GetBool();

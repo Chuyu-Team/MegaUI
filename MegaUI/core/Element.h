@@ -113,7 +113,8 @@ namespace YY
     _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
     _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
     _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetLayoutNull,             nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Layout   ) \
-    _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::GetColorTransparant,       nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) 
+    _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::GetColorTransparant,       nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
+    _APPLY(MinSize,        PF_Normal | PF_Cascade,                PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,      &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0, 0), ValueType::SIZE   ) 
     // clang-format on
 
 		template<typename _Class>
@@ -273,17 +274,29 @@ namespace YY
 			
             ElementList __fastcall GetChildren();
 
-            HRESULT __fastcall Insert(_In_reads_(_cChildren) Element** _ppChildren, _In_ uint32_t _cChildren, _In_ uint32_t _uInsert);
+            virtual HRESULT __fastcall Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren, _In_ uint32_t _uInsert);
 
+            __inline HRESULT __fastcall Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren)
+            {
+                return Insert(_ppChildren, _cChildren, vecLocChildren.GetSize());
+            }
+
+            __inline HRESULT __fastcall Add(_In_ Element* _ppChildren)
+            {
+                return Insert(&_ppChildren, 1, vecLocChildren.GetSize());
+            }
+
+            virtual HRESULT __fastcall Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren);
+            
             __inline HRESULT __fastcall Remove(_In_ Element* _pChild)
             {
-                if (!_pChild)
-                    return E_INVALIDARG;
-
                 return Remove(&_pChild, 1);
             }
 
-            virtual HRESULT __fastcall Remove(_In_reads_(_cChildren) Element** _ppChildren, _In_ uint32_t _cChildren);
+            __inline HRESULT __fastcall RemoveAll()
+            {
+                return Remove(vecLocChildren.GetData(), vecLocChildren.GetSize());
+            }
 
             virtual void __fastcall Paint(_In_ ID2D1RenderTarget* _pRenderTarget, _In_ const Rect& _Bounds);
 
