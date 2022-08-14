@@ -16,24 +16,15 @@ namespace YY
 {
     namespace MegaUI
     {
+        class Render;
+
         class NativeWindowHost
         {
         private:
             HWND hWnd;
             Element* pHost;
-
-            ID2D1Factory* m_pD2DFactory;
-            IWICImagingFactory* m_pWICFactory;
-            IDWriteFactory* m_pDWriteFactory;
-            ID2D1HwndRenderTarget* m_pRenderTarget;
-            ID2D1BitmapRenderTarget* m_pCompatibleRenderTarget;
-            IDWriteTextFormat* m_pTextFormat;
-            ID2D1PathGeometry* m_pPathGeometry;
-            ID2D1LinearGradientBrush* m_pLinearGradientBrush;
-            ID2D1SolidColorBrush* m_pBlackBrush;
-            ID2D1BitmapBrush* m_pGridPatternBitmapBrush;
-            ID2D1Bitmap* m_pBitmap;
-            ID2D1Bitmap* m_pAnotherBitmap;
+            Render* pRender;
+            D2D1_SIZE_U LastRenderSize;
         public:
             NativeWindowHost();
 
@@ -82,12 +73,10 @@ namespace YY
             static UINT __fastcall AsyncDestroyMsg();
 
         private:
-            HRESULT __fastcall InitializeD2D();
-
             HRESULT __fastcall OnPaint();
             
             HRESULT __fastcall PaintElement(
-                _In_ ID2D1BitmapRenderTarget* _pCompatibleRenderTarget,
+                _In_ Render* _pRender,
                 _In_ Element* _pElement,
                 _In_ const Rect& _ParentBounds,
                 _In_ const Rect& _ParentPaintRect
@@ -99,3 +88,5 @@ namespace YY
         };
     } // namespace MegaUI
 } // namespace YY
+
+#pragma pack(pop)

@@ -27,7 +27,7 @@ namespace YY
             , LocSizeInLayout {}
             , LocDesiredSize {}
             , LocLastDesiredSizeConstraint {}
-            , iSpecLayoutPos(0)
+            , iSpecLayoutPos(g_ClassInfoData.LayoutPosProp.pFunDefaultValue().GetInt32())
             , fNeedsLayout(0)
             , bNeedsDSUpdate(0)
         {
@@ -556,7 +556,7 @@ namespace YY
             --_pDeferCycle->uEnter;
 		}
         
-        void __fastcall Element::Paint(_In_ ID2D1RenderTarget* _pRenderTarget, _In_ const Rect& _Bounds)
+        void __fastcall Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
         {
             auto Background = GetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false);
 

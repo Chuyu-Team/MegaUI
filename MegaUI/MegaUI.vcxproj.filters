@@ -25,6 +25,12 @@
     <Filter Include="UI\Host">
       <UniqueIdentifier>{f4dca592-1dfc-411a-8de3-cfb1f82aca73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Render">
+      <UniqueIdentifier>{ef62d851-a980-4f9c-ae41-8fe95c244e1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Render\D2D">
+      <UniqueIdentifier>{80f35b95-c220-4f77-9d87-315a15c7c7e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -96,6 +102,12 @@
     <ClInclude Include="base\Rect.h">
       <Filter>UI\base</Filter>
     </ClInclude>
+    <ClInclude Include="Render\Render.h">
+      <Filter>UI\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\D2D\D2DRender.h">
+      <Filter>UI\Render\D2D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -118,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="Host\NativeWindowHost.cpp">
       <Filter>UI\Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Render.cpp">
+      <Filter>UI\Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

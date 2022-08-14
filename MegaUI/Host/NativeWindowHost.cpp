@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
 #include "NativeWindowHost.h"
+
 #include <atlcomcli.h>
 
-
-#pragma comment(lib, "d2d1.lib")
+#include "../Render/Render.h"
 
 #pragma warning(disable : 28251)
 
@@ -14,18 +14,8 @@ namespace YY
         NativeWindowHost::NativeWindowHost()
             : hWnd(NULL)
             , pHost(nullptr)
-            , m_pD2DFactory(nullptr)
-            , m_pWICFactory(nullptr)
-            , m_pDWriteFactory(nullptr)
-            , m_pRenderTarget(nullptr)
-            , m_pCompatibleRenderTarget(nullptr)
-            , m_pTextFormat(nullptr)
-            , m_pPathGeometry(nullptr)
-            , m_pLinearGradientBrush(nullptr)
-            , m_pBlackBrush(nullptr)
-            , m_pGridPatternBitmapBrush(nullptr)
-            , m_pBitmap(nullptr)
-            , m_pAnotherBitmap(nullptr)
+            , pRender(nullptr)
+            , LastRenderSize {}
         {
         }
 
@@ -165,13 +155,16 @@ namespace YY
             if (!GetClientRect(hWnd, &_ClientRect))
                 return __HRESULT_FROM_WIN32(GetLastError());
 
+            LastRenderSize.width = _ClientRect.right - _ClientRect.left;
+            LastRenderSize.height = _ClientRect.bottom - _ClientRect.top;
+
             pHost = _pHost;
 
             intptr_t _Cooike;
             pHost->StartDefer(&_Cooike);
 
-            pHost->SetWidth(_ClientRect.right - _ClientRect.left);
-            pHost->SetHeight(_ClientRect.bottom - _ClientRect.top);
+            pHost->SetWidth(LastRenderSize.width);
+            pHost->SetHeight(LastRenderSize.height);
 
             pHost->EndDefer(_Cooike);
 
@@ -238,76 +231,26 @@ namespace YY
             return g_AsyncDestroyMsg;
         }
 
-        HRESULT __fastcall NativeWindowHost::InitializeD2D()
-        {
-            if (m_pD2DFactory)
-                return S_OK;
-
-            auto hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
-            if (FAILED(hr))
-                return hr;
-
-            if (!m_pD2DFactory)
-                return E_UNEXPECTED;
-
-            return hr;
-        }
-
         HRESULT __fastcall NativeWindowHost::OnPaint()
         {
-            auto hr = InitializeD2D();
-            if (FAILED(hr))
-                return hr;
-
-            hr = InitializeRenderTarget();
-
-            if (FAILED(hr))
-                return hr;
-
-            m_pCompatibleRenderTarget->BeginDraw();
-            do
+            if (!pRender)
             {
-               /* ATL::CComPtr<ID2D1SolidColorBrush> m_pBlackBrush;
-                hr = m_pRenderTarget->CreateSolidColorBrush(
-                    D2D1::ColorF(D2D1::ColorF::DarkRed),
-                    &m_pBlackBrush);*/
-
-                
-                auto _RenderTargetSize = m_pRenderTarget->GetSize();
-                Rect _Bounds(0, 0, _RenderTargetSize.width, _RenderTargetSize.height);
-                PaintElement(m_pCompatibleRenderTarget, pHost, _Bounds, _Bounds);
-                
-                //m_pCompatibleRenderTarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, _RenderTargetSize.width, _RenderTargetSize.height), m_pBlackBrush);
-
-
-            } while (false);
-            m_pCompatibleRenderTarget->EndDraw();
-            
-            ATL::CComPtr<ID2D1Bitmap> _pBitmap;
-            hr = m_pCompatibleRenderTarget->GetBitmap(&_pBitmap);
-            if (FAILED(hr))
-                return hr;
-
-            m_pRenderTarget->BeginDraw();
-
-            m_pRenderTarget->DrawBitmap(_pBitmap);
-
-            hr = m_pRenderTarget->EndDraw();
-            if (hr == D2DERR_RECREATE_TARGET)
-            {
-                hr = S_OK;
-                m_pCompatibleRenderTarget->Release();
-                m_pCompatibleRenderTarget = nullptr;
-                m_pRenderTarget->Release();
-                m_pRenderTarget = nullptr;
+                auto hr = CreateRender(hWnd, &pRender);
+                if (FAILED(hr))
+                    return hr;
             }
+            
+            pRender->SetPixelSize(LastRenderSize);
+            pRender->BeginDraw();
 
-            return hr;
+            Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
+            PaintElement(pRender, pHost, _Bounds, _Bounds);
+            return pRender->EndDraw();
         }
 
-        HRESULT __fastcall NativeWindowHost::PaintElement(ID2D1BitmapRenderTarget* _pCompatibleRenderTarget, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
+        HRESULT __fastcall NativeWindowHost::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
         {
-            if (_pCompatibleRenderTarget == nullptr || _pElement == nullptr)
+            if (_pRender == nullptr || _pElement == nullptr)
                 return E_INVALIDARG;
 
             auto _Location = _pElement->GetLocation();
@@ -328,86 +271,34 @@ namespace YY
             const auto _bNeedClip = _PaintRect != _BoundsElement;
             if (_bNeedClip)
             {
-                m_pCompatibleRenderTarget->PushAxisAlignedClip(_PaintRect, D2D1_ANTIALIAS_MODE_ALIASED);
+                _pRender->PushAxisAlignedClip(_PaintRect);
             }
 
-            _pElement->Paint(m_pCompatibleRenderTarget, _BoundsElement);
+            _pElement->Paint(_pRender, _BoundsElement);
 
             if (_bNeedClip)
-                m_pCompatibleRenderTarget->PopAxisAlignedClip();
+                _pRender->PopAxisAlignedClip();
 
             for (auto pItem : _pElement->GetChildren())
             {
-                PaintElement(_pCompatibleRenderTarget, pItem, _BoundsElement, _ParentPaintRect);
+                PaintElement(_pRender, pItem, _BoundsElement, _ParentPaintRect);
             }
 
-            return S_OK;
-        }
-
-        HRESULT __fastcall NativeWindowHost::InitializeRenderTarget()
-        {
-            if (!m_pRenderTarget)
-            {
-
-                if (!m_pD2DFactory)
-                    return E_UNEXPECTED;
-
-                RECT rc;
-                GetClientRect(hWnd, &rc);
-
-                D2D1_SIZE_U size = D2D1::SizeU(
-                    static_cast<UINT>(rc.right - rc.left),
-                    static_cast<UINT>(rc.bottom - rc.top));
-
-                // Create a Direct2D render target.
-                auto hr = m_pD2DFactory->CreateHwndRenderTarget(
-                    D2D1::RenderTargetProperties(),
-                    D2D1::HwndRenderTargetProperties(hWnd, size),
-                    &m_pRenderTarget);
-
-                if (FAILED(hr))
-                    return hr;
-
-                if (!m_pRenderTarget)
-                    return E_UNEXPECTED;
-            }
-
-            if (!m_pCompatibleRenderTarget)
-            {
-                auto hr = m_pRenderTarget->CreateCompatibleRenderTarget(&m_pCompatibleRenderTarget);
-                if (FAILED(hr))
-                    return hr;
-
-                if (!m_pCompatibleRenderTarget)
-                    return E_UNEXPECTED;
-            }
             return S_OK;
         }
 
         void __fastcall NativeWindowHost::OnSize(UINT _uWidth, UINT _uHeight)
         {
-            if (m_pRenderTarget)
-            {
-                intptr_t _Cooike;
-                pHost->StartDefer(&_Cooike);
+            LastRenderSize.width = _uWidth;
+            LastRenderSize.height = _uHeight;
 
-                pHost->SetWidth(_uWidth);
-                pHost->SetHeight(_uHeight);
+            intptr_t _Cooike;
+            pHost->StartDefer(&_Cooike);
 
-                pHost->EndDefer(_Cooike);
+            pHost->SetWidth(_uWidth);
+            pHost->SetHeight(_uHeight);
 
-                D2D1_SIZE_U _NewSize;
-                _NewSize.width = _uWidth;
-                _NewSize.height = _uHeight;
-
-                m_pRenderTarget->Resize(_NewSize);
-            }
-            
-            if (m_pCompatibleRenderTarget)
-            {
-                m_pCompatibleRenderTarget->Release();
-                m_pCompatibleRenderTarget = nullptr;
-            }
+            pHost->EndDefer(_Cooike);
         }
         
 

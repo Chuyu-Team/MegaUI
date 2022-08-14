@@ -104,3 +104,5 @@ namespace YY
         }
     }
 } // namespace YY
+
+#pragma pack(pop)

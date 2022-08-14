@@ -177,6 +177,8 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Host\NativeWindowHost.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Render\D2D\D2DRender.h" />
+    <ClInclude Include="Render\Render.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\StringTransform.cpp" />
@@ -191,6 +193,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Render\Render.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="MegaUI.natvis" />

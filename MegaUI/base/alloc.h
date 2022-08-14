@@ -41,14 +41,14 @@ namespace YY
             free(_Block);
         }
 
-        template<typename T>
+        template<typename T, typename ...Args>
         _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
         _CRTALLOCATOR
-        inline T* HNew()
+        inline T* HNew(Args... args)
         {
             T* _p = (T*)HAlloc(sizeof(T));
             if (_p)
-                new (_p) T;
+                new (_p) T(args...);
 
             return _p;
         }

@@ -7,6 +7,8 @@
 #include "Property.h"
 #include "DeferCycle.h"
 
+#include "../Render/Render.h"
+
 // Global layout positions
 #define LP_None         -3
 #define LP_Absolute     -2
@@ -298,7 +300,7 @@ namespace YY
                 return Remove(vecLocChildren.GetData(), vecLocChildren.GetSize());
             }
 
-            virtual void __fastcall Paint(_In_ ID2D1RenderTarget* _pRenderTarget, _In_ const Rect& _Bounds);
+            virtual void __fastcall Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
 
             virtual SIZE __fastcall GetContentSize(SIZE _ConstraintSize);
             virtual SIZE __fastcall SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);

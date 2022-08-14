@@ -3,6 +3,8 @@
 
 #include "MegaUITypeInt.h"
 
+#pragma pack(push, __MEGA_UI_PACKING)
+
 namespace YY
 {
     namespace MegaUI
@@ -36,3 +38,5 @@ namespace YY
         };
     }
 } // namespace YY
+
+#pragma pack(pop)
