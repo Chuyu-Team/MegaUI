@@ -31,6 +31,12 @@
     <Filter Include="UI\Render\D2D">
       <UniqueIdentifier>{80f35b95-c220-4f77-9d87-315a15c7c7e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Render\GDI+">
+      <UniqueIdentifier>{0944464f-3612-479e-b28b-bd72f7b11be0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Render\GDI+\Brush">
+      <UniqueIdentifier>{29e046e3-1fba-4c8e-9954-6e58ddb94da6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -107,6 +113,12 @@
     </ClInclude>
     <ClInclude Include="Render\D2D\D2DRender.h">
       <Filter>UI\Render\D2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\GDI+\GdiPlusRender.h">
+      <Filter>UI\Render\GDI+</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\GDI+\Brush\D2D1SolidColorBrushForGdiPlus.h">
+      <Filter>UI\Render\GDI+\Brush</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

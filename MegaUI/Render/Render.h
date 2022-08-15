@@ -16,13 +16,12 @@ namespace YY
             virtual ~Render() = default;
 
             Render(const Render&) = delete;
-            Render& __fastcall operator=(Render&) = delete;
-
+            Render& __fastcall operator=(const Render&) = delete;
 
             virtual
             HRESULT
             __fastcall
-            BeginDraw() =0;
+            BeginDraw(Rect* _pNeedPaintRect) =0;
 
             virtual
             HRESULT
@@ -51,7 +50,7 @@ namespace YY
             HRESULT
             __fastcall
             CreateSolidColorBrush(
-                const Color& _Color,
+                Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) = 0;
 
             virtual

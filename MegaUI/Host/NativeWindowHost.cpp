@@ -241,10 +241,13 @@ namespace YY
             }
             
             pRender->SetPixelSize(LastRenderSize);
-            pRender->BeginDraw();
 
+            Rect _NeedPaint;
+            auto _hr = pRender->BeginDraw(&_NeedPaint);
+            if (FAILED(_hr))
+                return _hr;
             Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
-            PaintElement(pRender, pHost, _Bounds, _Bounds);
+            PaintElement(pRender, pHost, _Bounds, _NeedPaint);
             return pRender->EndDraw();
         }
 

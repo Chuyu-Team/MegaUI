@@ -42,7 +42,7 @@ namespace YY
         }
 
         template<typename T, typename ...Args>
-        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_
         _CRTALLOCATOR
         inline T* HNew(Args... args)
         {
@@ -53,14 +53,14 @@ namespace YY
             return _p;
         }
 
-        template<typename T>
-        _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
+        template<typename T, typename... Args>
+        _Success_(return != NULL) _Check_return_ _Ret_maybenull_
         _CRTALLOCATOR
-        inline T* __cdecl HNewAndZero()
+        inline T* __cdecl HNewAndZero(Args... args)
         {
             T* _p = (T*)HAllocAndZero(sizeof(T));
             if (_p)
-                new (_p) T;
+                new (_p) T(args...);
 
             return _p;
         }

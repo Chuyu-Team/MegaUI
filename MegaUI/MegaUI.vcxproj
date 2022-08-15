@@ -178,6 +178,8 @@
     <ClInclude Include="Host\NativeWindowHost.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\D2D\D2DRender.h" />
+    <ClInclude Include="Render\GDI+\Brush\D2D1SolidColorBrushForGdiPlus.h" />
+    <ClInclude Include="Render\GDI+\GdiPlusRender.h" />
     <ClInclude Include="Render\Render.h" />
   </ItemGroup>
   <ItemGroup>

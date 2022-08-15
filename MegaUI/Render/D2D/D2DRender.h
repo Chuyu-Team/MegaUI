@@ -131,8 +131,15 @@ namespace YY
                 return _hr;
             }
 
-            virtual HRESULT __fastcall BeginDraw() override
+            virtual HRESULT __fastcall BeginDraw(Rect* _pNeedPaintRect) override
             {
+                if (_pNeedPaintRect)
+                {
+                    _pNeedPaintRect->left = 0;
+                    _pNeedPaintRect->top = 0;
+                    _pNeedPaintRect->right = PixelSize.width;
+                    _pNeedPaintRect->bottom = PixelSize.height;
+                }
                 auto _hr = InitializeRenderTarget();
                 if (FAILED(_hr))
                     return _hr;
@@ -200,7 +207,7 @@ namespace YY
             HRESULT
             __fastcall
             CreateSolidColorBrush(
-                const Color& _Color,
+                Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) override
             {
                 return pRenderTarget->CreateSolidColorBrush(_Color, _ppSolidColorBrush);
