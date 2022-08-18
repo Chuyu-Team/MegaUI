@@ -6,6 +6,7 @@
 
 #include <MegaUI/Host/NativeWindowHost.h>
 
+
 using namespace YY::MegaUI;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -22,7 +23,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     YY::MegaUI::Element::Register();
 
     YY::MegaUI::Element* p;
-
     intptr_t Cooike;
     YY::MegaUI::Element::Create(0, nullptr, &Cooike, &p);
     {
@@ -43,7 +43,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         p2->EndDefer(Cooike);
     }
 
-     {
+    {
         intptr_t Cooike;
         YY::MegaUI::Element* p2;
         YY::MegaUI::Element::Create(0, p, &Cooike, &p2);
@@ -58,6 +58,55 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         p2->SetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeARGB(32, 255, 255, 0)));
         // p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.MinSizeProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateSize(500, 60));
         p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.LayoutPosProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateInt32(LP_Absolute));
+
+        p2->SetValue(Element::g_ClassInfoData.BorderThicknessProp, PropertyIndicies::PI_Local, Value::CreateRect(2, 4, 6, 8));
+        p2->SetValue(Element::g_ClassInfoData.BorderColorProp, PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeARGB(255u, 163u, 73u, 164u)));
+        p2->SetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Local, Value::CreateInt32(BDS_Raised));
+
+        p2->EndDefer(Cooike);
+    }
+    {
+        intptr_t Cooike;
+        YY::MegaUI::Element* p2;
+        YY::MegaUI::Element::Create(0, p, &Cooike, &p2);
+        p->Add(p2);
+
+        p2->SetX(150);
+        p2->SetY(150);
+
+        p2->SetHeight(50);
+        p2->SetWidth(40);
+
+        p2->SetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeARGB(255, 0, 255, 0)));
+        // p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.MinSizeProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateSize(500, 60));
+        p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.LayoutPosProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateInt32(LP_Absolute));
+
+        p2->SetValue(Element::g_ClassInfoData.BorderThicknessProp, PropertyIndicies::PI_Local, Value::CreateRect(2, 4, 6, 8));
+        p2->SetValue(Element::g_ClassInfoData.BorderColorProp, PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeARGB(255u, 255, 128, 192)));
+        p2->SetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Local, Value::CreateInt32(BDS_Sunken));
+
+        p2->EndDefer(Cooike);
+    }
+    {
+        intptr_t Cooike;
+        YY::MegaUI::Element* p2;
+        YY::MegaUI::Element::Create(0, p, &Cooike, &p2);
+        p->Add(p2);
+
+        p2->SetX(450);
+        p2->SetY(200);
+
+        p2->SetHeight(50);
+        p2->SetWidth(40);
+
+        p2->SetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeARGB(255, 0, 128, 192)));
+        // p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.MinSizeProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateSize(500, 60));
+        p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.LayoutPosProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateInt32(LP_Absolute));
+
+        p2->SetValue(Element::g_ClassInfoData.BorderThicknessProp, PropertyIndicies::PI_Local, Value::CreateRect(2, 4, 6, 8));
+        p2->SetValue(Element::g_ClassInfoData.BorderColorProp, PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeARGB(255u, 255, 128, 192)));
+        p2->SetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Local, Value::CreateInt32(BDS_Solid));
+
         p2->EndDefer(Cooike);
     }
 

@@ -58,9 +58,9 @@ namespace YY
             DXGI_RGBA __fastcall GetFloatColorRGBA() const
             {
                 DXGI_RGBA _Color;
-                _Color.r = Red;
-                _Color.g = Green;
-                _Color.b = Blue;
+                _Color.r = float(Red) / 255.0f;
+                _Color.g = float(Green) / 255.0f;
+                _Color.b = float(Blue) / 255.0f;
                 _Color.a = float(Alpha) / 255.0f;
                 return _Color;
             }

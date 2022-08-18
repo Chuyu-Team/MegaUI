@@ -70,6 +70,35 @@ namespace YY
                 return EqualRect(this, &_Other) == FALSE;
             }
 
+            void __fastcall DeflateRect(_In_ const RECT& _Other)
+            {
+                left += _Other.left;
+                if (left < right)
+                {
+                    right -= _Other.right;
+
+                    if (right < left)
+                        right = left;
+                }
+                else
+                {
+                    left = right;
+                }
+
+                top += _Other.top;
+                if (top < bottom)
+                {
+                    bottom -= _Other.bottom;
+
+                    if (bottom < top)
+                        bottom = top;
+                }
+                else
+                {
+                    top = bottom;
+                }
+            }
+
             __fastcall operator D2D_RECT_F() const
             {
                 D2D_RECT_F _RectF;

@@ -21,6 +21,15 @@
 #define LC_Normal 2
 #define LC_Optimize 3
 
+// BorderStyleProp
+#define BDS_Solid 0
+#define BDS_Raised 1
+#define BDS_Sunken 2
+#define BDS_Rounded 3
+
+
+#define DIRECTION_LTR 0
+#define DIRECTION_RTL 1
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -116,7 +125,11 @@ namespace YY
     _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
     _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetLayoutNull,             nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Layout   ) \
     _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::GetColorTransparant,       nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
-    _APPLY(MinSize,        PF_Normal | PF_Cascade,                PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,      &Value::GetSizeZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0, 0), ValueType::SIZE   ) 
+    _APPLY(MinSize,        PF_Normal | PF_Cascade, PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,  &Value::GetSizeZero, nullptr,                     nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0, 0), ValueType::SIZE   ) \
+    _APPLY(BorderThickness, PF_Normal | PF_Cascade,               PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::GetRectZero,               nullptr,                           nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0, 0), ValueType::Rect   ) \
+    _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::GetInt32Zero,              nullptr,                BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
+    _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              nullptr,                           nullptr,                           nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
+    _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                  DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0, 0), ValueType::int32_t   ) 
     // clang-format on
 
 		template<typename _Class>
@@ -191,7 +204,6 @@ namespace YY
             // UINT8 LayoutType : 2;
             uint32_t fNeedsLayout : 2;
 
-
             // 边框宽度，四个方向，左上右下
             Rect SpecBorderThickness;
             // 内边距
@@ -201,6 +213,7 @@ namespace YY
 
             // 最小限制
             SIZE SpecMinSize = {};
+            int32_t iSpecDirection = 0;
 		public:
             Element();
 
@@ -256,6 +269,10 @@ namespace YY
 
             ValueIs<ValueType::Layout> __fastcall GetLayout();
 
+            int32_t __fastcall GetBorderStyle();
+
+            bool __fastcall IsRTL();
+
 
 			virtual void __fastcall OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
@@ -302,11 +319,18 @@ namespace YY
 
             virtual void __fastcall Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
 
+            void __fastcall PaintBorder(_In_ Render* _pRenderTarget, _In_ int32_t _iBorderStyle, _In_ const Rect& _BorderThickness, const Value& _BorderColor, _Inout_ Rect& _Bounds);
+
+            void __fastcall PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
+
             virtual SIZE __fastcall GetContentSize(SIZE _ConstraintSize);
             virtual SIZE __fastcall SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);
             virtual void __fastcall SelfLayoutDoLayout(SIZE _ConstraintSize);
 
             void __fastcall Detach(DeferCycle* _pDeferCycle);
+
+            Rect __fastcall ApplyRTL(const Rect& _Src);
+
 		protected:
 			// Value Update
             HRESULT __fastcall PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);

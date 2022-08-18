@@ -205,7 +205,7 @@ namespace YY
             static Value __fastcall GetColorTransparant();
 
 
-            ValueType __fastcall GetType();
+            ValueType __fastcall GetType() const;
 
             // Value creation methods
             static Value __fastcall CreateInt32(_In_ int32_t _iValue);
@@ -243,12 +243,12 @@ namespace YY
             
             static Value __fastcall CreateColor(_In_ Color _Color);
 
-            int32_t __fastcall GetInt32();
-            bool __fastcall GetBool();
-            SIZE __fastcall GetSize();
-            POINT __fastcall GetPoint();
+            int32_t __fastcall GetInt32() const;
+            bool __fastcall GetBool() const;
+            SIZE __fastcall GetSize() const;
+            POINT __fastcall GetPoint() const;
             uint8_t* __fastcall GetRawBuffer();
-            Color __fastcall GetColor();
+            Color __fastcall GetColor() const;
         };
 
         template<ValueType _eType>

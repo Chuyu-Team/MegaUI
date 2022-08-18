@@ -251,7 +251,7 @@ namespace YY
             return pSharedData != nullptr;
         }
 
-        ValueType __fastcall Value::GetType()
+        ValueType __fastcall Value::GetType() const
         {
             if (!pSharedData)
                 return ValueType::Null;
@@ -431,7 +431,7 @@ namespace YY
             return Value(pValue);
         }
 
-        int32_t __fastcall Value::GetInt32()
+        int32_t __fastcall Value::GetInt32() const
         {
             if (GetType() != ValueType::int32_t)
                 throw Exception();
@@ -439,7 +439,7 @@ namespace YY
             return pSharedData->int32Value;
         }
         
-        bool __fastcall Value::GetBool()
+        bool __fastcall Value::GetBool() const
         {
             if (GetType() != ValueType::boolean)
                 throw Exception();
@@ -447,7 +447,7 @@ namespace YY
             return pSharedData->boolValue;
         }
         
-        SIZE __fastcall Value::GetSize()
+        SIZE __fastcall Value::GetSize() const
         {
             if (GetType() != ValueType::SIZE)
                 throw Exception();
@@ -455,7 +455,7 @@ namespace YY
             return pSharedData->sizeVal;
         }
         
-        POINT __fastcall Value::GetPoint()
+        POINT __fastcall Value::GetPoint() const
         {
             if (GetType() != ValueType::POINT)
                 throw Exception();
@@ -468,7 +468,7 @@ namespace YY
             return pSharedData ? pSharedData->RawBuffer : nullptr;
         }
         
-        Color __fastcall Value::GetColor()
+        Color __fastcall Value::GetColor() const
         {
             if (GetType() != ValueType::Color)
                 throw Exception();

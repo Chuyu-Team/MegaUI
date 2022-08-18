@@ -14,6 +14,22 @@ namespace YY
 {
 	namespace MegaUI
 	{
+        static const EnumMap BorderStyleEnumMap[] =
+        {
+            { "Solid",   BDS_Solid  },
+            { "Raised",  BDS_Raised },
+            { "Sunken",  BDS_Sunken },
+            { "Rounded", BDS_Rounded },
+            { }
+        };
+
+        static const EnumMap DirectionEnumMap[] =
+        {
+            { "LTR", DIRECTION_LTR },
+            { "RTL", DIRECTION_RTL },
+            { }
+        };
+
 		_APPLY_MEGA_UI_STATIC_CALSS_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
         Element::Element()
@@ -30,6 +46,7 @@ namespace YY
             , iSpecLayoutPos(g_ClassInfoData.LayoutPosProp.pFunDefaultValue().GetInt32())
             , fNeedsLayout(0)
             , bNeedsDSUpdate(0)
+            , iSpecDirection(DIRECTION_LTR)
         {
         }
 
@@ -150,7 +167,8 @@ namespace YY
                 }
 
                 // 最终还是没有，那么继承Default 值
-                _pValue = _Prop.pFunDefaultValue();
+                if (_Prop.pFunDefaultValue)
+                    _pValue = _Prop.pFunDefaultValue();
 
             } while (false);
 
@@ -337,6 +355,23 @@ namespace YY
         ValueIs<ValueType::Layout> __fastcall Element::GetLayout()
         {
             return GetValue(Element::g_ClassInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
+        }
+
+        int32_t __fastcall Element::GetBorderStyle()
+        {
+            int32_t _iValue = {};
+
+            auto _pValue = GetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Specified, false);
+            if (_pValue != nullptr)
+            {
+                _iValue = _pValue.GetInt32();
+            }
+            return _iValue;
+        }
+
+        bool __fastcall Element::IsRTL()
+        {
+            return iSpecDirection == DIRECTION_RTL;
         }
 
 		void __fastcall Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
@@ -558,23 +593,139 @@ namespace YY
         
         void __fastcall Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
         {
-            auto Background = GetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false);
+            Rect _PaintBounds = _Bounds;
+            if (SpecBorderThickness.left != 0 || SpecBorderThickness.top != 0 || SpecBorderThickness.right != 0 || SpecBorderThickness.bottom != 0)
+            {
+                PaintBorder(
+                    _pRenderTarget,
+                    GetBorderStyle(),
+                    ApplyRTL(SpecBorderThickness),
+                    GetValue(Element::g_ClassInfoData.BorderColorProp, PropertyIndicies::PI_Specified, false),
+                    _PaintBounds);
+            }
 
-            if (Background == nullptr)
+            PaintBackground(
+                _pRenderTarget,
+                GetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false),
+                _PaintBounds);
+
+            /*auto _SpecPadding = ApplyRTL(SpecPadding);
+
+            auto Background = GetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false);*/
+
+            
+        }
+
+        void __fastcall Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
+        {
+            if (_BorderThickness.left == 0 && _BorderThickness.top == 0 && _BorderThickness.right == 0 && _BorderThickness.bottom == 0)
                 return;
 
-            if (Background.GetType() == ValueType::Color)
+            Rect _NewBounds = _Bounds;
+            _NewBounds.DeflateRect(_BorderThickness);
+
+            switch (_iBorderStyle)
             {
-                ATL::CComPtr<ID2D1SolidColorBrush> m_pBlackBrush;
+            case BDS_Solid:
+            {
+                ATL::CComPtr<ID2D1SolidColorBrush> _BorderBrush;
                 auto hr = _pRenderTarget->CreateSolidColorBrush(
-                   /* D2D1::ColorF(D2D1::ColorF::DarkRed)*/
-                    Background.GetColor(),
-                    &m_pBlackBrush);
+                    _BorderColor.GetColor(),
+                    &_BorderBrush);
+
+                if (SUCCEEDED(hr))
+                {
+                    // 左边
+                    _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.top, _NewBounds.left, _NewBounds.bottom}, _BorderBrush);
+                    // 上面
+                    _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _Bounds.right, _NewBounds.top}, _BorderBrush);
+                    // 右边
+                    _pRenderTarget->FillRectangle({_NewBounds.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, _BorderBrush);
+                    // 下面
+                    _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.bottom, _Bounds.right, _Bounds.bottom}, _BorderBrush);
+                }
+                break;
+            }
+            case BDS_Raised:
+            case BDS_Sunken:
+            {
+                Rect _BoundsOutter = _Bounds;
+                _BoundsOutter.DeflateRect({_BorderThickness.left / 2, _BorderThickness.top / 2, _BorderThickness.right / 2, _BorderThickness.bottom / 2});
+
+                ATL::CComPtr<ID2D1SolidColorBrush> hbOLT; // Brush for outter left and top
+                ATL::CComPtr<ID2D1SolidColorBrush> hbORB; // Brush for outter right and bottom
+                ATL::CComPtr<ID2D1SolidColorBrush> hbILT; // Brush for inner left top
+                ATL::CComPtr<ID2D1SolidColorBrush> hbIRB; // Brush for inner right and bottom
+
+                auto _BrushColor = _BorderColor.GetColor();
+
+                if (_iBorderStyle == BDS_Raised)
+                {
+                    _pRenderTarget->CreateSolidColorBrush(
+                        _BrushColor,
+                        &hbOLT);
+                    _pRenderTarget->CreateSolidColorBrush(
+                        AdjustBrightness(_BrushColor, VERYDARK),
+                        &hbORB);
+                    _pRenderTarget->CreateSolidColorBrush(
+                        AdjustBrightness(_BrushColor, VERYLIGHT),
+                        &hbILT);
+                    _pRenderTarget->CreateSolidColorBrush(
+                        AdjustBrightness(_BrushColor, DARK),
+                        &hbIRB);
+                }
+                else
+                {
+                    _pRenderTarget->CreateSolidColorBrush(
+                        AdjustBrightness(_BrushColor, VERYDARK),
+                        &hbOLT);
+                    _pRenderTarget->CreateSolidColorBrush(
+                        AdjustBrightness(_BrushColor, VERYLIGHT),
+                        &hbORB);
+                    _pRenderTarget->CreateSolidColorBrush(
+                        AdjustBrightness(_BrushColor, DARK),
+                        &hbILT);
+                    _pRenderTarget->CreateSolidColorBrush(
+                        _BrushColor,
+                        &hbIRB);
+                }
+
+                // Paint etches
+                _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _BoundsOutter.left, _BoundsOutter.bottom}, hbOLT); // Outter left
+                _pRenderTarget->FillRectangle({_BoundsOutter.left, _Bounds.top, _BoundsOutter.right, _BoundsOutter.top}, hbOLT); // Outter top
+                _pRenderTarget->FillRectangle({_BoundsOutter.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, hbORB);         // Outter right
+                _pRenderTarget->FillRectangle({_Bounds.left, _BoundsOutter.bottom, _BoundsOutter.right, _Bounds.bottom}, hbORB); // Outter bottom
+                _pRenderTarget->FillRectangle({_BoundsOutter.left, _BoundsOutter.top, _NewBounds.left, _NewBounds.bottom}, hbILT);    // Inner left
+                _pRenderTarget->FillRectangle({_NewBounds.left, _BoundsOutter.top, _NewBounds.right, _NewBounds.top}, hbILT);         // Inner top
+                _pRenderTarget->FillRectangle({_NewBounds.right, _BoundsOutter.top, _BoundsOutter.right, _BoundsOutter.bottom}, hbIRB); // Inner right
+                _pRenderTarget->FillRectangle({_BoundsOutter.left, _NewBounds.bottom, _NewBounds.right, _BoundsOutter.bottom}, hbIRB);  // Inner bottom
+                break;
+            }
+            default:
+                break;
+            }
+
+
+            _Bounds = _NewBounds;
+        }
+
+        void __fastcall Element::PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds)
+        {
+            if (_Background == nullptr)
+                return;
+
+            if (_Background.GetType() == ValueType::Color)
+            {
+                ATL::CComPtr<ID2D1SolidColorBrush> _BackgroundBrush;
+                auto hr = _pRenderTarget->CreateSolidColorBrush(
+                    /* D2D1::ColorF(D2D1::ColorF::DarkRed)*/
+                    _Background.GetColor(),
+                    &_BackgroundBrush);
 
                 if (FAILED(hr))
                     return;
 
-                _pRenderTarget->FillRectangle(_Bounds, m_pBlackBrush);
+                _pRenderTarget->FillRectangle(_Bounds, _BackgroundBrush);
             }
         }
 
@@ -1749,6 +1900,14 @@ namespace YY
                 sizeDesired = LocLastDesiredSizeConstraint;
             }
             return sizeDesired;
+        }
+
+        Rect __fastcall Element::ApplyRTL(const Rect& _Src)
+        {
+            if (IsRTL())
+                return Rect(_Src.right, _Src.top, _Src.left, _Src.bottom);
+            else
+                return _Src;
         }
         
         PropertyCustomCacheResult __fastcall Element::GetExtentProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
