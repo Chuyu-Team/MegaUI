@@ -177,7 +177,8 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Host\NativeWindowHost.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Render\D2D\D2DRender.h" />
+    <ClInclude Include="Render\D2D\D2D1.1Render.h" />
+    <ClInclude Include="Render\D2D\D2D1.0Render.h" />
     <ClInclude Include="Render\GDI+\Brush\D2D1SolidColorBrushForGdiPlus.h" />
     <ClInclude Include="Render\GDI+\GdiPlusRender.h" />
     <ClInclude Include="Render\Render.h" />

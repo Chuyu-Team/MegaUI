@@ -111,7 +111,7 @@
     <ClInclude Include="Render\Render.h">
       <Filter>UI\Render</Filter>
     </ClInclude>
-    <ClInclude Include="Render\D2D\D2DRender.h">
+    <ClInclude Include="Render\D2D\D2D1.0Render.h">
       <Filter>UI\Render\D2D</Filter>
     </ClInclude>
     <ClInclude Include="Render\GDI+\GdiPlusRender.h">
@@ -119,6 +119,9 @@
     </ClInclude>
     <ClInclude Include="Render\GDI+\Brush\D2D1SolidColorBrushForGdiPlus.h">
       <Filter>UI\Render\GDI+\Brush</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\D2D\D2D1.1Render.h">
+      <Filter>UI\Render\D2D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

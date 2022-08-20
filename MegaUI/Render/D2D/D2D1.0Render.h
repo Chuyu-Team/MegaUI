@@ -14,8 +14,8 @@ namespace YY
 {
     namespace MegaUI
     {
-        // D2D本身内部就是双缓冲……
-        class D2DRender : public Render
+        // D2D本身内部就是双缓冲……,此版本适用于Windows 7
+        class D2D1_0Render : public Render
         {
         private:
             HWND hWnd;
@@ -23,7 +23,7 @@ namespace YY
             ID2D1HwndRenderTarget* pRenderTarget;
             D2D1_SIZE_U PixelSize;
         public:
-            D2DRender(HWND _hWnd, ID2D1Factory* _pD2DFactory, ID2D1HwndRenderTarget* _pRenderTarget, const D2D1_SIZE_U& _PixelSize)
+            D2D1_0Render(HWND _hWnd, ID2D1Factory* _pD2DFactory, ID2D1HwndRenderTarget* _pRenderTarget, const D2D1_SIZE_U& _PixelSize)
                 : hWnd(_hWnd)
                 , pD2DFactory(_pD2DFactory)
                 , pRenderTarget(_pRenderTarget)
@@ -31,7 +31,9 @@ namespace YY
             {
             }
 
-            ~D2DRender()
+            D2D1_0Render(const D2D1_0Render&) = delete;
+
+            ~D2D1_0Render()
             {
                 if (pRenderTarget)
                     pRenderTarget->Release();
@@ -39,6 +41,8 @@ namespace YY
                 if (pD2DFactory)
                     pD2DFactory->Release();
             }
+
+            void __fastcall operator=(const D2D1_0Render&) = delete;
 
             HRESULT __fastcall InitializeRenderTarget()
             {
@@ -111,7 +115,7 @@ namespace YY
                         break;
                     }
 
-                    auto _pD2DRender = HNew<D2DRender>(_hWnd, _pD2DFactory, _pRenderTarget, _PixelSize);
+                    auto _pD2DRender = HNew<D2D1_0Render>(_hWnd, _pD2DFactory, _pRenderTarget, _PixelSize);
                     if (!_pD2DRender)
                     {
                         _hr = E_OUTOFMEMORY;
