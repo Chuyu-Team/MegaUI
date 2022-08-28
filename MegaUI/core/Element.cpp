@@ -33,7 +33,8 @@ namespace YY
 		_APPLY_MEGA_UI_STATIC_CALSS_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
         Element::Element()
-            : _iGCSlot(-1)
+            : RenderNode{}
+            , _iGCSlot(-1)
             , _iGCLPSlot(-1)
             , _iPCTail(-1)
             , pDeferObject(nullptr)
@@ -45,6 +46,7 @@ namespace YY
             , LocLastDesiredSizeConstraint {}
             , iSpecLayoutPos(g_ClassInfoData.LayoutPosProp.pFunDefaultValue().GetInt32())
             , fNeedsLayout(0)
+            , bLocMouseWithin(FALSE)
             , bNeedsDSUpdate(0)
             , iSpecDirection(DIRECTION_LTR)
         {
@@ -212,6 +214,9 @@ namespace YY
             if (_pvOld == _pValue)
                 return S_OK;
 
+            if (!OnPropertyChanging(_Prop, _eIndicies, _pvOld, _pValue))
+                return __HRESULT_FROM_WIN32(ERROR_CANCELLED);
+
             PreSourceChange(_Prop, _eIndicies, _pvOld, _pValue);
 
             auto _hr = S_OK;
@@ -369,15 +374,39 @@ namespace YY
             return _iValue;
         }
 
+        HRESULT __fastcall Element::SetBorderStyle(int32_t _iBorderStyle)
+        {
+            auto _NewValue = Value::CreateInt32(_iBorderStyle);
+            if (_NewValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Local, _NewValue);
+        }
+
         bool __fastcall Element::IsRTL()
         {
             return iSpecDirection == DIRECTION_RTL;
+        }
+
+        bool __fastcall Element::IsMouseWithin()
+        {
+            return bLocMouseWithin != FALSE;
+        }
+
+        bool __fastcall Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
+        {
+            return true;
         }
 
 		void __fastcall Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
             if (_Prop.pFunOnPropertyChanged)
                 (this->*_Prop.pFunOnPropertyChanged)(_Prop, _eIndicies, _OldValue, _NewValue);
+
+            if (&_Prop == &g_ClassInfoData.MouseWithinProp)
+            {
+                SetBorderStyle(_NewValue.GetBool() ? BDS_Solid : BDS_Raised);
+            }
         }
 
         void __fastcall Element::OnGroupChanged(uint32_t _fGroups)
@@ -389,70 +418,91 @@ namespace YY
             if (!_pDeferObject)
                 return;
 
-            if ((PropertyGroup::PG_NormalPriMask & _fGroups) && (PropertyGroup::PG_LowPriMask & _fGroups))
+            if (_fGroups & PG_NormalPriMask)
             {
-                throw Exception();
-                return;
-            }
-
-            // Affects Desired Size or Affects Layout
-            if (_fGroups & (PG_AffectsDesiredSize | PG_AffectsLayout))
-            {
-                // 找到通知树的根节点
-                auto _pRoot = this;
-                while (_pRoot->GetLayoutPos() != LP_Absolute)
+                // Affects Desired Size or Affects Layout
+                if (_fGroups & (PG_AffectsDesiredSize | PG_AffectsLayout))
                 {
-                    auto _pParent = _pRoot->GetParent();
-                    if (!_pParent)
-                        break;
+                    // 找到通知树的根节点
+                    auto _pRoot = this;
+                    while (_pRoot->GetLayoutPos() != LP_Absolute)
+                    {
+                        auto _pParent = _pRoot->GetParent();
+                        if (!_pParent)
+                            break;
 
-                    _pRoot = _pParent;
-                }
+                        _pRoot = _pParent;
+                    }
 
-                if (_fGroups & PG_AffectsDesiredSize)
-                {
-                    _pDeferObject->UpdateDesiredSizeRootPendingSet.Insert(_pRoot);
-                }
-
-                if (_fGroups & PG_AffectsLayout)
-                {
-                    _pDeferObject->LayoutRootPendingSet.Insert(_pRoot);
-                }
-            }
-
-            if (_fGroups & (PG_AffectsParentDesiredSize | PG_AffectsParentLayout))
-            {
-                // Locate Layout/DS root and queue tree as needing a layout pass
-                // Root doesn't have parent or is absolute positioned
-                Element* _pRoot;
-                Element* _pParent = nullptr;
-
-                for (Element* _pTmp = this;;)
-                {
-                    _pRoot = _pTmp;
-
-                    _pTmp = _pRoot->GetParent();
-                    if (_pTmp && !_pParent)
-                        _pParent = _pTmp;
-
-                    if (_pTmp == nullptr || _pRoot->GetLayoutPos() == LP_Absolute)
-                        break;
-                }
-
-                if (_pParent)
-                {
-                    if (_fGroups & PG_AffectsParentDesiredSize)
+                    if (_fGroups & PG_AffectsDesiredSize)
                     {
                         _pDeferObject->UpdateDesiredSizeRootPendingSet.Insert(_pRoot);
                     }
 
-                    if (_fGroups & PG_AffectsParentLayout)
+                    if (_fGroups & PG_AffectsLayout)
                     {
                         _pDeferObject->LayoutRootPendingSet.Insert(_pRoot);
                     }
                 }
-            }
 
+                if (_fGroups & (PG_AffectsParentDesiredSize | PG_AffectsParentLayout))
+                {
+                    // Locate Layout/DS root and queue tree as needing a layout pass
+                    // Root doesn't have parent or is absolute positioned
+                    Element* _pRoot;
+                    Element* _pParent = nullptr;
+
+                    for (Element* _pTmp = this;;)
+                    {
+                        _pRoot = _pTmp;
+
+                        _pTmp = _pRoot->GetParent();
+                        if (_pTmp && !_pParent)
+                            _pParent = _pTmp;
+
+                        if (_pTmp == nullptr || _pRoot->GetLayoutPos() == LP_Absolute)
+                            break;
+                    }
+
+                    if (_pParent)
+                    {
+                        if (_fGroups & PG_AffectsParentDesiredSize)
+                        {
+                            _pDeferObject->UpdateDesiredSizeRootPendingSet.Insert(_pRoot);
+                        }
+
+                        if (_fGroups & PG_AffectsParentLayout)
+                        {
+                            _pDeferObject->LayoutRootPendingSet.Insert(_pRoot);
+                        }
+                    }
+                }
+            }
+            else if (_fGroups & PG_LowPriMask)
+            {
+                auto _uAddInvalidateMarks = 0u;
+                if (_fGroups & PG_AffectsBounds)
+                {
+                    _uAddInvalidateMarks |= ElementRenderNode::InvalidatePosition | ElementRenderNode::InvalidateExtent;
+                }
+
+                if (_fGroups & PG_AffectsDisplay)
+                {
+                    _uAddInvalidateMarks |= ElementRenderNode::InvalidateContent;
+                }
+
+                // 如果
+                if (_uAddInvalidateMarks)
+                {
+                    for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                    {
+                        if (_pParent->RenderNode.uInvalidateMarks & ElementRenderNode::InvalidateChild)
+                            break;
+                        _pParent->RenderNode.uInvalidateMarks |= ElementRenderNode::InvalidateChild;
+                    }
+                    RenderNode.uInvalidateMarks |= _uAddInvalidateMarks;
+                }
+            }
         }
 
         Element* Element::GetTopLevel()
@@ -1260,17 +1310,43 @@ namespace YY
         {
             HRESULT _hrLast = S_OK;
 
+            if (_Prop.pFunGetDependencies)
+            {
+                auto _hr = (this->*_Prop.pFunGetDependencies)(_Prop, _eIndicies, pdr, iPCSrcRoot, _pNewValue, _pDeferCycle);
+                if (FAILED(_hr))
+                    _hrLast = _hr;
+            }
+            else if (_Prop.ppDependencies)
+            {
+                for (auto _ppDependencies = _Prop.ppDependencies; *_ppDependencies; ++_ppDependencies)
+                {
+                    auto& _DependencyProp = **_ppDependencies;
+                    auto _uDependencyIndicies = (uint32_t)_eIndicies;
+
+                    for (; _uDependencyIndicies; --_uDependencyIndicies)
+                    {
+                        if (_DependencyProp.fFlags & (1u << _uDependencyIndicies))
+                        {
+                            auto _hr = AddDependency(this, _DependencyProp, (PropertyIndicies)_uDependencyIndicies, pdr, _pDeferCycle);
+                            if (FAILED(_hr))
+                                _hrLast = _hr;
+                            break;
+                        }
+                    }                    
+                }
+            }
+
             switch (_eIndicies)
             {
-            case YY::MegaUI::PropertyIndicies::PI_Local:
+            case PropertyIndicies::PI_Local:
                 if (_Prop.fFlags & PropertyFlag::PF_HasSpecified)
                 {
-                    auto hr = AddDependency(this, _Prop, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
-                    if (FAILED(hr))
-                        _hrLast = hr;
+                    auto _hr = AddDependency(this, _Prop, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
+                    if (FAILED(_hr))
+                        _hrLast = _hr;
                 }
                 break;
-            case YY::MegaUI::PropertyIndicies::PI_Specified:
+            case PropertyIndicies::PI_Specified:
                 if (_Prop.fFlags & PropertyFlag::PF_Inherit)
                 {
                     for (auto _pChild : vecLocChildren)
@@ -1283,20 +1359,20 @@ namespace YY
                         if (ppValue && *ppValue != nullptr)
                             continue;
 
-                        auto hr = AddDependency(_pChild, _Prop, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
-                        if (FAILED(hr))
-                            _hrLast = hr;
+                        auto _hr = AddDependency(_pChild, _Prop, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
+                        if (FAILED(_hr))
+                            _hrLast = _hr;
                     }
                 }
                 
                 if (_Prop.fFlags & PropertyFlag::PF_HasComputed)
                 {
-                    auto hr = AddDependency(this, _Prop, PropertyIndicies::PI_Computed, pdr, _pDeferCycle);
-                    if (FAILED(hr))
-                        _hrLast = hr;
+                    auto _hr = AddDependency(this, _Prop, PropertyIndicies::PI_Computed, pdr, _pDeferCycle);
+                    if (FAILED(_hr))
+                        _hrLast = _hr;
                 }
                 break;
-            case YY::MegaUI::PropertyIndicies::PI_Computed:
+            case PropertyIndicies::PI_Computed:
                 break;
             }
             return _hrLast;
@@ -1449,7 +1525,7 @@ namespace YY
                 if (pElement->_iGCLPSlot == -1)
                 {
                     uint_t uAddIndex;
-                    auto pItem = pDeferCycle->vecGroupChangeLowPriority.AddAndGetPtr(&uAddIndex);
+                    pItem = pDeferCycle->vecGroupChangeLowPriority.AddAndGetPtr(&uAddIndex);
 
                     if (!pItem)
                     {

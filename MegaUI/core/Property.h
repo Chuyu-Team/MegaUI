@@ -135,6 +135,12 @@ namespace YY
         };
 
         typedef void (__fastcall Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+
+        struct DepRecs;
+        class DeferCycle;
+
+        typedef HRESULT (__fastcall Element::*FunTypeGetDependencies)(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+
         typedef PropertyCustomCacheResult (__fastcall Element::*FunTypePropertyCustomCache)(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
         struct PropertyInfo
@@ -153,6 +159,10 @@ namespace YY
             Value (__fastcall* pFunDefaultValue)();
             // 当值发生更改时，会调用此函数
             FunTypeOnPropertyChanged pFunOnPropertyChanged;
+            // pFunGetDependencies 与 ppDependencies 二选一，优先 pFunGetDependencies
+            FunTypeGetDependencies pFunGetDependencies;
+            // 此属性依赖的属性，以 nullptr 结束
+            const PropertyInfo** ppDependencies;
             // 该属性绑定的缓存属性，如果没有绑定，那么直接使用 _LocalPropValue
             union
             {
@@ -217,7 +227,7 @@ namespace YY
 #define _MEGA_UI_PROP_BIND_RECT(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
     _MEGA_UI_PROP_BIND_VALUE(ValueType::Rect, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
 
-#define _MEGA_UI_PROP_BIND_BOOL(_LOCAL, _HAS_LOCAL, _LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED, _SPECIFIED_BIT, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
+#define _MEGA_UI_PROP_BIND_BOOL(_LOCAL, _LOCAL_BIT, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _SPECIFIED_BIT, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
     _MEGA_UI_PROP_BIND_VALUE(ValueType::boolean, _LOCAL, _LOCAL_BIT, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _SPECIFIED_BIT, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
 
 #define _MEGA_UI_PROP_BIND_NONE() {}
@@ -226,14 +236,14 @@ namespace YY
 
 
 //#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _ENUM, ...) static PropertyInfo _CRT_CONCATENATE(_PRO_NAME, Prop);
-#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _ENUM, _BIND_INT, ...) const PropertyInfo _CRT_CONCATENATE(_PRO_NAME, Prop);
-#define _APPLY_MEGA_UI_PROPERTY_COUNT(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _ENUM, _BIND_INT, ...) + 1
+#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _PROP_DEPENDENCIES, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) const PropertyInfo _CRT_CONCATENATE(_PRO_NAME, Prop);
+#define _APPLY_MEGA_UI_PROPERTY_COUNT(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _PROP_DEPENDENCIES, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) +1
 		//		PropertyInfo _CLASS::_CRT_CONCATENATE(_PRO_NAME, Prop) =                                                
 
-#define _APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _ENUM, _BIND_INT, ...) \
+#define _APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _PROP_DEPENDENCIES, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) \
 		static constexpr const ValueType _CRT_CONCATENATE(vv, _PRO_NAME)[] = { __VA_ARGS__, ValueType::Null };
 
-#define _APPLY_MEGA_UI_PROPERTY(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _ENUM, _BIND_INT, ...) \
+#define _APPLY_MEGA_UI_PROPERTY(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _PROP_CHANGED, _PROP_DEPENDENCIES, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) \
 		{                                                                                                         \
 			# _PRO_NAME,                                                                                          \
 			_FLAGS,                                                                                               \
@@ -242,6 +252,8 @@ namespace YY
 			_ENUM,                                                                                                \
 			_DEF_VALUE_FUN,                                                                                       \
 			__GetMegaUICallback<FunTypeOnPropertyChanged>(_PROP_CHANGED),                                         \
+            __GetMegaUICallback<FunTypeGetDependencies>(_PROP_DEPENDENCIES),                                      \
+            _PROP_DEPENDENCIES_DATA,                                                                              \
 			_BIND_INT,                                                                                            \
 		},
 

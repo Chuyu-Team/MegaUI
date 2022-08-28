@@ -170,51 +170,67 @@ namespace YY
 
             return S_OK;
         }
+
+        bool __fastcall NativeWindowHost::IsMinimized() const
+        {
+            return (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
+        }
         
         LRESULT NativeWindowHost::WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             auto _pNativeWindow = (NativeWindowHost*)GetWindowLongPtrW(_hWnd, GWLP_USERDATA);
 
-            if (_uMsg == NativeWindowHost::AsyncDestroyMsg())
+            do
             {
-                ::DestroyWindow(_hWnd);
-                return 0;
-            }
+                if (!_pNativeWindow)
+                    break;
 
-            switch (_uMsg)
-            {
-            case WM_CLOSE:
-                if (_pNativeWindow)
+                if (_uMsg == NativeWindowHost::AsyncDestroyMsg())
                 {
-                    _pNativeWindow->DestroyWindow();
+                    ::DestroyWindow(_hWnd);
                     return 0;
                 }
-                break;
-            case WM_DESTROY:
-                if (_pNativeWindow)
+
+                switch (_uMsg)
                 {
+                case WM_CLOSE:
+                    _pNativeWindow->DestroyWindow();
+                    return 0;
+                    break;
+                case WM_DESTROY:
                     PostQuitMessage(0);
                     _pNativeWindow->hWnd = NULL;
                     SetWindowLongPtrW(_hWnd, GWLP_USERDATA, NULL);
                     HDelete(_pNativeWindow);
-                }
-                break;
-            case WM_PAINT:
-                if (_pNativeWindow)
-                {
+                    break;
+                case WM_PAINT:
                     _pNativeWindow->OnPaint();
                     ValidateRect(_hWnd, NULL);
                     return 0;
-                }
-                break;
-            case WM_SIZE:
-                if (_pNativeWindow)
+                    break;
+                case WM_SIZE:
+                    // 非最小化时不刷新 Host大小
+                    if (!_pNativeWindow->IsMinimized())
+                    {
+                        _pNativeWindow->OnSize(LOWORD(_lParam), HIWORD(_lParam));
+                    }
+                    break;
+                case WM_MOUSEMOVE:
                 {
-                    _pNativeWindow->OnSize(LOWORD(_lParam), HIWORD(_lParam));
+                    const auto fwKeys = _wParam;
+                    if (_pNativeWindow->pHost && fwKeys != MK_LBUTTON)
+                    {
+                        Rect _Bounds;
+                        ::GetWindowRect(_hWnd, &_Bounds);
+
+                        _pNativeWindow->UpdateMouseWithin(_pNativeWindow->pHost, _Bounds, _Bounds, POINT {LOWORD(_lParam), HIWORD(_lParam)});
+                    }
+                    break;
                 }
-            default:
-                break;
-            }
+                default:
+                    break;
+                }
+            } while (false);
 
             return DefWindowProcW(_hWnd, _uMsg, _wParam, _lParam);
         }
@@ -255,7 +271,45 @@ namespace YY
         {
             if (_pRender == nullptr || _pElement == nullptr)
                 return E_INVALIDARG;
+            #if 0
+            auto& RenderNode = _pElement->RenderNode;
+            auto _uInvalidateMarks = RenderNode.uInvalidateMarks;
+            if (_uInvalidateMarks & (ElementRenderNode::InvalidatePosition | ElementRenderNode::InvalidateExtent))
+            {
+                auto _NewBounds = RenderNode.Bounds;
+                if (_uInvalidateMarks & ElementRenderNode::InvalidatePosition)
+                {
+                    auto _Location = _pElement->GetLocation();
+                    _Location.x += _ParentBounds.left;
+                    _Location.y += _ParentBounds.top;
 
+                    if(_NewBounds == _Location)
+                    {
+                        _uInvalidateMarks &= ~ElementRenderNode::InvalidatePosition;
+                    }
+                    else
+                    {
+                        _NewBounds.SetPoint(_Location);
+                        _uInvalidateMarks |= ElementRenderNode::InvalidateChild;
+                    }
+                }
+
+                if (_uInvalidateMarks & ElementRenderNode::InvalidateExtent)
+                {
+                    auto _Extent = _pElement->GetExtent();
+                    if (_NewBounds == _Extent)
+                    {
+                        _uInvalidateMarks &= ~ElementRenderNode::InvalidateExtent;
+                    }
+                    else
+                    {
+                        _NewBounds.SetSize(_Extent);
+                    }
+                }
+
+                RenderNode.Bounds = _NewBounds;
+            }
+            #else
             auto _Location = _pElement->GetLocation();
             auto _Extent = _pElement->GetExtent();
 
@@ -265,7 +319,7 @@ namespace YY
 
             _BoundsElement.top = _ParentBounds.top + _Location.y;
             _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
-            
+            #endif
             // 如果没有交集，那么我们可以不绘制
             Rect _PaintRect;
             if (!IntersectRect(&_PaintRect, &_ParentPaintRect, &_BoundsElement))
@@ -288,6 +342,72 @@ namespace YY
             }
 
             return S_OK;
+        }
+
+        void __fastcall NativeWindowHost::UpdateMouseWithin(
+            Element* _pElement,
+            const Rect& _ParentBounds,
+            const Rect& _ParentVisibleBounds,
+            const POINT& _ptPoint)
+        {
+            auto _Location = _pElement->GetLocation();
+            auto _Extent = _pElement->GetExtent();
+
+            Rect _BoundsElement;
+            _BoundsElement.left = _ParentBounds.left + _Location.x;
+            _BoundsElement.right = _BoundsElement.left + _Extent.cx;
+
+            _BoundsElement.top = _ParentBounds.top + _Location.y;
+            _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
+
+            Rect _VisibleBounds;
+            if (IntersectRect(&_VisibleBounds, &_ParentVisibleBounds, &_BoundsElement))
+            {
+                if (_VisibleBounds.PointInRect(_ptPoint))
+                {
+                    intptr_t _Cooike = 0;
+
+                    if (!_pElement->IsMouseWithin())
+                    {
+                        _pElement->StartDefer(&_Cooike);
+
+                        _pElement->PreSourceChange(Element::g_ClassInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolFalse(), Value::GetBoolTrue());
+                        _pElement->bLocMouseWithin = TRUE;
+                        _pElement->PostSourceChange();
+                    }
+
+                    for (auto _pChild : _pElement->GetChildren())
+                    {
+                        UpdateMouseWithin(_pChild, _BoundsElement, _VisibleBounds, _ptPoint);
+                    }
+
+                    if (_Cooike)
+                        _pElement->EndDefer(_Cooike);
+                    return;
+                }
+            }
+
+            UpdateMouseWithinToFalse(_pElement);
+        }
+
+        void __fastcall NativeWindowHost::UpdateMouseWithinToFalse(Element* _pElement)
+        {
+            if (!_pElement->IsMouseWithin())
+                return;
+
+            intptr_t _Cooike = 0;
+            _pElement->StartDefer(&_Cooike);
+
+            _pElement->PreSourceChange(Element::g_ClassInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolTrue(), Value::GetBoolFalse());
+            _pElement->bLocMouseWithin = FALSE;
+            _pElement->PostSourceChange();
+
+            for (auto _pChild : _pElement->GetChildren())
+            {
+                UpdateMouseWithinToFalse(_pChild);
+            }
+
+            _pElement->EndDefer(_Cooike);
         }
 
         void __fastcall NativeWindowHost::OnSize(UINT _uWidth, UINT _uHeight)

@@ -9,6 +9,27 @@ namespace YY
 {
     namespace MegaUI
     {
+        // 用于保存 Element 的位置以及是否缓存绘制信息
+        struct ElementRenderNode
+        {
+            enum
+            {
+                // 该控件的一个或者多个子控件需要重新评估。
+                InvalidateChild = 0x00000001u,
+                // 控件位置发送变化
+                InvalidatePosition = 0x00000002u,
+                // 控件大小发生变化
+                InvalidateExtent = 0x00000004u,
+                // Node 中的显示内容发生变化。
+                InvalidateContent = 0x00000008u,
+            };
+            // 相对于窗口的坐标系
+            Rect Bounds;
+
+            // Invalidate 位组合
+            uint32_t uInvalidateMarks;
+        };
+
         class Render
         {
         public:

@@ -70,6 +70,16 @@ namespace YY
                 return EqualRect(this, &_Other) == FALSE;
             }
 
+            __inline bool __fastcall operator==(POINT _Point)
+            {
+                return left == _Point.x && top == _Point.y;
+            }
+
+            __inline bool __fastcall operator==(SIZE _Size)
+            {
+                return right - left == _Size.cx && bottom - top == _Size.cy;
+            }
+
             void __fastcall DeflateRect(_In_ const RECT& _Other)
             {
                 left += _Other.left;
@@ -97,6 +107,26 @@ namespace YY
                 {
                     top = bottom;
                 }
+            }
+
+            bool __fastcall PointInRect(POINT _Point)
+            {
+                return ::PtInRect(this, _Point) != FALSE;
+            }
+
+            void __fastcall SetPoint(POINT _Point)
+            {
+                right += _Point.x - left;
+                left = _Point.x;
+
+                bottom += _Point.y - top;
+                top = _Point.y;
+            }
+
+            void __fastcall SetSize(SIZE _Size)
+            {
+                right = left + _Size.cx;
+                bottom = top + _Size.cy;
             }
 
             __fastcall operator D2D_RECT_F() const

@@ -348,9 +348,10 @@ namespace YY
 
                 pDeviceContext->SetTarget(nullptr);
                 if (pD2DTargetBitmap)
+                {
                     pD2DTargetBitmap->Release();
-                pD2DTargetBitmap = nullptr;
-
+                    pD2DTargetBitmap = nullptr;
+                }
                 auto _hr = pSwapChain->ResizeBuffers(1, PixelSize.width, PixelSize.height, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
 
                 do

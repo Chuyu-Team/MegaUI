@@ -68,6 +68,8 @@ namespace YY
             
             HRESULT __fastcall SetHost(_In_ Element* _pHost);
 
+            bool __fastcall IsMinimized() const;
+
             static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
             static UINT __fastcall AsyncDestroyMsg();
@@ -82,9 +84,11 @@ namespace YY
                 _In_ const Rect& _ParentPaintRect
                 );
 
-            HRESULT __fastcall InitializeRenderTarget();
-
             void __fastcall OnSize(UINT _uWidth, UINT _uHeight);
+
+            void __fastcall UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& ptPoint);
+
+            void __fastcall UpdateMouseWithinToFalse(Element* _pElement);
         };
     } // namespace MegaUI
 } // namespace YY
