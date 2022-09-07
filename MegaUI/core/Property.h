@@ -60,6 +60,8 @@ namespace YY
 			PF_Inherit   = 0x08,
 			// 属性是只读的，不可更改。
 			PF_ReadOnly  = 0x10,
+            PF_20 = 0x20,
+            PF_40 = 0x40,
 
 		};
 
@@ -78,6 +80,16 @@ namespace YY
                 return PropertyFlag(PF_HasLocal | PF_HasSpecified | PF_HasComputed);
                 break;
             }
+        }
+
+        inline PropertyIndicies __fastcall PropertyFlagMapToMaxPropertyIndicies(PropertyFlag _fFlags)
+        {
+            if (_fFlags & PF_HasComputed)
+                return PropertyIndicies::PI_Computed;
+            else if (_fFlags & PF_HasSpecified)
+                return PropertyIndicies::PI_Specified;
+            else
+                return PropertyIndicies::PI_Local;
         }
 
         enum PropertyGroup
@@ -229,6 +241,12 @@ namespace YY
 
 #define _MEGA_UI_PROP_BIND_BOOL(_LOCAL, _LOCAL_BIT, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _SPECIFIED_BIT, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
     _MEGA_UI_PROP_BIND_VALUE(ValueType::boolean, _LOCAL, _LOCAL_BIT, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _SPECIFIED_BIT, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
+
+#define _MEGA_UI_PROP_BIND_ATOM(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::ATOM, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
+
+#define _MEGA_UI_PROP_BIND_SHEET(_LOCAL, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::StyleSheet, _LOCAL, 0, _HAS_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, 0, _HAS_SPECIFIED, _HAS_SPECIFIED_BIT)
 
 #define _MEGA_UI_PROP_BIND_NONE() {}
 

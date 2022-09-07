@@ -6,7 +6,7 @@
 #include "value.h"
 #include "Property.h"
 #include "DeferCycle.h"
-
+#include "ClassInfo.h"
 #include "../Render/Render.h"
 
 // Global layout positions
@@ -108,9 +108,9 @@ namespace YY
 #endif
 
     // clang-format off
-	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                  ChangedFun                                          pEnumMaps              BindCache                                                                    ValidValueType
+	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                  ChangedFun                                                                       pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
+    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, &Element::GetParentDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
     _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0, 0, 0), ValueType::ElementList) \
     _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                         nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0, 0), ValueType::int32_t) \
     _APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
@@ -130,11 +130,11 @@ namespace YY
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::GetInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
     _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0, 0), ValueType::int32_t   ) \
-    _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_OFFSET(Element, BitsBuffer/*bLocMouseWithin*/), 4, 0, 0, 0, 0, 0, 0), ValueType::boolean   ) 
-    // clang-format on
+    _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_OFFSET(Element, BitsBuffer/*bLocMouseWithin*/), 4, 0, 0, 0, 0, 0, 0), ValueType::boolean   ) \
+    _APPLY(ID,             PF_Normal,                             0,                                              &Value::GetAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, 0, UFIELD_OFFSET(Element, SpecID), 0, 0), ValueType::ATOM   ) \
+    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::GetSheetNull,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, 0, UFIELD_OFFSET(Element, pSheet), 0, 0), ValueType::StyleSheet   ) 
 
-		template<typename _Class>
-		class ClassInfoBase;
+    // clang-format on
 
         class NativeWindowHost;
 
@@ -154,8 +154,9 @@ namespace YY
 
 		class Element
 		{
-			_APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
+            _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
             friend NativeWindowHost;
+            friend StyleSheet;
 
         protected:
             ElementRenderNode RenderNode;
@@ -201,7 +202,12 @@ namespace YY
             // Cached Layout Position
             int32_t iSpecLayoutPos;
             
+            // 0x50
+            StyleSheet* pSheet;
 
+            // 0x58 ID
+            ATOM SpecID;
+            
             //bits
             union
             {
@@ -355,6 +361,35 @@ namespace YY
 
             Rect __fastcall ApplyRTL(const Rect& _Src);
 
+            void __fastcall Invalidate();
+
+
+            template<typename _Type>
+            _Type* __fastcall TryCast()
+            {
+                auto _pClassInfo = GetControlClassInfo();
+                if (!_pClassInfo)
+                    return nullptr;
+
+                if (!_pClassInfo->IsSubclassOf(_Type::GetStaticControlClassInfo()))
+                    return nullptr;
+
+                return (_Type*)this;
+            }
+            
+            /// <summary>
+            /// 只比较二个控件的SpecCache值是否相等。注意这个函数只是为了性能需要，并且经常失败……
+            /// </summary>
+            /// <param name="_pElement1"></param>
+            /// <param name="_pElement2"></param>
+            /// <param name="_Prop"></param>
+            /// <returns>返回1表示相等，返回0表示不相等，返回 -1 表示比较失败。</returns>
+            static int32_t __fastcall SpecCacheIsEqual(
+                _In_ Element* _pElement1,
+                _In_ Element* _pElement2,
+                _In_ const PropertyInfo& _Prop
+                );
+
 		protected:
 			// Value Update
             HRESULT __fastcall PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
@@ -362,6 +397,8 @@ namespace YY
             HRESULT __fastcall GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _NewValue, DeferCycle* _pDeferCycle);
 
             static HRESULT __fastcall AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
+            
+            HRESULT __fastcall GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle);
 
             static void __fastcall VoidPCNotifyTree(int, DeferCycle*);
 
@@ -392,6 +429,10 @@ namespace YY
             PropertyCustomCacheResult __fastcall GetExtentProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
             PropertyCustomCacheResult __fastcall GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
+
+            HRESULT __fastcall GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+
+            virtual HRESULT __fastcall GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 		};
 	}
 }

@@ -1,11 +1,15 @@
 ﻿#include "pch.h"
+
 #include "Element.h"
-#include "Property.h"
-#include "value.h"
-#include "ClassInfo.h"
-#include "Layout.h"
 
 #include <atlcomcli.h>
+
+#include "Property.h"
+#include "value.h"
+#include "ClassInfoBase.h"
+#include "Layout.h"
+#include "../Window/Window.h"
+#include "StyleSheet.h"
 
 #pragma warning(disable : 28251)
 #pragma warning(disable : 26812)
@@ -45,10 +49,13 @@ namespace YY
             , LocDesiredSize {}
             , LocLastDesiredSizeConstraint {}
             , iSpecLayoutPos(g_ClassInfoData.LayoutPosProp.pFunDefaultValue().GetInt32())
+            , pSheet(nullptr)
+            , SpecID(0)
             , fNeedsLayout(0)
             , bLocMouseWithin(FALSE)
             , bNeedsDSUpdate(0)
             , iSpecDirection(DIRECTION_LTR)
+
         {
         }
 
@@ -494,12 +501,75 @@ namespace YY
                 // 如果
                 if (_uAddInvalidateMarks)
                 {
-                    for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                    if (_uAddInvalidateMarks & (ElementRenderNode::InvalidatePosition | ElementRenderNode::InvalidateExtent))
                     {
-                        if (_pParent->RenderNode.uInvalidateMarks & ElementRenderNode::InvalidateChild)
-                            break;
-                        _pParent->RenderNode.uInvalidateMarks |= ElementRenderNode::InvalidateChild;
+                        Rect _InvalidateRectOld = RenderNode.Bounds;
+                        Rect _InvalidateRectNew(POINT {}, GetExtent());
+                        Window* _pWindow = nullptr;
+
+                        for (auto _pItem = this;;)
+                        {
+                            _pWindow = _pItem->TryCast<Window>();
+                            if (_pWindow)
+                                break;
+
+                            auto _pParent = _pItem->GetParent();
+                            if (!_pParent)
+                                break;
+
+                            if (_pParent->RenderNode.uInvalidateMarks)
+                                break;
+
+                            auto _Location = _pItem->GetLocation();
+
+                            _InvalidateRectNew.left += _Location.x;
+                            _InvalidateRectNew.right += _Location.x;
+                            _InvalidateRectNew.top += _Location.y;
+                            _InvalidateRectNew.bottom += _Location.y;
+
+                            Rect _ParentRect(POINT {}, _pParent->GetExtent());
+
+                            if (IntersectRect(&_InvalidateRectNew, &_InvalidateRectNew, &_ParentRect) == FALSE
+                                && IntersectRect(&_InvalidateRectOld, &_InvalidateRectOld, &_pParent->RenderNode.Bounds) == FALSE)
+                            {
+                                // 显式区域为空，无需刷新 UI
+                                break;
+                            }
+
+                            _pItem = _pParent;
+                        }
+
+                        if (_pWindow)
+                            _pWindow->InvalidateRect(_InvalidateRectOld | _InvalidateRectNew);
                     }
+                    else if (RenderNode.uInvalidateMarks == 0)
+                    {
+                        Rect _InvalidateRect = RenderNode.Bounds;
+                        Window* _pWindow = nullptr;
+                        for (Element* _pItem = this;;)
+                        {
+                            _pWindow = _pItem->TryCast<Window>();
+                            if (_pWindow)
+                                break;
+
+                            _pItem = _pItem->GetParent();
+                            if (!_pItem)
+                                break;
+
+                            if (_pItem->RenderNode.uInvalidateMarks)
+                                break;
+
+                            if (!IntersectRect(&_InvalidateRect, &_InvalidateRect, &_pItem->RenderNode.Bounds))
+                            {
+                                // 显式区域为空，无需刷新 UI
+                                break;
+                            }
+                        }
+
+                        if (_pWindow)
+                            _pWindow->InvalidateRect(_InvalidateRect);
+                    }
+
                     RenderNode.uInvalidateMarks |= _uAddInvalidateMarks;
                 }
             }
@@ -1105,6 +1175,63 @@ namespace YY
             return hr;
         }
 
+        int32_t __fastcall Element::SpecCacheIsEqual(Element* _pElement1, Element* _pElement2, const PropertyInfo& _Prop)
+        {
+            if (!_Prop.BindCacheInfo.pFunPropertyCustomCache)
+                return -1;
+
+            const auto _uOffsetToCache = _Prop.BindCacheInfo.OffsetToSpecifiedValue;
+            if (!_uOffsetToCache)
+                return -1;
+
+            if (auto _uOffsetToHasCache = _Prop.BindCacheInfo.OffsetToHasSpecifiedValueCache)
+            {
+                auto _uHasCacheBit = _Prop.BindCacheInfo.HasSpecifiedValueCacheBit;
+
+                const auto _bHasValue1 = ((*((uint8_t*)_pElement1 + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
+                if (!_bHasValue1)
+                    return -1;
+
+                const auto _bHasValue2 = ((*((uint8_t*)_pElement2 + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
+                if (!_bHasValue2)
+                    return -1;
+            }
+
+
+            auto _pRawBuffer1 = (uint8_t*)_pElement1 + _uOffsetToCache;
+            auto _pRawBuffer2 = (uint8_t*)_pElement2 + _uOffsetToCache;
+
+            switch (ValueType(_Prop.BindCacheInfo.eType))
+            {
+            case ValueType::int32_t:
+                return *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
+                break;
+            case ValueType::boolean:
+            {
+                auto _bValue1 = ((*(uint8_t*)_pRawBuffer1) & (1 << _Prop.BindCacheInfo.SpecifiedValueBit)) != 0;
+                auto _bValue2 = ((*(uint8_t*)_pRawBuffer2) & (1 << _Prop.BindCacheInfo.SpecifiedValueBit)) != 0;
+
+                return _bValue1 == _bValue2;
+                break;
+            }
+            case ValueType::Color:
+                return (*(Color*)_pRawBuffer1).ColorRGBA == (*(Color*)_pRawBuffer2).ColorRGBA;
+                break;
+            case ValueType::POINT:
+                return (*(POINT*)_pRawBuffer1).x == (*(POINT*)_pRawBuffer2).x && (*(POINT*)_pRawBuffer1).y == (*(POINT*)_pRawBuffer2).y;
+                break;
+            case ValueType::SIZE:
+                return (*(SIZE*)_pRawBuffer1).cx == (*(SIZE*)_pRawBuffer2).cx && (*(SIZE*)_pRawBuffer1).cy == (*(SIZE*)_pRawBuffer2).cy;
+                break;
+            case ValueType::Rect:
+                return *(Rect*)_pRawBuffer1 == *(Rect*)_pRawBuffer2;
+                break;
+            default:
+                return -1;
+                break;
+            }
+        }
+
         HRESULT __fastcall Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
         {
             if (_pOldValue == nullptr || _pNewValue == nullptr)
@@ -1134,7 +1261,7 @@ namespace YY
 
             _pPCRecord->pOldValue = _pOldValue;
 
-            if (_eIndicies == PropertyIndicies::PI_Specified)
+            if (_eIndicies == PropertyIndicies::PI_Local)
             {
                 _pPCRecord->pNewValue = _pNewValue;
             }
@@ -1308,7 +1435,21 @@ namespace YY
 
         HRESULT __fastcall Element::GetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
         {
+            pdr->iDepPos = -1;
+            pdr->cDepCnt = 0;
+
             HRESULT _hrLast = S_OK;
+
+            if ((_Prop.fFlags & PF_TypeBits) == PropertyIndiciesMapToPropertyFlag(_eIndicies))
+            {
+                if (auto p = pSheet)
+                {
+                    auto _hr = p->GetSheetDependencies(this, &_Prop, pdr, _pDeferCycle);
+                    if (FAILED(_hr))
+                        _hrLast = _hr;
+                }
+            }
+
 
             if (_Prop.pFunGetDependencies)
             {
@@ -1408,6 +1549,37 @@ namespace YY
             ++(pdr->cDepCnt);
 
             return S_OK;
+        }
+
+        HRESULT __fastcall Element::GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle)
+        {
+            HRESULT _hrLast = S_OK;
+
+            if (auto p = pSheet)
+            {
+                auto _hr = p->GetSheetDependencies(this, _pProp, _pDR, _pDeferCycle);
+                if (FAILED(_hr))
+                    _hrLast = _hr;
+            }
+
+            auto _Children = GetChildren();
+            for (auto pItem : _Children)
+            {
+                if (Element::SpecCacheIsEqual(pItem, _pElement, *_pProp) == 1)
+                    continue;
+
+                {
+                    auto _LocalValue = pItem->GetValue(*_pProp, PropertyIndicies::PI_Local, false);
+                    if (_LocalValue == nullptr)
+                        continue;
+                }
+
+                auto _hr = pItem->GetBuriedSheetDependencies(_pProp, _pElement, _pDR, _pDeferCycle);
+                if (FAILED(_hr))
+                    _hrLast = _hr;
+            }
+
+            return _hrLast;
         }
 
 		void __fastcall Element::VoidPCNotifyTree(int p1, DeferCycle* p2)
@@ -1658,6 +1830,12 @@ namespace YY
                         case ValueType::Rect:
                             _pRetValue = Value::CreateRect(*(Rect*)_pCache);
                             break;
+                        case ValueType::Element:
+                            _pRetValue = Value::CreateElementRef((Element*)_pCache);
+                            break;
+                        case ValueType::ElementList:
+                            _pRetValue = Value::CreateElementList(*(ElementList*)_pCache);
+                            break;
 						default:
                             _pRetValue = Value::GetNull();
 							break;
@@ -1739,6 +1917,12 @@ namespace YY
                             break;
                         case ValueType::Rect:
                             *(Rect*)_pCache = *(Rect*)_pDataBuyffer;
+                            break;
+                        case ValueType::Element:
+                            *(Element**)_pCache = *(Element**)_pDataBuyffer;
+                            break;
+                        case ValueType::ElementList:
+                            ((ElementList*)_pCache)->SetArray(*(ElementList*)_pDataBuyffer);
                             break;
 						default:
 							break;
@@ -1985,6 +2169,11 @@ namespace YY
             else
                 return _Src;
         }
+
+        void __fastcall Element::Invalidate()
+        {
+
+        }
         
         PropertyCustomCacheResult __fastcall Element::GetExtentProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
         {
@@ -2024,6 +2213,66 @@ namespace YY
                 }
             }
             return PropertyCustomCacheResult::SkipAll;
+        }
+
+        HRESULT __fastcall Element::GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        {
+            return GetParentDependencies(_Prop, _eIndicies, pdr, iPCSrcRoot, _pNewValue, _pDeferCycle);
+        }
+
+        HRESULT __fastcall Element::GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        {
+            HRESULT _hrLast = S_OK;
+
+            pdr->iDepPos = -1;
+            pdr->cDepCnt = 0;
+
+            if (_eIndicies == PropertyIndicies::PI_Local)
+            {
+                auto pItem = _pDeferCycle->vecPropertyChanged.GetItemPtr(iPCSrcRoot);
+                if (!pItem)
+                    return E_UNEXPECTED;
+
+                auto pElement = pItem->pNewValue.GetElement();
+                if (!pElement)
+                    return S_OK;
+
+                auto _pClassInfo = this->GetControlClassInfo();
+                
+                for (uint32_t _Index = 0;; ++_Index)
+                {
+                    auto _pProp = _pClassInfo->EnumPropertyInfo(_Index);
+                    if (!_pProp)
+                        break;
+
+                    if ((_pProp->fFlags & PF_Inherit) == 0)
+                        continue;
+
+                    if (SpecCacheIsEqual(this, pElement, *_pProp) == 1)
+                        continue;
+
+                    {
+                        auto _LocalValue = GetValue(*_pProp, PropertyIndicies::PI_Local, false);
+                        if (_LocalValue == nullptr)
+                            continue;
+                    }
+
+                    HRESULT _hr;
+                    if (_pProp->fFlags & PF_40)
+                    {
+                        _hr = GetBuriedSheetDependencies(_pProp, pElement, pdr, _pDeferCycle);
+                    }
+                    else
+                    {
+                        _hr = AddDependency(this, *_pProp, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
+                    }
+
+                    if (FAILED(_hr))
+                        _hrLast = _hr;
+                }
+                
+            }
+            return _hrLast;
         }
 
         void __fastcall Element::UpdateLayoutPosition(POINT _LayoutPosition)

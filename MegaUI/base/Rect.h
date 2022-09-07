@@ -129,6 +129,16 @@ namespace YY
                 bottom = top + _Size.cy;
             }
 
+            int32_t __fastcall GetWidth()
+            {
+                return right - left;
+            }
+
+            int32_t __fastcall GetHeight()
+            {
+                return bottom - top;
+            }
+
             __fastcall operator D2D_RECT_F() const
             {
                 D2D_RECT_F _RectF;

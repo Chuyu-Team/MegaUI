@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\alloc.h" />
+    <ClInclude Include="base\ArrayView.h" />
     <ClInclude Include="base\Color.h" />
     <ClInclude Include="base\Encoding.h" />
     <ClInclude Include="base\DynamicArray.h" />
@@ -169,10 +170,12 @@
     <ClInclude Include="base\StringTransform.h" />
     <ClInclude Include="base\StringView.h" />
     <ClInclude Include="core\ClassInfo.h" />
+    <ClInclude Include="core\ClassInfoBase.h" />
     <ClInclude Include="core\DeferCycle.h" />
     <ClInclude Include="core\Element.h" />
     <ClInclude Include="core\Layout.h" />
     <ClInclude Include="core\Property.h" />
+    <ClInclude Include="core\StyleSheet.h" />
     <ClInclude Include="core\value.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Host\NativeWindowHost.h" />
@@ -182,11 +185,13 @@
     <ClInclude Include="Render\GDI+\Brush\D2D1SolidColorBrushForGdiPlus.h" />
     <ClInclude Include="Render\GDI+\GdiPlusRender.h" />
     <ClInclude Include="Render\Render.h" />
+    <ClInclude Include="Window\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\StringTransform.cpp" />
     <ClCompile Include="core\ClassInfo.cpp" />
     <ClCompile Include="core\Element.cpp" />
+    <ClCompile Include="core\StyleSheet.cpp" />
     <ClCompile Include="core\value.cpp" />
     <ClCompile Include="Host\NativeWindowHost.cpp" />
     <ClCompile Include="MegaUI.cpp" />
@@ -197,6 +202,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Render\Render.cpp" />
+    <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="MegaUI.natvis" />

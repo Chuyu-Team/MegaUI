@@ -442,6 +442,24 @@ namespace YY
                 return _pItem;
             }
 
+            template<typename... Args>
+            T* __fastcall EmplacePtr(Args... args)
+            {
+                auto _uIndex = GetSize();
+                auto _uNewSize = _uIndex + 1;
+
+                auto _pSharedData = LockSharedData(_uNewSize);
+                if (!_pSharedData)
+                    return nullptr;
+
+                auto _pItem = _pSharedData->GetData() + _uIndex;
+
+                new (_pItem) T(args...);
+                _pSharedData->uSize = _uNewSize;
+                _pSharedData->Unlock();
+                return _pItem;
+            }
+
             HRESULT __fastcall Insert(uint_t _uIndex, const T& _NewItem)
             {
                 const auto _uSize = GetSize();

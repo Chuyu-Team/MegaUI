@@ -16,7 +16,7 @@ namespace YY
         // Track dependency records in PC list
         struct DepRecs
         {
-            int32_t iDepPos = 0;
+            int32_t iDepPos = -1;
             int32_t cDepCnt = 0;
         };
 

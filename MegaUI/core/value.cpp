@@ -145,6 +145,11 @@ namespace YY
         {
             _RETUNR_CONST_VALUE(ValueType::Color, {});
         }
+
+        Value __fastcall Value::GetSheetNull()
+        {
+            _RETUNR_CONST_VALUE(ValueType::StyleSheet, nullptr);
+        }
         
         Value& __fastcall Value::operator=(const Value& _Other)
         {
@@ -186,54 +191,7 @@ namespace YY
 
         bool __fastcall Value::operator==(const Value& _Other) const
         {
-            if (pSharedData == _Other.pSharedData)
-                return true;
-
-            if (!_Other.pSharedData)
-                return false;
-
-            if (pSharedData->eType != _Other.pSharedData->eType)
-                return false;
-
-            switch (ValueType(pSharedData->eType))
-            {
-            case YY::MegaUI::ValueType::int32_t:
-                return pSharedData->int32Value == _Other.pSharedData->int32Value;
-                break;
-            case YY::MegaUI::ValueType::boolean:
-                return pSharedData->boolValue == _Other.pSharedData->boolValue;
-                break;
-            case YY::MegaUI::ValueType::uString:
-                return pSharedData->szValue == _Other.pSharedData->szValue;
-                break;
-            case YY::MegaUI::ValueType::POINT:
-                return pSharedData->ptVal.x == _Other.pSharedData->ptVal.x && pSharedData->ptVal.y == _Other.pSharedData->ptVal.y;
-                break;
-            case YY::MegaUI::ValueType::SIZE:
-                return pSharedData->sizeVal.cx == _Other.pSharedData->sizeVal.cx && pSharedData->sizeVal.cy == _Other.pSharedData->sizeVal.cy;
-                break;
-            case YY::MegaUI::ValueType::Rect:
-                return EqualRect(&pSharedData->rectVal, &_Other.pSharedData->rectVal) != FALSE;
-                break;
-            case YY::MegaUI::ValueType::Element:
-                return pSharedData->pEleValue == _Other.pSharedData->pEleValue;
-                break;
-            case YY::MegaUI::ValueType::ElementList:
-                return pSharedData->ListVal == _Other.pSharedData->ListVal;
-                break;
-            case YY::MegaUI::ValueType::ATOM:
-                return pSharedData->uAtomVal == _Other.pSharedData->uAtomVal;
-                break;
-            case YY::MegaUI::ValueType::HCURSOR:
-                return pSharedData->hCursorVal == _Other.pSharedData->hCursorVal;
-                break;
-            case YY::MegaUI::ValueType::Color:
-                return pSharedData->ColorValue.ColorRGBA == _Other.pSharedData->ColorValue.ColorRGBA;
-                break;
-            default:
-                return true;
-                break;
-            }
+            return CmpValue(_Other, ValueCmpOperation::Equal);
         }
 
         bool __fastcall Value::operator!=(const Value& _Other) const
@@ -475,7 +433,197 @@ namespace YY
 
             return pSharedData->ColorValue;
         }
-    }
+
+        Element* __fastcall Value::GetElement() const
+        {
+            if (GetType() != ValueType::Element)
+                throw Exception();
+
+            return pSharedData->pEleValue;
+        }
+
+        bool __fastcall Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation) const
+        {
+            if (pSharedData == _Other.pSharedData)
+            {
+                switch (GetType())
+                {
+                case ValueType::int32_t:
+                    return _Operation == ValueCmpOperation::Equal || _Operation == ValueCmpOperation::GreaterThanOrEqual || _Operation == ValueCmpOperation::LessThanOrEqual;
+                    break;
+                default:
+                    return _Operation == ValueCmpOperation::Equal;
+                    break;
+                }
+            }
+
+            // 类型不同时，只能比较 NotEqual
+            if (GetType() != _Other.GetType())
+                return _Operation == ValueCmpOperation::NotEqual;
+
+            switch (GetType())
+            {
+            case ValueType::int32_t:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return GetInt32() == _Other.GetInt32();
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return GetInt32() != _Other.GetInt32();
+                    break;
+                case ValueCmpOperation::GreaterThan:
+                    return GetInt32() > _Other.GetInt32();
+                    break;
+                case ValueCmpOperation::GreaterThanOrEqual:
+                    return GetInt32() >= _Other.GetInt32();
+                    break;
+                case ValueCmpOperation::LessThan:
+                    return GetInt32() < _Other.GetInt32();
+                    break;
+                case ValueCmpOperation::LessThanOrEqual:
+                    return GetInt32() <= _Other.GetInt32();
+                    break;
+                }
+                break;
+            case ValueType::boolean:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return GetBool() == _Other.GetBool();
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return GetBool() != _Other.GetBool();
+                    break;
+                }
+                break;
+            case ValueType::uString:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->szValue == _Other.pSharedData->szValue;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->szValue != _Other.pSharedData->szValue;
+                    break;
+                }
+                break;
+            case ValueType::POINT:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->ptVal.x == _Other.pSharedData->ptVal.x
+                        && pSharedData->ptVal.y == _Other.pSharedData->ptVal.y;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->ptVal.x != _Other.pSharedData->ptVal.x
+                        || pSharedData->ptVal.y != _Other.pSharedData->ptVal.y;
+                    break;
+                }
+                break;
+            case ValueType::SIZE:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->sizeVal.cx == _Other.pSharedData->sizeVal.cx
+                        && pSharedData->sizeVal.cy == _Other.pSharedData->sizeVal.cy;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->sizeVal.cx != _Other.pSharedData->sizeVal.cx
+                        || pSharedData->sizeVal.cy != _Other.pSharedData->sizeVal.cy;
+                    break;
+                }
+                break;
+            case ValueType::Rect:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->rectVal == _Other.pSharedData->rectVal;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->rectVal != _Other.pSharedData->rectVal;
+                    break;
+                }
+                break;
+            case ValueType::Element:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->pEleValue == _Other.pSharedData->pEleValue;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->pEleValue != _Other.pSharedData->pEleValue;
+                    break;
+                }
+                break;
+            case ValueType::ElementList:
+                if (_Operation == ValueCmpOperation::Equal || _Operation == ValueCmpOperation::NotEqual)
+                {
+                    auto _uSize = pSharedData->ListVal.GetSize();
+                    auto _bSame = _uSize == _Other.pSharedData->ListVal.GetSize();
+                    if (_bSame)
+                    {
+                        for (uint32_t _uIndex = 0; _uIndex != _uSize;++ _uIndex)
+                        {
+                            _bSame = pSharedData->ListVal[_uIndex] == _Other.pSharedData->ListVal[_uIndex];
+                            if (!_bSame)
+                                break;
+                        }
+                    }
+
+                    return _Operation == ValueCmpOperation::Equal ? _bSame : _bSame == false;
+                }
+            case ValueType::ATOM:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->uAtomVal == _Other.pSharedData->uAtomVal;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->uAtomVal != _Other.pSharedData->uAtomVal;
+                    break;
+                }
+                break;
+            case ValueType::HCURSOR:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->hCursorVal == _Other.pSharedData->hCursorVal;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->hCursorVal != _Other.pSharedData->hCursorVal;
+                    break;
+                }
+                break;
+            case ValueType::Layout:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->pLayout == _Other.pSharedData->pLayout;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->pLayout != _Other.pSharedData->pLayout;
+                    break;
+                }
+                break;
+            case ValueType::Color:
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return pSharedData->ColorValue.ColorRGBA == _Other.pSharedData->ColorValue.ColorRGBA;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return pSharedData->ColorValue.ColorRGBA != _Other.pSharedData->ColorValue.ColorRGBA;
+                    break;
+                }
+                break;
+            default:
+                break;
+            }
+
+            return false;
+        }
+    } // namespace MegaUI
 }
 
 

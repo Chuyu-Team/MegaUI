@@ -1,0 +1,95 @@
+﻿#pragma once
+
+#include "MegaUITypeInt.h"
+
+#pragma pack(push, __MEGA_UI_PACKING)
+
+namespace YY
+{
+    namespace MegaUI
+    {
+        template<typename _Type>
+        class ArrayView
+        {
+        private:
+            _Type* pData;
+            uint_t cData;
+
+        public:
+            ArrayView(_Type* _pData = nullptr, uint_t _cData = 0)
+                : pData(_pData)
+                , cData(_pData ? _cData : 0)
+            {
+            }
+
+            _Type* __fastcall GetData() noexcept
+            {
+                return pData;
+            }
+
+            const _Type* __fastcall GetData() const noexcept
+            {
+                return pData;
+            }
+
+            uint_t __fastcall GetSize() const
+            {
+                return cData;
+            }
+
+            
+            _Type& __fastcall operator[](_In_ uint_t _uIndex)
+            {
+                return pData[_uIndex];
+            }
+
+            const _Type& __fastcall operator[](_In_ uint_t _uIndex) const
+            {
+                return pData[_uIndex];
+            }
+            
+
+            _Type* __fastcall begin() noexcept
+            {
+                return pData;
+            }
+
+            _Type* __fastcall end() noexcept
+            {
+                return pData + GetSize();
+            }
+
+            const _Type* __fastcall begin() const noexcept
+            {
+                return pData;
+            }
+
+            const _Type* __fastcall end() const noexcept
+            {
+                return pData + GetSize();
+            }
+
+            _Type* __fastcall _Unchecked_begin() noexcept
+            {
+                return pData;
+            }
+
+            _Type* __fastcall _Unchecked_end() noexcept
+            {
+                return pData + GetSize();
+            }
+
+            const _Type* __fastcall _Unchecked_begin() const noexcept
+            {
+                return pData;
+            }
+
+            const _Type* __fastcall _Unchecked_end() const noexcept
+            {
+                return pData + GetSize();
+            }
+        };
+    }
+} // namespace YY
+
+#pragma pack(pop)

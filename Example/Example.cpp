@@ -3,9 +3,10 @@
 
 #include "framework.h"
 #include "Example.h"
+#include <vector>
 
 #include <MegaUI/Host/NativeWindowHost.h>
-
+#include <MegaUI/Window/Window.h>
 
 using namespace YY::MegaUI;
 
@@ -17,19 +18,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    YY::MegaUI::NativeWindowHost* _pWindows;
-    YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
-
+    //YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
+    std::vector<int> dd;
+    
+    Window::Register();
     YY::MegaUI::Element::Register();
 
-    YY::MegaUI::Element* p;
+    auto _pWindows = HNew<Window>();
     intptr_t Cooike;
-    YY::MegaUI::Element::Create(0, nullptr, &Cooike, &p);
+
+    _pWindows->Initialize(0, nullptr, &Cooike);
+
+    //YY::MegaUI::Element* p;
+    //YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);
     {
         intptr_t Cooike;
         YY::MegaUI::Element* p2;
-        YY::MegaUI::Element::Create(0, p, &Cooike, &p2);
-        p->Add(p2);
+        YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p2);
+        _pWindows->Add(p2);
 
         p2->SetX(100);
         p2->SetY(100);
@@ -42,12 +48,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.LayoutPosProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateInt32(LP_Absolute));
         p2->EndDefer(Cooike);
     }
-
+    #if 1
     {
         intptr_t Cooike;
         YY::MegaUI::Element* p2;
-        YY::MegaUI::Element::Create(0, p, &Cooike, &p2);
-        p->Add(p2);
+        YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p2);
+        _pWindows->Add(p2);
 
         p2->SetX(300);
         p2->SetY(300);
@@ -68,8 +74,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         intptr_t Cooike;
         YY::MegaUI::Element* p2;
-        YY::MegaUI::Element::Create(0, p, &Cooike, &p2);
-        p->Add(p2);
+        YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p2);
+        _pWindows->Add(p2);
 
         p2->SetX(150);
         p2->SetY(150);
@@ -90,8 +96,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         intptr_t Cooike;
         YY::MegaUI::Element* p2;
-        YY::MegaUI::Element::Create(0, p, &Cooike, &p2);
-        p->Add(p2);
+        YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p2);
+        _pWindows->Add(p2);
 
         p2->SetX(450);
         p2->SetY(200);
@@ -109,15 +115,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         p2->EndDefer(Cooike);
     }
+#endif
 
-    p->SetValue(YY::MegaUI::Element::g_ClassInfoData.BackgroundProp, YY::MegaUI::PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeRGB(255, 0, 0)));
+    _pWindows->SetValue(YY::MegaUI::Element::g_ClassInfoData.BackgroundProp, YY::MegaUI::PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeRGB(255, 0, 0)));
     
+    IUnknown;
+    //_pWindows->SetHost(p);
+    _pWindows->EndDefer(Cooike);
 
+    _pWindows->InitializeWindow(L"YY Mega DirectUI Test", nullptr, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
 
-    _pWindows->SetHost(p);
-    p->EndDefer(Cooike);
-
-    _pWindows->ShowWindow(SW_SHOW);
+    //_pWindows->ShowWindow(SW_SHOW);
 
     MSG _Msg;
     while (GetMessageW(&_Msg, nullptr, 0, 0))

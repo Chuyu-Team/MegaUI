@@ -599,6 +599,14 @@ namespace YY
                 return *this;
             }
 
+            bool __fastcall operator==(const StringView_t& _szSrc) const
+            {
+                if (this->GetSize() != _szSrc.GetSize())
+                    return false;
+
+                return memcmp(this->GetConstString(), _szSrc.GetConstString(), this->GetSize() * sizeof(char_t)) == 0;
+            }
+
             _Ret_z_ const char_t* __fastcall begin() const
             {
                 return this->GetConstString();

@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <string>
+#include <atltypes.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

@@ -16,12 +16,6 @@
     <Filter Include="UI">
       <UniqueIdentifier>{560480c3-0962-4ba6-9d98-8b7b4dd162b5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\core">
-      <UniqueIdentifier>{734b6eb7-a287-44e7-ab54-e6871d045812}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\base">
-      <UniqueIdentifier>{9cad59f1-53c0-49d1-a714-f2e6e6e552bd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI\Host">
       <UniqueIdentifier>{f4dca592-1dfc-411a-8de3-cfb1f82aca73}</UniqueIdentifier>
     </Filter>
@@ -37,6 +31,15 @@
     <Filter Include="UI\Render\GDI+\Brush">
       <UniqueIdentifier>{29e046e3-1fba-4c8e-9954-6e58ddb94da6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Window">
+      <UniqueIdentifier>{8f1999d2-8ce0-493c-a0e4-969c84f2d144}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Core">
+      <UniqueIdentifier>{734b6eb7-a287-44e7-ab54-e6871d045812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Base">
+      <UniqueIdentifier>{9cad59f1-53c0-49d1-a714-f2e6e6e552bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -46,67 +49,67 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="core\value.h">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="core\Element.h">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="core\Property.h">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="core\ClassInfo.h">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="base\alloc.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\DynamicArray.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\MegaUITypeInt.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="core\DeferCycle.h">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="base\StringBase.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\Interlocked.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\ErrorCode.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\Encoding.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\StringView.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\StringTransform.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\String.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\Exception.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="Host\NativeWindowHost.h">
       <Filter>UI\Host</Filter>
     </ClInclude>
     <ClInclude Include="base\HashSet.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="core\Layout.h">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="base\Color.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\Rect.h">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="Render\Render.h">
       <Filter>UI\Render</Filter>
@@ -123,6 +126,18 @@
     <ClInclude Include="Render\D2D\D2D1.1Render.h">
       <Filter>UI\Render\D2D</Filter>
     </ClInclude>
+    <ClInclude Include="Window\Window.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="core\StyleSheet.h">
+      <Filter>UI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="base\ArrayView.h">
+      <Filter>UI\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ClassInfoBase.h">
+      <Filter>UI\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -132,22 +147,28 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="core\Element.cpp">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="core\value.cpp">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="core\ClassInfo.cpp">
-      <Filter>UI\core</Filter>
+      <Filter>UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="base\StringTransform.cpp">
-      <Filter>UI\base</Filter>
+      <Filter>UI\Base</Filter>
     </ClCompile>
     <ClCompile Include="Host\NativeWindowHost.cpp">
       <Filter>UI\Host</Filter>
     </ClCompile>
     <ClCompile Include="Render\Render.cpp">
       <Filter>UI\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Window\Window.cpp">
+      <Filter>UI\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="core\StyleSheet.cpp">
+      <Filter>UI\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

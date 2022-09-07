@@ -20,6 +20,7 @@ namespace YY
         typedef DynamicArray<Element*, true, false> ElementList;
 
         class Layout;
+        class StyleSheet;
 
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
         _APPLY(int32_t,     int32_t,             int32Value) \
@@ -33,7 +34,8 @@ namespace YY
         _APPLY(ATOM,        ATOM,                uAtomVal )  \
         _APPLY(HCURSOR,     HCURSOR,             hCursorVal) \
         _APPLY(Layout,      Layout*,             pLayout  )  \
-        _APPLY(Color,       Color,               ColorValue)
+        _APPLY(Color,       Color,               ColorValue) \
+        _APPLY(StyleSheet,  StyleSheet*,         pStyleSheet)
 
 		enum class ValueType
         {
@@ -49,6 +51,16 @@ namespace YY
 #undef _APPLY
         };
         
+        enum class ValueCmpOperation
+        {
+            Equal = 0,
+            NotEqual,
+            GreaterThan,
+            GreaterThanOrEqual,
+            LessThan,
+            LessThanOrEqual,
+        };
+
         template<typename _Type>
         struct ConstValueSharedData
         {
@@ -203,9 +215,12 @@ namespace YY
             static Value __fastcall GetUnset();
             static Value __fastcall GetLayoutNull();
             static Value __fastcall GetColorTransparant();
+            static Value __fastcall GetSheetNull();
 
 
             ValueType __fastcall GetType() const;
+
+            bool __fastcall HasValue() const;
 
             // Value creation methods
             static Value __fastcall CreateInt32(_In_ int32_t _iValue);
@@ -249,6 +264,9 @@ namespace YY
             POINT __fastcall GetPoint() const;
             uint8_t* __fastcall GetRawBuffer();
             Color __fastcall GetColor() const;
+            Element* __fastcall GetElement() const;
+
+            bool __fastcall CmpValue(const Value& _Other, ValueCmpOperation _Operation) const;
         };
 
         template<ValueType _eType>
@@ -284,6 +302,7 @@ namespace YY
                 return *(_Type*)GetRawBuffer();
             }
         };
+
     } // namespace MegaUI
 } // namespace YY
 
