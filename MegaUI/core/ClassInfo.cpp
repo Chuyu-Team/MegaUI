@@ -39,7 +39,7 @@ namespace YY
 
 
 
-        HRESULT __fastcall IClassInfo::RegisterClassInternal(bool _bExplicitRegister)
+        HRESULT __MEGA_UI_API IClassInfo::RegisterClassInternal(bool _bExplicitRegister)
         {
             std::pair<RegisterClassInfoHashMap::iterator, bool> _itInsert;
 
@@ -69,7 +69,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __fastcall IClassInfo::UnregisterClassInternal(bool _bExplicitRegister)
+        HRESULT __MEGA_UI_API IClassInfo::UnregisterClassInternal(bool _bExplicitRegister)
         {
             auto _it = g_ClassMap.find(GetName());
 
@@ -93,7 +93,7 @@ namespace YY
             return S_OK;
         }
         
-        IClassInfo* __fastcall GetRegisterControlClassInfo(raw_const_astring_t _szClassName)
+        IClassInfo* __MEGA_UI_API GetRegisterControlClassInfo(raw_const_astring_t _szClassName)
         {
             if (!_szClassName)
                 return nullptr;
@@ -105,7 +105,7 @@ namespace YY
             return _it->second.pClassInfo;
         }
 
-        HRESULT __fastcall UnRegisterAllControls()
+        HRESULT __MEGA_UI_API UnRegisterAllControls()
         {
             DynamicArray<RegisterClassInfo, false, false> _vecTopRegisterClassInfo;
             auto _hr = _vecTopRegisterClassInfo.Reserve(g_ClassMap.size());

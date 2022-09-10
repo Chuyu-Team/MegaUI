@@ -63,7 +63,7 @@ namespace YY
         {
         }
 
-        HRESULT __fastcall Element::Create(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, Element** _ppOut)
+        HRESULT __MEGA_UI_API Element::Create(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, Element** _ppOut)
         {
             if (!_ppOut)
                 return E_INVALIDARG;
@@ -86,7 +86,7 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __fastcall Element::Initialize(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
+        HRESULT __MEGA_UI_API Element::Initialize(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
         {
             pTopLevel = _pTopLevel;
 
@@ -96,7 +96,7 @@ namespace YY
             return S_OK;
         }
 
-		Value __fastcall Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
+		Value __MEGA_UI_API Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
         {
             if (_eIndicies >= PropertyIndicies::PI_MAX)
                 return Value::GetUnavailable();
@@ -197,7 +197,7 @@ namespace YY
             return _pValue;
         }
 
-        HRESULT __fastcall Element::SetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pValue)
+        HRESULT __MEGA_UI_API Element::SetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pValue)
         {
             if (_pValue == nullptr)
                 return E_INVALIDARG;
@@ -238,17 +238,17 @@ namespace YY
             return _hr;
         }
 
-        Element* __fastcall Element::GetParent()
+        Element* __MEGA_UI_API Element::GetParent()
         {
             return pLocParent;
         }
 
-        int32_t __fastcall Element::GetLayoutPos()
+        int32_t __MEGA_UI_API Element::GetLayoutPos()
         {
             return iSpecLayoutPos;
         }
 
-        HRESULT __fastcall Element::SetLayoutPos(int32_t _iLayoutPos)
+        HRESULT __MEGA_UI_API Element::SetLayoutPos(int32_t _iLayoutPos)
         {
             auto _pValue = Value::CreateInt32(_iLayoutPos);
             if (_pValue == nullptr)
@@ -257,7 +257,7 @@ namespace YY
             return SetValue(Element::g_ClassInfoData.LayoutPosProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __fastcall Element::GetWidth()
+        int32_t __MEGA_UI_API Element::GetWidth()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.WidthProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -268,7 +268,7 @@ namespace YY
             return _pValue.GetInt32();
         }
 
-        HRESULT __fastcall Element::SetWidth(int32_t _iWidth)
+        HRESULT __MEGA_UI_API Element::SetWidth(int32_t _iWidth)
         {
             auto _pValue = Value::CreateInt32(_iWidth);
             if (_pValue == nullptr)
@@ -277,7 +277,7 @@ namespace YY
             return SetValue(Element::g_ClassInfoData.WidthProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __fastcall Element::GetHeight()
+        int32_t __MEGA_UI_API Element::GetHeight()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.HeightProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -288,7 +288,7 @@ namespace YY
             return _pValue.GetInt32();
         }
 
-        HRESULT __fastcall Element::SetHeight(int32_t _iHeight)
+        HRESULT __MEGA_UI_API Element::SetHeight(int32_t _iHeight)
         {
             auto _pValue = Value::CreateInt32(_iHeight);
             if (_pValue == nullptr)
@@ -297,7 +297,7 @@ namespace YY
             return SetValue(Element::g_ClassInfoData.HeightProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __fastcall Element::GetX()
+        int32_t __MEGA_UI_API Element::GetX()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.XProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -309,7 +309,7 @@ namespace YY
             return _pValue.GetInt32();
         }
 
-        HRESULT __fastcall Element::SetX(int32_t _iX)
+        HRESULT __MEGA_UI_API Element::SetX(int32_t _iX)
         {
             auto _pValue = Value::CreateInt32(_iX);
             if (_pValue == nullptr)
@@ -318,7 +318,7 @@ namespace YY
             return SetValue(Element::g_ClassInfoData.XProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __fastcall Element::GetY()
+        int32_t __MEGA_UI_API Element::GetY()
         {
             auto _pValue = GetValue(Element::g_ClassInfoData.YProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -330,7 +330,7 @@ namespace YY
             return _pValue.GetInt32();
         }
 
-        HRESULT __fastcall Element::SetY(int32_t _iY)
+        HRESULT __MEGA_UI_API Element::SetY(int32_t _iY)
         {
             auto _pValue = Value::CreateInt32(_iY);
             if (_pValue == nullptr)
@@ -339,7 +339,7 @@ namespace YY
             return SetValue(Element::g_ClassInfoData.YProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        POINT __fastcall Element::GetLocation()
+        POINT __MEGA_UI_API Element::GetLocation()
         {
             POINT _Location = {};
             auto _pValue = GetValue(Element::g_ClassInfoData.LocationProp, PropertyIndicies::PI_Local, false);
@@ -352,7 +352,7 @@ namespace YY
             return _Location;
         }
 
-        SIZE __fastcall Element::GetExtent()
+        SIZE __MEGA_UI_API Element::GetExtent()
         {
             SIZE _Extent = {};
 
@@ -364,12 +364,12 @@ namespace YY
             return _Extent;
         }
 
-        ValueIs<ValueType::Layout> __fastcall Element::GetLayout()
+        ValueIs<ValueType::Layout> __MEGA_UI_API Element::GetLayout()
         {
             return GetValue(Element::g_ClassInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
         }
 
-        int32_t __fastcall Element::GetBorderStyle()
+        int32_t __MEGA_UI_API Element::GetBorderStyle()
         {
             int32_t _iValue = {};
 
@@ -381,7 +381,7 @@ namespace YY
             return _iValue;
         }
 
-        HRESULT __fastcall Element::SetBorderStyle(int32_t _iBorderStyle)
+        HRESULT __MEGA_UI_API Element::SetBorderStyle(int32_t _iBorderStyle)
         {
             auto _NewValue = Value::CreateInt32(_iBorderStyle);
             if (_NewValue == nullptr)
@@ -390,22 +390,22 @@ namespace YY
             return SetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Local, _NewValue);
         }
 
-        bool __fastcall Element::IsRTL()
+        bool __MEGA_UI_API Element::IsRTL()
         {
             return iSpecDirection == DIRECTION_RTL;
         }
 
-        bool __fastcall Element::IsMouseWithin()
+        bool __MEGA_UI_API Element::IsMouseWithin()
         {
             return bLocMouseWithin != FALSE;
         }
 
-        bool __fastcall Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
+        bool __MEGA_UI_API Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
         {
             return true;
         }
 
-		void __fastcall Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
+		void __MEGA_UI_API Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
             if (_Prop.pFunOnPropertyChanged)
                 (this->*_Prop.pFunOnPropertyChanged)(_Prop, _eIndicies, _OldValue, _NewValue);
@@ -416,7 +416,7 @@ namespace YY
             }
         }
 
-        void __fastcall Element::OnGroupChanged(uint32_t _fGroups)
+        void __MEGA_UI_API Element::OnGroupChanged(uint32_t _fGroups)
         {
             if (_fGroups == 0)
                 return;
@@ -584,7 +584,7 @@ namespace YY
             return _pTopLevel;
         }
 
-        DeferCycle* __fastcall Element::GetDeferObject(bool _bAllowCreate)
+        DeferCycle* __MEGA_UI_API Element::GetDeferObject(bool _bAllowCreate)
         {
             if (pDeferObject)
                 return pDeferObject;
@@ -605,7 +605,7 @@ namespace YY
             return _pDeferObject;
         }
 
-        void __fastcall Element::StartDefer(intptr_t* _pCooike)
+        void __MEGA_UI_API Element::StartDefer(intptr_t* _pCooike)
 		{
             if (!_pCooike)
 			{
@@ -623,7 +623,7 @@ namespace YY
 			}
 		}
 
-		void __fastcall Element::EndDefer(intptr_t _Cookie)
+		void __MEGA_UI_API Element::EndDefer(intptr_t _Cookie)
 		{
             auto _pDeferCycle = GetDeferObject(false);
             if (!_pDeferCycle)
@@ -711,7 +711,7 @@ namespace YY
             --_pDeferCycle->uEnter;
 		}
         
-        void __fastcall Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
+        void __MEGA_UI_API Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
         {
             Rect _PaintBounds = _Bounds;
             if (SpecBorderThickness.left != 0 || SpecBorderThickness.top != 0 || SpecBorderThickness.right != 0 || SpecBorderThickness.bottom != 0)
@@ -736,7 +736,7 @@ namespace YY
             
         }
 
-        void __fastcall Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
+        void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
         {
             if (_BorderThickness.left == 0 && _BorderThickness.top == 0 && _BorderThickness.right == 0 && _BorderThickness.bottom == 0)
                 return;
@@ -829,7 +829,7 @@ namespace YY
             _Bounds = _NewBounds;
         }
 
-        void __fastcall Element::PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds)
+        void __MEGA_UI_API Element::PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds)
         {
             if (_Background == nullptr)
                 return;
@@ -849,24 +849,24 @@ namespace YY
             }
         }
 
-        SIZE __fastcall Element::GetContentSize(SIZE _ConstraintSize)
+        SIZE __MEGA_UI_API Element::GetContentSize(SIZE _ConstraintSize)
         {
             // todo
             return _ConstraintSize;
         }
 
-        SIZE __fastcall Element::SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize)
+        SIZE __MEGA_UI_API Element::SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize)
         {
             // 仅给子类留一个口，什么也不用做
             return SIZE{};
         }
 
-        void __fastcall Element::SelfLayoutDoLayout(SIZE _ConstraintSize)
+        void __MEGA_UI_API Element::SelfLayoutDoLayout(SIZE _ConstraintSize)
         {
             // 仅给子类留一个口，什么也不用做
         }
 
-        void __fastcall Element::Detach(DeferCycle* _pDeferCycle)
+        void __MEGA_UI_API Element::Detach(DeferCycle* _pDeferCycle)
         {
             _pDeferCycle->UpdateDesiredSizeRootPendingSet.Remove(this);
             _pDeferCycle->LayoutRootPendingSet.Remove(this);
@@ -908,12 +908,12 @@ namespace YY
             }
         }
 
-        ElementList __fastcall Element::GetChildren()
+        ElementList __MEGA_UI_API Element::GetChildren()
         {
             return vecLocChildren;
         }
 
-        HRESULT __fastcall Element::Insert(Element* const* _ppChildren, uint32_t _cChildren, uint32_t _uInsert)
+        HRESULT __MEGA_UI_API Element::Insert(Element* const* _ppChildren, uint32_t _cChildren, uint32_t _uInsert)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -1049,7 +1049,7 @@ namespace YY
             return hr;
         }
         
-        HRESULT __fastcall Element::Remove(Element* const* _ppChildren, uint32_t _cChildren)
+        HRESULT __MEGA_UI_API Element::Remove(Element* const* _ppChildren, uint32_t _cChildren)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -1175,7 +1175,7 @@ namespace YY
             return hr;
         }
 
-        int32_t __fastcall Element::SpecCacheIsEqual(Element* _pElement1, Element* _pElement2, const PropertyInfo& _Prop)
+        int32_t __MEGA_UI_API Element::SpecCacheIsEqual(Element* _pElement1, Element* _pElement2, const PropertyInfo& _Prop)
         {
             if (!_Prop.BindCacheInfo.pFunPropertyCustomCache)
                 return -1;
@@ -1232,7 +1232,7 @@ namespace YY
             }
         }
 
-        HRESULT __fastcall Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
+        HRESULT __MEGA_UI_API Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
         {
             if (_pOldValue == nullptr || _pNewValue == nullptr)
                 return E_INVALIDARG;
@@ -1335,7 +1335,7 @@ namespace YY
             return bFaild != 0 ? 0x800403EB : S_OK;
         }
         
-        HRESULT __fastcall Element::PostSourceChange()
+        HRESULT __MEGA_UI_API Element::PostSourceChange()
         {
             auto pDeferObject = GetDeferObject();
             if (!pDeferObject)
@@ -1433,7 +1433,7 @@ namespace YY
             return bSuccess != 0 ? 0x800403EB : 0;
         }
 
-        HRESULT __fastcall Element::GetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        HRESULT __MEGA_UI_API Element::GetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
         {
             pdr->iDepPos = -1;
             pdr->cDepCnt = 0;
@@ -1519,7 +1519,7 @@ namespace YY
             return _hrLast;
         }
 
-        HRESULT __fastcall Element::AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle)
+        HRESULT __MEGA_UI_API Element::AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle)
         {
             uint_t _uIndex;
             PCRecord* pItem = _pDeferCycle->vecPropertyChanged.AddAndGetPtr(&_uIndex);
@@ -1551,7 +1551,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Element::GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle)
+        HRESULT __MEGA_UI_API Element::GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle)
         {
             HRESULT _hrLast = S_OK;
 
@@ -1582,7 +1582,7 @@ namespace YY
             return _hrLast;
         }
 
-		void __fastcall Element::VoidPCNotifyTree(int p1, DeferCycle* p2)
+		void __MEGA_UI_API Element::VoidPCNotifyTree(int p1, DeferCycle* p2)
         {
             auto pr = p2->vecPropertyChanged.GetItemPtr(p1);
             if (!pr)
@@ -1610,7 +1610,7 @@ namespace YY
             }
         }
 
-        bool __fastcall Element::MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew)
+        bool __MEGA_UI_API Element::MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew)
         {
             if (_pElement && _pElement->SetNeedsLayout(_fNeedsLayoutNew))
             {
@@ -1633,7 +1633,7 @@ namespace YY
             return false;
         }
 
-        bool __fastcall Element::MarkElementForDesiredSize(Element* _pElement)
+        bool __MEGA_UI_API Element::MarkElementForDesiredSize(Element* _pElement)
         {
             for (; _pElement; _pElement = _pElement->pLocParent)
             {
@@ -1649,7 +1649,7 @@ namespace YY
             return 0;
         }
 
-        bool __fastcall Element::SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle)
+        bool __MEGA_UI_API Element::SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle)
         {
             if (pElement->fNeedsLayout == LC_Optimize)
             {
@@ -1724,7 +1724,7 @@ namespace YY
             return bResult;
         }
         
-        bool __fastcall Element::SetNeedsLayout(uint32_t _fNeedsLayoutNew)
+        bool __MEGA_UI_API Element::SetNeedsLayout(uint32_t _fNeedsLayoutNew)
         {
             if (_fNeedsLayoutNew > fNeedsLayout)
             {
@@ -1734,7 +1734,7 @@ namespace YY
             return false;
         }
 
-        void __fastcall Element::TransferGroupFlags(Element* pElement, uint32_t _fGroups)
+        void __MEGA_UI_API Element::TransferGroupFlags(Element* pElement, uint32_t _fGroups)
         {
             if (_fGroups & PG_AffectsLayout)
                 MarkElementForLayout(pElement, LC_Normal);
@@ -1749,7 +1749,7 @@ namespace YY
                 MarkElementForDesiredSize(pElement->iSpecLayoutPos != LP_Absolute ? pElement->pLocParent : pElement);
         }
 
-        PropertyCustomCacheResult __fastcall Element::PropertyGeneralCache(
+        PropertyCustomCacheResult __MEGA_UI_API Element::PropertyGeneralCache(
             PropertyCustomCacheActionMode _eMode,
             PropertyCustomCachenBaseAction* _pBaseInfo)
 		{
@@ -1935,12 +1935,12 @@ namespace YY
 			return PropertyCustomCacheResult::SkipNone;
 		}
 		
-		void __fastcall Element::OnParentPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
+		void __MEGA_UI_API Element::OnParentPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
 			
 		}
 
-        void __fastcall Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
+        void __MEGA_UI_API Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
         {
             if ((pLocParent == nullptr || iSpecLayoutPos == LP_Absolute))
             {
@@ -1972,7 +1972,7 @@ namespace YY
             }
         }
 
-        void __fastcall Element::FlushLayout(DeferCycle* _pDeferCycle)
+        void __MEGA_UI_API Element::FlushLayout(DeferCycle* _pDeferCycle)
         {
             auto _fNeedsLayout = fNeedsLayout;
 
@@ -2022,7 +2022,7 @@ namespace YY
             }
         }
         
-        SIZE __fastcall Element::UpdateDesiredSize(SIZE _ConstraintSize)
+        SIZE __MEGA_UI_API Element::UpdateDesiredSize(SIZE _ConstraintSize)
         {
             SIZE sizeDesired = {};
             if (_ConstraintSize.cx < 0)
@@ -2162,7 +2162,7 @@ namespace YY
             return sizeDesired;
         }
 
-        Rect __fastcall Element::ApplyRTL(const Rect& _Src)
+        Rect __MEGA_UI_API Element::ApplyRTL(const Rect& _Src)
         {
             if (IsRTL())
                 return Rect(_Src.right, _Src.top, _Src.left, _Src.bottom);
@@ -2170,12 +2170,12 @@ namespace YY
                 return _Src;
         }
 
-        void __fastcall Element::Invalidate()
+        void __MEGA_UI_API Element::Invalidate()
         {
 
         }
         
-        PropertyCustomCacheResult __fastcall Element::GetExtentProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
+        PropertyCustomCacheResult __MEGA_UI_API Element::GetExtentProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
         {
             if (_eMode == PropertyCustomCacheActionMode::GetValue)
             {
@@ -2195,7 +2195,7 @@ namespace YY
             return PropertyCustomCacheResult::SkipAll;
         }
 
-        PropertyCustomCacheResult __fastcall Element::GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo)
+        PropertyCustomCacheResult __MEGA_UI_API Element::GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo)
         {
             if (_eMode == PropertyCustomCacheActionMode::GetValue)
             {
@@ -2215,12 +2215,12 @@ namespace YY
             return PropertyCustomCacheResult::SkipAll;
         }
 
-        HRESULT __fastcall Element::GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        HRESULT __MEGA_UI_API Element::GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
         {
             return GetParentDependencies(_Prop, _eIndicies, pdr, iPCSrcRoot, _pNewValue, _pDeferCycle);
         }
 
-        HRESULT __fastcall Element::GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        HRESULT __MEGA_UI_API Element::GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
         {
             HRESULT _hrLast = S_OK;
 
@@ -2275,7 +2275,7 @@ namespace YY
             return _hrLast;
         }
 
-        void __fastcall Element::UpdateLayoutPosition(POINT _LayoutPosition)
+        void __MEGA_UI_API Element::UpdateLayoutPosition(POINT _LayoutPosition)
         {
             if (LocPosInLayout.x == _LayoutPosition.x && LocPosInLayout.y == _LayoutPosition.y)
                 return;
@@ -2295,7 +2295,7 @@ namespace YY
             PostSourceChange();
         }
 
-        void __fastcall Element::UpdateLayoutSize(SIZE _LayoutSize)
+        void __MEGA_UI_API Element::UpdateLayoutSize(SIZE _LayoutSize)
         {
             if (LocSizeInLayout.cx == _LayoutSize.cx && LocSizeInLayout.cy == _LayoutSize.cy)
                 return;

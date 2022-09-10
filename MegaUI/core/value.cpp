@@ -7,7 +7,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        void __fastcall Value::SharedData::AddRef()
+        void __MEGA_UI_API Value::SharedData::AddRef()
         {
             if (uRawType >= ~uint_t(0x7Fu))
                 return;
@@ -16,7 +16,7 @@ namespace YY
             _InterlockedExchangeAdd(&uRawType, uint_t(0x80u));
         }
 
-        void __fastcall Value::SharedData::Release()
+        void __MEGA_UI_API Value::SharedData::Release()
         {
             if (uRawType >= ~uint_t(0x7Fu))
                 return;
@@ -50,32 +50,32 @@ namespace YY
         }
 
 
-        Value __fastcall Value::GetAtomZero()
+        Value __MEGA_UI_API Value::GetAtomZero()
         {
             _RETUNR_CONST_VALUE(ValueType::ATOM, 0);
         }
 
-        Value __fastcall Value::GetInt32Zero()
+        Value __MEGA_UI_API Value::GetInt32Zero()
         {
             return GetInt32ConstValue<0>();
         }
 
-        Value __fastcall Value::GetBoolFalse()
+        Value __MEGA_UI_API Value::GetBoolFalse()
         {
             _RETUNR_CONST_VALUE(ValueType::boolean, false);
         }
 
-        Value __fastcall Value::GetBoolTrue()
+        Value __MEGA_UI_API Value::GetBoolTrue()
         {
             _RETUNR_CONST_VALUE(ValueType::boolean, true);
         }
 
-        Value __fastcall Value::GetCursorNull()
+        Value __MEGA_UI_API Value::GetCursorNull()
         {
             _RETUNR_CONST_VALUE(ValueType::HCURSOR, NULL);
         }
 
-        Value __fastcall Value::GetElListNull()
+        Value __MEGA_UI_API Value::GetElListNull()
         {            
             static const ConstValueSharedData<const uchar_t*> g_ListNull =
             {
@@ -88,32 +88,32 @@ namespace YY
             return Value((Value::SharedData*)&g_ListNull);
         }
 
-        Value __fastcall Value::GetElementNull()
+        Value __MEGA_UI_API Value::GetElementNull()
         {
             _RETUNR_CONST_VALUE(ValueType::Element, nullptr);
         }
 
-        Value __fastcall Value::GetNull()
+        Value __MEGA_UI_API Value::GetNull()
         {
             _RETUNR_CONST_VALUE(ValueType::Null);
         }
 
-        Value __fastcall Value::GetPointZero()
+        Value __MEGA_UI_API Value::GetPointZero()
         {
             _RETUNR_CONST_VALUE(ValueType::POINT, { 0, 0 });
         }
 
-        Value __fastcall Value::GetRectZero()
+        Value __MEGA_UI_API Value::GetRectZero()
         {
             _RETUNR_CONST_VALUE(ValueType::Rect, {0, 0, 0, 0});
         }
 
-        Value __fastcall Value::GetSizeZero()
+        Value __MEGA_UI_API Value::GetSizeZero()
         {
             _RETUNR_CONST_VALUE(ValueType::SIZE, { 0, 0 });
         }
 
-        Value __fastcall Value::GetStringNull()
+        Value __MEGA_UI_API Value::GetStringNull()
         {
             static const ConstValueSharedData<const uchar_t*> g_StringNull =
             {
@@ -126,32 +126,32 @@ namespace YY
             return Value((Value::SharedData*)&g_StringNull);
         }
 
-        Value __fastcall Value::GetUnavailable()
+        Value __MEGA_UI_API Value::GetUnavailable()
         {
             _RETUNR_CONST_VALUE(ValueType::Unavailable);
         }
 
-        Value __fastcall Value::GetUnset()
+        Value __MEGA_UI_API Value::GetUnset()
         {
             _RETUNR_CONST_VALUE(ValueType::Unset);
         }
 
-        Value __fastcall Value::GetLayoutNull()
+        Value __MEGA_UI_API Value::GetLayoutNull()
         {
             _RETUNR_CONST_VALUE(ValueType::Layout, nullptr);
         }
 
-        Value __fastcall Value::GetColorTransparant()
+        Value __MEGA_UI_API Value::GetColorTransparant()
         {
             _RETUNR_CONST_VALUE(ValueType::Color, {});
         }
 
-        Value __fastcall Value::GetSheetNull()
+        Value __MEGA_UI_API Value::GetSheetNull()
         {
             _RETUNR_CONST_VALUE(ValueType::StyleSheet, nullptr);
         }
         
-        Value& __fastcall Value::operator=(const Value& _Other)
+        Value& __MEGA_UI_API Value::operator=(const Value& _Other)
         {
             if (pSharedData != _Other.pSharedData)
             {
@@ -167,7 +167,7 @@ namespace YY
             return *this;
         }
 
-        Value& __fastcall Value::operator=(Value&& _Other) noexcept
+        Value& __MEGA_UI_API Value::operator=(Value&& _Other) noexcept
         {
             if (this != &_Other)
             {
@@ -181,7 +181,7 @@ namespace YY
             return *this;
         }
 
-        Value& __fastcall Value::operator=(std::nullptr_t)
+        Value& __MEGA_UI_API Value::operator=(std::nullptr_t)
         {
             if (pSharedData)
                 pSharedData->Release();
@@ -189,34 +189,34 @@ namespace YY
             return *this;
         }
 
-        bool __fastcall Value::operator==(const Value& _Other) const
+        bool __MEGA_UI_API Value::operator==(const Value& _Other) const
         {
             return CmpValue(_Other, ValueCmpOperation::Equal);
         }
 
-        bool __fastcall Value::operator!=(const Value& _Other) const
+        bool __MEGA_UI_API Value::operator!=(const Value& _Other) const
         {
             return operator==(_Other) == false;
         }
 
-        bool __fastcall Value::operator==(std::nullptr_t) const
+        bool __MEGA_UI_API Value::operator==(std::nullptr_t) const
         {
             return pSharedData == nullptr;
         }
 
-        bool __fastcall Value::operator!=(std::nullptr_t) const
+        bool __MEGA_UI_API Value::operator!=(std::nullptr_t) const
         {
             return pSharedData != nullptr;
         }
 
-        ValueType __fastcall Value::GetType() const
+        ValueType __MEGA_UI_API Value::GetType() const
         {
             if (!pSharedData)
                 return ValueType::Null;
             return ValueType(pSharedData->eType);
         }
         
-        Value __fastcall Value::CreateInt32(int32_t _iValue)
+        Value __MEGA_UI_API Value::CreateInt32(int32_t _iValue)
         {
             if (_iValue == 0)
                 return GetInt32Zero();
@@ -232,12 +232,12 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateBool(bool _bValue)
+        Value __MEGA_UI_API Value::CreateBool(bool _bValue)
         {
             return _bValue ? GetBoolTrue() : GetBoolFalse();
         }
         
-        Value __fastcall Value::CreateElementRef(Element* _pValue)
+        Value __MEGA_UI_API Value::CreateElementRef(Element* _pValue)
         {
             if (_pValue == nullptr)
                 return GetElementNull();
@@ -253,7 +253,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateElementList(const ElementList& _pListValue)
+        Value __MEGA_UI_API Value::CreateElementList(const ElementList& _pListValue)
         {
             if (_pListValue.GetSize() == 0)
                 return GetElListNull();
@@ -269,7 +269,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateString(const uString& _szValue)
+        Value __MEGA_UI_API Value::CreateString(const uString& _szValue)
         {
             if (_szValue.GetSize() == 0)
                 return GetStringNull();
@@ -285,7 +285,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreatePoint(int32_t _iX, int32_t _iY)
+        Value __MEGA_UI_API Value::CreatePoint(int32_t _iX, int32_t _iY)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -300,7 +300,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateSize(int32_t _iCX, int32_t _iCY)
+        Value __MEGA_UI_API Value::CreateSize(int32_t _iCX, int32_t _iCY)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -314,7 +314,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateRect(int32_t _iLeft, int32_t _iTop, int32_t _iRight, int32_t _iBottom)
+        Value __MEGA_UI_API Value::CreateRect(int32_t _iLeft, int32_t _iTop, int32_t _iRight, int32_t _iBottom)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -330,12 +330,12 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateAtom(raw_const_ustring_t _szValue)
+        Value __MEGA_UI_API Value::CreateAtom(raw_const_ustring_t _szValue)
         {
             return Value::CreateAtom(AddAtomW(_szValue));
         }
         
-        Value __fastcall Value::CreateAtom(ATOM _uAtomValue)
+        Value __MEGA_UI_API Value::CreateAtom(ATOM _uAtomValue)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -348,7 +348,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateCursor(raw_const_ustring_t _szValue)
+        Value __MEGA_UI_API Value::CreateCursor(raw_const_ustring_t _szValue)
         {
             if (_szValue == nullptr || _szValue[0] == 0)
                 return nullptr;
@@ -363,7 +363,7 @@ namespace YY
             return _pValue;
         }
         
-        Value __fastcall Value::CreateCursor(HCURSOR _hCursorValue)
+        Value __MEGA_UI_API Value::CreateCursor(HCURSOR _hCursorValue)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -376,7 +376,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __fastcall Value::CreateColor(Color _Color)
+        Value __MEGA_UI_API Value::CreateColor(Color _Color)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -389,7 +389,7 @@ namespace YY
             return Value(pValue);
         }
 
-        int32_t __fastcall Value::GetInt32() const
+        int32_t __MEGA_UI_API Value::GetInt32() const
         {
             if (GetType() != ValueType::int32_t)
                 throw Exception();
@@ -397,7 +397,7 @@ namespace YY
             return pSharedData->int32Value;
         }
         
-        bool __fastcall Value::GetBool() const
+        bool __MEGA_UI_API Value::GetBool() const
         {
             if (GetType() != ValueType::boolean)
                 throw Exception();
@@ -405,7 +405,7 @@ namespace YY
             return pSharedData->boolValue;
         }
         
-        SIZE __fastcall Value::GetSize() const
+        SIZE __MEGA_UI_API Value::GetSize() const
         {
             if (GetType() != ValueType::SIZE)
                 throw Exception();
@@ -413,7 +413,7 @@ namespace YY
             return pSharedData->sizeVal;
         }
         
-        POINT __fastcall Value::GetPoint() const
+        POINT __MEGA_UI_API Value::GetPoint() const
         {
             if (GetType() != ValueType::POINT)
                 throw Exception();
@@ -421,12 +421,12 @@ namespace YY
             return pSharedData->ptVal;
         }
         
-        uint8_t* __fastcall Value::GetRawBuffer()
+        uint8_t* __MEGA_UI_API Value::GetRawBuffer()
         {
             return pSharedData ? pSharedData->RawBuffer : nullptr;
         }
         
-        Color __fastcall Value::GetColor() const
+        Color __MEGA_UI_API Value::GetColor() const
         {
             if (GetType() != ValueType::Color)
                 throw Exception();
@@ -434,7 +434,7 @@ namespace YY
             return pSharedData->ColorValue;
         }
 
-        Element* __fastcall Value::GetElement() const
+        Element* __MEGA_UI_API Value::GetElement() const
         {
             if (GetType() != ValueType::Element)
                 throw Exception();
@@ -442,7 +442,7 @@ namespace YY
             return pSharedData->pEleValue;
         }
 
-        bool __fastcall Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation) const
+        bool __MEGA_UI_API Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation) const
         {
             if (pSharedData == _Other.pSharedData)
             {

@@ -13,22 +13,22 @@ namespace YY
 {
     namespace MegaUI
     {
-        __forceinline constexpr uint_t __fastcall GetStringLength(const achar_t* _szSrc)
+        __forceinline constexpr uint_t __MEGA_UI_API GetStringLength(const achar_t* _szSrc)
         {
             return _szSrc ? strlen(_szSrc) : 0;
         }
 
-        __forceinline constexpr uint_t __fastcall GetStringLength(const u8char_t* _szSrc)
+        __forceinline constexpr uint_t __MEGA_UI_API GetStringLength(const u8char_t* _szSrc)
         {
             return _szSrc ? strlen((const char*)_szSrc) : 0;
         }
 
-        __forceinline constexpr uint_t __fastcall GetStringLength(const u16char_t* _szSrc)
+        __forceinline constexpr uint_t __MEGA_UI_API GetStringLength(const u16char_t* _szSrc)
         {
             return _szSrc ? wcslen(_szSrc) : 0;
         }
 
-        __forceinline constexpr uint_t __fastcall GetStringLength(const u32char_t* _szSrc)
+        __forceinline constexpr uint_t __MEGA_UI_API GetStringLength(const u32char_t* _szSrc)
         {
             if (!_szSrc)
                 return 0;
@@ -38,22 +38,22 @@ namespace YY
             return _pScan - _szSrc;
         }
 
-        __forceinline constexpr bool __fastcall IsEmptyString(const achar_t* _szSrc)
+        __forceinline constexpr bool __MEGA_UI_API IsEmptyString(const achar_t* _szSrc)
         {
             return _szSrc == nullptr || _szSrc[0] == achar_t('\0');
         }
 
-        __forceinline constexpr bool __fastcall IsEmptyString(const u8char_t* _szSrc)
+        __forceinline constexpr bool __MEGA_UI_API IsEmptyString(const u8char_t* _szSrc)
         {
             return _szSrc == nullptr || _szSrc[0] == u8char_t('\0');
         }
 
-        __forceinline constexpr bool __fastcall IsEmptyString(const u16char_t* _szSrc)
+        __forceinline constexpr bool __MEGA_UI_API IsEmptyString(const u16char_t* _szSrc)
         {
             return _szSrc == nullptr || _szSrc[0] == u16char_t('\0');
         }
 
-        __forceinline constexpr bool __fastcall IsEmptyString(const u32char_t* _szSrc)
+        __forceinline constexpr bool __MEGA_UI_API IsEmptyString(const u32char_t* _szSrc)
         {
             return _szSrc == nullptr || _szSrc[0] == u32char_t('\0');
         }
@@ -152,36 +152,36 @@ namespace YY
             {
             }
 
-            constexpr static Encoding __fastcall GetEncoding()
+            constexpr static Encoding __MEGA_UI_API GetEncoding()
             {
                 return eEncoding;
             }
 
-            __forceinline uint_t __fastcall GetSize() const
+            __forceinline uint_t __MEGA_UI_API GetSize() const
             {
                 return cchString;
             }
 
             __forceinline
             _Ret_notnull_ _Post_readable_size_(cchString)
-            const char_t* __fastcall GetConstString() const
+            const char_t* __MEGA_UI_API GetConstString() const
             {
                 return szString;
             }
 
-            __forceinline char_t __fastcall operator[](_In_ uint_t _uIndex) const
+            __forceinline char_t __MEGA_UI_API operator[](_In_ uint_t _uIndex) const
             {
                 _ASSERTE(_uIndex < GetSize());
 
                 return szString[_uIndex];
             }
 
-            __forceinline const char_t* __fastcall begin() const
+            __forceinline const char_t* __MEGA_UI_API begin() const
             {
                 return this->GetConstString();
             }
 
-            __forceinline const char_t* __fastcall end() const
+            __forceinline const char_t* __MEGA_UI_API end() const
             {
                 return this->GetConstString() + this->GetSize();
             }
@@ -228,35 +228,35 @@ namespace YY
             {
             }
 
-            __forceinline Encoding __fastcall GetEncoding() const
+            __forceinline Encoding __MEGA_UI_API GetEncoding() const
             {
                 return eEncoding;
             }
 
-            __forceinline uint_t __fastcall GetSize() const
+            __forceinline uint_t __MEGA_UI_API GetSize() const
             {
                 return cchString;
             }
 
             __forceinline _Ret_notnull_ _Post_readable_size_(cchString)
-            const char_t* __fastcall GetConstString() const
+            const char_t* __MEGA_UI_API GetConstString() const
             {
                 return szString;
             }
 
-            __forceinline char_t __fastcall operator[](_In_ uint_t _uIndex) const
+            __forceinline char_t __MEGA_UI_API operator[](_In_ uint_t _uIndex) const
             {
                 _ASSERTE(_uIndex < GetSize());
 
                 return szString[_uIndex];
             }
 
-            __forceinline const char_t* __fastcall begin() const
+            __forceinline const char_t* __MEGA_UI_API begin() const
             {
                 return this->GetConstString();
             }
 
-            __forceinline const char_t* __fastcall end() const
+            __forceinline const char_t* __MEGA_UI_API end() const
             {
                 return this->GetConstString() + this->GetSize();
             }

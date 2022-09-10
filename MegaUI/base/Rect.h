@@ -33,7 +33,7 @@ namespace YY
             {
             }
 
-            __inline Rect& __fastcall operator=(const RECT& _Other)
+            __inline Rect& __MEGA_UI_API operator=(const RECT& _Other)
             {
                 left = _Other.left;
                 top = _Other.top;
@@ -42,45 +42,45 @@ namespace YY
                 return *this;
             }
 
-            __inline Rect& __fastcall operator|=(const RECT& _Other)
+            __inline Rect& __MEGA_UI_API operator|=(const RECT& _Other)
             {
                 UnionRect(this, this, &_Other);
                 return *this;
             }
 
-            __inline Rect& __fastcall operator&=(const RECT& _Other)
+            __inline Rect& __MEGA_UI_API operator&=(const RECT& _Other)
             {
                 IntersectRect(this, this, &_Other);
                 return *this;
             }
 
-            __inline Rect& __fastcall operator-=(const RECT& _Other)
+            __inline Rect& __MEGA_UI_API operator-=(const RECT& _Other)
             {
                 SubtractRect(this, this, &_Other);
                 return *this;
             }
 
-            __inline bool __fastcall operator==(const RECT& _Other)
+            __inline bool __MEGA_UI_API operator==(const RECT& _Other)
             {
                 return EqualRect(this, &_Other);
             }
             
-            __inline bool __fastcall operator!=(const RECT& _Other)
+            __inline bool __MEGA_UI_API operator!=(const RECT& _Other)
             {
                 return EqualRect(this, &_Other) == FALSE;
             }
 
-            __inline bool __fastcall operator==(POINT _Point)
+            __inline bool __MEGA_UI_API operator==(POINT _Point)
             {
                 return left == _Point.x && top == _Point.y;
             }
 
-            __inline bool __fastcall operator==(SIZE _Size)
+            __inline bool __MEGA_UI_API operator==(SIZE _Size)
             {
                 return right - left == _Size.cx && bottom - top == _Size.cy;
             }
 
-            void __fastcall DeflateRect(_In_ const RECT& _Other)
+            void __MEGA_UI_API DeflateRect(_In_ const RECT& _Other)
             {
                 left += _Other.left;
                 if (left < right)
@@ -109,12 +109,12 @@ namespace YY
                 }
             }
 
-            bool __fastcall PointInRect(POINT _Point)
+            bool __MEGA_UI_API PointInRect(POINT _Point)
             {
                 return ::PtInRect(this, _Point) != FALSE;
             }
 
-            void __fastcall SetPoint(POINT _Point)
+            void __MEGA_UI_API SetPoint(POINT _Point)
             {
                 right += _Point.x - left;
                 left = _Point.x;
@@ -123,23 +123,23 @@ namespace YY
                 top = _Point.y;
             }
 
-            void __fastcall SetSize(SIZE _Size)
+            void __MEGA_UI_API SetSize(SIZE _Size)
             {
                 right = left + _Size.cx;
                 bottom = top + _Size.cy;
             }
 
-            int32_t __fastcall GetWidth()
+            int32_t __MEGA_UI_API GetWidth()
             {
                 return right - left;
             }
 
-            int32_t __fastcall GetHeight()
+            int32_t __MEGA_UI_API GetHeight()
             {
                 return bottom - top;
             }
 
-            __fastcall operator D2D_RECT_F() const
+            __MEGA_UI_API operator D2D_RECT_F() const
             {
                 D2D_RECT_F _RectF;
                 _RectF.left = left;
@@ -151,21 +151,21 @@ namespace YY
         };
 
 
-        __inline Rect __fastcall operator|(const Rect& _Left, const Rect& _Rigth)
+        __inline Rect __MEGA_UI_API operator|(const Rect& _Left, const Rect& _Rigth)
         {
             Rect _Tmp;
             UnionRect(&_Tmp, &_Left, &_Rigth);
             return _Tmp;
         }
 
-        __inline Rect __fastcall operator&(const Rect& _Left, const Rect& _Rigth)
+        __inline Rect __MEGA_UI_API operator&(const Rect& _Left, const Rect& _Rigth)
         {
             Rect _Tmp;
             IntersectRect(&_Tmp, &_Left, &_Rigth);
             return _Tmp;
         }
         
-        __inline Rect __fastcall operator-(const Rect& _Left, const Rect& _Rigth)
+        __inline Rect __MEGA_UI_API operator-(const Rect& _Left, const Rect& _Rigth)
         {
             Rect _Tmp;
             SubtractRect(&_Tmp, &_Left, &_Rigth);

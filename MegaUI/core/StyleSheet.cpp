@@ -11,7 +11,7 @@ namespace YY
     namespace MegaUI
     {
         template<typename ArrayType>
-        bool __fastcall IsPIInList(const PropertyInfo* pProp, const ArrayType& Array)
+        bool __MEGA_UI_API IsPIInList(const PropertyInfo* pProp, const ArrayType& Array)
         {
             for (auto pItem : Array)
             {
@@ -23,7 +23,7 @@ namespace YY
         }
 
         template<typename ArrayType>
-        HRESULT __fastcall AddDeps(ArrayType& Array, const ArrayView<Decl>& DeclArray)
+        HRESULT __MEGA_UI_API AddDeps(ArrayType& Array, const ArrayView<Decl>& DeclArray)
         {
             for (auto& DeclItem : DeclArray)
             {
@@ -44,12 +44,12 @@ namespace YY
         {
         }
         
-        uint32_t __fastcall StyleSheet::AddRef()
+        uint32_t __MEGA_UI_API StyleSheet::AddRef()
         {
             return Interlocked::Increment(&uRef);
         }
         
-        uint32_t __fastcall StyleSheet::Release()
+        uint32_t __MEGA_UI_API StyleSheet::Release()
         {
             auto _uNewRef = Interlocked::Decrement(&uRef);
             if (_uNewRef == 0)
@@ -59,7 +59,7 @@ namespace YY
             return _uNewRef;
         }
 
-        HRESULT __fastcall StyleSheet::AddRule(uString _szRule, IClassInfo* _pClassInfo, DynamicArray<Cond, true> _CondArray, const ArrayView<Decl>& _DeclArray)
+        HRESULT __MEGA_UI_API StyleSheet::AddRule(uString _szRule, IClassInfo* _pClassInfo, DynamicArray<Cond, true> _CondArray, const ArrayView<Decl>& _DeclArray)
         {
             // 添加规则必须要有匹配条件
             if (_pClassInfo == nullptr || _CondArray.GetSize() == 0 || _DeclArray.GetSize() == 0)
@@ -119,7 +119,7 @@ namespace YY
             return bFaild ? 0x800403EB : S_OK;
         }
         
-        Value __fastcall StyleSheet::GetSheetValue(Element* _pElement, const PropertyInfo* _pProp)
+        Value __MEGA_UI_API StyleSheet::GetSheetValue(Element* _pElement, const PropertyInfo* _pProp)
         {
             if (_pElement == nullptr || _pProp == nullptr)
                 return Value::GetNull();
@@ -172,7 +172,7 @@ namespace YY
             return Value::GetUnset();
         }
 
-        HRESULT __fastcall StyleSheet::GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle)
+        HRESULT __MEGA_UI_API StyleSheet::GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle)
         {
             if (_pElement == nullptr || _pProp == nullptr || _pdr == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
@@ -196,7 +196,7 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __fastcall StyleSheet::GetSheetScope(Element* _pElement, DepRecs* _pDepRecs, DeferCycle* _pDeferCycle)
+        HRESULT __MEGA_UI_API StyleSheet::GetSheetScope(Element* _pElement, DepRecs* _pDepRecs, DeferCycle* _pDeferCycle)
         {
             if (_pElement == nullptr || _pDepRecs == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
@@ -217,17 +217,17 @@ namespace YY
             return _hr;
         }
 
-        uString __fastcall StyleSheet::GetSheetResid()
+        uString __MEGA_UI_API StyleSheet::GetSheetResid()
         {
             return szSheetResid;
         }
 
-        HRESULT __fastcall StyleSheet::SetSheetResid(uString _szSheetResid)
+        HRESULT __MEGA_UI_API StyleSheet::SetSheetResid(uString _szSheetResid)
         {
             return szSheetResid.SetString(_szSheetResid);
         }
         
-        ClassData* __fastcall StyleSheet::GetClassData(IClassInfo* pClassInfo)
+        ClassData* __MEGA_UI_API StyleSheet::GetClassData(IClassInfo* pClassInfo)
         {
             if (!pClassInfo)
                 return nullptr;
@@ -241,7 +241,7 @@ namespace YY
             return nullptr;
         }
         
-        HRESULT __fastcall StyleSheet::AddClassData(ClassData** ppData, IClassInfo* pClassInfo)
+        HRESULT __MEGA_UI_API StyleSheet::AddClassData(ClassData** ppData, IClassInfo* pClassInfo)
         {
             if (!ppData)
                 return E_INVALIDARG;
@@ -259,7 +259,7 @@ namespace YY
             return S_OK;
         }
         
-        uint32_t __fastcall StyleSheet::ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint32_t _uRuleId)
+        uint32_t __MEGA_UI_API StyleSheet::ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint32_t _uRuleId)
         {
             union
             {

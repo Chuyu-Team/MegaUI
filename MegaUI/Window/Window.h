@@ -34,9 +34,9 @@ namespace YY
             virtual ~Window();
 
             Window(const Window&) = delete;
-            void __fastcall operator=(const Window&) = delete;
+            void __MEGA_UI_API operator=(const Window&) = delete;
 
-            HRESULT __fastcall InitializeWindow(
+            HRESULT __MEGA_UI_API InitializeWindow(
                 _In_opt_ LPCWSTR _szTitle,
                 _In_opt_ HWND _hWndParent,
                 _In_opt_ HICON _hIcon,
@@ -47,17 +47,17 @@ namespace YY
                 _In_ UINT _nOptions
                 );
 
-            static UINT __fastcall AsyncDestroyMsg();
+            static UINT __MEGA_UI_API AsyncDestroyMsg();
 
-            void __fastcall DestroyWindow();
+            void __MEGA_UI_API DestroyWindow();
             
-            bool __fastcall IsMinimized() const;
+            bool __MEGA_UI_API IsMinimized() const;
 
-            void __fastcall ShowWindow(int _iCmdShow);
+            void __MEGA_UI_API ShowWindow(int _iCmdShow);
 
-            void __fastcall InvalidateRect(_In_opt_ const Rect* _pRect);
+            void __MEGA_UI_API InvalidateRect(_In_opt_ const Rect* _pRect);
 
-            __inline void __fastcall InvalidateRect(const Rect& _Rect)
+            __inline void __MEGA_UI_API InvalidateRect(const Rect& _Rect)
             {
                 InvalidateRect(&_Rect);
             }
@@ -66,15 +66,15 @@ namespace YY
 
             virtual LRESULT __thiscall CurrentWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
-            HRESULT __fastcall OnPaint();
+            HRESULT __MEGA_UI_API OnPaint();
 
-            HRESULT __fastcall PaintElement(
+            HRESULT __MEGA_UI_API PaintElement(
                 _In_ Render* _pRender,
                 _In_ Element* _pElement,
                 _In_ const Rect& _ParentBounds,
                 _In_ const Rect& _ParentPaintRect);
 
-            void __fastcall OnSize(UINT _uWidth, UINT _uHeight);
+            void __MEGA_UI_API OnSize(UINT _uWidth, UINT _uHeight);
         };
     }
 } // namespace YY

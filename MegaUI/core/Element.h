@@ -63,10 +63,10 @@ namespace YY
             };                                                                                              \
                                                                                                             \
             static StaticClassInfo g_ClassInfoData;                                                         \
-            virtual IClassInfo* __fastcall GetControlClassInfo();                                           \
-            static IClassInfo* __fastcall GetStaticControlClassInfo();                                      \
-            static HRESULT __fastcall Register();                                                           \
-            static HRESULT __fastcall UnRegister();
+            virtual IClassInfo* __MEGA_UI_API GetControlClassInfo();                                           \
+            static IClassInfo* __MEGA_UI_API GetStaticControlClassInfo();                                      \
+            static HRESULT __MEGA_UI_API Register();                                                           \
+            static HRESULT __MEGA_UI_API UnRegister();
 
 
 #define _APPLY_MEGA_UI_STATIC_CALSS_INFO(_CLASS_NAME, _PROPERTY_TABLE)   \
@@ -81,19 +81,19 @@ namespace YY
 				}                                                        \
 			}                                                            \
 		};                                                               \
-		IClassInfo* __fastcall _CLASS_NAME::GetControlClassInfo()        \
+		IClassInfo* __MEGA_UI_API _CLASS_NAME::GetControlClassInfo()        \
 		{                                                                \
 			return g_ClassInfoData.pClassInfoPtr;                        \
 		}                                                                \
-		IClassInfo* __fastcall _CLASS_NAME::GetStaticControlClassInfo()  \
+		IClassInfo* __MEGA_UI_API _CLASS_NAME::GetStaticControlClassInfo()  \
 		{                                                                \
 			return g_ClassInfoData.pClassInfoPtr;                        \
         }                                                                \
-        HRESULT __fastcall _CLASS_NAME::Register()                       \
+        HRESULT __MEGA_UI_API _CLASS_NAME::Register()                       \
         {                                                                \
             return _CLASS_NAME::StaticClassInfo::ClassInfoType::Register();               \
         }                                                                \
-        HRESULT __fastcall _CLASS_NAME::UnRegister()                     \
+        HRESULT __MEGA_UI_API _CLASS_NAME::UnRegister()                     \
         {                                                                \
             if (!g_ClassInfoData.pClassInfoPtr)                          \
                 return S_FALSE;                                          \
@@ -242,11 +242,11 @@ namespace YY
 
 			virtual ~Element();
 
-			Element& operator=(const Element&) = delete;
+			Element& __MEGA_UI_API operator = (const Element&) = delete;
 
-            static HRESULT __fastcall Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
+            static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
-            HRESULT __fastcall Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
+            HRESULT __MEGA_UI_API Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
 			/// <summary>
 			/// 根据属性获取Value
@@ -256,7 +256,7 @@ namespace YY
 			/// <param name="_bUpdateCache">如果为true，那么重新获取值并刷新缓存，如果为 false则直接从缓存返回数据。</param>
 			/// <returns>如果返回，则返回 Unavailable。
 			/// 如果未设置，则返回 Unset</returns>
-			_Ret_notnull_ Value __fastcall GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ bool _bUpdateCache);
+			_Ret_notnull_ Value __MEGA_UI_API GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ bool _bUpdateCache);
 			
             /// <summary>
             /// 修改 Local Value
@@ -265,107 +265,107 @@ namespace YY
             /// <param name="_eIndicies">只能为 PI_Local</param>
             /// <param name="_pValue">需要设置的新值</param>
             /// <returns></returns>
-            HRESULT __fastcall SetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _Value);
+            HRESULT __MEGA_UI_API SetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _Value);
 
-			_Ret_maybenull_ Element* __fastcall GetParent();
+			_Ret_maybenull_ Element* __MEGA_UI_API GetParent();
             
-            int32_t __fastcall GetLayoutPos();
-            HRESULT __fastcall SetLayoutPos(int32_t _iLayoutPos);
+            int32_t __MEGA_UI_API GetLayoutPos();
+            HRESULT __MEGA_UI_API SetLayoutPos(int32_t _iLayoutPos);
 
-            int32_t __fastcall GetWidth();
-            HRESULT __fastcall SetWidth(int32_t _iWidth);
+            int32_t __MEGA_UI_API GetWidth();
+            HRESULT __MEGA_UI_API SetWidth(int32_t _iWidth);
 
-            int32_t __fastcall GetHeight();
-            HRESULT __fastcall SetHeight(int32_t _iHeight);
+            int32_t __MEGA_UI_API GetHeight();
+            HRESULT __MEGA_UI_API SetHeight(int32_t _iHeight);
 
-            int32_t __fastcall GetX();
-            HRESULT __fastcall SetX(int32_t _iX);
+            int32_t __MEGA_UI_API GetX();
+            HRESULT __MEGA_UI_API SetX(int32_t _iX);
             
-            int32_t __fastcall GetY();
-            HRESULT __fastcall SetY(int32_t _iY);
+            int32_t __MEGA_UI_API GetY();
+            HRESULT __MEGA_UI_API SetY(int32_t _iY);
 
-            POINT __fastcall GetLocation();
+            POINT __MEGA_UI_API GetLocation();
 
-            SIZE __fastcall GetExtent();
+            SIZE __MEGA_UI_API GetExtent();
 
-            ValueIs<ValueType::Layout> __fastcall GetLayout();
+            ValueIs<ValueType::Layout> __MEGA_UI_API GetLayout();
 
-            int32_t __fastcall GetBorderStyle();
+            int32_t __MEGA_UI_API GetBorderStyle();
 
-            HRESULT __fastcall SetBorderStyle(int32_t _iBorderStyle);
+            HRESULT __MEGA_UI_API SetBorderStyle(int32_t _iBorderStyle);
 
-            bool __fastcall IsRTL();
+            bool __MEGA_UI_API IsRTL();
 
-            bool __fastcall IsMouseWithin();
+            bool __MEGA_UI_API IsMouseWithin();
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
             /// </summary>
             /// <returns>如果返回 true，那么允许更改。如果返回false，更改将被撤销。</returns>
-            virtual bool __fastcall OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+            virtual bool __MEGA_UI_API OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
-			virtual void __fastcall OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+			virtual void __MEGA_UI_API OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
             /// <summary>
             /// 用于通知 PropertyGroup 的状态
             /// </summary>
             /// <param name="_fGroups">PropertyGroup的组合</param>
-            void __fastcall OnGroupChanged(uint32_t _fGroups);
+            void __MEGA_UI_API OnGroupChanged(uint32_t _fGroups);
 
             /// <summary>
             /// 获取顶层 Element，便于 StartDefer，如果未设置 pTopLevel，则自身为顶层 Element
             /// </summary>
             /// <returns></returns>
-            _Ret_notnull_ Element* __fastcall GetTopLevel();
-			_Ret_maybenull_ DeferCycle* __fastcall GetDeferObject(_In_ bool _bAllowCreate = true);
-            void __fastcall StartDefer(_Out_ intptr_t* _pCooike);
-            void __fastcall EndDefer(_In_ intptr_t _Cookie);
+            _Ret_notnull_ Element* __MEGA_UI_API GetTopLevel();
+			_Ret_maybenull_ DeferCycle* __MEGA_UI_API GetDeferObject(_In_ bool _bAllowCreate = true);
+            void __MEGA_UI_API StartDefer(_Out_ intptr_t* _pCooike);
+            void __MEGA_UI_API EndDefer(_In_ intptr_t _Cookie);
 			
-            ElementList __fastcall GetChildren();
+            ElementList __MEGA_UI_API GetChildren();
 
-            virtual HRESULT __fastcall Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren, _In_ uint32_t _uInsert);
+            virtual HRESULT __MEGA_UI_API Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren, _In_ uint32_t _uInsert);
 
-            __inline HRESULT __fastcall Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren)
+            __inline HRESULT __MEGA_UI_API Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren)
             {
                 return Insert(_ppChildren, _cChildren, vecLocChildren.GetSize());
             }
 
-            __inline HRESULT __fastcall Add(_In_ Element* _ppChildren)
+            __inline HRESULT __MEGA_UI_API Add(_In_ Element* _ppChildren)
             {
                 return Insert(&_ppChildren, 1, vecLocChildren.GetSize());
             }
 
-            virtual HRESULT __fastcall Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren);
+            virtual HRESULT __MEGA_UI_API Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren);
             
-            __inline HRESULT __fastcall Remove(_In_ Element* _pChild)
+            __inline HRESULT __MEGA_UI_API Remove(_In_ Element* _pChild)
             {
                 return Remove(&_pChild, 1);
             }
 
-            __inline HRESULT __fastcall RemoveAll()
+            __inline HRESULT __MEGA_UI_API RemoveAll()
             {
                 return Remove(vecLocChildren.GetData(), vecLocChildren.GetSize());
             }
 
-            virtual void __fastcall Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
+            virtual void __MEGA_UI_API Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
 
-            void __fastcall PaintBorder(_In_ Render* _pRenderTarget, _In_ int32_t _iBorderStyle, _In_ const Rect& _BorderThickness, const Value& _BorderColor, _Inout_ Rect& _Bounds);
+            void __MEGA_UI_API PaintBorder(_In_ Render* _pRenderTarget, _In_ int32_t _iBorderStyle, _In_ const Rect& _BorderThickness, const Value& _BorderColor, _Inout_ Rect& _Bounds);
 
-            void __fastcall PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
+            void __MEGA_UI_API PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
 
-            virtual SIZE __fastcall GetContentSize(SIZE _ConstraintSize);
-            virtual SIZE __fastcall SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);
-            virtual void __fastcall SelfLayoutDoLayout(SIZE _ConstraintSize);
+            virtual SIZE __MEGA_UI_API GetContentSize(SIZE _ConstraintSize);
+            virtual SIZE __MEGA_UI_API SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);
+            virtual void __MEGA_UI_API SelfLayoutDoLayout(SIZE _ConstraintSize);
 
-            void __fastcall Detach(DeferCycle* _pDeferCycle);
+            void __MEGA_UI_API Detach(DeferCycle* _pDeferCycle);
 
-            Rect __fastcall ApplyRTL(const Rect& _Src);
+            Rect __MEGA_UI_API ApplyRTL(const Rect& _Src);
 
-            void __fastcall Invalidate();
+            void __MEGA_UI_API Invalidate();
 
 
             template<typename _Type>
-            _Type* __fastcall TryCast()
+            _Type* __MEGA_UI_API TryCast()
             {
                 auto _pClassInfo = GetControlClassInfo();
                 if (!_pClassInfo)
@@ -384,7 +384,7 @@ namespace YY
             /// <param name="_pElement2"></param>
             /// <param name="_Prop"></param>
             /// <returns>返回1表示相等，返回0表示不相等，返回 -1 表示比较失败。</returns>
-            static int32_t __fastcall SpecCacheIsEqual(
+            static int32_t __MEGA_UI_API SpecCacheIsEqual(
                 _In_ Element* _pElement1,
                 _In_ Element* _pElement2,
                 _In_ const PropertyInfo& _Prop
@@ -392,47 +392,47 @@ namespace YY
 
 		protected:
 			// Value Update
-            HRESULT __fastcall PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
-			HRESULT __fastcall PostSourceChange();
-            HRESULT __fastcall GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _NewValue, DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+			HRESULT __MEGA_UI_API PostSourceChange();
+            HRESULT __MEGA_UI_API GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _NewValue, DeferCycle* _pDeferCycle);
 
-            static HRESULT __fastcall AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
+            static HRESULT __MEGA_UI_API AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
             
-            HRESULT __fastcall GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle);
 
-            static void __fastcall VoidPCNotifyTree(int, DeferCycle*);
+            static void __MEGA_UI_API VoidPCNotifyTree(int, DeferCycle*);
 
-			PropertyCustomCacheResult __fastcall PropertyGeneralCache(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
+			PropertyCustomCacheResult __MEGA_UI_API PropertyGeneralCache(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
-			void __fastcall OnParentPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+			void __MEGA_UI_API OnParentPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
             
-            void __fastcall FlushDesiredSize(DeferCycle* _pDeferCycle);
+            void __MEGA_UI_API FlushDesiredSize(DeferCycle* _pDeferCycle);
 
-            void __fastcall FlushLayout(DeferCycle* _pDeferCycle);
+            void __MEGA_UI_API FlushLayout(DeferCycle* _pDeferCycle);
 
-            static bool __fastcall SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle);
+            static bool __MEGA_UI_API SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle);
 
-            static void __fastcall TransferGroupFlags(Element* pElement, uint32_t _fGroups);
+            static void __MEGA_UI_API TransferGroupFlags(Element* pElement, uint32_t _fGroups);
             
-            static bool __fastcall MarkElementForDesiredSize(Element* _pElement);
+            static bool __MEGA_UI_API MarkElementForDesiredSize(Element* _pElement);
 
-            static bool __fastcall MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew);
+            static bool __MEGA_UI_API MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew);
 
-            bool __fastcall SetNeedsLayout(uint32_t _fNeedsLayoutNew);
+            bool __MEGA_UI_API SetNeedsLayout(uint32_t _fNeedsLayoutNew);
 
-            SIZE __fastcall UpdateDesiredSize(SIZE _ConstraintSize);
+            SIZE __MEGA_UI_API UpdateDesiredSize(SIZE _ConstraintSize);
 
-            void __fastcall UpdateLayoutPosition(POINT _LayoutPosition);
+            void __MEGA_UI_API UpdateLayoutPosition(POINT _LayoutPosition);
             
-            void __fastcall UpdateLayoutSize(SIZE _LayoutSize);
+            void __MEGA_UI_API UpdateLayoutSize(SIZE _LayoutSize);
 
-            PropertyCustomCacheResult __fastcall GetExtentProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
+            PropertyCustomCacheResult __MEGA_UI_API GetExtentProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
-            PropertyCustomCacheResult __fastcall GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
+            PropertyCustomCacheResult __MEGA_UI_API GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
-            HRESULT __fastcall GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
-            virtual HRESULT __fastcall GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+            virtual HRESULT __MEGA_UI_API GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 		};
 	}
 }

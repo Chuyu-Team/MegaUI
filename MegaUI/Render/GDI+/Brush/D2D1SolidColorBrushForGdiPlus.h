@@ -25,7 +25,7 @@ namespace YY
             {
             }
 
-            Gdiplus::SolidBrush* __fastcall GetBrush()
+            Gdiplus::SolidBrush* __MEGA_UI_API GetBrush()
             {
                 return &Brush;
             }

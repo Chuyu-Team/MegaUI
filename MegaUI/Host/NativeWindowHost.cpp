@@ -24,7 +24,7 @@ namespace YY
         }
 
         HRESULT
-        __fastcall
+        __MEGA_UI_API
         NativeWindowHost::Initialize(
             LPCWSTR _szTitle,
             HWND    _hWndParent,
@@ -91,7 +91,7 @@ namespace YY
         }
 
         HRESULT
-        __fastcall
+        __MEGA_UI_API
         NativeWindowHost::Create(
             LPCWSTR _szTitle,
             HWND    _hWndParent,
@@ -127,7 +127,7 @@ namespace YY
             return _hr;
         }
         
-        void __fastcall NativeWindowHost::ShowWindow(int _iCmdShow)
+        void __MEGA_UI_API NativeWindowHost::ShowWindow(int _iCmdShow)
         {
             if (hWnd)
                 ::ShowWindow(hWnd, _iCmdShow);
@@ -138,7 +138,7 @@ namespace YY
             ::PostMessageW(hWnd, NativeWindowHost::AsyncDestroyMsg(), 0, 0);
         }
 
-        HRESULT __fastcall NativeWindowHost::SetHost(Element* _pHost)
+        HRESULT __MEGA_UI_API NativeWindowHost::SetHost(Element* _pHost)
         {
             if (!_pHost)
                 return E_INVALIDARG;
@@ -171,7 +171,7 @@ namespace YY
             return S_OK;
         }
 
-        bool __fastcall NativeWindowHost::IsMinimized() const
+        bool __MEGA_UI_API NativeWindowHost::IsMinimized() const
         {
             return (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
         }
@@ -235,7 +235,7 @@ namespace YY
             return DefWindowProcW(_hWnd, _uMsg, _wParam, _lParam);
         }
         
-        UINT __fastcall NativeWindowHost::AsyncDestroyMsg()
+        UINT __MEGA_UI_API NativeWindowHost::AsyncDestroyMsg()
         {
             static UINT g_AsyncDestroyMsg = 0;
 
@@ -247,7 +247,7 @@ namespace YY
             return g_AsyncDestroyMsg;
         }
 
-        HRESULT __fastcall NativeWindowHost::OnPaint()
+        HRESULT __MEGA_UI_API NativeWindowHost::OnPaint()
         {
             if (!pRender)
             {
@@ -267,7 +267,7 @@ namespace YY
             return pRender->EndDraw();
         }
 
-        HRESULT __fastcall NativeWindowHost::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
+        HRESULT __MEGA_UI_API NativeWindowHost::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
         {
             if (_pRender == nullptr || _pElement == nullptr)
                 return E_INVALIDARG;
@@ -344,7 +344,7 @@ namespace YY
             return S_OK;
         }
 
-        void __fastcall NativeWindowHost::UpdateMouseWithin(
+        void __MEGA_UI_API NativeWindowHost::UpdateMouseWithin(
             Element* _pElement,
             const Rect& _ParentBounds,
             const Rect& _ParentVisibleBounds,
@@ -390,7 +390,7 @@ namespace YY
             UpdateMouseWithinToFalse(_pElement);
         }
 
-        void __fastcall NativeWindowHost::UpdateMouseWithinToFalse(Element* _pElement)
+        void __MEGA_UI_API NativeWindowHost::UpdateMouseWithinToFalse(Element* _pElement)
         {
             if (!_pElement->IsMouseWithin())
                 return;
@@ -410,7 +410,7 @@ namespace YY
             _pElement->EndDefer(_Cooike);
         }
 
-        void __fastcall NativeWindowHost::OnSize(UINT _uWidth, UINT _uHeight)
+        void __MEGA_UI_API NativeWindowHost::OnSize(UINT _uWidth, UINT _uHeight)
         {
             LastRenderSize.width = _uWidth;
             LastRenderSize.height = _uHeight;

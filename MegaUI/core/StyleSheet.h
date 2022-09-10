@@ -75,7 +75,7 @@ namespace YY
                 _Other.uSpecif = 0;
             }
 
-            CondMap& __fastcall operator=(const CondMap& _Other)
+            CondMap& __MEGA_UI_API operator=(const CondMap& _Other)
             {
                 if (this != &_Other)
                 {
@@ -87,7 +87,7 @@ namespace YY
                 return *this;
             }
             
-            CondMap& __fastcall operator=(CondMap&& _Other)
+            CondMap& __MEGA_UI_API operator=(CondMap&& _Other)
             {
                 if (this != &_Other)
                 {
@@ -128,7 +128,7 @@ namespace YY
                 _Other.pRefProp = nullptr;
             }
 
-            PropertyData& __fastcall operator=(const PropertyData& _Other)
+            PropertyData& __MEGA_UI_API operator=(const PropertyData& _Other)
             {
                 if (this != &_Other)
                 {
@@ -139,7 +139,7 @@ namespace YY
                 return *this;
             }
             
-            PropertyData& __fastcall operator=(PropertyData&& _Other)
+            PropertyData& __MEGA_UI_API operator=(PropertyData&& _Other)
             {
                 if (this != &_Other)
                 {
@@ -152,7 +152,7 @@ namespace YY
                 return *this;
             }
 
-            __inline HRESULT __fastcall AddCondMapping(const DynamicArray<Cond, true>& _CondArray, uint32_t _uSpecifId, const Value& _Value)
+            __inline HRESULT __MEGA_UI_API AddCondMapping(const DynamicArray<Cond, true>& _CondArray, uint32_t _uSpecifId, const Value& _Value)
             {
                 auto _pCondMap = CondMapList.EmplacePtr(_Value, _uSpecifId, _CondArray);
                 if (!_pCondMap)
@@ -180,7 +180,7 @@ namespace YY
             {
             }
 
-            PropertyData* __fastcall GetPropertyData(const PropertyInfo* _pRefProp)
+            PropertyData* __MEGA_UI_API GetPropertyData(const PropertyInfo* _pRefProp)
             {
                 if (!_pRefProp)
                     return nullptr;
@@ -238,32 +238,32 @@ namespace YY
             StyleSheet(StyleSheet const&) = delete;
             StyleSheet& operator=(StyleSheet const&) = delete;
 
-            uint32_t __fastcall AddRef();
+            uint32_t __MEGA_UI_API AddRef();
 
-            uint32_t __fastcall Release();
+            uint32_t __MEGA_UI_API Release();
 
             // 1
-            HRESULT __fastcall AddRule(uString szRule, IClassInfo* pClassInfo, DynamicArray<Cond, true> CondArray, const ArrayView<Decl>& DeclArray);
+            HRESULT __MEGA_UI_API AddRule(uString szRule, IClassInfo* pClassInfo, DynamicArray<Cond, true> CondArray, const ArrayView<Decl>& DeclArray);
             // 2
-            void __fastcall MakeImmutable(void);
+            void __MEGA_UI_API MakeImmutable(void);
             // 3
-            Value __fastcall GetSheetValue(Element* _pElement, const PropertyInfo* _pProp);
+            Value __MEGA_UI_API GetSheetValue(Element* _pElement, const PropertyInfo* _pProp);
             // 4
-            HRESULT __fastcall GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle);
             // 5
-            HRESULT __fastcall GetSheetScope(Element* _pElement, DepRecs* pdr, DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetSheetScope(Element* _pElement, DepRecs* pdr, DeferCycle* _pDeferCycle);
             // 6
-            uString __fastcall GetSheetResid();
+            uString __MEGA_UI_API GetSheetResid();
 
             // 7
-            HRESULT __fastcall SetSheetResid(uString _szSheetResid);
+            HRESULT __MEGA_UI_API SetSheetResid(uString _szSheetResid);
             
         private:
-            ClassData* __fastcall GetClassData(IClassInfo* pClassInfo);
+            ClassData* __MEGA_UI_API GetClassData(IClassInfo* pClassInfo);
 
-            HRESULT __fastcall AddClassData(ClassData** ppData, IClassInfo* pClassInfo);
+            HRESULT __MEGA_UI_API AddClassData(ClassData** ppData, IClassInfo* pClassInfo);
             
-            static uint32_t __fastcall ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint32_t _uRuleId);
+            static uint32_t __MEGA_UI_API ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint32_t _uRuleId);
         };
     }
 } // namespace YY

@@ -8,7 +8,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        HRESULT __fastcall CreateRender(HWND _hWnd, Render** _ppRender)
+        HRESULT __MEGA_UI_API CreateRender(HWND _hWnd, Render** _ppRender)
         {
             //return GdiPlusRender::CreateRender(_hWnd, _ppRender);
             return D2D1_1Render::CreateRender(_hWnd, _ppRender);

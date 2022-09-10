@@ -10,12 +10,12 @@ namespace YY
 {
     namespace MegaUI
     {
-        __forceinline u16char_t __fastcall byteswap(u16char_t _ch)
+        __forceinline u16char_t __MEGA_UI_API byteswap(u16char_t _ch)
         {
             return _byteswap_ushort(_ch);
         }
 
-        __forceinline u32char_t __fastcall byteswap(u32char_t _ch)
+        __forceinline u32char_t __MEGA_UI_API byteswap(u32char_t _ch)
         {
             return _byteswap_ulong(_ch);
         }
@@ -24,7 +24,7 @@ namespace YY
         {
         public:
             template<typename StringA, typename StringB>
-            static HRESULT __fastcall TransformEndian(_In_ const StringA& _szSrc, _Inout_ StringB* _pszDst)
+            static HRESULT __MEGA_UI_API TransformEndian(_In_ const StringA& _szSrc, _Inout_ StringB* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -55,7 +55,7 @@ namespace YY
             }
 
             template<typename StringA, typename StringB>
-            static HRESULT __fastcall TransformEndian(_In_ StringA&& _szSrc, _Inout_ StringB* _pszDst)
+            static HRESULT __MEGA_UI_API TransformEndian(_In_ StringA&& _szSrc, _Inout_ StringB* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -107,14 +107,14 @@ namespace YY
         };
 
 
-        HRESULT __fastcall Transform(const aStringView& _szSrc, aString* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __fastcall Transform(const aString& _szSrc, aString* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const aString& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -122,7 +122,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __fastcall Transform(const u8StringView& _szSrc, aString* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -138,7 +138,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u16StringLEView& _szSrc, aString* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -184,7 +184,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u16StringBEView& _szSrc, aString* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;         
@@ -197,7 +197,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u32StringLEView& _szSrc, aString* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -210,7 +210,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u32StringBEView& _szSrc, aString* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -224,7 +224,7 @@ namespace YY
         }
 
 
-        HRESULT __fastcall Transform(const aStringView& _szSrc, u8String* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -239,7 +239,7 @@ namespace YY
             return Transform(_szTmp, _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u8StringView& _szSrc, u8String* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -247,7 +247,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __fastcall Transform(const u8String& _szSrc, u8String* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u8String& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -255,7 +255,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
         
-        HRESULT __fastcall Transform(const aStringView& _szStr, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const aStringView& _szStr, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -277,7 +277,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const aStringView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -293,7 +293,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
         
-        HRESULT __fastcall Transform(const aStringView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -309,7 +309,7 @@ namespace YY
             return Transform(_szTmp, _pszDst);
         }
 
-        HRESULT __fastcall Transform(const aStringView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -325,7 +325,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
         
-        HRESULT __fastcall Transform(const u8StringView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -433,7 +433,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u8StringView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -541,7 +541,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u8StringView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -680,7 +680,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u8StringView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -819,7 +819,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u16StringLEView& _szSrc, u8String* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -918,7 +918,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u16StringLEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -976,7 +976,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u16StringLEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -992,7 +992,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u16StringBEView& _szSrc, u8String* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1092,7 +1092,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u16StringLEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1100,17 +1100,17 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __fastcall Transform(const u16StringLEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u16StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __fastcall Transform(u16StringLE&& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(u16StringLE&& _szSrc, u16StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u16StringBE& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringBE& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1118,7 +1118,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __fastcall Transform(const u16StringBEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1126,7 +1126,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __fastcall Transform(const u16StringBEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1186,7 +1186,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u16StringBEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1246,24 +1246,24 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __fastcall Transform(const u16StringBEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u16StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u16StringLE& _szSrc, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u16StringLE& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __fastcall Transform(u16StringBE&& _szSrc, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(u16StringBE&& _szSrc, u16StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u32StringLEView& _szSrc, u8String* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1352,7 +1352,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u32StringLEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1411,7 +1411,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u32StringLEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1470,17 +1470,17 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u32StringLEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u32StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __fastcall Transform(u32StringLE&& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(u32StringLE&& _szSrc, u32StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u32StringBE& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringBE& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1488,7 +1488,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __fastcall Transform(const u32StringLEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1496,7 +1496,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __fastcall Transform(const u32StringBEView& _szSrc, u8String* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1587,7 +1587,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u32StringBEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1648,7 +1648,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u32StringBEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1709,12 +1709,12 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __fastcall Transform(const u32StringBEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u32StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u32StringLE& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringLE& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1722,12 +1722,12 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __fastcall Transform(u32StringBE&& _szSrc, u32StringLE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(u32StringBE&& _szSrc, u32StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __fastcall Transform(const u32StringBEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;

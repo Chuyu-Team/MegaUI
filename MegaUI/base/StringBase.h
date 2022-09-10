@@ -226,22 +226,22 @@ namespace YY
                 GetInternalStringData()->Release();
             }
 
-            uint_t __fastcall GetSize() const
+            uint_t __MEGA_UI_API GetSize() const
             {
                 return GetInternalStringData()->uSize;
             }
 
-            uint_t __fastcall GetCapacity() const
+            uint_t __MEGA_UI_API GetCapacity() const
             {
                 return GetInternalStringData()->uCapacity;
             }
 
-            _Ret_z_ const char_t* __fastcall GetConstString() const
+            _Ret_z_ const char_t* __MEGA_UI_API GetConstString() const
             {
                 return szString;
             }
 
-            _Ret_writes_maybenull_(_uCapacity) char_t* __fastcall LockBuffer(_In_ uint_t _uCapacity = 0)
+            _Ret_writes_maybenull_(_uCapacity) char_t* __MEGA_UI_API LockBuffer(_In_ uint_t _uCapacity = 0)
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -288,7 +288,7 @@ namespace YY
                 return szString;
             }
 
-            void __fastcall UnlockBuffer(_In_ uint_t _uNewSize)
+            void __MEGA_UI_API UnlockBuffer(_In_ uint_t _uNewSize)
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -311,7 +311,7 @@ namespace YY
                 }
             }
 
-            void __fastcall UnlockBuffer()
+            void __MEGA_UI_API UnlockBuffer()
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -321,7 +321,7 @@ namespace YY
                 }
             }
 
-            void __fastcall Clear()
+            void __MEGA_UI_API Clear()
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -337,7 +337,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall SetString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+            HRESULT __MEGA_UI_API SetString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
             {
                 if (_szSrc == nullptr && _cchSrc)
                 {
@@ -361,18 +361,18 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall SetString(_In_opt_z_ const char_t* _szSrc)
+            HRESULT __MEGA_UI_API SetString(_In_opt_z_ const char_t* _szSrc)
             {
                 return SetString(_szSrc, GetStringLength(_szSrc));
             }
 
             template<uint_t _uArrayCount>
-            HRESULT __fastcall SetString(const char_t (&_szSrc)[_uArrayCount])
+            HRESULT __MEGA_UI_API SetString(const char_t (&_szSrc)[_uArrayCount])
             {
                 return SetString(_szSrc, _uArrayCount - 1);
             }
 
-            HRESULT __fastcall SetString(const StringBase& _szSrc)
+            HRESULT __MEGA_UI_API SetString(const StringBase& _szSrc)
             {
                 if (szString != _szSrc.szString)
                 {
@@ -391,7 +391,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall SetString(StringBase&& _szSrc)
+            HRESULT __MEGA_UI_API SetString(StringBase&& _szSrc)
             {
                 if (szString != _szSrc.szString)
                 {
@@ -411,7 +411,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall SetItem(_In_ uint_t _uIndex, _In_ char_t _ch)
+            HRESULT __MEGA_UI_API SetItem(_In_ uint_t _uIndex, _In_ char_t _ch)
             {
                 const auto _nSize = GetSize();
 
@@ -429,12 +429,12 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall AppendString(_In_opt_z_ const char_t* _szSrc)
+            HRESULT __MEGA_UI_API AppendString(_In_opt_z_ const char_t* _szSrc)
             {
                 return AppendString(_szSrc, GetStringLength(_szSrc));
             }
 
-            HRESULT __fastcall AppendString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+            HRESULT __MEGA_UI_API AppendString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
             {
                 if (_cchSrc == 0)
                     return S_OK;
@@ -454,12 +454,12 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall AppendString(const StringView_t& _szSrc)
+            HRESULT __MEGA_UI_API AppendString(const StringView_t& _szSrc)
             {
                 return AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
             }
 
-            HRESULT __fastcall AppendString(const StringBase& _szSrc)
+            HRESULT __MEGA_UI_API AppendString(const StringBase& _szSrc)
             {
                 if (_szSrc.GetSize() == 0)
                     return S_OK;
@@ -474,7 +474,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall AppendChar(_In_ char_t ch)
+            HRESULT __MEGA_UI_API AppendChar(_In_ char_t ch)
             {
                 auto _cchOldString = GetSize();
                 const auto _cchNewString = _cchOldString + 1;
@@ -490,12 +490,12 @@ namespace YY
                 return S_OK;
             }
 
-            Encoding __fastcall GetEncoding() const
+            Encoding __MEGA_UI_API GetEncoding() const
             {
                 return eEncoding != Encoding::ANSI ? eEncoding : Encoding(GetInternalStringData()->eEncoding);
             }
 
-            HRESULT __fastcall SetANSIEncoding(_In_ Encoding _eNewEncoding)
+            HRESULT __MEGA_UI_API SetANSIEncoding(_In_ Encoding _eNewEncoding)
             {
                 if (GetEncoding() == _eNewEncoding)
                     return S_OK;
@@ -528,24 +528,24 @@ namespace YY
                 return S_OK;
             }
 
-            _Ret_z_ __fastcall operator const char_t*() const
+            _Ret_z_ __MEGA_UI_API operator const char_t*() const
             {
                 return szString;
             }
 
-            __fastcall operator StringView_t() const
+            __MEGA_UI_API operator StringView_t() const
             {
                 return StringView_t(szString, GetSize());
             }
 
-            char_t __fastcall operator[](_In_ uint_t _uIndex) const
+            char_t __MEGA_UI_API operator[](_In_ uint_t _uIndex) const
             {
                 _ASSERTE(_uIndex < GetSize());
 
                 return szString[_uIndex];
             }
 
-            StringBase& __fastcall operator=(_In_opt_z_ const char_t* _szSrc)
+            StringBase& __MEGA_UI_API operator=(_In_opt_z_ const char_t* _szSrc)
             {
                 auto _hr = SetString(_szSrc);
                 if (FAILED(_hr))
@@ -554,7 +554,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __fastcall operator=(const StringBase& _szSrc)
+            StringBase& __MEGA_UI_API operator=(const StringBase& _szSrc)
             {
                 auto _hr = SetString(_szSrc);
                 if (FAILED(_hr))
@@ -563,7 +563,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __fastcall operator=(StringBase&& _szSrc) noexcept
+            StringBase& __MEGA_UI_API operator=(StringBase&& _szSrc) noexcept
             {
                 auto _hr = SetString(std::move(_szSrc));
                 if (FAILED(_hr))
@@ -572,7 +572,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __fastcall operator+=(_In_opt_z_ const char_t* _szSrc) noexcept
+            StringBase& __MEGA_UI_API operator+=(_In_opt_z_ const char_t* _szSrc) noexcept
             {
                 auto _hr = AppendString(_szSrc);
                 if (FAILED(_hr))
@@ -581,7 +581,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __fastcall operator+=(const StringBase& _szSrc) noexcept
+            StringBase& __MEGA_UI_API operator+=(const StringBase& _szSrc) noexcept
             {
                 auto _hr = AppendString(_szSrc);
                 if (FAILED(_hr))
@@ -590,7 +590,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __fastcall operator+=(_In_ char_t _ch) noexcept
+            StringBase& __MEGA_UI_API operator+=(_In_ char_t _ch) noexcept
             {
                 auto _hr = AppendChar(_ch);
                 if (FAILED(_hr))
@@ -599,7 +599,7 @@ namespace YY
                 return *this;
             }
 
-            bool __fastcall operator==(const StringView_t& _szSrc) const
+            bool __MEGA_UI_API operator==(const StringView_t& _szSrc) const
             {
                 if (this->GetSize() != _szSrc.GetSize())
                     return false;
@@ -607,12 +607,12 @@ namespace YY
                 return memcmp(this->GetConstString(), _szSrc.GetConstString(), this->GetSize() * sizeof(char_t)) == 0;
             }
 
-            _Ret_z_ const char_t* __fastcall begin() const
+            _Ret_z_ const char_t* __MEGA_UI_API begin() const
             {
                 return this->GetConstString();
             }
 
-            _Ret_z_ const char_t* __fastcall end() const
+            _Ret_z_ const char_t* __MEGA_UI_API end() const
             {
                 return this->GetConstString() + this->GetSize();
             }
@@ -641,7 +641,7 @@ namespace YY
 
                 // char_t szString[0];
 
-                _Ret_maybenull_ StringData* __fastcall CloneStringData(_In_ uint_t _uAllocLength)
+                _Ret_maybenull_ StringData* __MEGA_UI_API CloneStringData(_In_ uint_t _uAllocLength)
                 {
                     if (_uAllocLength < uSize)
                         _uAllocLength = uSize;
@@ -662,7 +662,7 @@ namespace YY
                     return _pNewStringData;
                 }
 
-                static _Ret_maybenull_ StringData* __fastcall ReallocStringData(_In_ StringData* _pOldStringData, _In_ uint_t _uAllocLength)
+                static _Ret_maybenull_ StringData* __MEGA_UI_API ReallocStringData(_In_ StringData* _pOldStringData, _In_ uint_t _uAllocLength)
                 {
                     if (_pOldStringData->uCapacity >= _uAllocLength)
                         return _pOldStringData;
@@ -688,7 +688,7 @@ namespace YY
                     return _pNewStringData;
                 }
 
-                static _Ret_maybenull_ StringData* __fastcall AllocStringData(_In_ uint_t _uAllocLength)
+                static _Ret_maybenull_ StringData* __MEGA_UI_API AllocStringData(_In_ uint_t _uAllocLength)
                 {
                     if (_uAllocLength == 0)
                         return GetEmtpyStringData();
@@ -714,7 +714,7 @@ namespace YY
                     return _pNewStringData;
                 }
 
-                constexpr static _Ret_notnull_ StringData* __fastcall GetEmtpyStringData()
+                constexpr static _Ret_notnull_ StringData* __MEGA_UI_API GetEmtpyStringData()
                 {
                     struct StaticStringData
                     {
@@ -729,12 +729,12 @@ namespace YY
                     return const_cast<StringData*>(&g_EmptyStringData.Base);
                 }
 
-                _Ret_z_ char_t* __fastcall GetStringBuffer()
+                _Ret_z_ char_t* __MEGA_UI_API GetStringBuffer()
                 {
                     return reinterpret_cast<char_t*>(this + 1);
                 }
 
-                uint32_t __fastcall AddRef()
+                uint32_t __MEGA_UI_API AddRef()
                 {
                     if (IsReadOnly())
                     {
@@ -750,7 +750,7 @@ namespace YY
                     return (uint32_t)YY::MegaUI::Interlocked::Increment(&iRef);
                 }
 
-                uint32_t __fastcall Release()
+                uint32_t __MEGA_UI_API Release()
                 {
                     if (IsReadOnly())
                     {
@@ -773,17 +773,17 @@ namespace YY
                     return (uint32_t)uRefNew;
                 }
 
-                bool __fastcall IsReadOnly()
+                bool __MEGA_UI_API IsReadOnly()
                 {
                     return iRef == int32_max;
                 }
 
-                bool __fastcall IsShared()
+                bool __MEGA_UI_API IsShared()
                 {
                     return iRef > 1;
                 }
 
-                void __fastcall Lock()
+                void __MEGA_UI_API Lock()
                 {
                     if (iRef > 1 || iRef == 0)
                     {
@@ -801,7 +801,7 @@ namespace YY
                     }
                 }
 
-                void __fastcall Unlock()
+                void __MEGA_UI_API Unlock()
                 {
                     if (iRef >= 0)
                     {
@@ -819,12 +819,12 @@ namespace YY
                     }
                 }
 
-                bool __fastcall IsLocked()
+                bool __MEGA_UI_API IsLocked()
                 {
                     return iRef < 0;
                 }
 
-                uint_t __fastcall GetLockedCount()
+                uint_t __MEGA_UI_API GetLockedCount()
                 {
                     if (iRef >= 0)
                         return 0;
@@ -834,12 +834,12 @@ namespace YY
             };
             
         private:
-            _Ret_notnull_ StringData* __fastcall GetInternalStringData() const
+            _Ret_notnull_ StringData* __MEGA_UI_API GetInternalStringData() const
             {
                 return reinterpret_cast<StringData*>(szString) - 1;
             }
 
-            void __fastcall Attach(_In_ StringData* _pNewStringData)
+            void __MEGA_UI_API Attach(_In_ StringData* _pNewStringData)
             {
                 auto _pOldStringData = GetInternalStringData();
 
@@ -851,7 +851,7 @@ namespace YY
                 }
             }
 
-            _Ret_notnull_ StringData* __fastcall Detach()
+            _Ret_notnull_ StringData* __MEGA_UI_API Detach()
             {
                 auto _pStringData = GetInternalStringData();
                 szString = StringData::GetEmtpyStringData()->GetStringBuffer();

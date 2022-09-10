@@ -59,7 +59,7 @@ namespace YY
         };
 
 
-        __inline bool __fastcall IsANSI(Encoding _eEncoding)
+        __inline bool __MEGA_UI_API IsANSI(Encoding _eEncoding)
         {
             switch (_eEncoding)
             {

@@ -32,7 +32,7 @@ namespace YY
 
             static
             HRESULT
-            __fastcall
+            __MEGA_UI_API
             Create(
                 _In_opt_ LPCWSTR            _szTitle,
                 _In_opt_ HWND               _hWndParent,
@@ -48,7 +48,7 @@ namespace YY
                 );
             
             HRESULT
-            __fastcall
+            __MEGA_UI_API
             Initialize(
                 _In_opt_ LPCWSTR _szTitle,
                 _In_opt_ HWND    _hWndParent,
@@ -62,33 +62,33 @@ namespace YY
                 _In_     UINT    _nOptions
                 );
 
-            void __fastcall ShowWindow(int _iCmdShow);
+            void __MEGA_UI_API ShowWindow(int _iCmdShow);
 
-            void __fastcall DestroyWindow();
+            void __MEGA_UI_API DestroyWindow();
             
-            HRESULT __fastcall SetHost(_In_ Element* _pHost);
+            HRESULT __MEGA_UI_API SetHost(_In_ Element* _pHost);
 
-            bool __fastcall IsMinimized() const;
+            bool __MEGA_UI_API IsMinimized() const;
 
             static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-            static UINT __fastcall AsyncDestroyMsg();
+            static UINT __MEGA_UI_API AsyncDestroyMsg();
 
         private:
-            HRESULT __fastcall OnPaint();
+            HRESULT __MEGA_UI_API OnPaint();
             
-            HRESULT __fastcall PaintElement(
+            HRESULT __MEGA_UI_API PaintElement(
                 _In_ Render* _pRender,
                 _In_ Element* _pElement,
                 _In_ const Rect& _ParentBounds,
                 _In_ const Rect& _ParentPaintRect
                 );
 
-            void __fastcall OnSize(UINT _uWidth, UINT _uHeight);
+            void __MEGA_UI_API OnSize(UINT _uWidth, UINT _uHeight);
 
-            void __fastcall UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& ptPoint);
+            void __MEGA_UI_API UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& ptPoint);
 
-            void __fastcall UpdateMouseWithinToFalse(Element* _pElement);
+            void __MEGA_UI_API UpdateMouseWithinToFalse(Element* _pElement);
         };
     } // namespace MegaUI
 } // namespace YY

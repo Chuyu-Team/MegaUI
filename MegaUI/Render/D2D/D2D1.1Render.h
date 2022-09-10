@@ -55,9 +55,9 @@ namespace YY
                     pD2DFactory->Release();
             }
 
-            void __fastcall operator=(const D2D1_1Render&) = delete;
+            void __MEGA_UI_API operator=(const D2D1_1Render&) = delete;
 
-            HRESULT __fastcall Initialize()
+            HRESULT __MEGA_UI_API Initialize()
             {
                 // This array defines the set of DirectX hardware feature levels this app  supports.
                 // The ordering is important and you should  preserve it.
@@ -189,7 +189,7 @@ namespace YY
                 return _hr;
             }
 
-            HRESULT __fastcall InitializeRenderTarget()
+            HRESULT __MEGA_UI_API InitializeRenderTarget()
             {
                 if (pDeviceContext)
                     return S_OK;
@@ -197,7 +197,7 @@ namespace YY
                 return Initialize();
             }
 
-            void __fastcall UnitializeRenderTarget()
+            void __MEGA_UI_API UnitializeRenderTarget()
             {
                 if (pD2DTargetBitmap)
                 {
@@ -224,7 +224,7 @@ namespace YY
                 }
             }
 
-            static HRESULT __fastcall CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
+            static HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
             {
                 if (_ppRender == nullptr)
                     return E_INVALIDARG;
@@ -281,7 +281,7 @@ namespace YY
                 return _hr;
             }
 
-            virtual HRESULT __fastcall BeginDraw(Rect* _pNeedPaintRect) override
+            virtual HRESULT __MEGA_UI_API BeginDraw(Rect* _pNeedPaintRect) override
             {
                 if (_pNeedPaintRect)
                 {
@@ -298,7 +298,7 @@ namespace YY
                 return S_OK;
             }
 
-            virtual HRESULT __fastcall EndDraw() override
+            virtual HRESULT __MEGA_UI_API EndDraw() override
             {
                 if (!pDeviceContext)
                     return E_UNEXPECTED;
@@ -317,25 +317,25 @@ namespace YY
                 return _hr;
             }
 
-            virtual void __fastcall PushAxisAlignedClip(
+            virtual void __MEGA_UI_API PushAxisAlignedClip(
                 _In_ const Rect& _ClipRect) override
             {
                 pDeviceContext->PushAxisAlignedClip(_ClipRect, D2D1_ANTIALIAS_MODE_ALIASED);
             }
 
-            virtual void __fastcall PopAxisAlignedClip() override
+            virtual void __MEGA_UI_API PopAxisAlignedClip() override
             {
                 pDeviceContext->PopAxisAlignedClip();
             }
 
-            virtual void __fastcall FillRectangle(
+            virtual void __MEGA_UI_API FillRectangle(
                 _In_ const Rect& _Rect,
                 _In_ ID2D1Brush* _pBrush) override
             {
                 pDeviceContext->FillRectangle(_Rect, _pBrush);
             }
 
-            virtual HRESULT __fastcall SetPixelSize(
+            virtual HRESULT __MEGA_UI_API SetPixelSize(
                 _In_ const D2D1_SIZE_U& _PixelSize) override
             {
                 if (_PixelSize.width == PixelSize.width && _PixelSize.height == PixelSize.height)
@@ -384,12 +384,12 @@ namespace YY
                 return _hr;
             }
 
-            D2D1_SIZE_U __fastcall GetPixelSize()
+            D2D1_SIZE_U __MEGA_UI_API GetPixelSize()
             {
                 return PixelSize;
             }
 
-            virtual HRESULT __fastcall CreateSolidColorBrush(
+            virtual HRESULT __MEGA_UI_API CreateSolidColorBrush(
                 Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) override
             {

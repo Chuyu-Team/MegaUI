@@ -89,12 +89,12 @@ namespace YY
             }
 
 
-            uint32_t __fastcall AddRef()
+            uint32_t __MEGA_UI_API AddRef()
             {
                 return ++uRef;
             }
 
-            uint32_t __fastcall Release()
+            uint32_t __MEGA_UI_API Release()
             {
                 const auto _uRefNew = --uRef;
 

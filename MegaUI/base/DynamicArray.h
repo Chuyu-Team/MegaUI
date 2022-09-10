@@ -29,12 +29,12 @@ namespace YY
         template<typename T, bool _bUsingClassConstructor = true>
         struct DynamicArrayConstructor
         {
-            __forceinline static void __fastcall Init(_Out_ T* _pData)
+            __forceinline static void __MEGA_UI_API Init(_Out_ T* _pData)
             {
                 new (_pData) T {};
             }
 
-            __forceinline static void __fastcall Init(_Out_writes_(_uCount) T* _pData, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API Init(_Out_writes_(_uCount) T* _pData, _In_ uint_t _uCount)
             {
                 const auto _pDataEnd = _pData + _uCount;
                 for (; _pData != _pDataEnd; ++_pData)
@@ -43,7 +43,7 @@ namespace YY
                 }
             }
             
-            __forceinline static void __fastcall Init(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API Init(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
             {
                 const auto _pDataSrcEnd = _pDataSrc + _uCount;
                 for (; _pDataSrc != _pDataSrcEnd; ++_pDataSrc, ++_pDataDst)
@@ -52,12 +52,12 @@ namespace YY
                 }
             }
 
-            __forceinline static void __fastcall Uninit(_In_ T* _pData)
+            __forceinline static void __MEGA_UI_API Uninit(_In_ T* _pData)
             {
                 _pData->~T();
             }
 
-            __forceinline static void __fastcall Uninit(_In_ T* _pData, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API Uninit(_In_ T* _pData, _In_ uint_t _uCount)
             {
                 for (const auto _pDataEnd = _pData + _uCount; _pData != _pDataEnd; ++_pData)
                 {
@@ -65,7 +65,7 @@ namespace YY
                 }
             }
 
-            __forceinline static void __fastcall InitAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API InitAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) T* _pDataSrc, _In_ uint_t _uCount)
             {
                 const auto _pDataSrcEnd = _pDataSrc + _uCount;
                 for (; _pDataSrc != _pDataSrcEnd; ++_pDataSrc, ++_pDataDst)
@@ -74,7 +74,7 @@ namespace YY
                 }
             }
 
-            __forceinline static void __fastcall Copy(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API Copy(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
             {
                 const auto _pDataSrcEnd = _pDataSrc + _uCount;
                 for (; _pDataSrc != _pDataSrcEnd; ++_pDataSrc, ++_pDataDst)
@@ -83,7 +83,7 @@ namespace YY
                 }
             }
             
-            __forceinline static void __fastcall CopyAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API CopyAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) T* _pDataSrc, _In_ uint_t _uCount)
             {
                 if (_pDataDst == _pDataSrc || _uCount == 0)
                     return;
@@ -115,31 +115,31 @@ namespace YY
         template<typename T>
         struct DynamicArrayConstructor<T, false>
         {
-            __forceinline static void __fastcall Init(_In_ T* _pData, _In_ uint_t _uCount = 1)
+            __forceinline static void __MEGA_UI_API Init(_In_ T* _pData, _In_ uint_t _uCount = 1)
             {
                 memset(_pData, 0, _uCount * sizeof(T));
             }
 
-            __forceinline static void __fastcall Init(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API Init(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
             {
                 memcpy(_pDataDst, _pDataSrc, _uCount * sizeof(T));
             }
 
-            __forceinline static void __fastcall Uninit(_In_ T* _pData, _In_ uint_t _uCount = 1)
+            __forceinline static void __MEGA_UI_API Uninit(_In_ T* _pData, _In_ uint_t _uCount = 1)
             {
             }
             
-            __forceinline static void __fastcall InitAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API InitAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) T* _pDataSrc, _In_ uint_t _uCount)
             {
                 memcpy(_pDataDst, _pDataSrc, _uCount * sizeof(T));
             }
             
-            __forceinline static void __fastcall Copy(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API Copy(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
             {
                 memcpy(_pDataDst, _pDataSrc, _uCount * sizeof(T));
             }
 
-            __forceinline static void __fastcall CopyAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
+            __forceinline static void __MEGA_UI_API CopyAndMove(_Out_writes_(_uCount) T* _pDataDst, _In_reads_(_uCount) const T* _pDataSrc, _In_ uint_t _uCount)
             {
                 if (_uCount == 0)
                     return;
@@ -196,13 +196,13 @@ namespace YY
             }
 
 
-            uint_t __fastcall GetSize() const
+            uint_t __MEGA_UI_API GetSize() const
             {
                 auto _pSharedData = GetSharedData();
                 return _pSharedData ? _pSharedData->uSize : 0;
             }
             
-            HRESULT __fastcall Reserve(uint_t _uCapacity)
+            HRESULT __MEGA_UI_API Reserve(uint_t _uCapacity)
             {
                 auto _pLockData = LockSharedData(_uCapacity);
                 if (!_pLockData)
@@ -212,13 +212,13 @@ namespace YY
                 return S_OK;
             }
 
-            uint_t __fastcall GetCapacity()
+            uint_t __MEGA_UI_API GetCapacity()
             {
                 auto _pSharedData = GetSharedData();
                 return _pSharedData ? _pSharedData->uCapacity : 0;
             }
 
-            _Ret_maybenull_ T* __fastcall LockBufferAndSetSize(uint_t _uNewSize)
+            _Ret_maybenull_ T* __MEGA_UI_API LockBufferAndSetSize(uint_t _uNewSize)
             {
                 auto _pLockData = LockSharedData(_uNewSize);
                 if (!_pLockData)
@@ -248,7 +248,7 @@ namespace YY
                 return _pBuffer;
             }
 
-            void __fastcall UnlockBuffer()
+            void __MEGA_UI_API UnlockBuffer()
             {
                 auto _pSharedData = GetSharedData();
                 if (_pSharedData == nullptr || _pSharedData->IsLocked() == false)
@@ -260,7 +260,7 @@ namespace YY
                 _pSharedData->Unlock();
             }
 
-            void __fastcall Clear()
+            void __MEGA_UI_API Clear()
             {
                 auto _pSharedData = GetSharedData();
                 if (!_pSharedData)
@@ -282,7 +282,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall Resize(uint_t _uNewSize)
+            HRESULT __MEGA_UI_API Resize(uint_t _uNewSize)
             {
                 if (_uNewSize == 0)
                 {
@@ -298,7 +298,7 @@ namespace YY
                 return S_OK;
             }
 
-            _Ret_maybenull_ SharedPoint __fastcall GetItemPtr(uint_t _uIndex)
+            _Ret_maybenull_ SharedPoint __MEGA_UI_API GetItemPtr(uint_t _uIndex)
             {
                 if (GetSize() <= _uIndex)
                     return nullptr;
@@ -306,7 +306,7 @@ namespace YY
                 return pData + _uIndex;
             }
 
-            _Ret_maybenull_ const T* __fastcall GetItemPtr(uint_t _uIndex) const
+            _Ret_maybenull_ const T* __MEGA_UI_API GetItemPtr(uint_t _uIndex) const
             {
                 if (GetSize() <= _uIndex)
                     return nullptr;
@@ -314,7 +314,7 @@ namespace YY
                 return pData + _uIndex;
             }
 
-            HRESULT __fastcall SetItem(uint_t _uIndex, const T& _NewItem)
+            HRESULT __MEGA_UI_API SetItem(uint_t _uIndex, const T& _NewItem)
             {
                 auto _pSharedData = GetSharedData();
                 if (_pSharedData == nullptr || _pSharedData->uSize <= _uIndex)
@@ -329,7 +329,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall SetArray(_In_reads_(_uCount) const T* _pSrc, _In_ uint_t _uCount)
+            HRESULT __MEGA_UI_API SetArray(_In_reads_(_uCount) const T* _pSrc, _In_ uint_t _uCount)
             {
                 if (_uCount == 0)
                 {
@@ -363,7 +363,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall SetArray(const DynamicArray& _Src)
+            HRESULT __MEGA_UI_API SetArray(const DynamicArray& _Src)
             {
                 auto& __Src = const_cast<DynamicArray&>(_Src);
                 auto _pSharedData = __Src.GetSharedData();
@@ -384,7 +384,7 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall SetArray(DynamicArray&& _Src)
+            HRESULT __MEGA_UI_API SetArray(DynamicArray&& _Src)
             {
                 auto _pSharedData = _Src.Detach();
                 if (!_pSharedData)
@@ -398,12 +398,12 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall Add(const T& _NewItem)
+            HRESULT __MEGA_UI_API Add(const T& _NewItem)
             {
                 return Add(&_NewItem, 1);
             }
 
-            HRESULT __fastcall Add(_In_ const T* _pSrc, _In_ uint_t _uCount)
+            HRESULT __MEGA_UI_API Add(_In_ const T* _pSrc, _In_ uint_t _uCount)
             {
                 if (_uCount == 0)
                     return S_OK;
@@ -424,7 +424,7 @@ namespace YY
                 return S_OK;
             }
 
-            T* __fastcall AddAndGetPtr(uint_t* _puIndex = nullptr)
+            T* __MEGA_UI_API AddAndGetPtr(uint_t* _puIndex = nullptr)
             {
                 auto _uIndex = GetSize();
                 auto _uNewSize = _uIndex + 1;
@@ -443,7 +443,7 @@ namespace YY
             }
 
             template<typename... Args>
-            T* __fastcall EmplacePtr(Args... args)
+            T* __MEGA_UI_API EmplacePtr(Args... args)
             {
                 auto _uIndex = GetSize();
                 auto _uNewSize = _uIndex + 1;
@@ -460,7 +460,7 @@ namespace YY
                 return _pItem;
             }
 
-            HRESULT __fastcall Insert(uint_t _uIndex, const T& _NewItem)
+            HRESULT __MEGA_UI_API Insert(uint_t _uIndex, const T& _NewItem)
             {
                 const auto _uSize = GetSize();
 
@@ -494,7 +494,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall Remove(_In_ uint_t _uIndex, _In_ uint_t _uCount = 1)
+            HRESULT __MEGA_UI_API Remove(_In_ uint_t _uIndex, _In_ uint_t _uCount = 1)
             {
                 if (_uCount == 0)
                     return S_OK;
@@ -527,62 +527,62 @@ namespace YY
                 return S_OK;
             }
             
-            SharedPoint __fastcall GetData() noexcept
+            SharedPoint __MEGA_UI_API GetData() noexcept
             {
                 return pData;
             }
 
-            auto& __fastcall operator[](_In_ uint_t _uIndex)
+            auto& __MEGA_UI_API operator[](_In_ uint_t _uIndex)
             {
                 return GetData()[_uIndex];
             }
 
-            const T* __fastcall GetData() const noexcept
+            const T* __MEGA_UI_API GetData() const noexcept
             {
                 return pData;
             }
 
-            SharedPoint __fastcall begin() noexcept
+            SharedPoint __MEGA_UI_API begin() noexcept
             {
                 return pData;
             }
 
-            SharedPoint __fastcall end() noexcept
+            SharedPoint __MEGA_UI_API end() noexcept
             {
                 return pData + GetSize();
             }
 
-            const T* __fastcall begin() const noexcept
+            const T* __MEGA_UI_API begin() const noexcept
             {
                 return pData;
             }
 
-            const T* __fastcall end() const noexcept
-            {
-                return pData + GetSize();
-            }
-            
-            SharedPoint __fastcall _Unchecked_begin() noexcept
-            {
-                return pData;
-            }
-
-            SharedPoint __fastcall _Unchecked_end() noexcept
-            {
-                return pData + GetSize();
-            }
-
-            const T* __fastcall _Unchecked_begin() const noexcept
-            {
-                return pData;
-            }
-
-            const T* __fastcall _Unchecked_end() const noexcept
+            const T* __MEGA_UI_API end() const noexcept
             {
                 return pData + GetSize();
             }
             
-            bool __fastcall operator==(const DynamicArray& _Array) const
+            SharedPoint __MEGA_UI_API _Unchecked_begin() noexcept
+            {
+                return pData;
+            }
+
+            SharedPoint __MEGA_UI_API _Unchecked_end() noexcept
+            {
+                return pData + GetSize();
+            }
+
+            const T* __MEGA_UI_API _Unchecked_begin() const noexcept
+            {
+                return pData;
+            }
+
+            const T* __MEGA_UI_API _Unchecked_end() const noexcept
+            {
+                return pData + GetSize();
+            }
+            
+            bool __MEGA_UI_API operator==(const DynamicArray& _Array) const
             {
                 auto _Size = GetSize();
 
@@ -611,7 +611,7 @@ namespace YY
                 // 元素的实际使用个数
                 uint_t uSize;
 
-                void __fastcall AddRef()
+                void __MEGA_UI_API AddRef()
                 {
                     if (iRef < 1)
                     {
@@ -622,7 +622,7 @@ namespace YY
                     Interlocked::Increment(&iRef);
                 }
 
-                void __fastcall Release()
+                void __MEGA_UI_API Release()
                 {
                     if (iRef > 0)
                     {
@@ -637,12 +637,12 @@ namespace YY
                     HFree(this);
                 }
 
-                bool __fastcall IsShared()
+                bool __MEGA_UI_API IsShared()
                 {
                     return iRef > 1;
                 }
 
-                uint_t __fastcall GetLockedCount()
+                uint_t __MEGA_UI_API GetLockedCount()
                 {
                     if (iRef >= 0)
                         return 0;
@@ -650,7 +650,7 @@ namespace YY
                     return iRef * -1;
                 }
 
-                bool __fastcall IsLocked()
+                bool __MEGA_UI_API IsLocked()
                 {
                     return iRef < 0;
                 }
@@ -659,7 +659,7 @@ namespace YY
                 /// 将 SharedData 锁定，注意不支持多线程安全。
                 /// </summary>
                 /// <returns></returns>
-                void __fastcall Lock()
+                void __MEGA_UI_API Lock()
                 {
                     if (iRef > 1)
                     {
@@ -687,7 +687,7 @@ namespace YY
                 /// 将 SharedData 解除锁定，注意不支持多线程安全。
                 /// </summary>
                 /// <returns></returns>
-                void __fastcall Unlock()
+                void __MEGA_UI_API Unlock()
                 {
                     if (iRef > 0)
                     {
@@ -705,12 +705,12 @@ namespace YY
                     }
                 }
 
-                T* __fastcall GetData()
+                T* __MEGA_UI_API GetData()
                 {
                     return reinterpret_cast<T*>(this + 1);
                 }
 
-                static _Ret_maybenull_ SharedData* __fastcall ReAlloc(_In_opt_ SharedData* _pOldSharedData,_In_  uint_t _uNewCapacity)
+                static _Ret_maybenull_ SharedData* __MEGA_UI_API ReAlloc(_In_opt_ SharedData* _pOldSharedData,_In_  uint_t _uNewCapacity)
                 {
                     if (!_pOldSharedData)
                     {
@@ -754,7 +754,7 @@ namespace YY
                     }
                 }
 
-                static _Ret_maybenull_ SharedData* __fastcall Alloc(uint_t _uNewCapacity)
+                static _Ret_maybenull_ SharedData* __MEGA_UI_API Alloc(uint_t _uNewCapacity)
                 {
                     // 向上对齐到 16
                     ++_uNewCapacity;
@@ -770,7 +770,7 @@ namespace YY
                     return pNewSharedData;
                 }
 
-                _Ret_maybenull_ SharedData* __fastcall Clone(_In_ uint_t _uNewCapacity = 0)
+                _Ret_maybenull_ SharedData* __MEGA_UI_API Clone(_In_ uint_t _uNewCapacity = 0)
                 {
                     const auto _uSize = uSize;
                     if (_uNewCapacity < _uSize)
@@ -786,7 +786,7 @@ namespace YY
                 }
             };
         private:
-            _Ret_maybenull_ SharedData* __fastcall GetSharedData() const
+            _Ret_maybenull_ SharedData* __MEGA_UI_API GetSharedData() const
             {
                 if (!pData)
                     return nullptr;
@@ -794,7 +794,7 @@ namespace YY
                 return reinterpret_cast<SharedData*>(pData) - 1;
             }
 
-            void __fastcall Attach(_In_opt_ SharedData* _pNewSharedData)
+            void __MEGA_UI_API Attach(_In_opt_ SharedData* _pNewSharedData)
             {
                 auto _pOldSharedData = GetSharedData();
 
@@ -815,7 +815,7 @@ namespace YY
                 }
             }
 
-            _Ret_maybenull_ SharedData* __fastcall Detach()
+            _Ret_maybenull_ SharedData* __MEGA_UI_API Detach()
             {
                 auto _pOldSharedData = GetSharedData();
                 if (_pOldSharedData && _pOldSharedData->IsLocked())
@@ -833,7 +833,7 @@ namespace YY
             /// </summary>
             /// <param name="_uNewCapacity">期望申请的最小容量。</param>
             /// <returns></returns>
-            _Ret_maybenull_ SharedData* __fastcall LockSharedData(_In_ uint_t _uNewCapacity)
+            _Ret_maybenull_ SharedData* __MEGA_UI_API LockSharedData(_In_ uint_t _uNewCapacity)
             {
                 auto _pSharedData = GetSharedData();
 
@@ -886,7 +886,7 @@ namespace YY
             /// <param name="_uCapacity">现有容量</param>
             /// <param name="_uCapacityNeed">实际请求的容量</param>
             /// <returns>返回需要开辟的容量</returns>
-            __forceinline static uint_t __fastcall GetNewCapacity(uint_t _uCapacity, uint_t _uCapacityNeed)
+            __forceinline static uint_t __MEGA_UI_API GetNewCapacity(uint_t _uCapacity, uint_t _uCapacityNeed)
             {
                 if (_uCapacity >= _uCapacityNeed)
                     return _uCapacity;

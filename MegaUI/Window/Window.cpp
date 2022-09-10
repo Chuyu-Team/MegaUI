@@ -26,7 +26,7 @@ namespace YY
 
         EXTERN_C extern IMAGE_DOS_HEADER __ImageBase;
 
-        HRESULT __fastcall Window::InitializeWindow(LPCWSTR _szTitle, HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
+        HRESULT __MEGA_UI_API Window::InitializeWindow(LPCWSTR _szTitle, HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
         {
             WNDCLASSEXW wcex;
 
@@ -83,7 +83,7 @@ namespace YY
             return S_OK;
         }
 
-        UINT __fastcall Window::AsyncDestroyMsg()
+        UINT __MEGA_UI_API Window::AsyncDestroyMsg()
         {
             static UINT g_AsyncDestroyMsg = 0;
 
@@ -95,24 +95,24 @@ namespace YY
             return g_AsyncDestroyMsg;
         }
 
-        void __fastcall Window::DestroyWindow()
+        void __MEGA_UI_API Window::DestroyWindow()
         {
             if (hWnd)
                 ::PostMessageW(hWnd, AsyncDestroyMsg(), 0, 0);
         }
 
-        bool __fastcall Window::IsMinimized() const
+        bool __MEGA_UI_API Window::IsMinimized() const
         {
             return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
         }
 
-        void __fastcall Window::ShowWindow(int _iCmdShow)
+        void __MEGA_UI_API Window::ShowWindow(int _iCmdShow)
         {
             if (hWnd)
                 ::ShowWindow(hWnd, _iCmdShow);
         }
 
-        void __fastcall Window::InvalidateRect(const Rect* _pRect)
+        void __MEGA_UI_API Window::InvalidateRect(const Rect* _pRect)
         {
             if (hWnd)
                 ::InvalidateRect(hWnd, _pRect, FALSE);
@@ -197,7 +197,7 @@ namespace YY
             return DefWindowProcW(_hWnd, _uMsg, _wParam, _lParam);
         }
 
-        HRESULT __fastcall Window::OnPaint()
+        HRESULT __MEGA_UI_API Window::OnPaint()
         {
             if (!pRender)
             {
@@ -217,7 +217,7 @@ namespace YY
             return pRender->EndDraw();
         }
 
-        HRESULT __fastcall Window::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
+        HRESULT __MEGA_UI_API Window::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
         {
             if (_pRender == nullptr || _pElement == nullptr)
                 return E_INVALIDARG;
@@ -294,7 +294,7 @@ namespace YY
             return S_OK;
         }
 
-        void __fastcall Window::OnSize(UINT _uWidth, UINT _uHeight)
+        void __MEGA_UI_API Window::OnSize(UINT _uWidth, UINT _uHeight)
         {
             LastRenderSize.width = _uWidth;
             LastRenderSize.height = _uHeight;

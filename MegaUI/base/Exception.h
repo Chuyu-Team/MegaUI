@@ -26,12 +26,12 @@ namespace YY
             {
             }
 
-            HRESULT __fastcall GetErrorCode()
+            HRESULT __MEGA_UI_API GetErrorCode()
             {
                 return hr;
             }
 
-            const uchar_t* __fastcall GetErrorMessage()
+            const uchar_t* __MEGA_UI_API GetErrorMessage()
             {
                 return szErrorMessage ? szErrorMessage : _S("");
             }

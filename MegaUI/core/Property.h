@@ -65,7 +65,7 @@ namespace YY
 
 		};
 
-		inline PropertyFlag __fastcall PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
+		inline PropertyFlag __MEGA_UI_API PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
         {
             switch (_eIndicies)
             {
@@ -82,7 +82,7 @@ namespace YY
             }
         }
 
-        inline PropertyIndicies __fastcall PropertyFlagMapToMaxPropertyIndicies(PropertyFlag _fFlags)
+        inline PropertyIndicies __MEGA_UI_API PropertyFlagMapToMaxPropertyIndicies(PropertyFlag _fFlags)
         {
             if (_fFlags & PF_HasComputed)
                 return PropertyIndicies::PI_Computed;
@@ -146,14 +146,14 @@ namespace YY
             SkipAll = 0xFFFFFFFF,
         };
 
-        typedef void (__fastcall Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+        typedef void (__MEGA_UI_API Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
         struct DepRecs;
         class DeferCycle;
 
-        typedef HRESULT (__fastcall Element::*FunTypeGetDependencies)(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+        typedef HRESULT (__MEGA_UI_API Element::*FunTypeGetDependencies)(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
-        typedef PropertyCustomCacheResult (__fastcall Element::*FunTypePropertyCustomCache)(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
+        typedef PropertyCustomCacheResult (__MEGA_UI_API Element::*FunTypePropertyCustomCache)(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
         struct PropertyInfo
         {
@@ -168,7 +168,7 @@ namespace YY
             // 一串枚举值，以 { nullptr, 0 } 结束
             const EnumMap* pEnumMaps;
             // 默认值的初始化函数
-            Value (__fastcall* pFunDefaultValue)();
+            Value (__MEGA_UI_API* pFunDefaultValue)();
             // 当值发生更改时，会调用此函数
             FunTypeOnPropertyChanged pFunOnPropertyChanged;
             // pFunGetDependencies 与 ppDependencies 二选一，优先 pFunGetDependencies

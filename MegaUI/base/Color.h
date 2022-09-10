@@ -24,19 +24,19 @@ namespace YY
 
             COLORREF ColorRGB : 24;
 
-            constexpr static Color __fastcall MakeARGB(_In_ uint8_t _Alpha, _In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
+            constexpr static Color __MEGA_UI_API MakeARGB(_In_ uint8_t _Alpha, _In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
             {
                 Color _Tmp(_Alpha, _Red, _Green, _Blue);
                 return _Tmp;
             }
 
-            constexpr static Color __fastcall MakeRGB(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
+            constexpr static Color __MEGA_UI_API MakeRGB(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
             {
                 Color _Tmp(0xFFu, _Red, _Green, _Blue);
                 return _Tmp;
             }
 
-            constexpr static Color __fastcall MakeRGBA(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue, _In_ float _AlphaF)
+            constexpr static Color __MEGA_UI_API MakeRGBA(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue, _In_ float _AlphaF)
             {
                 Color _Tmp(uint8_t(_AlphaF * 0xFFu), _Red, _Green, _Blue);
                 return _Tmp;
@@ -55,7 +55,7 @@ namespace YY
             {
             }
 
-            DXGI_RGBA __fastcall GetFloatColorRGBA() const
+            DXGI_RGBA __MEGA_UI_API GetFloatColorRGBA() const
             {
                 DXGI_RGBA _Color;
                 _Color.r = float(Red) / 255.0f;
@@ -65,7 +65,7 @@ namespace YY
                 return _Color;
             }
 
-            __fastcall operator DXGI_RGBA() const
+            __MEGA_UI_API operator DXGI_RGBA() const
             {
                 return GetFloatColorRGBA();
             }

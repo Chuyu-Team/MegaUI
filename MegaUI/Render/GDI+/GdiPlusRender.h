@@ -55,18 +55,18 @@ namespace YY
                 }
             }
 
-            HRESULT __fastcall Init()
+            HRESULT __MEGA_UI_API Init()
             {
                 return Gdiplus::GdiplusStartup(&GdiplusToken, &GdiplusStartupInput, NULL) == Gdiplus::Status::Ok ? S_OK : E_FAIL;
             }
 
-            static Gdiplus::Rect __fastcall ToGdiPlusRect(const Rect& _Rect)
+            static Gdiplus::Rect __MEGA_UI_API ToGdiPlusRect(const Rect& _Rect)
             {
                 Gdiplus::Rect _GdiPlusRect(_Rect.left, _Rect.top, _Rect.right - _Rect.left, _Rect.bottom - _Rect.top);
                 return _GdiPlusRect;
             }
 
-            static HRESULT __fastcall CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
+            static HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
             {
                 if (_ppRender == nullptr)
                     return E_INVALIDARG;
@@ -99,7 +99,7 @@ namespace YY
                 return S_OK;
             }
 
-            virtual HRESULT __fastcall BeginDraw(Rect* _pNeedPaintRect) override
+            virtual HRESULT __MEGA_UI_API BeginDraw(Rect* _pNeedPaintRect) override
             {
                 vecClip.Clear();
 
@@ -142,7 +142,7 @@ namespace YY
                 return S_OK;
             }
 
-            virtual HRESULT __fastcall EndDraw() override
+            virtual HRESULT __MEGA_UI_API EndDraw() override
             {
                 if (!hDC)
                     return E_FAIL;
@@ -162,7 +162,7 @@ namespace YY
 
             virtual
             void
-            __fastcall
+            __MEGA_UI_API
             PushAxisAlignedClip(
                 _In_ const Rect& _ClipRect) override
             {
@@ -184,7 +184,7 @@ namespace YY
 
             virtual
             void
-            __fastcall
+            __MEGA_UI_API
             PopAxisAlignedClip() override
             {
                 auto _uSize = vecClip.GetSize();
@@ -207,7 +207,7 @@ namespace YY
                 }
             }
             
-            virtual void __fastcall FillRectangle(
+            virtual void __MEGA_UI_API FillRectangle(
                 _In_ const Rect& _Rect,
                 _In_ ID2D1Brush* _pBrush) override
             {
@@ -216,7 +216,7 @@ namespace YY
                     ToGdiPlusRect(_Rect));
             }
 
-            virtual HRESULT __fastcall CreateSolidColorBrush(
+            virtual HRESULT __MEGA_UI_API CreateSolidColorBrush(
                 Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) override
             {
@@ -232,14 +232,14 @@ namespace YY
                 return S_OK;
             }
 
-            virtual HRESULT __fastcall SetPixelSize(
+            virtual HRESULT __MEGA_UI_API SetPixelSize(
                 _In_ const D2D1_SIZE_U& _PixelSize)
             {
                 PixelSize = _PixelSize;
                 return S_OK;
             }
 
-            virtual D2D1_SIZE_U __fastcall GetPixelSize()
+            virtual D2D1_SIZE_U __MEGA_UI_API GetPixelSize()
             {
                 return PixelSize;
             }

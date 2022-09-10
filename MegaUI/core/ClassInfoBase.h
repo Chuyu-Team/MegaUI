@@ -26,12 +26,12 @@ namespace YY
             {
             }
 
-            virtual uint32_t __fastcall AddRef() override
+            virtual uint32_t __MEGA_UI_API AddRef() override
             {
                 return ++uRef;
             }
 
-            virtual uint32_t __fastcall Release() override
+            virtual uint32_t __MEGA_UI_API Release() override
             {
                 const auto _uNewRef = --uRef;
 
@@ -45,17 +45,17 @@ namespace YY
                 return _uNewRef;
             }
 
-            virtual raw_const_astring_t __fastcall GetName() override
+            virtual raw_const_astring_t __MEGA_UI_API GetName() override
             {
                 return _Class::g_ClassInfoData.szClassName;
             }
 
-            virtual IClassInfo* __fastcall GetBaseClass() override
+            virtual IClassInfo* __MEGA_UI_API GetBaseClass() override
             {
                 return _Class::StaticClassInfo::BaseElement::GetStaticControlClassInfo();
             }
 
-            virtual HRESULT __fastcall CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
+            virtual HRESULT __MEGA_UI_API CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
                 return _Class::Create(_Class::StaticClassInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
             }
@@ -65,7 +65,7 @@ namespace YY
                 return _Class::StaticClassInfo::uPropsCount + ClassInfoBase<_Class::StaticClassInfo::BaseElement>::GetPropertyInfoCount();
             }
 
-            static const PropertyInfo* __fastcall EnumPropertyInfoImp(uint32_t _uIndex)
+            static const PropertyInfo* __MEGA_UI_API EnumPropertyInfoImp(uint32_t _uIndex)
             {
                 constexpr auto _uBasePropCount = ClassInfoBase<_Class::StaticClassInfo::BaseElement>::GetPropertyInfoCount();
 
@@ -77,7 +77,7 @@ namespace YY
                 return ClassInfoBase<_Class::StaticClassInfo::BaseElement>::EnumPropertyInfoImp(_uIndex);
             }
 
-            virtual const PropertyInfo* __fastcall EnumPropertyInfo(uint32_t _uIndex) override
+            virtual const PropertyInfo* __MEGA_UI_API EnumPropertyInfo(uint32_t _uIndex) override
             {
                 if (_uIndex >= GetPropertyInfoCount())
                     return nullptr;
@@ -86,12 +86,12 @@ namespace YY
                 return EnumPropertyInfoImp(_uIndex);
             }
 
-            virtual bool __fastcall IsValidProperty(const PropertyInfo& _Prop) override
+            virtual bool __MEGA_UI_API IsValidProperty(const PropertyInfo& _Prop) override
             {
                 return GetPropertyInfoIndex(_Prop) >= 0;
             }
 
-            virtual bool __fastcall IsSubclassOf(IClassInfo* _pClassInfo) override
+            virtual bool __MEGA_UI_API IsSubclassOf(IClassInfo* _pClassInfo) override
             {
                 if (!_pClassInfo)
                     return false;
@@ -109,7 +109,7 @@ namespace YY
                 return false;
             }
 
-            static int32_t __fastcall GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
+            static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
                 const uint32_t _uIndex = &_Prop - &_Class::g_ClassInfoData.Props[0];
 
@@ -121,7 +121,7 @@ namespace YY
                 return _uIndex + ClassInfoBase<_Class::StaticClassInfo::BaseElement>::GetPropertyInfoCount();
             }
 
-            virtual int32_t __fastcall GetPropertyInfoIndex(const PropertyInfo& _Prop) override
+            virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
             {
                 return GetPropertyInfoIndexImp(_Prop);
             }
@@ -131,7 +131,7 @@ namespace YY
             /// </summary>
             /// <param name="bExplicitRegister">如果为 true，那么表示它被用户所注册。如果为false，说明它被子控件继承注册。</param>
             /// <returns>HRESULT</returns>
-            static HRESULT __fastcall Register(bool _bExplicitRegister = true)
+            static HRESULT __MEGA_UI_API Register(bool _bExplicitRegister = true)
             {
                 auto _hr = _Class::StaticClassInfo::BaseElement::StaticClassInfo::ClassInfoType::Register(false);
 
@@ -173,7 +173,7 @@ namespace YY
                 return _hr;
             }
 
-            HRESULT __fastcall UnRegister()
+            HRESULT __MEGA_UI_API UnRegister()
             {
                 auto _pClassInfo = _Class::g_ClassInfoData.pClassInfoPtr;
                 if (!_pClassInfo)
@@ -213,12 +213,12 @@ namespace YY
             {
             }
 
-            virtual uint32_t __fastcall AddRef() override
+            virtual uint32_t __MEGA_UI_API AddRef() override
             {
                 return ++uRef;
             }
 
-            virtual uint32_t __fastcall Release() override
+            virtual uint32_t __MEGA_UI_API Release() override
             {
                 const auto _uNewRef = --uRef;
 
@@ -232,17 +232,17 @@ namespace YY
                 return _uNewRef;
             }
 
-            virtual raw_const_astring_t __fastcall GetName() override
+            virtual raw_const_astring_t __MEGA_UI_API GetName() override
             {
                 return Element::StaticClassInfo::szClassName;
             }
 
-            virtual IClassInfo* __fastcall GetBaseClass() override
+            virtual IClassInfo* __MEGA_UI_API GetBaseClass() override
             {
                 return nullptr;
             }
 
-            virtual HRESULT __fastcall CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
+            virtual HRESULT __MEGA_UI_API CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
                 return Element::Create(Element::StaticClassInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
             }
@@ -252,12 +252,12 @@ namespace YY
                 return Element::StaticClassInfo::uPropsCount;
             }
 
-            static const PropertyInfo* __fastcall EnumPropertyInfoImp(unsigned int _uIndex)
+            static const PropertyInfo* __MEGA_UI_API EnumPropertyInfoImp(unsigned int _uIndex)
             {
                 return &Element::g_ClassInfoData.Props[_uIndex];
             }
 
-            virtual const PropertyInfo* __fastcall EnumPropertyInfo(unsigned int _uIndex) override
+            virtual const PropertyInfo* __MEGA_UI_API EnumPropertyInfo(unsigned int _uIndex) override
             {
                 if (_uIndex >= GetPropertyInfoCount())
                     return nullptr;
@@ -266,12 +266,12 @@ namespace YY
                 return EnumPropertyInfoImp(_uIndex);
             }
 
-            virtual bool __fastcall IsValidProperty(const PropertyInfo& _Prop) override
+            virtual bool __MEGA_UI_API IsValidProperty(const PropertyInfo& _Prop) override
             {
                 return GetPropertyInfoIndex(_Prop) >= 0;
             }
 
-            virtual bool __fastcall IsSubclassOf(IClassInfo* _pClassInfo) override
+            virtual bool __MEGA_UI_API IsSubclassOf(IClassInfo* _pClassInfo) override
             {
                 if (!_pClassInfo)
                     return false;
@@ -289,7 +289,7 @@ namespace YY
                 return false;
             }
 
-            static int32_t __fastcall GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
+            static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
                 const uint32_t _uIndex = &_Prop - &Element::g_ClassInfoData.Props[0];
                 if (_uIndex >= Element::StaticClassInfo::uPropsCount)
@@ -298,7 +298,7 @@ namespace YY
                 return _uIndex;
             }
 
-            virtual int32_t __fastcall GetPropertyInfoIndex(const PropertyInfo& _Prop) override
+            virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
             {
                 const unsigned _uIndex = &_Prop - &Element::g_ClassInfoData.Props[0];
                 if (_uIndex >= Element::StaticClassInfo::uPropsCount)
@@ -312,7 +312,7 @@ namespace YY
             /// </summary>
             /// <param name="bExplicitRegister">如果为 true，那么表示它被用户所注册。如果为false，说明它被子控件继承注册。</param>
             /// <returns>HRESULT</returns>
-            static HRESULT __fastcall Register(bool _bExplicitRegister = true)
+            static HRESULT __MEGA_UI_API Register(bool _bExplicitRegister = true)
             {
                 HRESULT _hr = S_OK;
                 auto& _pClassInfo = Element::g_ClassInfoData.pClassInfoPtr;
@@ -351,7 +351,7 @@ namespace YY
                 return _hr;
             }
 
-            HRESULT __fastcall UnRegister()
+            HRESULT __MEGA_UI_API UnRegister()
             {
                 auto _pClassInfo = Element::g_ClassInfoData.pClassInfoPtr;
                 if (!_pClassInfo)

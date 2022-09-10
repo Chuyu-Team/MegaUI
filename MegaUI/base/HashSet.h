@@ -59,7 +59,7 @@ namespace YY
                 return nullptr;
             }
 
-            HRESULT __fastcall Insert(_Key _pKey)
+            HRESULT __MEGA_UI_API Insert(_Key _pKey)
             {
                 const auto _uIndex = reinterpret_cast<uint_t>(_pKey) % _uBuckets;
 
@@ -82,7 +82,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __fastcall Remove(_Key _pKey)
+            HRESULT __MEGA_UI_API Remove(_Key _pKey)
             {
                 const auto _uIndex = reinterpret_cast<uint_t>(_pKey) % _uBuckets;
                 HashSetEntry* _pLastEntry = nullptr;

@@ -35,54 +35,54 @@ namespace YY
             virtual ~Render() = default;
 
             Render(const Render&) = delete;
-            Render& __fastcall operator=(const Render&) = delete;
+            Render& __MEGA_UI_API operator=(const Render&) = delete;
 
             virtual
             HRESULT
-            __fastcall
+            __MEGA_UI_API
             BeginDraw(Rect* _pNeedPaintRect) =0;
 
             virtual
             HRESULT
-            __fastcall
+            __MEGA_UI_API
             EndDraw() = 0;
 
             virtual
             void
-            __fastcall
+            __MEGA_UI_API
             PushAxisAlignedClip(
                 _In_ const Rect& _ClipRect) = 0;
 
             virtual
             void
-            __fastcall
+            __MEGA_UI_API
             PopAxisAlignedClip() = 0;
 
             virtual
             void
-            __fastcall
+            __MEGA_UI_API
             FillRectangle(
                 _In_ const Rect& _Rect,
                 _In_ ID2D1Brush* _pBrush) = 0;
                 
             virtual
             HRESULT
-            __fastcall
+            __MEGA_UI_API
             CreateSolidColorBrush(
                 Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) = 0;
 
             virtual
             HRESULT
-            __fastcall
+            __MEGA_UI_API
             SetPixelSize(
                 _In_ const D2D1_SIZE_U& _PixelSize) = 0;
 
             virtual
-            D2D1_SIZE_U __fastcall GetPixelSize() = 0;
+            D2D1_SIZE_U __MEGA_UI_API GetPixelSize() = 0;
         };
 
-        HRESULT __fastcall CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender);
+        HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender);
         
 #define LIGHT 0.5
 #define VERYLIGHT 0.8
@@ -95,7 +95,7 @@ namespace YY
         /// <param name="cr"></param>
         /// <param name="fIllum">1 >= fIllum >= -1</param>
         /// <returns></returns>
-        inline Color __fastcall AdjustBrightness(Color cr, double fIllum)
+        inline Color __MEGA_UI_API AdjustBrightness(Color cr, double fIllum)
         {
             double r = cr.Red, g = cr.Green, b = cr.Blue;
 

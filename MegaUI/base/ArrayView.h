@@ -22,69 +22,69 @@ namespace YY
             {
             }
 
-            _Type* __fastcall GetData() noexcept
+            _Type* __MEGA_UI_API GetData() noexcept
             {
                 return pData;
             }
 
-            const _Type* __fastcall GetData() const noexcept
+            const _Type* __MEGA_UI_API GetData() const noexcept
             {
                 return pData;
             }
 
-            uint_t __fastcall GetSize() const
+            uint_t __MEGA_UI_API GetSize() const
             {
                 return cData;
             }
 
             
-            _Type& __fastcall operator[](_In_ uint_t _uIndex)
+            _Type& __MEGA_UI_API operator[](_In_ uint_t _uIndex)
             {
                 return pData[_uIndex];
             }
 
-            const _Type& __fastcall operator[](_In_ uint_t _uIndex) const
+            const _Type& __MEGA_UI_API operator[](_In_ uint_t _uIndex) const
             {
                 return pData[_uIndex];
             }
             
 
-            _Type* __fastcall begin() noexcept
+            _Type* __MEGA_UI_API begin() noexcept
             {
                 return pData;
             }
 
-            _Type* __fastcall end() noexcept
+            _Type* __MEGA_UI_API end() noexcept
             {
                 return pData + GetSize();
             }
 
-            const _Type* __fastcall begin() const noexcept
+            const _Type* __MEGA_UI_API begin() const noexcept
             {
                 return pData;
             }
 
-            const _Type* __fastcall end() const noexcept
+            const _Type* __MEGA_UI_API end() const noexcept
             {
                 return pData + GetSize();
             }
 
-            _Type* __fastcall _Unchecked_begin() noexcept
+            _Type* __MEGA_UI_API _Unchecked_begin() noexcept
             {
                 return pData;
             }
 
-            _Type* __fastcall _Unchecked_end() noexcept
+            _Type* __MEGA_UI_API _Unchecked_end() noexcept
             {
                 return pData + GetSize();
             }
 
-            const _Type* __fastcall _Unchecked_begin() const noexcept
+            const _Type* __MEGA_UI_API _Unchecked_begin() const noexcept
             {
                 return pData;
             }
 
-            const _Type* __fastcall _Unchecked_end() const noexcept
+            const _Type* __MEGA_UI_API _Unchecked_end() const noexcept
             {
                 return pData + GetSize();
             }

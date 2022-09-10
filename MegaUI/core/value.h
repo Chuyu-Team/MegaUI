@@ -146,8 +146,8 @@ namespace YY
                 SharedData& operator=(const SharedData&) = delete;
 
 
-                void __fastcall AddRef();
-                void __fastcall Release();
+                void __MEGA_UI_API AddRef();
+                void __MEGA_UI_API Release();
             };
 
         private:
@@ -178,95 +178,95 @@ namespace YY
                     pSharedData->Release();
             }
             
-            Value& __fastcall operator=(const Value& _Other);
+            Value& __MEGA_UI_API operator=(const Value& _Other);
             
-            Value& __fastcall operator=(Value&& _Other) noexcept;
+            Value& __MEGA_UI_API operator=(Value&& _Other) noexcept;
             
-            Value& __fastcall operator=(std::nullptr_t);
+            Value& __MEGA_UI_API operator=(std::nullptr_t);
 
-            bool __fastcall operator==(_In_ const Value& _Other) const;
+            bool __MEGA_UI_API operator==(_In_ const Value& _Other) const;
 
-            bool __fastcall operator!=(_In_ const Value& _Other) const;
+            bool __MEGA_UI_API operator!=(_In_ const Value& _Other) const;
 
-            bool __fastcall operator==(std::nullptr_t) const;
+            bool __MEGA_UI_API operator==(std::nullptr_t) const;
             
-            bool __fastcall operator!=(std::nullptr_t) const;
+            bool __MEGA_UI_API operator!=(std::nullptr_t) const;
 
             template<int32_t iValue>
-            static Value __fastcall GetInt32ConstValue()
+            static Value __MEGA_UI_API GetInt32ConstValue()
             {
                 _RETUNR_CONST_VALUE(ValueType::int32_t, iValue);
             }
 
-            static Value __fastcall GetAtomZero();
-            static Value __fastcall GetBoolFalse();
-            static Value __fastcall GetBoolTrue();
-            //static _Ret_notnull_ Value* __fastcall GetColorTrans();
-            static Value __fastcall GetCursorNull();
-            static Value __fastcall GetElListNull();
-            static Value __fastcall GetElementNull();
-            static Value __fastcall GetInt32Zero();
-            static Value __fastcall GetNull();
-            static Value __fastcall GetPointZero();
-            static Value __fastcall GetRectZero();
-            static Value __fastcall GetSizeZero();
-            static Value __fastcall GetStringNull();
-            static Value __fastcall GetUnavailable();
-            static Value __fastcall GetUnset();
-            static Value __fastcall GetLayoutNull();
-            static Value __fastcall GetColorTransparant();
-            static Value __fastcall GetSheetNull();
+            static Value __MEGA_UI_API GetAtomZero();
+            static Value __MEGA_UI_API GetBoolFalse();
+            static Value __MEGA_UI_API GetBoolTrue();
+            //static _Ret_notnull_ Value* __MEGA_UI_API GetColorTrans();
+            static Value __MEGA_UI_API GetCursorNull();
+            static Value __MEGA_UI_API GetElListNull();
+            static Value __MEGA_UI_API GetElementNull();
+            static Value __MEGA_UI_API GetInt32Zero();
+            static Value __MEGA_UI_API GetNull();
+            static Value __MEGA_UI_API GetPointZero();
+            static Value __MEGA_UI_API GetRectZero();
+            static Value __MEGA_UI_API GetSizeZero();
+            static Value __MEGA_UI_API GetStringNull();
+            static Value __MEGA_UI_API GetUnavailable();
+            static Value __MEGA_UI_API GetUnset();
+            static Value __MEGA_UI_API GetLayoutNull();
+            static Value __MEGA_UI_API GetColorTransparant();
+            static Value __MEGA_UI_API GetSheetNull();
 
 
-            ValueType __fastcall GetType() const;
+            ValueType __MEGA_UI_API GetType() const;
 
-            bool __fastcall HasValue() const;
+            bool __MEGA_UI_API HasValue() const;
 
             // Value creation methods
-            static Value __fastcall CreateInt32(_In_ int32_t _iValue);
-            static Value __fastcall CreateBool(_In_ bool _bValue);
-            static Value __fastcall CreateElementRef(_In_opt_ Element* _pValue);
-            static Value __fastcall CreateElementList(_In_ const ElementList& _pListValue);
-            static Value __fastcall CreateString(_In_ const uString& _szValue);
-            //static _Ret_maybenull_ Value* __fastcall CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
-            static Value __fastcall CreatePoint(_In_ int32_t _iX, _In_ int32_t _iY);
+            static Value __MEGA_UI_API CreateInt32(_In_ int32_t _iValue);
+            static Value __MEGA_UI_API CreateBool(_In_ bool _bValue);
+            static Value __MEGA_UI_API CreateElementRef(_In_opt_ Element* _pValue);
+            static Value __MEGA_UI_API CreateElementList(_In_ const ElementList& _pListValue);
+            static Value __MEGA_UI_API CreateString(_In_ const uString& _szValue);
+            //static _Ret_maybenull_ Value* __MEGA_UI_API CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
+            static Value __MEGA_UI_API CreatePoint(_In_ int32_t _iX, _In_ int32_t _iY);
             
-            __inline static Value __fastcall CreatePoint(_In_ POINT _Point)
+            __inline static Value __MEGA_UI_API CreatePoint(_In_ POINT _Point)
             {
                 return CreatePoint(_Point.x, _Point.y);
             }
 
-            static Value __fastcall CreateSize(_In_ int32_t _iCX, _In_ int32_t _iCY);
+            static Value __MEGA_UI_API CreateSize(_In_ int32_t _iCX, _In_ int32_t _iCY);
 
-            __inline static Value __fastcall CreateSize(_In_ SIZE _Size)
+            __inline static Value __MEGA_UI_API CreateSize(_In_ SIZE _Size)
             {
                 return CreateSize(_Size.cx, _Size.cy);
             }
-            static Value __fastcall CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
+            static Value __MEGA_UI_API CreateRect(_In_ int32_t _iLeft, _In_ int32_t _iTop, _In_ int32_t _iRight, _In_ int32_t _iBottom);
             
-            __inline static Value __fastcall CreateRect(_In_ const Rect& _Rect)
+            __inline static Value __MEGA_UI_API CreateRect(_In_ const Rect& _Rect)
             {
                 return CreateRect(_Rect.left, _Rect.top, _Rect.right, _Rect.bottom);
             }
 
 
-            //static _Ret_maybenull_ Value* __fastcall CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
-            static Value __fastcall CreateAtom(_In_z_ raw_const_ustring_t _szValue);
-            static Value __fastcall CreateAtom(_In_ ATOM _uAtomValue);
-            static Value __fastcall CreateCursor(_In_z_ raw_const_ustring_t _szValue);
-            static Value __fastcall CreateCursor(_In_ HCURSOR _hCursorValue);
+            //static _Ret_maybenull_ Value* __MEGA_UI_API CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
+            static Value __MEGA_UI_API CreateAtom(_In_z_ raw_const_ustring_t _szValue);
+            static Value __MEGA_UI_API CreateAtom(_In_ ATOM _uAtomValue);
+            static Value __MEGA_UI_API CreateCursor(_In_z_ raw_const_ustring_t _szValue);
+            static Value __MEGA_UI_API CreateCursor(_In_ HCURSOR _hCursorValue);
             
-            static Value __fastcall CreateColor(_In_ Color _Color);
+            static Value __MEGA_UI_API CreateColor(_In_ Color _Color);
 
-            int32_t __fastcall GetInt32() const;
-            bool __fastcall GetBool() const;
-            SIZE __fastcall GetSize() const;
-            POINT __fastcall GetPoint() const;
-            uint8_t* __fastcall GetRawBuffer();
-            Color __fastcall GetColor() const;
-            Element* __fastcall GetElement() const;
+            int32_t __MEGA_UI_API GetInt32() const;
+            bool __MEGA_UI_API GetBool() const;
+            SIZE __MEGA_UI_API GetSize() const;
+            POINT __MEGA_UI_API GetPoint() const;
+            uint8_t* __MEGA_UI_API GetRawBuffer();
+            Color __MEGA_UI_API GetColor() const;
+            Element* __MEGA_UI_API GetElement() const;
 
-            bool __fastcall CmpValue(const Value& _Other, ValueCmpOperation _Operation) const;
+            bool __MEGA_UI_API CmpValue(const Value& _Other, ValueCmpOperation _Operation) const;
         };
 
         template<ValueType _eType>
@@ -287,12 +287,12 @@ namespace YY
             {
             }
 
-            bool __fastcall HasValue()
+            bool __MEGA_UI_API HasValue()
             {
                 return GetType() == eType;
             }
 
-            _Type& __fastcall GetValue()
+            _Type& __MEGA_UI_API GetValue()
             {
                 if (!HasValue())
                 {
