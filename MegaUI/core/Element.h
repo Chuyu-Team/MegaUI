@@ -110,33 +110,34 @@ namespace YY
     // clang-format off
 	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                  ChangedFun                                                                       pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, &Element::GetParentDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0, 0, 0), ValueType::Element) \
-    _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0, 0, 0), ValueType::ElementList) \
-    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                         nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0, 0), ValueType::int32_t) \
+    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, &Element::GetParentDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0), ValueType::Element) \
+    _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0), ValueType::ElementList) \
+    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                         nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
     _APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
     _APPLY(Height,         PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
     _APPLY(X,              PF_Normal,                             0,                                              &Value::GetInt32Zero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
     _APPLY(Y,              PF_Normal,                             0,                                              &Value::GetInt32Zero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
-    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::GetPointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetLocationProperty),                                                     ValueType::POINT  ) \
+    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::GetPointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetLocationProperty),                      ValueType::POINT  ) \
     _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::GetSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetExtentProperty),                        ValueType::SIZE   ) \
-    _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetPointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0, 0, 0), ValueType::POINT  ) \
-    _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocSizeInLayout), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
-    _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::GetSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
-    _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0, 0, 0), ValueType::SIZE   ) \
+    _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetPointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0),     ValueType::POINT  ) \
+    _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocSizeInLayout), 0, 0, 0),     ValueType::SIZE   ) \
+    _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::GetSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0),      ValueType::SIZE   ) \
+    _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::GetSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0), ValueType::SIZE   ) \
     _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetLayoutNull,             nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Layout   ) \
     _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::GetColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
-    _APPLY(MinSize,        PF_Normal | PF_Cascade, PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,  &Value::GetSizeZero, nullptr,                     nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0, 0), ValueType::SIZE   ) \
-    _APPLY(BorderThickness, PF_Normal | PF_Cascade,               PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::GetRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0, 0), ValueType::Rect   ) \
+    _APPLY(MinSize,        PF_Normal | PF_Cascade, PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,  &Value::GetSizeZero, nullptr,                     nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0), ValueType::SIZE   ) \
+    _APPLY(BorderThickness, PF_Normal | PF_Cascade,               PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::GetRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0), ValueType::Rect   ) \
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::GetInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
-    _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0, 0), ValueType::int32_t   ) \
-    _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_OFFSET(Element, BitsBuffer/*bLocMouseWithin*/), 4, 0, 0, 0, 0, 0, 0), ValueType::boolean   ) \
-    _APPLY(ID,             PF_Normal,                             0,                                              &Value::GetAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, 0, UFIELD_OFFSET(Element, SpecID), 0, 0), ValueType::ATOM   ) \
-    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::GetSheetNull,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, 0, UFIELD_OFFSET(Element, pSheet), 0, 0), ValueType::StyleSheet   ) 
+    _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
+    _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
+    _APPLY(ID,             PF_Normal,                             0,                                              &Value::GetAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
+    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::GetSheetNull,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) 
 
     // clang-format on
 
         class NativeWindowHost;
+        class Window;
 
         struct NavReference
         {
@@ -157,6 +158,7 @@ namespace YY
             _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
             friend NativeWindowHost;
             friend StyleSheet;
+            friend Window;
 
         protected:
             ElementRenderNode RenderNode;
@@ -209,20 +211,32 @@ namespace YY
             ATOM SpecID;
             
             //bits
-            union
-            {
-                struct
-                {
-                    uint32_t bSelfLayout : 1;
-                    uint32_t bNeedsDSUpdate : 1;
+#define _MEGA_UI_ELEMENT_BITS_TABLE(_APPLY) \
+    _APPLY(bSelfLayout, 1)                  \
+    _APPLY(bNeedsDSUpdate, 1)               \
+    /* UINT8 LayoutType : 2;*/              \
+    _APPLY(fNeedsLayout, 2)                 \
+    _APPLY(bLocMouseWithin, 1)
 
-                    // UINT8 LayoutType : 2;
-                    uint32_t fNeedsLayout : 2;
-                    uint32_t bLocMouseWithin : 1;
-                };
+            _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
+            //union
+            //{
+            //    struct
+            //    {
+            //        // 0
+            //        uint32_t bSelfLayout : 1;
+            //        // 1
+            //        uint32_t bNeedsDSUpdate : 1;
 
-                uint8_t BitsBuffer[1];
-            };
+            //        // UINT8 LayoutType : 2;
+            //        // 2
+            //        uint32_t fNeedsLayout : 2;
+            //        // 4
+            //        uint32_t bLocMouseWithin : 1;
+            //    };
+
+            //    uint8_t BitsBuffer[1];
+            //};
             
 
             // 边框宽度，四个方向，左上右下
@@ -235,6 +249,9 @@ namespace YY
             // 最小限制
             SIZE SpecMinSize = {};
             int32_t iSpecDirection = 0;
+
+            // 承载控件的窗口
+            Window* pWindow = nullptr;
 		public:
             Element();
 
@@ -242,7 +259,7 @@ namespace YY
 
 			virtual ~Element();
 
-			Element& __MEGA_UI_API operator = (const Element&) = delete;
+			Element& __MEGA_UI_API operator=(const Element&) = delete;
 
             static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
@@ -293,6 +310,8 @@ namespace YY
             int32_t __MEGA_UI_API GetBorderStyle();
 
             HRESULT __MEGA_UI_API SetBorderStyle(int32_t _iBorderStyle);
+
+            HRESULT __MEGA_UI_API SetBorderColor(Color _BorderColor);
 
             bool __MEGA_UI_API IsRTL();
 
@@ -433,6 +452,10 @@ namespace YY
             HRESULT __MEGA_UI_API GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
             virtual HRESULT __MEGA_UI_API GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+
+            virtual HRESULT __MEGA_UI_API OnHosted(Window* _pNewWindow);
+
+            virtual HRESULT __MEGA_UI_API OnUnHosted(Window* _pOldWindow);
 		};
 	}
 }

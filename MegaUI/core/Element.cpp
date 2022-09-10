@@ -390,6 +390,15 @@ namespace YY
             return SetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Local, _NewValue);
         }
 
+        HRESULT __MEGA_UI_API Element::SetBorderColor(Color _BorderColor)
+        {
+            auto _NewValue = Value::CreateColor(_BorderColor);
+            if (_NewValue == nullptr)
+                return E_OUTOFMEMORY;
+            
+            return SetValue(Element::g_ClassInfoData.BorderColorProp, PropertyIndicies::PI_Local, _NewValue);
+        }
+
         bool __MEGA_UI_API Element::IsRTL()
         {
             return iSpecDirection == DIRECTION_RTL;
@@ -501,8 +510,13 @@ namespace YY
                 // 如果
                 if (_uAddInvalidateMarks)
                 {
+                    // TODO：暂时没有做局部更新，统一刷新窗口
                     if (_uAddInvalidateMarks & (ElementRenderNode::InvalidatePosition | ElementRenderNode::InvalidateExtent))
                     {
+                        #if 1
+                        if (pWindow)
+                            pWindow->InvalidateRect(nullptr);
+                        #else
                         Rect _InvalidateRectOld = RenderNode.Bounds;
                         Rect _InvalidateRectNew(POINT {}, GetExtent());
                         Window* _pWindow = nullptr;
@@ -541,9 +555,14 @@ namespace YY
 
                         if (_pWindow)
                             _pWindow->InvalidateRect(_InvalidateRectOld | _InvalidateRectNew);
+                        #endif
                     }
-                    else if (RenderNode.uInvalidateMarks == 0)
+                    else if (_uAddInvalidateMarks & ElementRenderNode::InvalidateContent)
                     {
+                        #if 1
+                        if (pWindow)
+                            pWindow->InvalidateRect(nullptr);
+                        #else
                         Rect _InvalidateRect = RenderNode.Bounds;
                         Window* _pWindow = nullptr;
                         for (Element* _pItem = this;;)
@@ -568,6 +587,7 @@ namespace YY
 
                         if (_pWindow)
                             _pWindow->InvalidateRect(_InvalidateRect);
+                        #endif
                     }
 
                     RenderNode.uInvalidateMarks |= _uAddInvalidateMarks;
@@ -1937,7 +1957,28 @@ namespace YY
 		
 		void __MEGA_UI_API Element::OnParentPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
-			
+            if (_eIndicies != PropertyIndicies::PI_Local)
+                return;
+
+            auto _pOldParent = _OldValue.GetElement();
+            auto _pNewParent = _NewValue.GetElement();
+
+            if (_pOldParent && _pOldParent->pSheet)
+            {
+            
+            }
+
+            auto _pOldWindow = _pOldParent ? _pOldParent->pWindow : nullptr;
+            auto _pNewWindow = _pNewParent ? _pNewParent->pWindow : nullptr;
+
+            if (_pOldWindow == _pNewWindow)
+                return;
+
+            if (_pOldWindow)
+                OnUnHosted(_pOldWindow);
+
+            if (_pNewWindow)
+                OnHosted(_pNewWindow);
 		}
 
         void __MEGA_UI_API Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
@@ -2313,6 +2354,38 @@ namespace YY
             LocSizeInLayout = _LayoutSize;
 
             PostSourceChange();
+        }
+        
+        HRESULT __MEGA_UI_API Element::OnHosted(Window* _pNewWindow)
+        {
+            if (pWindow || _pNewWindow == nullptr)
+                return E_INVALIDARG;
+
+            pWindow = _pNewWindow;
+
+            for (auto pElement : GetChildren())
+            {
+                pElement->OnHosted(_pNewWindow);
+            }
+
+            return S_OK;
+        }
+        
+        HRESULT __MEGA_UI_API Element::OnUnHosted(Window* _pOldWindow)
+        {
+            if (!pWindow)
+                return S_FALSE;
+
+            if (pWindow != _pOldWindow)
+                return E_INVALIDARG;
+
+            for (auto pElement : GetChildren())
+            {
+                pElement->OnHosted(_pOldWindow);
+            }
+
+            pWindow = nullptr;
+            return S_OK;
         }
 	}
 }
