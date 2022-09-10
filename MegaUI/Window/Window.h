@@ -28,13 +28,18 @@ namespace YY
             HWND hWnd;
             Render* pRender;
             D2D1_SIZE_U LastRenderSize;
+            uint32_t fTrackMouse = 0u;
         public:
             Window();
 
             virtual ~Window();
 
             Window(const Window&) = delete;
-            void __MEGA_UI_API operator=(const Window&) = delete;
+            void operator=(const Window&) = delete;
+            
+            static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Window** _ppOut);
+
+            HRESULT __MEGA_UI_API Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
             HRESULT __MEGA_UI_API InitializeWindow(
                 _In_opt_ LPCWSTR _szTitle,
@@ -75,6 +80,14 @@ namespace YY
                 _In_ const Rect& _ParentPaintRect);
 
             void __MEGA_UI_API OnSize(UINT _uWidth, UINT _uHeight);
+            
+            void __MEGA_UI_API UpdateMouseWithin(
+                Element* _pElement,
+                const Rect& _ParentBounds,
+                const Rect& _ParentVisibleBounds,
+                const POINT& _ptPoint);
+
+            void __MEGA_UI_API UpdateMouseWithinToFalse(Element* _pElement);
         };
     }
 } // namespace YY

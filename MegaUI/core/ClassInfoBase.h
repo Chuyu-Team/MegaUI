@@ -57,7 +57,15 @@ namespace YY
 
             virtual HRESULT __MEGA_UI_API CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
-                return _Class::Create(_Class::StaticClassInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
+                if (!_ppOutElem)
+                    return E_INVALIDARG;
+                *_ppOutElem = nullptr;
+                _Class* _pClass;
+                auto _hr = _Class::Create(_Class::StaticClassInfo::fDefaultCreate, _pTopLevelElem, _pCookies, &_pClass);
+                if (SUCCEEDED(_hr))
+                    *_ppOutElem = static_cast<Element*>(_pClass);
+
+                return _hr;
             }
 
             static constexpr uint32_t GetPropertyInfoCount()

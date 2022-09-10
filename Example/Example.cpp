@@ -24,10 +24,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Window::Register();
     YY::MegaUI::Element::Register();
 
-    auto _pWindows = HNew<Window>();
     intptr_t Cooike;
-
-    _pWindows->Initialize(0, nullptr, &Cooike);
+    Window* _pWindows = nullptr;
+    
+    Window::Create(0, nullptr, &Cooike, &_pWindows);
 
     //YY::MegaUI::Element* p;
     //YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);
@@ -119,7 +119,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     _pWindows->SetValue(YY::MegaUI::Element::g_ClassInfoData.BackgroundProp, YY::MegaUI::PropertyIndicies::PI_Local, Value::CreateColor(Color::MakeRGB(255, 0, 0)));
     
-    IUnknown;
     //_pWindows->SetHost(p);
     _pWindows->EndDefer(Cooike);
 

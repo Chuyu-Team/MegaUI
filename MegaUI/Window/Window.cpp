@@ -26,6 +26,38 @@ namespace YY
 
         EXTERN_C extern IMAGE_DOS_HEADER __ImageBase;
 
+        HRESULT __MEGA_UI_API Window::Create(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, Window** _ppOut)
+        {
+            if (!_ppOut)
+                return E_INVALIDARG;
+
+            *_ppOut = nullptr;
+
+            auto _pWindow = HNew<Window>();
+            if (!_pWindow)
+                return E_OUTOFMEMORY;
+
+            auto _hr = _pWindow->Initialize(_fCreate, _pTopLevel, _pCooike);
+            if (SUCCEEDED(_hr))
+            {
+                *_ppOut = _pWindow;
+                return S_OK;
+            }
+
+            HDelete(_pWindow);
+
+            return _hr;
+        }
+
+        HRESULT __MEGA_UI_API Window::Initialize(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
+        {
+            auto _hr = Element::Initialize(_fCreate, _pTopLevel, _pCooike);
+            if (FAILED(_hr))
+                return _hr;
+            pWindow = this;
+            return S_OK;
+        }
+
         HRESULT __MEGA_UI_API Window::InitializeWindow(LPCWSTR _szTitle, HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
         {
             WNDCLASSEXW wcex;
@@ -187,9 +219,29 @@ namespace YY
                 }
                 break;
             case WM_MOUSEMOVE:
-            {
+                if (_wParam != MK_LBUTTON)
+                {
+                    Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
+                    UpdateMouseWithin(this, _Bounds, _Bounds, POINT {LOWORD(_lParam), HIWORD(_lParam)});
+                }
+
+                if ((fTrackMouse & TME_LEAVE) == 0)
+                {
+                    TRACKMOUSEEVENT tme;
+                    tme.cbSize = sizeof(tme);
+                    tme.dwFlags = TME_LEAVE;
+                    tme.dwHoverTime = HOVER_DEFAULT;
+                    tme.hwndTrack = _hWnd;
+                    if (TrackMouseEvent(&tme))
+                    {
+                        fTrackMouse |= TME_LEAVE;
+                    }
+                }
                 break;
-            }
+            case WM_MOUSELEAVE:
+                fTrackMouse &= ~TME_LEAVE;
+                UpdateMouseWithinToFalse(this);
+                break;
             default:
                 break;
             }
@@ -306,6 +358,68 @@ namespace YY
             SetHeight(_uHeight);
 
             EndDefer(_Cooike);
+        }
+
+        void __MEGA_UI_API Window::UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& _ptPoint)
+        {
+            auto _Location = _pElement->GetLocation();
+            auto _Extent = _pElement->GetExtent();
+
+            Rect _BoundsElement;
+            _BoundsElement.left = _ParentBounds.left + _Location.x;
+            _BoundsElement.right = _BoundsElement.left + _Extent.cx;
+
+            _BoundsElement.top = _ParentBounds.top + _Location.y;
+            _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
+
+            Rect _VisibleBounds;
+            if (IntersectRect(&_VisibleBounds, &_ParentVisibleBounds, &_BoundsElement))
+            {
+                if (_VisibleBounds.PointInRect(_ptPoint))
+                {
+                    intptr_t _Cooike = 0;
+
+                    if (!_pElement->IsMouseWithin())
+                    {
+                        _pElement->StartDefer(&_Cooike);
+
+                        _pElement->PreSourceChange(Element::g_ClassInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolFalse(), Value::GetBoolTrue());
+                        _pElement->bLocMouseWithin = TRUE;
+                        _pElement->PostSourceChange();
+                    }
+
+                    for (auto _pChild : _pElement->GetChildren())
+                    {
+                        UpdateMouseWithin(_pChild, _BoundsElement, _VisibleBounds, _ptPoint);
+                    }
+
+                    if (_Cooike)
+                        _pElement->EndDefer(_Cooike);
+                    return;
+                }
+            }
+
+            UpdateMouseWithinToFalse(_pElement);
+        }
+
+        void __MEGA_UI_API Window::UpdateMouseWithinToFalse(Element* _pElement)
+        {
+            if (!_pElement->IsMouseWithin())
+                return;
+
+            intptr_t _Cooike = 0;
+            _pElement->StartDefer(&_Cooike);
+
+            _pElement->PreSourceChange(Element::g_ClassInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolTrue(), Value::GetBoolFalse());
+            _pElement->bLocMouseWithin = FALSE;
+            _pElement->PostSourceChange();
+
+            for (auto _pChild : _pElement->GetChildren())
+            {
+                UpdateMouseWithinToFalse(_pChild);
+            }
+
+            _pElement->EndDefer(_Cooike);
         }
 
 
