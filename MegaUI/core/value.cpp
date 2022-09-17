@@ -442,6 +442,13 @@ namespace YY
             return pSharedData->pEleValue;
         }
 
+        uString __MEGA_UI_API Value::GetString() const
+        {
+            if (GetType() != ValueType::uString)
+                throw Exception();
+            return pSharedData->szValue;
+        }
+
         bool __MEGA_UI_API Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation) const
         {
             if (pSharedData == _Other.pSharedData)

@@ -18,6 +18,14 @@ namespace YY
 {
 	namespace MegaUI
 	{
+        static const EnumMap LayoutPosEnumMap[] =
+        {
+            { "None", LP_None },
+            { "Absolute", LP_Absolute },
+            { "Auto", LP_Auto },
+            { }
+        };
+
         static const EnumMap BorderStyleEnumMap[] =
         {
             { "Solid",   BDS_Solid  },
@@ -53,6 +61,7 @@ namespace YY
             , SpecID(0)
             , fNeedsLayout(0)
             , bLocMouseWithin(FALSE)
+            , bDestroy(FALSE)
             , bNeedsDSUpdate(0)
             , iSpecDirection(DIRECTION_LTR)
 
@@ -409,6 +418,26 @@ namespace YY
             return bLocMouseWithin != FALSE;
         }
 
+        uString __MEGA_UI_API Element::GetClass()
+        {
+            auto _Value = GetValue(Element::g_ClassInfoData.ClassProp, PropertyIndicies::PI_Specified, false);
+            if (_Value.GetType() == ValueType::uString)
+            {
+                return _Value.GetString();
+            }
+
+            return uString();
+        }
+
+        HRESULT __MEGA_UI_API Element::SetClass(uString _szClass)
+        {
+            auto _NewValue = Value::CreateString(_szClass);
+            if (_NewValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ClassInfoData.ClassProp, PropertyIndicies::PI_Local, _NewValue);
+        }
+
         bool __MEGA_UI_API Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
         {
             return true;
@@ -731,6 +760,52 @@ namespace YY
             --_pDeferCycle->uEnter;
 		}
         
+        void __MEGA_UI_API Element::OnDestroy()
+        {
+            // TODO
+        }
+
+        HRESULT __MEGA_UI_API Element::Destroy(bool _fDelayed)
+        {
+            if (pLocParent)
+            {
+                auto _hr = pLocParent->Remove(this);
+                if (FAILED(_hr))
+                    return _hr;
+            }
+            
+            // 如果没有绑定窗口，那么无视延迟释放
+            if (_fDelayed == false || pWindow == nullptr)
+            {
+                DestroyAllChildren(false);
+                HDelete(this);
+                return S_OK;
+            }
+            else
+            {
+                // 延后释放时会自动递归释放子控件
+                return pWindow->PostDelayedDestroyElement(this);
+            }
+        }
+
+        HRESULT __MEGA_UI_API Element::DestroyAllChildren(bool _fDelayed)
+        {
+            auto _Children = GetChildren();
+            if (_Children.GetSize() == 0)
+                return S_OK;
+
+            auto _hr = RemoveAll();
+            if (FAILED(_hr))
+                return _hr;
+
+            for (auto pItem : _Children)
+            {
+                pItem->Destroy(_fDelayed);
+            }
+
+            return S_OK;
+        }
+
         void __MEGA_UI_API Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
         {
             Rect _PaintBounds = _Bounds;

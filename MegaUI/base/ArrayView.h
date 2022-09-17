@@ -16,9 +16,22 @@ namespace YY
             uint_t cData;
 
         public:
-            ArrayView(_Type* _pData = nullptr, uint_t _cData = 0)
+            ArrayView()
+                : pData(nullptr)
+                , cData(0)
+            {
+            }
+
+            ArrayView(_Type* _pData, uint_t _cData)
                 : pData(_pData)
                 , cData(_pData ? _cData : 0)
+            {
+            }
+            
+            template<uint_t _uArrayCount>
+            ArrayView(_Type (&_Array)[_uArrayCount])
+                : pData(_Array)
+                , cData(_uArrayCount)
             {
             }
 
@@ -35,6 +48,20 @@ namespace YY
             uint_t __MEGA_UI_API GetSize() const
             {
                 return cData;
+            }
+
+            void __MEGA_UI_API Slice(uint_t _uRemoveStart, uint_t _uRemoveEnd = 0u)
+            {
+                if (_uRemoveStart + _uRemoveEnd >= cData)
+                {
+                    cData = 0;
+                }
+                else
+                {
+                    pData += _uRemoveStart;
+                    cData -= _uRemoveStart;
+                    cData -= _uRemoveEnd;
+                }
             }
 
             

@@ -8,6 +8,7 @@
 
 #include "../base/MegaUITypeInt.h"
 #include "../core/Element.h"
+#include "../base/DynamicArray.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -29,6 +30,8 @@ namespace YY
             Render* pRender;
             D2D1_SIZE_U LastRenderSize;
             uint32_t fTrackMouse = 0u;
+            // TODO 需要更换为块式队列更友好。
+            DynamicArray<Element*> DelayedDestroyList;
         public:
             Window();
 
@@ -66,6 +69,9 @@ namespace YY
             {
                 InvalidateRect(&_Rect);
             }
+
+            HRESULT __MEGA_UI_API PostDelayedDestroyElement(Element* _pElement);
+
         protected:
             static LRESULT CALLBACK WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
@@ -88,6 +94,10 @@ namespace YY
                 const POINT& _ptPoint);
 
             void __MEGA_UI_API UpdateMouseWithinToFalse(Element* _pElement);
+
+            void __MEGA_UI_API ClearDelayedDestroyList();
         };
     }
 } // namespace YY
+
+#pragma pack(pop)

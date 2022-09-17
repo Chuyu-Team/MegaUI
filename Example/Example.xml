@@ -1,0 +1,8 @@
+<MegaUI>
+    <Window ResID="123" Height="600" Width="800" Background="RGB(255, 0, 0)">
+        <Element LayoutPos="Absolute" X="100" Y="100" Height="400" Width="300" Background="ARGB(128, 255, 255, 0)"/>
+        <Element LayoutPos="Absolute" X="300" Y="300" Height="400" Width="300" Background="ARGB(32, 255, 255, 0)" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 163, 73, 164)" BorderStyle="Raised"/>
+        <Element LayoutPos="Absolute" X="150" Y="150" Height="50" Width="40" Background="ARGB(255, 0, 255, 0)" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 128, 192)" BorderStyle="Sunken"/>
+        <Element LayoutPos="Absolute" X="450" Y="200" Height="50" Width="40" Background="ARGB(255, 0, 128, 192)" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 128, 192)" BorderStyle="Solid"/>
+    </Window>
+</MegaUI>

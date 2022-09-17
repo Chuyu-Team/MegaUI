@@ -112,7 +112,7 @@ namespace YY
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
     _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, &Element::GetParentDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0), ValueType::Element) \
     _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0), ValueType::ElementList) \
-    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                         nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
+    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                         nullptr, nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
     _APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
     _APPLY(Height,         PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
     _APPLY(X,              PF_Normal,                             0,                                              &Value::GetInt32Zero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
@@ -132,7 +132,8 @@ namespace YY
     _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
     _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(ID,             PF_Normal,                             0,                                              &Value::GetAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
-    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::GetSheetNull,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) 
+    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::GetSheetNull,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) \
+    _APPLY(Class,          PF_Normal,                             0,                                              &Value::GetStringNull,             nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) 
 
     // clang-format on
 
@@ -216,7 +217,8 @@ namespace YY
     _APPLY(bNeedsDSUpdate, 1)               \
     /* UINT8 LayoutType : 2;*/              \
     _APPLY(fNeedsLayout, 2)                 \
-    _APPLY(bLocMouseWithin, 1)
+    _APPLY(bLocMouseWithin, 1)              \
+    _APPLY(bDestroy, 1)
 
             _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
             //union
@@ -316,6 +318,14 @@ namespace YY
             bool __MEGA_UI_API IsRTL();
 
             bool __MEGA_UI_API IsMouseWithin();
+            
+            /// <summary>
+            /// 返回控件绑定的 Class，它用于 Sheet 表达式匹配。
+            /// </summary>
+            /// <returns>Class</returns>
+            uString __MEGA_UI_API GetClass();
+
+            HRESULT __MEGA_UI_API SetClass(uString _szClass);
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
@@ -365,6 +375,26 @@ namespace YY
             {
                 return Remove(vecLocChildren.GetData(), vecLocChildren.GetSize());
             }
+
+            /// <summary>
+            /// 当销毁控制时被调用。
+            /// </summary>
+            /// <returns></returns>
+            virtual void __MEGA_UI_API OnDestroy();
+
+            /// <summary>
+            /// 释放控件相关资源，包含子控件。
+            /// </summary>
+            /// <param name="_fDelayed">是否延迟删除。</param>
+            /// <returns></returns>
+            HRESULT __MEGA_UI_API Destroy(_In_ bool _fDelayed = true);
+
+            /// <summary>
+            /// 释放子控件的相关资源（不会释放控件自己）。
+            /// </summary>
+            /// <param name="_fDelayed">是否延迟删除。</param>
+            /// <returns></returns>
+            HRESULT __MEGA_UI_API DestroyAllChildren(_In_ bool _fDelayed = true);
 
             virtual void __MEGA_UI_API Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
 

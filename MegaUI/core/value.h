@@ -265,6 +265,7 @@ namespace YY
             uint8_t* __MEGA_UI_API GetRawBuffer();
             Color __MEGA_UI_API GetColor() const;
             Element* __MEGA_UI_API GetElement() const;
+            uString __MEGA_UI_API GetString() const;
 
             bool __MEGA_UI_API CmpValue(const Value& _Other, ValueCmpOperation _Operation) const;
         };

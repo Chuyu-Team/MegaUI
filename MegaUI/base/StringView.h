@@ -57,6 +57,42 @@ namespace YY
         {
             return _szSrc == nullptr || _szSrc[0] == u32char_t('\0');
         }
+        
+        __forceinline constexpr achar_t __MEGA_UI_API CharUpperASCII(achar_t _ch)
+        {
+            if (_ch >= achar_t('a') && _ch <= achar_t('z'))
+            {
+                _ch = _ch - achar_t('a') + achar_t('A');
+            }
+            return _ch;
+        }
+
+        __forceinline constexpr u8char_t __MEGA_UI_API CharUpperASCII(u8char_t _ch)
+        {
+            if (_ch >= u8char_t('a') && _ch <= u8char_t('z'))
+            {
+                _ch = _ch - u8char_t('a') + u8char_t('A');
+            }
+            return _ch;
+        }
+        
+        __forceinline constexpr u16char_t __MEGA_UI_API CharUpperASCII(u16char_t _ch)
+        {
+            if (_ch >= u16char_t('a') && _ch <= u16char_t('z'))
+            {
+                _ch = _ch - u16char_t('a') + u16char_t('A');
+            }
+            return _ch;
+        }
+
+        __forceinline constexpr u32char_t __MEGA_UI_API CharUpperASCII(u32char_t _ch)
+        {
+            if (_ch >= u32char_t('a') && _ch <= u32char_t('z'))
+            {
+                _ch = _ch - u32char_t('a') + u32char_t('A');
+            }
+            return _ch;
+        }
 
         __forceinline auto __cdecl GetStringFormatLength(
             _In_z_ _Printf_format_string_ achar_t const* const _Format,
@@ -152,6 +188,16 @@ namespace YY
             {
             }
 
+            HRESULT __MEGA_UI_API SetString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+            {
+                if (_szSrc == nullptr && _cchSrc)
+                    return E_INVALIDARG;
+
+                szString = _szSrc;
+                cchString = _cchSrc;
+                return S_OK;
+            }
+
             constexpr static Encoding __MEGA_UI_API GetEncoding()
             {
                 return eEncoding;
@@ -184,6 +230,60 @@ namespace YY
             __forceinline const char_t* __MEGA_UI_API end() const
             {
                 return this->GetConstString() + this->GetSize();
+            }
+
+            bool __MEGA_UI_API operator==(StringView _Other)
+            {
+                if (cchString != _Other.cchString)
+                    return false;
+
+                return memcmp(szString, _Other.szString, cchString * sizeof(szString[0])) == 0;
+            }
+
+            bool __MEGA_UI_API operator==(const char_t* _Other)
+            {
+                if (_Other == nullptr && cchString == 0)
+                    return true;
+                uint_t _uIndex = 0;
+                for (; _uIndex != GetSize(); ++_uIndex)
+                {
+                    if (szString[_uIndex] != _Other[_uIndex])
+                        return false;
+                }
+
+                return _Other[_uIndex] == char_t('\0');
+            }
+
+            int __MEGA_UI_API Compare(const char_t* _Other)
+            {
+                if (_Other == nullptr && cchString == 0)
+                    return 0;
+
+                uint_t _uIndex = 0;
+                for (; _uIndex != GetSize(); ++_uIndex)
+                {
+                    auto _result = szString[_uIndex] - _Other[_uIndex];
+                    if (_result != 0)
+                        return _result;
+                }
+
+                return char_t('\0') - _Other[_uIndex];
+            }
+            
+            int __MEGA_UI_API CompareI(const char_t* _Other)
+            {
+                if (_Other == nullptr && cchString == 0)
+                    return 0;
+
+                uint_t _uIndex = 0;
+                for (; _uIndex != GetSize(); ++_uIndex)
+                {
+                    auto _result = CharUpperASCII(szString[_uIndex]) - CharUpperASCII(_Other[_uIndex]);
+                    if (_result != 0)
+                        return _result;
+                }
+
+                return char_t('\0') - _Other[_uIndex];
             }
         };
 

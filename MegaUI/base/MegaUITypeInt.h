@@ -11,7 +11,7 @@
 #define __MEGA_UI_PACKING 4
 
 #ifndef __MEGA_UI_API
-#ifdef _WIN32
+#ifdef WIN32
 #define __MEGA_UI_API __fastcall
 #else
 #define __MEGA_UI_API

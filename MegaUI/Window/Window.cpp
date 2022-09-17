@@ -150,6 +150,21 @@ namespace YY
                 ::InvalidateRect(hWnd, _pRect, FALSE);
         }
 
+        HRESULT __MEGA_UI_API Window::PostDelayedDestroyElement(Element* _pElement)
+        {
+            if (!_pElement)
+                return E_INVALIDARG;
+
+            // 目标关联的窗口不一致
+            if (_pElement->pWindow != this)
+                return E_INVALIDARG;
+
+            if (!DelayedDestroyList.EmplacePtr(_pElement))
+                return E_OUTOFMEMORY;
+
+            return S_OK;
+        }
+
         LRESULT Window::WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())
@@ -420,6 +435,18 @@ namespace YY
             }
 
             _pElement->EndDefer(_Cooike);
+        }
+
+        void __MEGA_UI_API Window::ClearDelayedDestroyList()
+        {
+            auto _TmpList = std::move(DelayedDestroyList);
+
+            for (auto pItem : _TmpList)
+            {
+                pItem->Destroy(false);
+            }
+
+            //return void __MEGA_UI_API();
         }
 
 

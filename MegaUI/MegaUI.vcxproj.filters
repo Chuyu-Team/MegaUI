@@ -40,6 +40,9 @@
     <Filter Include="UI\Base">
       <UniqueIdentifier>{9cad59f1-53c0-49d1-a714-f2e6e6e552bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Parser">
+      <UniqueIdentifier>{7587d627-2fbc-43c0-b592-b31c1c1eadd1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -138,6 +141,12 @@
     <ClInclude Include="core\ClassInfoBase.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Parser\UIParser.h">
+      <Filter>UI\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\ValueParser.h">
+      <Filter>UI\Parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -169,6 +178,9 @@
     </ClCompile>
     <ClCompile Include="core\StyleSheet.cpp">
       <Filter>UI\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser\UIParser.cpp">
+      <Filter>UI\Parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -110,6 +110,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -127,6 +128,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -144,6 +146,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -179,6 +182,8 @@
     <ClInclude Include="core\value.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Host\NativeWindowHost.h" />
+    <ClInclude Include="Parser\UIParser.h" />
+    <ClInclude Include="Parser\ValueParser.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\D2D\D2D1.1Render.h" />
     <ClInclude Include="Render\D2D\D2D1.0Render.h" />
@@ -195,6 +200,7 @@
     <ClCompile Include="core\value.cpp" />
     <ClCompile Include="Host\NativeWindowHost.cpp" />
     <ClCompile Include="MegaUI.cpp" />
+    <ClCompile Include="Parser\UIParser.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
