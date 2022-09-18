@@ -41,6 +41,7 @@ namespace YY
         StyleSheet::StyleSheet()
             : uRef(1u)
             , uRuleId(0u)
+            , bMakeImmutable(false)
         {
         }
         
@@ -62,8 +63,8 @@ namespace YY
         HRESULT __MEGA_UI_API StyleSheet::AddRule(uString _szRule, IClassInfo* _pClassInfo, DynamicArray<Cond, true> _CondArray, const ArrayView<Decl>& _DeclArray)
         {
             // 添加规则必须要有匹配条件
-            if (_pClassInfo == nullptr || _CondArray.GetSize() == 0 || _DeclArray.GetSize() == 0)
-                return E_INVALIDARG;
+            if (_pClassInfo == nullptr || _DeclArray.GetSize() == 0)
+                return S_FALSE;
 
             auto _pClassData = GetClassData(_pClassInfo);
 
@@ -115,10 +116,30 @@ namespace YY
             }
 
             ++uRuleId;
-
+            bMakeImmutable = true;
             return bFaild ? 0x800403EB : S_OK;
         }
         
+        void __MEGA_UI_API StyleSheet::MakeImmutable()
+        {
+            if (!bMakeImmutable)
+                return;
+
+            bMakeImmutable = true;
+
+            for (auto& _Class : ClassArray)
+            {
+                for (auto& PropertyData : _Class.PropertyDataRef)
+                {
+                    PropertyData.CondMapList.Sort([](const CondMap* _pLeft, const CondMap* _pRigth) -> int
+                        {
+                            // 故意颠倒，让大的在前，小的在后。
+                            return _pRigth->uSpecif - _pLeft->uSpecif;
+                        });
+                }
+            }
+        }
+
         Value __MEGA_UI_API StyleSheet::GetSheetValue(Element* _pElement, const PropertyInfo* _pProp)
         {
             if (_pElement == nullptr || _pProp == nullptr)
@@ -217,12 +238,12 @@ namespace YY
             return _hr;
         }
 
-        uString __MEGA_UI_API StyleSheet::GetSheetResid()
+        u8String __MEGA_UI_API StyleSheet::GetSheetResid()
         {
             return szSheetResid;
         }
 
-        HRESULT __MEGA_UI_API StyleSheet::SetSheetResid(uString _szSheetResid)
+        HRESULT __MEGA_UI_API StyleSheet::SetSheetResid(u8String _szSheetResid)
         {
             return szSheetResid.SetString(_szSheetResid);
         }

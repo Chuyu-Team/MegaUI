@@ -132,7 +132,7 @@ namespace YY
     _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
     _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::GetBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(ID,             PF_Normal,                             0,                                              &Value::GetAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
-    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::GetSheetNull,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) \
+    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::GetSheetNull,              nullptr,                           &Element::GetSheetDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) \
     _APPLY(Class,          PF_Normal,                             0,                                              &Value::GetStringNull,             nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) 
 
     // clang-format on
@@ -482,6 +482,10 @@ namespace YY
             HRESULT __MEGA_UI_API GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
             virtual HRESULT __MEGA_UI_API GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+            
+            HRESULT __MEGA_UI_API GetSheetDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+
+            virtual HRESULT __MEGA_UI_API GeSheetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
             virtual HRESULT __MEGA_UI_API OnHosted(Window* _pNewWindow);
 

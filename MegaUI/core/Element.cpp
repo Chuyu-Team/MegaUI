@@ -167,6 +167,12 @@ namespace YY
                 // 尝试获取来自属性表的值
                 if ((_Prop.fFlags & PF_Cascade) && (_CacheResult & SkipCascade) == 0)
                 {
+                    if (pSheet)
+                    {
+                        _pValue = pSheet->GetSheetValue(this, &_Prop);
+                        if (_pValue.GetType() != ValueType::Unset)
+                            break;
+                    }
                 }
 
                 // 尝试从父节点继承
@@ -447,11 +453,6 @@ namespace YY
 		{
             if (_Prop.pFunOnPropertyChanged)
                 (this->*_Prop.pFunOnPropertyChanged)(_Prop, _eIndicies, _OldValue, _NewValue);
-
-            if (&_Prop == &g_ClassInfoData.MouseWithinProp)
-            {
-                SetBorderStyle(_NewValue.GetBool() ? BDS_Solid : BDS_Raised);
-            }
         }
 
         void __MEGA_UI_API Element::OnGroupChanged(uint32_t _fGroups)
@@ -1903,7 +1904,7 @@ namespace YY
 							}
 						}
 
-						auto _pCache = (char*)this + _uOffsetToCache;
+						auto _pCache = (uint8_t*)this + _uOffsetToCache;
 
 						switch ((ValueType)_pProp->BindCacheInfo.eType)
 						{
@@ -1926,10 +1927,13 @@ namespace YY
                             _pRetValue = Value::CreateRect(*(Rect*)_pCache);
                             break;
                         case ValueType::Element:
-                            _pRetValue = Value::CreateElementRef((Element*)_pCache);
+                            _pRetValue = Value::CreateElementRef(*(Element**)_pCache);
                             break;
                         case ValueType::ElementList:
                             _pRetValue = Value::CreateElementList(*(ElementList*)_pCache);
+                            break;
+                        case ValueType::StyleSheet:
+                            _pRetValue = Value::CreateStyleSheet(*(StyleSheet**)_pCache);
                             break;
 						default:
                             _pRetValue = Value::GetNull();
@@ -1982,17 +1986,17 @@ namespace YY
                             _uHasCache |= (1 << _uHasCacheBit);
                         }
 
-						auto _pCache = (char*)this + _uOffsetToCache;
+						auto _pCache = (uint8_t*)this + _uOffsetToCache;
 
-                        auto _pDataBuyffer = _pNewValue.GetRawBuffer();
+                        auto _pDataBuffer = _pNewValue.GetRawBuffer();
 
 						switch ((ValueType)_pProp->BindCacheInfo.eType)
 						{
 						case ValueType::int32_t:
-                            *(int32_t*)_pCache = *(int32_t*)_pDataBuyffer;
+                            *(int32_t*)_pCache = *(int32_t*)_pDataBuffer;
 							break;
 						case ValueType::boolean:
-                            if (*(bool*)_pDataBuyffer)
+                            if (*(bool*)_pDataBuffer)
 							{
                                 *_pCache |= (1 << _uCacheBit);
 							}
@@ -2002,24 +2006,40 @@ namespace YY
 							}
 							break;
                         case ValueType::Color:
-                            *(Color*)_pCache = *(Color*)_pDataBuyffer;
+                            *(Color*)_pCache = *(Color*)_pDataBuffer;
                             break;
                         case ValueType::POINT:
-                            *(POINT*)_pCache = *(POINT*)_pDataBuyffer;
+                            *(POINT*)_pCache = *(POINT*)_pDataBuffer;
                             break;
                         case ValueType::SIZE:
-                            *(SIZE*)_pCache = *(SIZE*)_pDataBuyffer;
+                            *(SIZE*)_pCache = *(SIZE*)_pDataBuffer;
                             break;
                         case ValueType::Rect:
-                            *(Rect*)_pCache = *(Rect*)_pDataBuyffer;
+                            *(Rect*)_pCache = *(Rect*)_pDataBuffer;
                             break;
                         case ValueType::Element:
-                            *(Element**)_pCache = *(Element**)_pDataBuyffer;
+                            *(Element**)_pCache = *(Element**)_pDataBuffer;
                             break;
                         case ValueType::ElementList:
-                            ((ElementList*)_pCache)->SetArray(*(ElementList*)_pDataBuyffer);
+                            ((ElementList*)_pCache)->SetArray(*(ElementList*)_pDataBuffer);
                             break;
+                        case ValueType::StyleSheet:
+                        {
+                            auto& _pOldStyleSheet = *(StyleSheet**)_pCache;
+                            auto& _pNewStyleSheet = *(StyleSheet**)_pDataBuffer;
+
+                            if (_pOldStyleSheet != _pNewStyleSheet)
+                            {
+                                if (_pOldStyleSheet)
+                                    _pOldStyleSheet->Release();
+                                if (_pNewStyleSheet)
+                                    _pNewStyleSheet->AddRef();
+                                _pOldStyleSheet = _pNewStyleSheet;
+                            }
+                            break;
+                        }
 						default:
+                            __debugbreak();
 							break;
 						}
 					}
@@ -2388,6 +2408,72 @@ namespace YY
                 }
                 
             }
+            return _hrLast;
+        }
+
+        HRESULT __MEGA_UI_API Element::GetSheetDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        {
+            return GeSheetDependencies(_Prop, _eIndicies, pdr, iPCSrcRoot, _pNewValue, _pDeferCycle);
+        }
+
+        HRESULT __MEGA_UI_API Element::GeSheetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        {
+            HRESULT _hrLast = S_OK;
+
+            if (_eIndicies == PropertyIndicies::PI_Specified)
+            {
+                auto pItem = _pDeferCycle->vecPropertyChanged.GetItemPtr(iPCSrcRoot);
+                if (!pItem)
+                    return E_UNEXPECTED;
+
+                if (pItem->pProp == &Element::g_ClassInfoData.SheetProp)
+                {
+                    auto _pClassInfo = GetControlClassInfo();
+
+                    for (uint32_t _uIndex = 0;; ++_uIndex)
+                    {
+                        auto _pProp = _pClassInfo->EnumPropertyInfo(_uIndex);
+                        if (!_pProp)
+                            break;
+
+                        if (_pProp->fFlags & PropertyFlag::PF_Cascade)
+                        {
+                            auto _hr = AddDependency(this, *_pProp, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
+                            if (FAILED(_hr))
+                                _hrLast = _hr;
+                        }
+                    }
+                    
+                    if (auto _pStyleSheet = _pNewValue.GetStyleSheet())
+                    {
+                        auto _hr = _pStyleSheet->GetSheetScope(this, pdr, _pDeferCycle);
+                        if (FAILED(_hr))
+                            _hrLast = _hr;
+                    }
+                }
+                else if (pItem->pProp == &Element::g_ClassInfoData.ParentProp)
+                {
+                    auto _pNewParent = _pNewValue.GetElement();
+                    if (_pNewParent)
+                    {
+                        if(auto _pStyleSheet = _pNewParent->pSheet)
+                        {
+                            auto _hr = _pStyleSheet->GetSheetScope(this, pdr, _pDeferCycle);
+                            if (FAILED(_hr))
+                                _hrLast = _hr;
+                        }
+                    }
+                }
+
+                if (auto _pStyleSheet = pSheet)
+                {
+                    auto _hr = _pStyleSheet->GetSheetScope(this, pdr, _pDeferCycle);
+                    if (FAILED(_hr))
+                        _hrLast = _hr;
+                }
+
+            }
+
             return _hrLast;
         }
 

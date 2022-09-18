@@ -53,7 +53,8 @@ namespace YY
         
         enum class ValueCmpOperation
         {
-            Equal = 0,
+            Invalid = 0,
+            Equal,
             NotEqual,
             GreaterThan,
             GreaterThanOrEqual,
@@ -257,6 +258,8 @@ namespace YY
             static Value __MEGA_UI_API CreateCursor(_In_ HCURSOR _hCursorValue);
             
             static Value __MEGA_UI_API CreateColor(_In_ Color _Color);
+            
+            static Value __MEGA_UI_API CreateStyleSheet(_In_ StyleSheet* _pStyleSheet);
 
             int32_t __MEGA_UI_API GetInt32() const;
             bool __MEGA_UI_API GetBool() const;
@@ -266,6 +269,8 @@ namespace YY
             Color __MEGA_UI_API GetColor() const;
             Element* __MEGA_UI_API GetElement() const;
             uString __MEGA_UI_API GetString() const;
+
+            StyleSheet* __MEGA_UI_API GetStyleSheet() const;
 
             bool __MEGA_UI_API CmpValue(const Value& _Other, ValueCmpOperation _Operation) const;
         };

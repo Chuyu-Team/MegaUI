@@ -120,7 +120,7 @@ namespace YY
 
             PropertyData(const PropertyData& _Other) = default;
 
-            PropertyData(PropertyData&& _Other)
+            PropertyData(PropertyData&& _Other) noexcept
                 : pRefProp(_Other.pRefProp)
                 , CondMapList(std::move(_Other.CondMapList))
                 , DependencyPropList(std::move(_Other.DependencyPropList))
@@ -139,7 +139,7 @@ namespace YY
                 return *this;
             }
             
-            PropertyData& __MEGA_UI_API operator=(PropertyData&& _Other)
+            PropertyData& __MEGA_UI_API operator=(PropertyData&& _Other) noexcept
             {
                 if (this != &_Other)
                 {
@@ -230,7 +230,9 @@ namespace YY
             //BYTE m5E;
             //BYTE m5F;
             // 0x60
-            uString szSheetResid;
+            u8String szSheetResid;
+
+            bool bMakeImmutable;
         public:
             // void* _vftable_
             StyleSheet();
@@ -245,7 +247,7 @@ namespace YY
             // 1
             HRESULT __MEGA_UI_API AddRule(uString szRule, IClassInfo* pClassInfo, DynamicArray<Cond, true> CondArray, const ArrayView<Decl>& DeclArray);
             // 2
-            void __MEGA_UI_API MakeImmutable(void);
+            void __MEGA_UI_API MakeImmutable();
             // 3
             Value __MEGA_UI_API GetSheetValue(Element* _pElement, const PropertyInfo* _pProp);
             // 4
@@ -253,10 +255,10 @@ namespace YY
             // 5
             HRESULT __MEGA_UI_API GetSheetScope(Element* _pElement, DepRecs* pdr, DeferCycle* _pDeferCycle);
             // 6
-            uString __MEGA_UI_API GetSheetResid();
+            u8String __MEGA_UI_API GetSheetResid();
 
             // 7
-            HRESULT __MEGA_UI_API SetSheetResid(uString _szSheetResid);
+            HRESULT __MEGA_UI_API SetSheetResid(u8String _szSheetResid);
             
         private:
             ClassData* __MEGA_UI_API GetClassData(IClassInfo* pClassInfo);

@@ -1,5 +1,8 @@
 ﻿#include "pch.h"
+
 #include "value.h"
+
+#include "StyleSheet.h"
 
 #pragma warning(disable : 28251)
 
@@ -31,15 +34,19 @@ namespace YY
             {
                 switch (ValueType(eType))
                 {
-                case YY::MegaUI::ValueType::uString:
+                case ValueType::uString:
                     szValue.~StringBase();
                     break;
-                case YY::MegaUI::ValueType::ElementList:
+                case ValueType::ElementList:
                     ListVal.~ElementList();
                     break;
-                case YY::MegaUI::ValueType::ATOM:
+                case ValueType::ATOM:
                     if (uAtomVal)
                         DeleteAtom(uAtomVal);
+                    break;
+                case ValueType::StyleSheet:
+                    if (pStyleSheet)
+                        pStyleSheet->Release();
                     break;
                 default:
                     break;
@@ -389,6 +396,25 @@ namespace YY
             return Value(pValue);
         }
 
+        Value __MEGA_UI_API Value::CreateStyleSheet(_In_ StyleSheet* _pStyleSheet)
+        {
+            if (!_pStyleSheet)
+                return Value::GetSheetNull();
+
+            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            if (pValue)
+            {
+                pValue->eType = uint_t(ValueType::StyleSheet);
+                pValue->bSkipFree = 0;
+                pValue->cRef = 1;
+                pValue->pStyleSheet = _pStyleSheet;
+                if (_pStyleSheet)
+                    _pStyleSheet->AddRef();
+
+            }
+            return Value(pValue);
+        }
+
         int32_t __MEGA_UI_API Value::GetInt32() const
         {
             if (GetType() != ValueType::int32_t)
@@ -447,6 +473,13 @@ namespace YY
             if (GetType() != ValueType::uString)
                 throw Exception();
             return pSharedData->szValue;
+        }
+
+        StyleSheet* __MEGA_UI_API Value::GetStyleSheet() const
+        {
+            if (GetType() != ValueType::StyleSheet)
+                throw Exception();
+            return pSharedData->pStyleSheet;
         }
 
         bool __MEGA_UI_API Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation) const

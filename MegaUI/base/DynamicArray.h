@@ -532,6 +532,22 @@ namespace YY
                 return pData;
             }
 
+            HRESULT __MEGA_UI_API Sort(int(__cdecl* _pFuncCompare)(const T* _pLeft, const T* _pRigth))
+            {
+                auto _pSharedData = GetSharedData();
+                if (_pSharedData == nullptr || _pSharedData->uSize <= 1)
+                    return S_FALSE;
+
+                _pSharedData = LockSharedData(0);
+                if (!_pSharedData)
+                    return E_OUTOFMEMORY;
+
+                qsort(_pSharedData->GetData(), _pSharedData->uSize, sizeof(T), (_CoreCrtNonSecureSearchSortCompareFunction)_pFuncCompare);
+
+                _pSharedData->Unlock();
+                return S_OK;
+            }
+
             auto& __MEGA_UI_API operator[](_In_ uint_t _uIndex)
             {
                 return GetData()[_uIndex];

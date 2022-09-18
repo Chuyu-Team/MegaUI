@@ -57,6 +57,14 @@ namespace YY
             }
         };
 
+        struct StyleSheetXmlOption
+        {
+            ValueCmpOperation Type;
+            u8StringView szPropName;
+            u8StringView szPropValue;
+        };
+
+
         // 从 XML 或者 二进制XML反序列出 Element
         class UIParser
         {
@@ -66,6 +74,7 @@ namespace YY
             DynamicArray<UIParserRecorder> RecorderArray;
             
             DynamicArray<IClassInfo*> ClassArray;
+            DynamicArray<StyleSheet*> StyleSheets;
         public:
             void __MEGA_UI_API Clear();
 
@@ -87,9 +96,13 @@ namespace YY
 
             IClassInfo* __MEGA_UI_API FindClassInfo(_In_ raw_const_astring_t _szClassName, _Out_opt_ uint32_t* _pIndex = nullptr);
 
+            const PropertyInfo* __MEGA_UI_API GetPropertyByName(_In_ IClassInfo* _pClassInfo, _In_ raw_const_astring_t _szPropName);
+
             HRESULT __MEGA_UI_API ParserElementNode(_In_ rapidxml::xml_node<char>* _pNote, _Inout_ UIParserRecorder* _pRecorder);
 
             HRESULT __MEGA_UI_API ParserElementProperty(_In_ rapidxml::xml_attribute<char>* _pAttribute, _In_ IClassInfo* _pClassInfo, _Inout_ UIParserRecorder* _pRecorder);
+
+            HRESULT __MEGA_UI_API ParserValue(_In_ IClassInfo* _pClassInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
 
             static HRESULT __MEGA_UI_API ParserInt32Value(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
 
@@ -113,8 +126,21 @@ namespace YY
 
             static HRESULT __MEGA_UI_API ParserColorValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
 
+            HRESULT __MEGA_UI_API ParserStyleSheetValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+
 
             HRESULT __MEGA_UI_API Play(ArrayView<uint8_t>& _ByteCode, Element* _pTopElement, intptr_t* _pCooike, DynamicArray<Element*, false, false>* _ppElement);
+            
+            /// <summary>
+            /// 解析样式表，将结果设置到 _pStyleSheet
+            /// </summary>
+            /// <param name="_StyleSheetNode"></param>
+            /// <param name="_XmlOption"></param>
+            /// <param name="_pStyleSheet"></param>
+            /// <returns>如果样式表是空的，那么返回 S_False。如果</returns>
+            HRESULT __MEGA_UI_API ParserStyleSheetNode(_In_ rapidxml::xml_node<char>* _StyleSheetNode, DynamicArray<StyleSheetXmlOption, false, false>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
+            
+            HRESULT __MEGA_UI_API ParserStyleSheetElementNode(_In_ rapidxml::xml_node<char>* _pElementValueNode, const DynamicArray<StyleSheetXmlOption, false, false>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
 
         };
     }
