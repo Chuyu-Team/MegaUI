@@ -238,14 +238,14 @@ namespace YY
             return _hr;
         }
 
-        u8String __MEGA_UI_API StyleSheet::GetSheetResid()
+        u8String __MEGA_UI_API StyleSheet::GetSheetResourceID()
         {
-            return szSheetResid;
+            return szSheetResourceID;
         }
 
-        HRESULT __MEGA_UI_API StyleSheet::SetSheetResid(u8String _szSheetResid)
+        HRESULT __MEGA_UI_API StyleSheet::SetSheetResourceID(u8String _szSheetResourceID)
         {
-            return szSheetResid.SetString(_szSheetResid);
+            return szSheetResourceID.SetString(_szSheetResourceID);
         }
         
         ClassData* __MEGA_UI_API StyleSheet::GetClassData(IClassInfo* pClassInfo)

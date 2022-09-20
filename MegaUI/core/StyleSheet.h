@@ -230,7 +230,7 @@ namespace YY
             //BYTE m5E;
             //BYTE m5F;
             // 0x60
-            u8String szSheetResid;
+            u8String szSheetResourceID;
 
             bool bMakeImmutable;
         public:
@@ -255,10 +255,10 @@ namespace YY
             // 5
             HRESULT __MEGA_UI_API GetSheetScope(Element* _pElement, DepRecs* pdr, DeferCycle* _pDeferCycle);
             // 6
-            u8String __MEGA_UI_API GetSheetResid();
+            u8String __MEGA_UI_API GetSheetResourceID();
 
             // 7
-            HRESULT __MEGA_UI_API SetSheetResid(u8String _szSheetResid);
+            HRESULT __MEGA_UI_API SetSheetResourceID(u8String _szSheetResourceID);
             
         private:
             ClassData* __MEGA_UI_API GetClassData(IClassInfo* pClassInfo);

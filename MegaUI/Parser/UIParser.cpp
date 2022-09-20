@@ -156,8 +156,8 @@ namespace YY
                         if (_pStyleSheetNote->type() != rapidxml::node_element)
                             continue;
 
-                        auto _pResID = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResID"), false);
-                        if (!_pResID)
+                        auto _pResourceIDAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResourceID"), false);
+                        if (!_pResourceIDAttribute)
                         {
                             _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
                             break;
@@ -170,8 +170,8 @@ namespace YY
                             break;
                         }
 
-                        _hr = _pStyleSheet->SetSheetResid(u8String((u8char_t*)_pResID->value(), _pResID->value_size()));
-                        _pStyleSheetNote->remove_attribute(_pResID);
+                        _hr = _pStyleSheet->SetSheetResourceID(u8String((u8char_t*)_pResourceIDAttribute->value(), _pResourceIDAttribute->value_size()));
+                        _pStyleSheetNote->remove_attribute(_pResourceIDAttribute);
 
                         if (SUCCEEDED(_hr))
                         {
@@ -210,7 +210,7 @@ namespace YY
                         if (_pNote->type() != rapidxml::node_element)
                             continue;
 
-                        auto _pResID = _pNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResID"), false);
+                        auto _pResID = _pNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResourceID"), false);
                         if (!_pResID)
                         {
                             _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
@@ -886,7 +886,7 @@ namespace YY
 
             for (auto pStyleSheet : StyleSheets)
             {
-                auto _szSheetResidTarget = pStyleSheet->GetSheetResid();
+                auto _szSheetResidTarget = pStyleSheet->GetSheetResourceID();
                 if (_szSheetResidNeed.GetSize() == _szSheetResidTarget.GetSize() && _szSheetResidNeed.CompareI(_szSheetResidTarget.GetConstString()) == 0)
                 {
                     auto _StyleSheetValue = Value::CreateStyleSheet(pStyleSheet);
@@ -1044,8 +1044,12 @@ namespace YY
             return _hr;
         }
         
-        ValueCmpOperation __MEGA_UI_API TryParserStyleSheetOptionXmlType(_In_ rapidxml::xml_node<char>* _OptionNode, _Out_  u8StringView* _pszValue)
+        static ValueCmpOperation __MEGA_UI_API TryParserStyleSheetOptionXmlType(
+            _In_ rapidxml::xml_node<char>* _OptionNode,
+            _Out_ u8StringView* _pszValue
+            )
         {
+            _pszValue->SetString(nullptr, 0);
             auto _pAttr = _OptionNode->first_attribute();
             if (!_pAttr)
                 return ValueCmpOperation::Invalid;
