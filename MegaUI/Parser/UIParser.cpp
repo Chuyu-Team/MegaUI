@@ -621,13 +621,12 @@ namespace YY
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
-                if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-
-                auto _hr = ParserStringValue(_pProp, &_pExprNode->ChildExprNode[0], _pValue);
-                if (SUCCEEDED(_hr) || _hr != __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
-                    return _hr;
-
+                if (_pExprNode->ChildExprNode.GetSize() != 0)
+                {
+                    auto _hr = ParserStringValue(_pProp, &_pExprNode->ChildExprNode[0], _pValue);
+                    if (SUCCEEDED(_hr) || _hr != __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
+                        return _hr;
+                }
                 *_pValue = _pExprNode->szValue;
                 return S_OK;
             }

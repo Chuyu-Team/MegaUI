@@ -265,7 +265,16 @@ namespace YY
 
             HRESULT __MEGA_UI_API AddClassData(ClassData** ppData, IClassInfo* pClassInfo);
             
-            static uint32_t __MEGA_UI_API ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint32_t _uRuleId);
+            /// <summary>
+            /// 计算某条规则的总体权重值。
+            /// </summary>
+            /// <param name="CondArray">规则需要匹配的条件，每个条件之间均为 AND 逻辑。
+            /// 注意：ID权重是 0x8000，Class 权重是 0x4000，其他均为 1
+            /// </param>
+            /// <param name="_pClassInfo"></param>
+            /// <param name="_uRuleId">规则序号，数值越大，优先级越高。</param>
+            /// <returns>权重</returns>
+            static uint32_t __MEGA_UI_API ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint16_t _uRuleId);
         };
     }
 } // namespace YY

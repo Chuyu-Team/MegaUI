@@ -280,28 +280,30 @@ namespace YY
             return S_OK;
         }
         
-        uint32_t __MEGA_UI_API StyleSheet::ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint32_t _uRuleId)
+        uint32_t __MEGA_UI_API StyleSheet::ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint16_t _uRuleId)
         {
-            union
-            {
-                WORD ID = 0;
-
-                struct
-                {
-                    BYTE l;
-                    BYTE h;
-                };
-            } Data;
+            uint32_t _uWeight = 0u;
 
             for (auto& CondItem : CondArray)
             {
                 if (CondItem.pProp == &Element::g_ClassInfoData.IDProp)
-                    ++Data.h;
-
-                ++Data.l;
+                {
+                    _uWeight += 0x8000u;
+                }
+                else if (CondItem.pProp == &Element::g_ClassInfoData.ClassProp)
+                {
+                    _uWeight += 0x4000u;
+                }
+                else
+                {
+                    _uWeight += 1u;
+                }
             }
 
-            return MAKELONG(_uRuleId, Data.ID);
+            if (_uWeight > uint16_max)
+                _uWeight = uint16_max;
+
+            return MAKELONG(_uRuleId, _uWeight);
         }
     } // namespace MegaUI
 } // namespace YY
