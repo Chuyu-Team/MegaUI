@@ -367,8 +367,8 @@ namespace YY
 
                         _uTmp -= 0x1'00'00;
 
-                        *_szDstLast += (_uTmp >> 10) + 0xD8'00u;
-                        *_szDstLast += (_uTmp & 0x3'FF) + 0xDC'00u;
+                        *_szDstLast++ = (_uTmp >> 10) + 0xD8'00u;
+                        *_szDstLast++ = (_uTmp & 0x3'FF) + 0xDC'00u;
                         _szSrcBuffer += 4;
                     }
                     else
@@ -386,7 +386,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += ((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0);
+                        *_szDstLast++ = ((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0);
                         _szSrcBuffer += 3;
                     }
                     else
@@ -403,7 +403,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += ((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0);
+                        *_szDstLast++ = ((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0);
                         _szSrcBuffer += 2;
                     }
                     else
@@ -475,8 +475,8 @@ namespace YY
 
                         _uTmp -= 0x1'00'00;
 
-                        *_szDstLast += _byteswap_ushort((_uTmp >> 10) + 0xD8'00u);
-                        *_szDstLast += _byteswap_ushort((_uTmp & 0x3'FF) + 0xDC'00u);
+                        *_szDstLast++ = _byteswap_ushort((_uTmp >> 10) + 0xD8'00u);
+                        *_szDstLast++ = _byteswap_ushort((_uTmp & 0x3'FF) + 0xDC'00u);
                         _szSrcBuffer += 4;
                     }
                     else
@@ -494,7 +494,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += _byteswap_ushort(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0));
+                        *_szDstLast++ = _byteswap_ushort(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0));
                         _szSrcBuffer += 3;
                     }
                     else
@@ -511,7 +511,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += _byteswap_ushort(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0));
+                        *_szDstLast++ = _byteswap_ushort(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0));
                         _szSrcBuffer += 2;
                     }
                     else
@@ -580,7 +580,7 @@ namespace YY
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u && (_szSrcBuffer[4] & 0xC0u) == 0x80u && (_szSrcBuffer[5] & 0xC0u) == 0x80u)
                     {
                         uint32_t _uTmp = ((_szSrcBuffer[0] & 0x1) << 30) | ((_szSrcBuffer[1] & 0x3F) << 24) | ((_szSrcBuffer[2] & 0x3F) << 18) | ((_szSrcBuffer[3] & 0x3F) << 12) | ((_szSrcBuffer[4] & 0x3F) << 6) | ((_szSrcBuffer[5] & 0x3F) << 0);
-                        *_szDstLast += _uTmp;
+                        *_szDstLast++ = _uTmp;
                         _szSrcBuffer += 6;
                     }
                     else
@@ -598,7 +598,7 @@ namespace YY
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u && (_szSrcBuffer[4] & 0xC0u) == 0x80u)
                     {
                         uint32_t _uTmp = ((_szSrcBuffer[0] & 0x3) << 24) | ((_szSrcBuffer[1] & 0x3F) << 18) | ((_szSrcBuffer[2] & 0x3F) << 12) | ((_szSrcBuffer[3] & 0x3F) << 6) | ((_szSrcBuffer[4] & 0x3F) << 0);
-                        *_szDstLast += _uTmp;
+                        *_szDstLast++ = _uTmp;
                         _szSrcBuffer += 5;
                     }
                     else
@@ -616,7 +616,7 @@ namespace YY
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u)
                     {
                         uint32_t _uTmp = ((_szSrcBuffer[0] & 0x7) << 18) | ((_szSrcBuffer[1] & 0x3F) << 12) | ((_szSrcBuffer[2] & 0x3F) << 6) | ((_szSrcBuffer[3] & 0x3F) << 0);
-                        *_szDstLast += _uTmp;
+                        *_szDstLast++ = _uTmp;
                         _szSrcBuffer += 4;
                     }
                     else
@@ -633,7 +633,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += ((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0);
+                        *_szDstLast++ = ((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0);
                         _szSrcBuffer += 3;
                     }
                     else
@@ -650,7 +650,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += ((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0);
+                        *_szDstLast++ = ((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0);
                         _szSrcBuffer += 2;
                     }
                     else
@@ -719,7 +719,7 @@ namespace YY
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u && (_szSrcBuffer[4] & 0xC0u) == 0x80u && (_szSrcBuffer[5] & 0xC0u) == 0x80u)
                     {
                         uint32_t _uTmp = ((_szSrcBuffer[0] & 0x1) << 30) | ((_szSrcBuffer[1] & 0x3F) << 24) | ((_szSrcBuffer[2] & 0x3F) << 18) | ((_szSrcBuffer[3] & 0x3F) << 12) | ((_szSrcBuffer[4] & 0x3F) << 6) | ((_szSrcBuffer[5] & 0x3F) << 0);
-                        *_szDstLast += _byteswap_ulong(_uTmp);
+                        *_szDstLast++ = _byteswap_ulong(_uTmp);
                         _szSrcBuffer += 6;
                     }
                     else
@@ -737,7 +737,7 @@ namespace YY
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u && (_szSrcBuffer[4] & 0xC0u) == 0x80u)
                     {
                         uint32_t _uTmp = ((_szSrcBuffer[0] & 0x3) << 24) | ((_szSrcBuffer[1] & 0x3F) << 18) | ((_szSrcBuffer[2] & 0x3F) << 12) | ((_szSrcBuffer[3] & 0x3F) << 6) | ((_szSrcBuffer[4] & 0x3F) << 0);
-                        *_szDstLast += _byteswap_ulong(_uTmp);
+                        *_szDstLast++ = _byteswap_ulong(_uTmp);
                         _szSrcBuffer += 5;
                     }
                     else
@@ -755,7 +755,7 @@ namespace YY
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u)
                     {
                         uint32_t _uTmp = ((_szSrcBuffer[0] & 0x7) << 18) | ((_szSrcBuffer[1] & 0x3F) << 12) | ((_szSrcBuffer[2] & 0x3F) << 6) | ((_szSrcBuffer[3] & 0x3F) << 0);
-                        *_szDstLast += _byteswap_ulong(_uTmp);
+                        *_szDstLast++ = _byteswap_ulong(_uTmp);
                         _szSrcBuffer += 4;
                     }
                     else
@@ -772,7 +772,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += _byteswap_ulong(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0));
+                        *_szDstLast++ = _byteswap_ulong(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0));
                         _szSrcBuffer += 3;
                     }
                     else
@@ -789,7 +789,7 @@ namespace YY
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u)
                     {
-                        *_szDstLast += _byteswap_ulong(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0));
+                        *_szDstLast++ = _byteswap_ulong(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0));
                         _szSrcBuffer += 2;
                     }
                     else
