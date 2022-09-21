@@ -72,29 +72,6 @@ namespace YY
         {
         }
 
-        HRESULT __MEGA_UI_API Element::Create(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, Element** _ppOut)
-        {
-            if (!_ppOut)
-                return E_INVALIDARG;
-
-            *_ppOut = nullptr;
-
-            auto _pElement = HNew<Element>();
-            if (!_pElement)
-                return E_OUTOFMEMORY;
-
-            auto _hr = _pElement->Initialize(_fCreate, _pTopLevel, _pCooike);
-            if (SUCCEEDED(_hr))
-            {
-                *_ppOut = _pElement;
-            }
-            else
-            {
-                HDelete(_pElement);
-            }
-            return _hr;
-        }
-
         HRESULT __MEGA_UI_API Element::Initialize(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
         {
             pTopLevel = _pTopLevel;
@@ -840,87 +817,89 @@ namespace YY
             Rect _NewBounds = _Bounds;
             _NewBounds.DeflateRect(_BorderThickness);
 
-            switch (_iBorderStyle)
+            if (_BorderColor != nullptr)
             {
-            case BDS_Solid:
-            {
-                ATL::CComPtr<ID2D1SolidColorBrush> _BorderBrush;
-                auto hr = _pRenderTarget->CreateSolidColorBrush(
-                    _BorderColor.GetColor(),
-                    &_BorderBrush);
-
-                if (SUCCEEDED(hr))
+                switch (_iBorderStyle)
                 {
-                    // 左边
-                    _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.top, _NewBounds.left, _NewBounds.bottom}, _BorderBrush);
-                    // 上面
-                    _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _Bounds.right, _NewBounds.top}, _BorderBrush);
-                    // 右边
-                    _pRenderTarget->FillRectangle({_NewBounds.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, _BorderBrush);
-                    // 下面
-                    _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.bottom, _Bounds.right, _Bounds.bottom}, _BorderBrush);
-                }
-                break;
-            }
-            case BDS_Raised:
-            case BDS_Sunken:
-            {
-                Rect _BoundsOutter = _Bounds;
-                _BoundsOutter.DeflateRect({_BorderThickness.left / 2, _BorderThickness.top / 2, _BorderThickness.right / 2, _BorderThickness.bottom / 2});
-
-                ATL::CComPtr<ID2D1SolidColorBrush> hbOLT; // Brush for outter left and top
-                ATL::CComPtr<ID2D1SolidColorBrush> hbORB; // Brush for outter right and bottom
-                ATL::CComPtr<ID2D1SolidColorBrush> hbILT; // Brush for inner left top
-                ATL::CComPtr<ID2D1SolidColorBrush> hbIRB; // Brush for inner right and bottom
-
-                auto _BrushColor = _BorderColor.GetColor();
-
-                if (_iBorderStyle == BDS_Raised)
+                case BDS_Solid:
                 {
-                    _pRenderTarget->CreateSolidColorBrush(
-                        _BrushColor,
-                        &hbOLT);
-                    _pRenderTarget->CreateSolidColorBrush(
-                        AdjustBrightness(_BrushColor, VERYDARK),
-                        &hbORB);
-                    _pRenderTarget->CreateSolidColorBrush(
-                        AdjustBrightness(_BrushColor, VERYLIGHT),
-                        &hbILT);
-                    _pRenderTarget->CreateSolidColorBrush(
-                        AdjustBrightness(_BrushColor, DARK),
-                        &hbIRB);
+                    ATL::CComPtr<ID2D1SolidColorBrush> _BorderBrush;
+                    auto hr = _pRenderTarget->CreateSolidColorBrush(
+                        _BorderColor.GetColor(),
+                        &_BorderBrush);
+
+                    if (SUCCEEDED(hr))
+                    {
+                        // 左边
+                        _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.top, _NewBounds.left, _NewBounds.bottom}, _BorderBrush);
+                        // 上面
+                        _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _Bounds.right, _NewBounds.top}, _BorderBrush);
+                        // 右边
+                        _pRenderTarget->FillRectangle({_NewBounds.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, _BorderBrush);
+                        // 下面
+                        _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.bottom, _Bounds.right, _Bounds.bottom}, _BorderBrush);
+                    }
+                    break;
                 }
-                else
+                case BDS_Raised:
+                case BDS_Sunken:
                 {
-                    _pRenderTarget->CreateSolidColorBrush(
-                        AdjustBrightness(_BrushColor, VERYDARK),
-                        &hbOLT);
-                    _pRenderTarget->CreateSolidColorBrush(
-                        AdjustBrightness(_BrushColor, VERYLIGHT),
-                        &hbORB);
-                    _pRenderTarget->CreateSolidColorBrush(
-                        AdjustBrightness(_BrushColor, DARK),
-                        &hbILT);
-                    _pRenderTarget->CreateSolidColorBrush(
-                        _BrushColor,
-                        &hbIRB);
+                    Rect _BoundsOutter = _Bounds;
+                    _BoundsOutter.DeflateRect({_BorderThickness.left / 2, _BorderThickness.top / 2, _BorderThickness.right / 2, _BorderThickness.bottom / 2});
+
+                    ATL::CComPtr<ID2D1SolidColorBrush> hbOLT; // Brush for outter left and top
+                    ATL::CComPtr<ID2D1SolidColorBrush> hbORB; // Brush for outter right and bottom
+                    ATL::CComPtr<ID2D1SolidColorBrush> hbILT; // Brush for inner left top
+                    ATL::CComPtr<ID2D1SolidColorBrush> hbIRB; // Brush for inner right and bottom
+
+                    auto _BrushColor = _BorderColor.GetColor();
+
+                    if (_iBorderStyle == BDS_Raised)
+                    {
+                        _pRenderTarget->CreateSolidColorBrush(
+                            _BrushColor,
+                            &hbOLT);
+                        _pRenderTarget->CreateSolidColorBrush(
+                            AdjustBrightness(_BrushColor, VERYDARK),
+                            &hbORB);
+                        _pRenderTarget->CreateSolidColorBrush(
+                            AdjustBrightness(_BrushColor, VERYLIGHT),
+                            &hbILT);
+                        _pRenderTarget->CreateSolidColorBrush(
+                            AdjustBrightness(_BrushColor, DARK),
+                            &hbIRB);
+                    }
+                    else
+                    {
+                        _pRenderTarget->CreateSolidColorBrush(
+                            AdjustBrightness(_BrushColor, VERYDARK),
+                            &hbOLT);
+                        _pRenderTarget->CreateSolidColorBrush(
+                            AdjustBrightness(_BrushColor, VERYLIGHT),
+                            &hbORB);
+                        _pRenderTarget->CreateSolidColorBrush(
+                            AdjustBrightness(_BrushColor, DARK),
+                            &hbILT);
+                        _pRenderTarget->CreateSolidColorBrush(
+                            _BrushColor,
+                            &hbIRB);
+                    }
+
+                    // Paint etches
+                    _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _BoundsOutter.left, _BoundsOutter.bottom}, hbOLT);            // Outter left
+                    _pRenderTarget->FillRectangle({_BoundsOutter.left, _Bounds.top, _BoundsOutter.right, _BoundsOutter.top}, hbOLT);        // Outter top
+                    _pRenderTarget->FillRectangle({_BoundsOutter.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, hbORB);                // Outter right
+                    _pRenderTarget->FillRectangle({_Bounds.left, _BoundsOutter.bottom, _BoundsOutter.right, _Bounds.bottom}, hbORB);        // Outter bottom
+                    _pRenderTarget->FillRectangle({_BoundsOutter.left, _BoundsOutter.top, _NewBounds.left, _NewBounds.bottom}, hbILT);      // Inner left
+                    _pRenderTarget->FillRectangle({_NewBounds.left, _BoundsOutter.top, _NewBounds.right, _NewBounds.top}, hbILT);           // Inner top
+                    _pRenderTarget->FillRectangle({_NewBounds.right, _BoundsOutter.top, _BoundsOutter.right, _BoundsOutter.bottom}, hbIRB); // Inner right
+                    _pRenderTarget->FillRectangle({_BoundsOutter.left, _NewBounds.bottom, _NewBounds.right, _BoundsOutter.bottom}, hbIRB);  // Inner bottom
+                    break;
                 }
-
-                // Paint etches
-                _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _BoundsOutter.left, _BoundsOutter.bottom}, hbOLT); // Outter left
-                _pRenderTarget->FillRectangle({_BoundsOutter.left, _Bounds.top, _BoundsOutter.right, _BoundsOutter.top}, hbOLT); // Outter top
-                _pRenderTarget->FillRectangle({_BoundsOutter.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, hbORB);         // Outter right
-                _pRenderTarget->FillRectangle({_Bounds.left, _BoundsOutter.bottom, _BoundsOutter.right, _Bounds.bottom}, hbORB); // Outter bottom
-                _pRenderTarget->FillRectangle({_BoundsOutter.left, _BoundsOutter.top, _NewBounds.left, _NewBounds.bottom}, hbILT);    // Inner left
-                _pRenderTarget->FillRectangle({_NewBounds.left, _BoundsOutter.top, _NewBounds.right, _NewBounds.top}, hbILT);         // Inner top
-                _pRenderTarget->FillRectangle({_NewBounds.right, _BoundsOutter.top, _BoundsOutter.right, _BoundsOutter.bottom}, hbIRB); // Inner right
-                _pRenderTarget->FillRectangle({_BoundsOutter.left, _NewBounds.bottom, _NewBounds.right, _BoundsOutter.bottom}, hbIRB);  // Inner bottom
-                break;
+                default:
+                    break;
+                }
             }
-            default:
-                break;
-            }
-
 
             _Bounds = _NewBounds;
         }

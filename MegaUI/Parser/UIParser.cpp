@@ -248,7 +248,7 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __MEGA_UI_API UIParser::Play(u8StringView _szResID, Element* _pTopElement, intptr_t* _pCooike, Element** _ppElement)
+        HRESULT __MEGA_UI_API UIParser::Play(u8StringView _szResID, Element* _pTopElement, intptr_t* _pCooike, WindowElement** _ppElement)
         {
             if (!_ppElement)
                 return E_INVALIDARG;
@@ -277,14 +277,19 @@ namespace YY
                 auto _hr = Play(_ByteCode, _pTopElement, _pCooike, & _ElementList);
                 if (SUCCEEDED(_hr) && _ElementList.GetSize() == 1)
                 {
-                    *_ppElement = *_ElementList.GetData();
-                }
-                else
-                {
-                    for (auto _pItem : _ElementList)
+                    auto _pWindowElement = (*_ElementList.GetData())->TryCast<WindowElement>();
+
+                    if (_pWindowElement)
                     {
-                        _pItem->Destroy(false);
+                        // 成功
+                        *_ppElement = _pWindowElement;
+                        return _hr;
                     }
+                }
+                
+                for (auto _pItem : _ElementList)
+                {
+                    _pItem->Destroy(false);
                 }
 
                 return _hr;

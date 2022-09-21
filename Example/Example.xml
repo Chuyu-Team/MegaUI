@@ -1,20 +1,21 @@
 <MegaUI>
     <StyleSheets>
         <StyleSheet ResourceID="MyStyleSheet">
-            <Class Equal="蓝色背景">
+            <Class Equal="背景蓝色变原谅色">
                 <Default>
                     <Element BorderStyle="Solid" Background="RGB(0, 128, 192)" />
                 </Default>
                 <MouseWithin Equal="true">
-                    <Element BorderStyle="Sunken" Background="RGB(0, 128, 255)" />
+                    <Element BorderStyle="Raised" Background="RGB(0, 255, 128)" />
                 </MouseWithin>
             </Class>
-            <Class Equal="黄色背景">
+            <Class Equal="背景黄变黑">
                 <Default>
-                    <Element BorderStyle="Solid" Background="RGB(255, 242, 0)" />
+                    <Element BorderStyle="Solid" Background="RGB(0xFF, 242, 0)" />
                 </Default>
                 <MouseWithin Equal="true">
-                    <Element BorderStyle="Sunken" Background="RGB(255, 128, 64)" />
+                    <!--允许使用ARBG-->
+                    <Element BorderStyle="Sunken" Background="ARGB(128, 0, 0, 0)" />
                 </MouseWithin>
             </Class>
             <Default>
@@ -26,11 +27,11 @@
         </StyleSheet>
     </StyleSheets>
     <Windows>
-        <Window ResourceID="123" Height="600" Width="800" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet">
+        <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600" Width="800" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet">
             <Element LayoutPos="Absolute" X="100" Y="100" Height="400" Width="300" Background="ARGB(128, 255, 255, 0)"/>
             <Element LayoutPos="Absolute" X="300" Y="300" Height="400" Width="300" Background="ARGB(32, 255, 255, 0)" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 163, 73, 164)"/>
-            <Element LayoutPos="Absolute" X="150" Y="150" Height="50" Width="40" Class="黄色背景" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 128, 192)" />
-            <Element LayoutPos="Absolute" X="450" Y="200" Height="50" Width="40" Class="蓝色背景" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 128, 192)" />
-        </Window>
+            <Element LayoutPos="Absolute" X="150" Y="150" Height="50" Width="40" Class="背景黄变黑" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 0, 0)" />
+            <Element LayoutPos="Absolute" X="450" Y="200" Height="50" Width="40" Class="背景蓝色变原谅色" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 128, 192)" />
+        </WindowElement>
     </Windows>
 </MegaUI>

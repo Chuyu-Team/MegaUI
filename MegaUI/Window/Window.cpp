@@ -9,10 +9,9 @@ namespace YY
 {
     namespace MegaUI
     {
-        _APPLY_MEGA_UI_STATIC_CALSS_INFO(Window, _MEGA_UI_WINDOW_PROPERTY_TABLE);
-
         Window::Window()
             : hWnd(nullptr)
+            , pHost(nullptr)
             , pRender(nullptr)
             , LastRenderSize {}
         {
@@ -26,39 +25,7 @@ namespace YY
 
         EXTERN_C extern IMAGE_DOS_HEADER __ImageBase;
 
-        HRESULT __MEGA_UI_API Window::Create(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, Window** _ppOut)
-        {
-            if (!_ppOut)
-                return E_INVALIDARG;
-
-            *_ppOut = nullptr;
-
-            auto _pWindow = HNew<Window>();
-            if (!_pWindow)
-                return E_OUTOFMEMORY;
-
-            auto _hr = _pWindow->Initialize(_fCreate, _pTopLevel, _pCooike);
-            if (SUCCEEDED(_hr))
-            {
-                *_ppOut = _pWindow;
-                return S_OK;
-            }
-
-            HDelete(_pWindow);
-
-            return _hr;
-        }
-
-        HRESULT __MEGA_UI_API Window::Initialize(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
-        {
-            auto _hr = Element::Initialize(_fCreate, _pTopLevel, _pCooike);
-            if (FAILED(_hr))
-                return _hr;
-            pWindow = this;
-            return S_OK;
-        }
-
-        HRESULT __MEGA_UI_API Window::InitializeWindow(LPCWSTR _szTitle, HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
+        HRESULT __MEGA_UI_API Window::Initialize(HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
         {
             WNDCLASSEXW wcex;
 
@@ -83,13 +50,22 @@ namespace YY
                     return E_UNEXPECTED;
             }
 
-            auto _iWidth = GetWidth();
-            if (_iWidth < 0)
-                _iWidth = CW_USEDEFAULT;
+            int32_t _iWidth = CW_USEDEFAULT;
+            int32_t _iHeight = CW_USEDEFAULT;
+            uString _szTitle;
 
-            auto _iHeight = GetHeight();
-            if (_iHeight < 0)
-                _iHeight = CW_USEDEFAULT;
+            if (pHost)
+            {
+                _iWidth = pHost->GetWidth();
+                if (_iWidth < 0)
+                    _iWidth = CW_USEDEFAULT;
+
+                _iHeight = pHost->GetHeight();
+                if (_iHeight < 0)
+                    _iHeight = CW_USEDEFAULT;
+
+                _szTitle = pHost->GetTitle();
+            }
 
             hWnd = CreateWindowExW(
                 _fExStyle,
@@ -111,6 +87,31 @@ namespace YY
             // If top-level, initialize keyboard cue state, start all hidden
             if (!_hWndParent)
                 SendMessage(hWnd, WM_CHANGEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEACCEL | UISF_HIDEFOCUS), 0);
+
+            return S_OK;
+        }
+
+        HRESULT __MEGA_UI_API Window::SetHost(WindowElement* _pHost)
+        {
+            if (_pHost == nullptr || _pHost->pWindow)
+                return E_INVALIDARG;
+
+            // 已经初始化了。
+            if (pHost)
+            {
+                pHost->OnUnHosted(this);
+                pHost = nullptr;
+            }
+
+            pHost = _pHost;
+            pHost->OnHosted(this);
+            /*intptr_t _Cooike;
+            pHost->StartDefer(&_Cooike);
+
+            pHost->SetWidth(LastRenderSize.width);
+            pHost->SetHeight(LastRenderSize.height);
+
+            pHost->EndDefer(_Cooike);*/
 
             return S_OK;
         }
@@ -234,10 +235,10 @@ namespace YY
                 }
                 break;
             case WM_MOUSEMOVE:
-                if (_wParam != MK_LBUTTON)
+                if (pHost && _wParam != MK_LBUTTON)
                 {
                     Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
-                    UpdateMouseWithin(this, _Bounds, _Bounds, POINT {LOWORD(_lParam), HIWORD(_lParam)});
+                    UpdateMouseWithin(pHost, _Bounds, _Bounds, POINT {LOWORD(_lParam), HIWORD(_lParam)});
                 }
 
                 if ((fTrackMouse & TME_LEAVE) == 0)
@@ -255,7 +256,8 @@ namespace YY
                 break;
             case WM_MOUSELEAVE:
                 fTrackMouse &= ~TME_LEAVE;
-                UpdateMouseWithinToFalse(this);
+                if (pHost)
+                    UpdateMouseWithinToFalse(pHost);
                 break;
             default:
                 break;
@@ -266,6 +268,9 @@ namespace YY
 
         HRESULT __MEGA_UI_API Window::OnPaint()
         {
+            if (!pHost)
+                return S_FALSE;
+
             if (!pRender)
             {
                 auto hr = CreateRender(hWnd, &pRender);
@@ -280,7 +285,7 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
             Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
-            PaintElement(pRender, this, _Bounds, _NeedPaint);
+            PaintElement(pRender, pHost, _Bounds, _NeedPaint);
             return pRender->EndDraw();
         }
 
@@ -366,13 +371,16 @@ namespace YY
             LastRenderSize.width = _uWidth;
             LastRenderSize.height = _uHeight;
 
-            intptr_t _Cooike;
-            StartDefer(&_Cooike);
+            if (pHost)
+            {
+                intptr_t _Cooike;
+                pHost->StartDefer(&_Cooike);
 
-            SetWidth(_uWidth);
-            SetHeight(_uHeight);
+                pHost->SetWidth(_uWidth);
+                pHost->SetHeight(_uHeight);
 
-            EndDefer(_Cooike);
+                pHost->EndDefer(_Cooike);
+            }
         }
 
         void __MEGA_UI_API Window::UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& _ptPoint)

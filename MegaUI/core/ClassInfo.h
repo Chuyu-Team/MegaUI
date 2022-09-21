@@ -6,6 +6,93 @@
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
+// 控件的类信息声明
+#define _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(_CLASS_NAME, _BASE_CLASS, _CLASS_INFO_TYPE,       \
+                                                _DEFAULT_CREATE_FLAGS, _PROPERTY_TABLE)           \
+public:                                                                                           \
+    friend ClassInfoBase<_CLASS_NAME>;                                                            \
+    struct StaticClassInfo                                                                        \
+    {                                                                                             \
+        using ClassInfoType = _CLASS_INFO_TYPE;                                                   \
+        using BaseElement = _BASE_CLASS;                                                          \
+        constexpr static uint32_t fDefaultCreate = _DEFAULT_CREATE_FLAGS;                         \
+        constexpr static raw_const_astring_t szClassName = #_CLASS_NAME;                          \
+        constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT); \
+                                                                                                  \
+        ClassInfoType* pClassInfoPtr;                                                             \
+                                                                                                  \
+        union                                                                                     \
+        {                                                                                         \
+            struct                                                                                \
+            {                                                                                     \
+                _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_EXTERN);                                  \
+            };                                                                                    \
+                                                                                                  \
+            const PropertyInfo Props[uPropsCount];                                                \
+        };                                                                                        \
+    };                                                                                            \
+    _CLASS_NAME(const _CLASS_NAME&) = delete;                                                     \
+    _CLASS_NAME& operator=(const _CLASS_NAME&) = delete;                                          \
+                                                                                                  \
+    static StaticClassInfo g_ClassInfoData;                                                       \
+    virtual IClassInfo* __MEGA_UI_API GetControlClassInfo();                                      \
+    static IClassInfo* __MEGA_UI_API GetStaticControlClassInfo();                                 \
+    static HRESULT __MEGA_UI_API Register();                                                      \
+    static HRESULT __MEGA_UI_API UnRegister();                                                    \
+    static HRESULT __MEGA_UI_API Create(                                                          \
+        _In_ uint32_t _fCreate,                                                                   \
+        _In_opt_ Element* _pTopLevel,                                                             \
+        _Out_opt_ intptr_t* _pCooike,                                                             \
+        _Outptr_ _CLASS_NAME** _ppOut);
+
+// 展开控件类信息
+#define _APPLY_MEGA_UI_STATIC_CALSS_INFO(_CLASS_NAME, _PROPERTY_TABLE)                                                          \
+    _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST);                                                                   \
+                                                                                                                                \
+    _CLASS_NAME::StaticClassInfo _CLASS_NAME::g_ClassInfoData =                                                                 \
+        {                                                                                                                       \
+            nullptr,                                                                                                            \
+            {{_PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY)}}};                                                                      \
+    IClassInfo* __MEGA_UI_API _CLASS_NAME::GetControlClassInfo()                                                                \
+    {                                                                                                                           \
+        return g_ClassInfoData.pClassInfoPtr;                                                                                   \
+    }                                                                                                                           \
+    IClassInfo* __MEGA_UI_API _CLASS_NAME::GetStaticControlClassInfo()                                                          \
+    {                                                                                                                           \
+        return g_ClassInfoData.pClassInfoPtr;                                                                                   \
+    }                                                                                                                           \
+    HRESULT __MEGA_UI_API _CLASS_NAME::Register()                                                                               \
+    {                                                                                                                           \
+        return _CLASS_NAME::StaticClassInfo::ClassInfoType::Register();                                                         \
+    }                                                                                                                           \
+    HRESULT __MEGA_UI_API _CLASS_NAME::UnRegister()                                                                             \
+    {                                                                                                                           \
+        if (!g_ClassInfoData.pClassInfoPtr)                                                                                     \
+            return S_FALSE;                                                                                                     \
+        return g_ClassInfoData.pClassInfoPtr->UnRegister();                                                                     \
+    }                                                                                                                           \
+    HRESULT __MEGA_UI_API _CLASS_NAME::Create(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, _CLASS_NAME** _ppOut) \
+    {                                                                                                                           \
+        if (!_ppOut)                                                                                                            \
+            return E_INVALIDARG;                                                                                                \
+        *_ppOut = nullptr;                                                                                                      \
+                                                                                                                                \
+        auto _pElement = HNew<_CLASS_NAME>();                                                                                   \
+        if (!_pElement)                                                                                                         \
+            return E_OUTOFMEMORY;                                                                                               \
+                                                                                                                                \
+        auto _hr = _pElement->Initialize(_fCreate, _pTopLevel, _pCooike);                                                       \
+        if (SUCCEEDED(_hr))                                                                                                     \
+        {                                                                                                                       \
+            *_ppOut = _pElement;                                                                                                \
+        }                                                                                                                       \
+        else                                                                                                                    \
+        {                                                                                                                       \
+            HDelete(_pElement);                                                                                                 \
+        }                                                                                                                       \
+        return _hr;                                                                                                             \
+    }
+
 namespace YY
 {
     namespace MegaUI

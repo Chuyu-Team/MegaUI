@@ -37,70 +37,6 @@ namespace YY
 {
     namespace MegaUI
     {
-#define _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(_CLASS_NAME, _BASE_CLASS, _CLASS_INFO_TYPE,                 \
-                                                _DEFAULT_CREATE_FLAGS, _PROPERTY_TABLE)                     \
-		public:                                                                                             \
-            friend ClassInfoBase<_CLASS_NAME>;                                                              \
-            struct StaticClassInfo                                                                          \
-            {                                                                                               \
-	            using ClassInfoType = _CLASS_INFO_TYPE;                                                     \
-				using BaseElement =_BASE_CLASS;                                                             \
-                constexpr static uint32_t fDefaultCreate = _DEFAULT_CREATE_FLAGS;                           \
-                constexpr static raw_const_astring_t szClassName = #_CLASS_NAME;                           \
-                constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT);   \
-                                                                                                            \
-                ClassInfoType* pClassInfoPtr;                                                               \
-                                                                                                            \
-                union                                                                                       \
-                {                                                                                           \
-                    struct                                                                                  \
-                    {                                                                                       \
-                        _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_EXTERN);                                    \
-                    };                                                                                      \
-                                                                                                            \
-                    const PropertyInfo Props[uPropsCount];                                                  \
-                };                                                                                          \
-            };                                                                                              \
-                                                                                                            \
-            static StaticClassInfo g_ClassInfoData;                                                         \
-            virtual IClassInfo* __MEGA_UI_API GetControlClassInfo();                                           \
-            static IClassInfo* __MEGA_UI_API GetStaticControlClassInfo();                                      \
-            static HRESULT __MEGA_UI_API Register();                                                           \
-            static HRESULT __MEGA_UI_API UnRegister();
-
-
-#define _APPLY_MEGA_UI_STATIC_CALSS_INFO(_CLASS_NAME, _PROPERTY_TABLE)   \
-		_PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST);        \
-                                                                         \
-		_CLASS_NAME::StaticClassInfo _CLASS_NAME::g_ClassInfoData =      \
-		{                                                                \
-			nullptr,                                                     \
-			{                                                            \
-				{                                                        \
-					_PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY)             \
-				}                                                        \
-			}                                                            \
-		};                                                               \
-		IClassInfo* __MEGA_UI_API _CLASS_NAME::GetControlClassInfo()        \
-		{                                                                \
-			return g_ClassInfoData.pClassInfoPtr;                        \
-		}                                                                \
-		IClassInfo* __MEGA_UI_API _CLASS_NAME::GetStaticControlClassInfo()  \
-		{                                                                \
-			return g_ClassInfoData.pClassInfoPtr;                        \
-        }                                                                \
-        HRESULT __MEGA_UI_API _CLASS_NAME::Register()                       \
-        {                                                                \
-            return _CLASS_NAME::StaticClassInfo::ClassInfoType::Register();               \
-        }                                                                \
-        HRESULT __MEGA_UI_API _CLASS_NAME::UnRegister()                     \
-        {                                                                \
-            if (!g_ClassInfoData.pClassInfoPtr)                          \
-                return S_FALSE;                                          \
-            return g_ClassInfoData.pClassInfoPtr->UnRegister();          \
-        }
-
-
 #if 0
 		_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout, Value::GetElementNull,            nullptr, ValueType::eElement) \
 		_APPLY(Children,       PF_Normal | PF_ReadOnly,               PG_AffectsDesiredSize | PG_AffectsLayout, Value::GetElListNull,             nullptr, ValueType::eElementList) \
@@ -257,13 +193,10 @@ namespace YY
 		public:
             Element();
 
-			Element(const Element&) = delete;
-
 			virtual ~Element();
-
-			Element& __MEGA_UI_API operator=(const Element&) = delete;
-
-            static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
+            
+            // 此函数来自 _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN
+            // static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
             HRESULT __MEGA_UI_API Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
@@ -275,7 +208,7 @@ namespace YY
 			/// <param name="_bUpdateCache">如果为true，那么重新获取值并刷新缓存，如果为 false则直接从缓存返回数据。</param>
 			/// <returns>如果返回，则返回 Unavailable。
 			/// 如果未设置，则返回 Unset</returns>
-			_Ret_notnull_ Value __MEGA_UI_API GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ bool _bUpdateCache);
+            _Ret_notnull_ Value __MEGA_UI_API GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies = PropertyIndicies::PI_Specified, _In_ bool _bUpdateCache = false);
 			
             /// <summary>
             /// 修改 Local Value

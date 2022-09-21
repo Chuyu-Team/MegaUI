@@ -193,6 +193,7 @@
     <ClInclude Include="Render\GDI+\GdiPlusRender.h" />
     <ClInclude Include="Render\Render.h" />
     <ClInclude Include="Window\Window.h" />
+    <ClInclude Include="Window\WindowElement.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\StringTransform.cpp" />
@@ -211,6 +212,7 @@
     </ClCompile>
     <ClCompile Include="Render\Render.cpp" />
     <ClCompile Include="Window\Window.cpp" />
+    <ClCompile Include="Window\WindowElement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="MegaUI.natvis" />

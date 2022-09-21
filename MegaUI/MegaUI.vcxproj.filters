@@ -147,6 +147,9 @@
     <ClInclude Include="Parser\ValueParser.h">
       <Filter>UI\Parser</Filter>
     </ClInclude>
+    <ClInclude Include="Window\WindowElement.h">
+      <Filter>UI\Window</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -181,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="Parser\UIParser.cpp">
       <Filter>UI\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Window\WindowElement.cpp">
+      <Filter>UI\Window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

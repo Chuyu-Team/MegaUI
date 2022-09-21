@@ -23,14 +23,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
     std::vector<int> dd;
     
-    Window::Register();
-    YY::MegaUI::Element::Register();
+    WindowElement::Register();
 
-    intptr_t Cooike;
-    Window* _pWindows = nullptr;
+    Window _TestWindow;
     
-    Window::Create(0, nullptr, &Cooike, &_pWindows);
-
     UIParser _Parser;
 
     auto hRes = FindResourceW(NULL, MAKEINTRESOURCEW(IDR_UI1), L"UI");
@@ -41,13 +37,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     _Parser.ParserByXmlString(std::move(_szXml));
 
-    YY::MegaUI::Window* pWindow;
+    YY::MegaUI::WindowElement* pWindowElement;
 
-    _Parser.Play(u8"123", nullptr, nullptr, (Element**)&pWindow);
+    _Parser.Play(u8"测试窗口", nullptr, nullptr, &pWindowElement);
 
-    pWindow->InitializeWindow(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+    _TestWindow.SetHost(pWindowElement);
+    _TestWindow.Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
 
-    pWindow->ShowWindow(SW_SHOW);
+    _TestWindow.ShowWindow(SW_SHOW);
 
     //YY::MegaUI::Element* p;
     //YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);

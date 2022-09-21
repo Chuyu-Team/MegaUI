@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "../base/MegaUITypeInt.h"
-#include "../core/Element.h"
+#include "../Window/WindowElement.h"
 #include "../base/DynamicArray.h"
 #include "../base/ArrayView.h"
 
@@ -91,7 +91,12 @@ namespace YY
             //    return ParserByXmlString(std::move(_szXmlStringBuffer));
             //}
 
-            HRESULT __MEGA_UI_API Play(u8StringView _szResID, Element* _pTopElement, intptr_t* _pCooike, Element** _ppElement);
+            HRESULT __MEGA_UI_API Play(
+                _In_ u8StringView _szResID,
+                _In_opt_ Element* _pTopElement,
+                _Out_opt_ intptr_t* _pCooike,
+                _Outptr_ WindowElement** _ppElement
+                );
         protected:
 
             IClassInfo* __MEGA_UI_API FindClassInfo(_In_ raw_const_astring_t _szClassName, _Out_opt_ uint32_t* _pIndex = nullptr);

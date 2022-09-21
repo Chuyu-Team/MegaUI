@@ -7,7 +7,7 @@
 #include <wincodec.h>
 
 #include "../base/MegaUITypeInt.h"
-#include "../core/Element.h"
+#include "WindowElement.h"
 #include "../base/DynamicArray.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
@@ -16,36 +16,29 @@ namespace YY
 {
     namespace MegaUI
     {
-#define _MEGA_UI_WINDOW_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Title, PF_LocalOnly | PF_ReadOnly, 0, &Value::GetStringNull, nullptr, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString)
-
 
         class Render;
 
-        class Window : public Element
+        class Window
         {
-            _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Window, Element, ClassInfoBase<Window>, 0u, _MEGA_UI_WINDOW_PROPERTY_TABLE);
         protected:
             HWND hWnd;
+            WindowElement* pHost;
             Render* pRender;
             D2D1_SIZE_U LastRenderSize;
             uint32_t fTrackMouse = 0u;
             // TODO 需要更换为块式队列更友好。
             DynamicArray<Element*> DelayedDestroyList;
+
         public:
             Window();
 
-            virtual ~Window();
-
             Window(const Window&) = delete;
             void operator=(const Window&) = delete;
+
+            virtual ~Window();
             
-            static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Window** _ppOut);
-
-            HRESULT __MEGA_UI_API Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
-
-            HRESULT __MEGA_UI_API InitializeWindow(
-                _In_opt_ LPCWSTR _szTitle,
+            HRESULT __MEGA_UI_API Initialize(
                 _In_opt_ HWND _hWndParent,
                 _In_opt_ HICON _hIcon,
                 _In_ int _dX,
@@ -54,6 +47,8 @@ namespace YY
                 _In_ DWORD _fStyle,
                 _In_ UINT _nOptions
                 );
+
+            HRESULT __MEGA_UI_API SetHost(_In_ WindowElement* _pHost);
 
             static UINT __MEGA_UI_API AsyncDestroyMsg();
 
