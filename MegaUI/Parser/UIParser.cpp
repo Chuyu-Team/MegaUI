@@ -275,16 +275,21 @@ namespace YY
 
                 DynamicArray<Element*, false, false> _ElementList;
                 auto _hr = Play(_ByteCode, _pTopElement, _pCooike, & _ElementList);
-                if (SUCCEEDED(_hr) && _ElementList.GetSize() == 1)
+                if (SUCCEEDED(_hr))
                 {
-                    auto _pWindowElement = (*_ElementList.GetData())->TryCast<WindowElement>();
-
-                    if (_pWindowElement)
+                    if (_ElementList.GetSize() == 1)
                     {
-                        // 成功
-                        *_ppElement = _pWindowElement;
-                        return _hr;
+                        auto _pWindowElement = (*_ElementList.GetData())->TryCast<WindowElement>();
+
+                        if (_pWindowElement)
+                        {
+                            // 成功
+                            *_ppElement = _pWindowElement;
+                            return _hr;
+                        }
                     }
+
+                    _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
                 }
                 
                 for (auto _pItem : _ElementList)

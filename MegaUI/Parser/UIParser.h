@@ -134,7 +134,12 @@ namespace YY
             HRESULT __MEGA_UI_API ParserStyleSheetValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
 
 
-            HRESULT __MEGA_UI_API Play(ArrayView<uint8_t>& _ByteCode, Element* _pTopElement, intptr_t* _pCooike, DynamicArray<Element*, false, false>* _ppElement);
+            HRESULT __MEGA_UI_API Play(
+                _In_ ArrayView<uint8_t>& _ByteCode,
+                _In_opt_ Element* _pTopElement,
+                _Out_opt_ intptr_t* _pCooike,
+                _Inout_ DynamicArray<Element*, false, false>* _ppElement
+                );
             
             /// <summary>
             /// 解析样式表，将结果设置到 _pStyleSheet
