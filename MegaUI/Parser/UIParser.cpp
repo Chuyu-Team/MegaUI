@@ -303,48 +303,48 @@ namespace YY
             return E_NOT_SET;
         }
         
-        IClassInfo* __MEGA_UI_API UIParser::FindClassInfo(raw_const_astring_t _szClassName, uint32_t* _pIndex)
+        IControlInfo* __MEGA_UI_API UIParser::FindControlInfo(raw_const_astring_t _szControlName, uint32_t* _pIndex)
         {
             if (_pIndex)
                 *_pIndex = uint32_max;
 
-            if (_szClassName == nullptr || *_szClassName == '\0')
+            if (_szControlName == nullptr || *_szControlName == '\0')
                 return nullptr;
 
-            auto _uSize = ClassArray.GetSize();
-            auto _pData = ClassArray.GetData();
+            auto _uSize = ControlInfoArray.GetSize();
+            auto _pData = ControlInfoArray.GetData();
             for (uint32_t _uIndex = 0; _uIndex != _uSize; ++_uIndex)
             {
-                auto _pClassInfo = _pData[_uIndex];
+                auto _pControlInfo = _pData[_uIndex];
 
-                if (_strcmpi(_pClassInfo->GetName(), _szClassName) == 0)
+                if (_strcmpi(_pControlInfo->GetName(), _szControlName) == 0)
                 {
                     if (_pIndex)
                         *_pIndex = _uIndex;
-                    return _pClassInfo;
+                    return _pControlInfo;
                 }
             }
 
-            auto _pClassInfo = GetRegisterControlClassInfo(_szClassName);
-            if (!_pClassInfo)
+            auto _pControlInfo = GetRegisterControlInfo(_szControlName);
+            if (!_pControlInfo)
                 return nullptr;
 
             uint_t _uIndex;
-            auto _ppBuffer = ClassArray.AddAndGetPtr(&_uIndex);
+            auto _ppBuffer = ControlInfoArray.AddAndGetPtr(&_uIndex);
             if (!_ppBuffer)
                 return nullptr;
 
-            *_ppBuffer = _pClassInfo;
+            *_ppBuffer = _pControlInfo;
             if (_pIndex)
                 *_pIndex = _uIndex;
-            return _pClassInfo;
+            return _pControlInfo;
         }
 
-        const PropertyInfo* __MEGA_UI_API UIParser::GetPropertyByName(IClassInfo* _pClassInfo, raw_const_astring_t _szPropName)
+        const PropertyInfo* __MEGA_UI_API UIParser::GetPropertyByName(IControlInfo* _pControlInfo, raw_const_astring_t _szPropName)
         {
             const PropertyInfo* _pProp = nullptr;
             // 搜索 PropertyInfo
-            for (uint32_t _uIndex = 0; _pProp = _pClassInfo->EnumPropertyInfo(_uIndex); ++_uIndex)
+            for (uint32_t _uIndex = 0; _pProp = _pControlInfo->EnumPropertyInfo(_uIndex); ++_uIndex)
             {
                 if (_strcmpi(_pProp->pszName, _szPropName) == 0)
                 {
@@ -359,8 +359,8 @@ namespace YY
         {
             CreateElement _CreateElement;
             uint32_t _uIndex;
-            auto _pClassInfo = FindClassInfo(_pNote->name(), &_uIndex);
-            if (!_pClassInfo)
+            auto _pControlInfo = FindControlInfo(_pNote->name(), &_uIndex);
+            if (!_pControlInfo)
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
             _CreateElement.uIndexOfElementName = _uIndex;
 
@@ -370,7 +370,7 @@ namespace YY
 
             for (auto _pAttr = _pNote->first_attribute(); _pAttr; _pAttr = _pAttr->next_attribute())
             {
-                _hr = ParserElementProperty(_pAttr, _pClassInfo, _pRecorder);
+                _hr = ParserElementProperty(_pAttr, _pControlInfo, _pRecorder);
                 if (FAILED(_hr))
                     return _hr;
             }
@@ -407,15 +407,15 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserElementProperty(rapidxml::xml_attribute<char>* _pAttribute, IClassInfo* _pClassInfo, UIParserRecorder* _pRecorder)
+        HRESULT __MEGA_UI_API UIParser::ParserElementProperty(rapidxml::xml_attribute<char>* _pAttribute, IControlInfo* _pControlInfo, UIParserRecorder* _pRecorder)
         {
-            auto _pProp = GetPropertyByName(_pClassInfo, _pAttribute->name());
+            auto _pProp = GetPropertyByName(_pControlInfo, _pAttribute->name());
 
             if (!_pProp)
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
             
             Value _Value;
-            auto _hr = ParserValue(_pClassInfo, _pProp, u8StringView((u8char_t*)_pAttribute->value(), _pAttribute->value_size()) , &_Value);
+            auto _hr = ParserValue(_pControlInfo, _pProp, u8StringView((u8char_t*)_pAttribute->value(), _pAttribute->value_size()), &_Value);
             if (FAILED(_hr))
                 return _hr;
 
@@ -449,7 +449,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserValue(IClassInfo* _pClassInfo, const PropertyInfo* _pProp, u8StringView _szExpr, Value* _pValue)
+        HRESULT __MEGA_UI_API UIParser::ParserValue(IControlInfo* _pControlInfo, const PropertyInfo* _pProp, u8StringView _szExpr, Value* _pValue)
         {
             *_pValue = nullptr;
 
@@ -994,7 +994,7 @@ namespace YY
                     _ByteCode.Slice(_pByteCodeBase->cbData);
 
                     auto _pCreateElement = (CreateElement*)_pByteCodeBase;
-                    auto _ppClass = ClassArray.GetItemPtr(_pCreateElement->uIndexOfElementName);
+                    auto _ppClass = ControlInfoArray.GetItemPtr(_pCreateElement->uIndexOfElementName);
 
                     if (!_ppClass)
                     {
@@ -1159,8 +1159,8 @@ namespace YY
         {
             uint32_t _uIndex;
 
-            auto _pClassInfo = FindClassInfo(_pElementValueNode->name(), &_uIndex);
-            if (!_pClassInfo)
+            auto _pControlInfo = FindControlInfo(_pElementValueNode->name(), &_uIndex);
+            if (!_pControlInfo)
             {
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
             }
@@ -1176,12 +1176,12 @@ namespace YY
 
             for (auto& _XmlOptionItem : _XmlOption)
             {
-                auto _pProp = GetPropertyByName(_pClassInfo, (raw_const_astring_t)_XmlOptionItem.szPropName.GetConstString());
+                auto _pProp = GetPropertyByName(_pControlInfo, (raw_const_astring_t)_XmlOptionItem.szPropName.GetConstString());
                 if (!_pProp)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
                 Value _Value;
-                auto _hr = ParserValue(_pClassInfo, _pProp, _XmlOptionItem.szPropValue, &_Value);
+                auto _hr = ParserValue(_pControlInfo, _pProp, _XmlOptionItem.szPropValue, &_Value);
                 if (FAILED(_hr))
                     return _hr;
 
@@ -1198,12 +1198,12 @@ namespace YY
             DynamicArray<Decl, false> _DeclArray;
             for (auto _pPropXml = _pElementValueNode->first_attribute(); _pPropXml; _pPropXml = _pPropXml->next_attribute())
             {
-                auto _pProp = GetPropertyByName(_pClassInfo, _pPropXml->name());
+                auto _pProp = GetPropertyByName(_pControlInfo, _pPropXml->name());
                 if (!_pProp)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
                 Value _Value;
-                auto _hr = ParserValue(_pClassInfo, _pProp, u8StringView((u8char_t*)_pPropXml->value(), _pPropXml->value_size()), &_Value);
+                auto _hr = ParserValue(_pControlInfo, _pProp, u8StringView((u8char_t*)_pPropXml->value(), _pPropXml->value_size()), &_Value);
                 if (FAILED(_hr))
                     return _hr;
 
@@ -1215,7 +1215,7 @@ namespace YY
                 _pDecl->Value = std::move(_Value);
             }
 
-            return _pStyleSheet->AddRule(uString(), _pClassInfo, CondArray, ArrayView<Decl>(_DeclArray.GetData(), _DeclArray.GetSize()));
+            return _pStyleSheet->AddRule(uString(), _pControlInfo, CondArray, ArrayView<Decl>(_DeclArray.GetData(), _DeclArray.GetSize()));
         }
     } // namespace MegaUI
 } // namespace YY

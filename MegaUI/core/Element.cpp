@@ -6,7 +6,7 @@
 
 #include "Property.h"
 #include "value.h"
-#include "ClassInfoBase.h"
+#include "ControlInfoImp.h"
 #include "Layout.h"
 #include "../Window/Window.h"
 #include "StyleSheet.h"
@@ -42,7 +42,7 @@ namespace YY
             { }
         };
 
-		_APPLY_MEGA_UI_STATIC_CALSS_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
+		_APPLY_MEGA_UI_STATIC_CONTROL_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
         Element::Element()
             : RenderNode{}
@@ -56,7 +56,7 @@ namespace YY
             , LocSizeInLayout {}
             , LocDesiredSize {}
             , LocLastDesiredSizeConstraint {}
-            , iSpecLayoutPos(g_ClassInfoData.LayoutPosProp.pFunDefaultValue().GetInt32())
+            , iSpecLayoutPos(g_ControlInfoData.LayoutPosProp.pFunDefaultValue().GetInt32())
             , pSheet(nullptr)
             , SpecID(0)
             , fNeedsLayout(0)
@@ -94,7 +94,7 @@ namespace YY
                 _eIndicies = PropertyIndicies(_uIndicies);
             }
 
-            const auto _iIndex = GetControlClassInfo()->GetPropertyInfoIndex(_Prop);
+            const auto _iIndex = GetControlInfo()->GetPropertyInfoIndex(_Prop);
             if (_iIndex < 0)
                 return Value::GetUnavailable();
 
@@ -200,7 +200,7 @@ namespace YY
             if (_Prop.fFlags & PF_ReadOnly)
                 return E_NOTIMPL;
 
-            const auto _iIndex = GetControlClassInfo()->GetPropertyInfoIndex(_Prop);
+            const auto _iIndex = GetControlInfo()->GetPropertyInfoIndex(_Prop);
             if (_iIndex < 0)
                 return E_NOT_SET;
 
@@ -246,12 +246,12 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ClassInfoData.LayoutPosProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.LayoutPosProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __MEGA_UI_API Element::GetWidth()
         {
-            auto _pValue = GetValue(Element::g_ClassInfoData.WidthProp, PropertyIndicies::PI_Specified, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.WidthProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
@@ -266,12 +266,12 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ClassInfoData.WidthProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.WidthProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __MEGA_UI_API Element::GetHeight()
         {
-            auto _pValue = GetValue(Element::g_ClassInfoData.HeightProp, PropertyIndicies::PI_Specified, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.HeightProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
@@ -286,12 +286,12 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ClassInfoData.HeightProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.HeightProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __MEGA_UI_API Element::GetX()
         {
-            auto _pValue = GetValue(Element::g_ClassInfoData.XProp, PropertyIndicies::PI_Specified, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.XProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
@@ -307,12 +307,12 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ClassInfoData.XProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.XProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         int32_t __MEGA_UI_API Element::GetY()
         {
-            auto _pValue = GetValue(Element::g_ClassInfoData.YProp, PropertyIndicies::PI_Specified, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.YProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
@@ -328,13 +328,13 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ClassInfoData.YProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.YProp, PropertyIndicies::PI_Local, _pValue);
         }
 
         POINT __MEGA_UI_API Element::GetLocation()
         {
             POINT _Location = {};
-            auto _pValue = GetValue(Element::g_ClassInfoData.LocationProp, PropertyIndicies::PI_Local, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.LocationProp, PropertyIndicies::PI_Local, false);
 
             if (_pValue != nullptr)
             {
@@ -348,7 +348,7 @@ namespace YY
         {
             SIZE _Extent = {};
 
-            auto _pValue = GetValue(Element::g_ClassInfoData.ExtentProp, PropertyIndicies::PI_Local, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.ExtentProp, PropertyIndicies::PI_Local, false);
             if (_pValue != nullptr)
             {
                 _Extent = _pValue.GetSize();
@@ -358,14 +358,14 @@ namespace YY
 
         ValueIs<ValueType::Layout> __MEGA_UI_API Element::GetLayout()
         {
-            return GetValue(Element::g_ClassInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
+            return GetValue(Element::g_ControlInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
         }
 
         int32_t __MEGA_UI_API Element::GetBorderStyle()
         {
             int32_t _iValue = {};
 
-            auto _pValue = GetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Specified, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.BorderStyleProp, PropertyIndicies::PI_Specified, false);
             if (_pValue != nullptr)
             {
                 _iValue = _pValue.GetInt32();
@@ -379,7 +379,7 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ClassInfoData.BorderStyleProp, PropertyIndicies::PI_Local, _NewValue);
+            return SetValue(Element::g_ControlInfoData.BorderStyleProp, PropertyIndicies::PI_Local, _NewValue);
         }
 
         HRESULT __MEGA_UI_API Element::SetBorderColor(Color _BorderColor)
@@ -388,7 +388,7 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
             
-            return SetValue(Element::g_ClassInfoData.BorderColorProp, PropertyIndicies::PI_Local, _NewValue);
+            return SetValue(Element::g_ControlInfoData.BorderColorProp, PropertyIndicies::PI_Local, _NewValue);
         }
 
         bool __MEGA_UI_API Element::IsRTL()
@@ -403,7 +403,7 @@ namespace YY
 
         uString __MEGA_UI_API Element::GetClass()
         {
-            auto _Value = GetValue(Element::g_ClassInfoData.ClassProp, PropertyIndicies::PI_Specified, false);
+            auto _Value = GetValue(Element::g_ControlInfoData.ClassProp, PropertyIndicies::PI_Specified, false);
             if (_Value.GetType() == ValueType::uString)
             {
                 return _Value.GetString();
@@ -418,7 +418,7 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ClassInfoData.ClassProp, PropertyIndicies::PI_Local, _NewValue);
+            return SetValue(Element::g_ControlInfoData.ClassProp, PropertyIndicies::PI_Local, _NewValue);
         }
 
         bool __MEGA_UI_API Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
@@ -740,7 +740,7 @@ namespace YY
 
         HRESULT __MEGA_UI_API Element::SetVisible(bool bVisible)
         {
-            return SetValue(Element::g_ClassInfoData.VisibleProp, PropertyIndicies::PI_Local, Value::CreateBool(bVisible));
+            return SetValue(Element::g_ControlInfoData.VisibleProp, PropertyIndicies::PI_Local, Value::CreateBool(bVisible));
         }
 
         bool __MEGA_UI_API Element::GetVisible()
@@ -803,18 +803,18 @@ namespace YY
                     _pRenderTarget,
                     GetBorderStyle(),
                     ApplyRTL(SpecBorderThickness),
-                    GetValue(Element::g_ClassInfoData.BorderColorProp, PropertyIndicies::PI_Specified, false),
+                    GetValue(Element::g_ControlInfoData.BorderColorProp, PropertyIndicies::PI_Specified, false),
                     _PaintBounds);
             }
 
             PaintBackground(
                 _pRenderTarget,
-                GetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false),
+                GetValue(Element::g_ControlInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false),
                 _PaintBounds);
 
             /*auto _SpecPadding = ApplyRTL(SpecPadding);
 
-            auto Background = GetValue(Element::g_ClassInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false);*/
+            auto Background = GetValue(Element::g_ControlInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false);*/
 
             
         }
@@ -1087,7 +1087,7 @@ namespace YY
                 StartDefer(&Cooike);
                 
                 // 更新 ChildrenProp
-                PreSourceChange(Element::g_ClassInfoData.ChildrenProp, PropertyIndicies::PI_Local, _OldChildrenValue, _NewChildrenValue);
+                PreSourceChange(Element::g_ControlInfoData.ChildrenProp, PropertyIndicies::PI_Local, _OldChildrenValue, _NewChildrenValue);
                 vecLocChildren.SetArray(std::move(_NewChildrenList));
                 PostSourceChange();
 
@@ -1107,7 +1107,7 @@ namespace YY
                     _pTmp->pDeferObject = _pDeferObject;
                     _pDeferObject->AddRef();
                     
-                    _pTmp->PreSourceChange(Element::g_ClassInfoData.ParentProp, PropertyIndicies::PI_Local, Value::GetElementNull(), _NewParentValue);
+                    _pTmp->PreSourceChange(Element::g_ControlInfoData.ParentProp, PropertyIndicies::PI_Local, Value::GetElementNull(), _NewParentValue);
 
                     _pTmp->pLocParent = this;
                     _pTmp->pTopLevel = this;
@@ -1217,7 +1217,7 @@ namespace YY
                 intptr_t _CookiePtr;
                 StartDefer(&_CookiePtr);
 
-                PreSourceChange(Element::g_ClassInfoData.ChildrenProp, PropertyIndicies::PI_Local, _ChildrenValueOld, _ChildrenValueNew);
+                PreSourceChange(Element::g_ControlInfoData.ChildrenProp, PropertyIndicies::PI_Local, _ChildrenValueOld, _ChildrenValueNew);
                 vecLocChildren.SetArray(std::move(_ChildrenNew));
                 PostSourceChange();
 
@@ -1239,7 +1239,7 @@ namespace YY
                         _pDeferObject->AddRef();
                     }
                     
-                    _pItem->PreSourceChange(Element::g_ClassInfoData.ParentProp, PropertyIndicies::PI_Local, _OldParentValue, Value::GetElementNull());
+                    _pItem->PreSourceChange(Element::g_ControlInfoData.ParentProp, PropertyIndicies::PI_Local, _OldParentValue, Value::GetElementNull());
                     _pItem->pLocParent = nullptr;
                     _pItem->pTopLevel = nullptr;
                     PostSourceChange();
@@ -1465,9 +1465,9 @@ namespace YY
                             {
                                 auto pTop = pElement->GetTopLevel();
 
-                                auto pClassInfo = pTop->GetClassInfoW();
+                                auto _pControlInfo = pTop->GetClassInfoW();
 
-                                if (pClassInfo->IsSubclassOf(HWNDElement::GetClassInfoPtr()))
+                                if (_pControlInfo->IsSubclassOf(HWNDElement::GetClassInfoPtr()))
                                     pc->pe->_InheritProperties();
                             }
                         }*/
@@ -1582,7 +1582,7 @@ namespace YY
                 {
                     for (auto _pChild : vecLocChildren)
                     {
-                        auto _iPropIndex = _pChild->GetControlClassInfo()->GetPropertyInfoIndex(_Prop);
+                        auto _iPropIndex = _pChild->GetControlInfo()->GetPropertyInfoIndex(_Prop);
                         if (_iPropIndex < 0)
                             continue;
                         
@@ -2188,7 +2188,7 @@ namespace YY
 
                     if (pSizeNew != nullptr)
                     {
-                        PreSourceChange(Element::g_ClassInfoData.LastDesiredSizeConstraintProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
+                        PreSourceChange(Element::g_ControlInfoData.LastDesiredSizeConstraintProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
 
                         LocDesiredSize.cx = _ConstraintSize.cx;
                         LocDesiredSize.cy = _ConstraintSize.cy;
@@ -2293,7 +2293,7 @@ namespace YY
                 auto pSizeOld = Value::CreateSize(LocLastDesiredSizeConstraint);
                 auto pSizeNew = Value::CreateSize(sizeDesired);
 
-                PreSourceChange(g_ClassInfoData.DesiredSizeProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
+                PreSourceChange(g_ControlInfoData.DesiredSizeProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
 
                 LocLastDesiredSizeConstraint = sizeDesired;
 
@@ -2443,11 +2443,11 @@ namespace YY
                 if (!pElement)
                     return S_OK;
 
-                auto _pClassInfo = this->GetControlClassInfo();
+                auto _pControlInfo = this->GetControlInfo();
                 
                 for (uint32_t _Index = 0;; ++_Index)
                 {
-                    auto _pProp = _pClassInfo->EnumPropertyInfo(_Index);
+                    auto _pProp = _pControlInfo->EnumPropertyInfo(_Index);
                     if (!_pProp)
                         break;
 
@@ -2496,13 +2496,13 @@ namespace YY
                 if (!pItem)
                     return E_UNEXPECTED;
 
-                if (pItem->pProp == &Element::g_ClassInfoData.SheetProp)
+                if (pItem->pProp == &Element::g_ControlInfoData.SheetProp)
                 {
-                    auto _pClassInfo = GetControlClassInfo();
+                    auto _pControlInfo = GetControlInfo();
 
                     for (uint32_t _uIndex = 0;; ++_uIndex)
                     {
-                        auto _pProp = _pClassInfo->EnumPropertyInfo(_uIndex);
+                        auto _pProp = _pControlInfo->EnumPropertyInfo(_uIndex);
                         if (!_pProp)
                             break;
 
@@ -2521,7 +2521,7 @@ namespace YY
                             _hrLast = _hr;
                     }
                 }
-                else if (pItem->pProp == &Element::g_ClassInfoData.ParentProp)
+                else if (pItem->pProp == &Element::g_ControlInfoData.ParentProp)
                 {
                     auto _pNewParent = _pNewValue.GetElement();
                     if (_pNewParent)
@@ -2577,7 +2577,7 @@ namespace YY
             if (_pPointNew == nullptr)
                 return;
 
-            PreSourceChange(Element::g_ClassInfoData.PosInLayoutProp, PropertyIndicies::PI_Local, _pPointOld, _pPointNew);
+            PreSourceChange(Element::g_ControlInfoData.PosInLayoutProp, PropertyIndicies::PI_Local, _pPointOld, _pPointNew);
 
             LocPosInLayout = _LayoutPosition;
 
@@ -2597,7 +2597,7 @@ namespace YY
             if (_pSizeNew == nullptr)
                 return;
 
-            PreSourceChange(Element::g_ClassInfoData.SizeInLayoutProp, PropertyIndicies::PI_Local, _pSizeOld, _pSizeNew);
+            PreSourceChange(Element::g_ControlInfoData.SizeInLayoutProp, PropertyIndicies::PI_Local, _pSizeOld, _pSizeNew);
 
             LocSizeInLayout = _LayoutSize;
 

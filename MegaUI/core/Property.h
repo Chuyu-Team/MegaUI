@@ -12,7 +12,7 @@ namespace YY
 	namespace MegaUI
 	{
 		enum class ValueType;
-		class IClassInfo;
+		class IControlInfo;
 		class Value;
 		class Element;
 

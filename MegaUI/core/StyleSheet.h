@@ -11,7 +11,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        class IClassInfo;
+        class IControlInfo;
         struct Cond;
         struct Decl;
         class Element;
@@ -162,11 +162,11 @@ namespace YY
             }
         };
 
-        class ClassData
+        class ControlStyleData
         {
         public:
             // 0
-            IClassInfo* pClassInfo;
+            IControlInfo* pControlInfo;
 
             // 4
             DynamicArray<const PropertyInfo*> DependencyPropList;
@@ -175,12 +175,12 @@ namespace YY
             // 0x44
 
         public:
-            ClassData(IClassInfo* _pClassInfo = nullptr)
-                : pClassInfo(_pClassInfo)
+            ControlStyleData(IControlInfo* _pControlInfo = nullptr)
+                : pControlInfo(_pControlInfo)
             {
             }
 
-            PropertyData* __MEGA_UI_API GetPropertyData(const PropertyInfo* _pRefProp)
+            PropertyData* __MEGA_UI_API GetPropertyData(_In_ const PropertyInfo* _pRefProp)
             {
                 if (!_pRefProp)
                     return nullptr;
@@ -194,7 +194,7 @@ namespace YY
                 return nullptr;
             }
 
-            HRESULT __thiscall AddPropertyData(PropertyData** _ppPropertyData, const PropertyInfo* _pProp)
+            HRESULT __thiscall AddPropertyData(_Outptr_ PropertyData** _ppPropertyData, _In_ const PropertyInfo* _pProp)
             {
                 if (!_ppPropertyData)
                     return E_INVALIDARG;
@@ -221,7 +221,7 @@ namespace YY
             // 0
             uint32_t uRuleId;
             // 8
-            DynamicArray<ClassData> ClassArray;
+            DynamicArray<ControlStyleData> ControlStyleDataArray;
             // 0x50
             // DynamicArray<DynamicArray<Cond>> CondData;
             // 0x5C
@@ -245,15 +245,15 @@ namespace YY
             uint32_t __MEGA_UI_API Release();
 
             // 1
-            HRESULT __MEGA_UI_API AddRule(uString szRule, IClassInfo* pClassInfo, DynamicArray<Cond, true> CondArray, const ArrayView<Decl>& DeclArray);
+            HRESULT __MEGA_UI_API AddRule(uString szRule, IControlInfo* _pControlInfo, DynamicArray<Cond, true> CondArray, const ArrayView<Decl>& DeclArray);
             // 2
             void __MEGA_UI_API MakeImmutable();
             // 3
-            Value __MEGA_UI_API GetSheetValue(Element* _pElement, const PropertyInfo* _pProp);
+            Value __MEGA_UI_API GetSheetValue(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp);
             // 4
-            HRESULT __MEGA_UI_API GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetSheetDependencies(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp, _Out_ DepRecs* _pdr, _In_ DeferCycle* _pDeferCycle);
             // 5
-            HRESULT __MEGA_UI_API GetSheetScope(Element* _pElement, DepRecs* pdr, DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetSheetScope(_In_ Element* _pElement, _Out_ DepRecs* pdr, _In_ DeferCycle* _pDeferCycle);
             // 6
             u8String __MEGA_UI_API GetSheetResourceID();
 
@@ -261,9 +261,9 @@ namespace YY
             HRESULT __MEGA_UI_API SetSheetResourceID(u8String _szSheetResourceID);
             
         private:
-            ClassData* __MEGA_UI_API GetClassData(IClassInfo* pClassInfo);
+            _Ret_maybenull_ ControlStyleData* __MEGA_UI_API GetControlStyleData(_In_ IControlInfo* _pControlInfo);
 
-            HRESULT __MEGA_UI_API AddClassData(ClassData** ppData, IClassInfo* pClassInfo);
+            HRESULT __MEGA_UI_API AddControlStyleData(_Outptr_ ControlStyleData** _ppData, _In_ IControlInfo* _pControlInfo);
             
             /// <summary>
             /// 计算某条规则的总体权重值。
@@ -271,10 +271,10 @@ namespace YY
             /// <param name="CondArray">规则需要匹配的条件，每个条件之间均为 AND 逻辑。
             /// 注意：ID权重是 0x8000，Class 权重是 0x4000，其他均为 1
             /// </param>
-            /// <param name="_pClassInfo"></param>
+            /// <param name="_pControlInfo"></param>
             /// <param name="_uRuleId">规则序号，数值越大，优先级越高。</param>
             /// <returns>权重</returns>
-            static uint32_t __MEGA_UI_API ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint16_t _uRuleId);
+            static uint32_t __MEGA_UI_API ComputeSpecif(_In_ const DynamicArray<Cond, true>& CondArray, _In_ IControlInfo* _pControlInfo, _In_ uint16_t _uRuleId);
         };
     }
 } // namespace YY

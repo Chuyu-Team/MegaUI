@@ -73,7 +73,7 @@ namespace YY
 
             DynamicArray<UIParserRecorder> RecorderArray;
             
-            DynamicArray<IClassInfo*> ClassArray;
+            DynamicArray<IControlInfo*> ControlInfoArray;
             DynamicArray<StyleSheet*> StyleSheets;
         public:
             void __MEGA_UI_API Clear();
@@ -99,15 +99,15 @@ namespace YY
                 );
         protected:
 
-            IClassInfo* __MEGA_UI_API FindClassInfo(_In_ raw_const_astring_t _szClassName, _Out_opt_ uint32_t* _pIndex = nullptr);
+            IControlInfo* __MEGA_UI_API FindControlInfo(_In_ raw_const_astring_t _szControlName, _Out_opt_ uint32_t* _pIndex = nullptr);
 
-            const PropertyInfo* __MEGA_UI_API GetPropertyByName(_In_ IClassInfo* _pClassInfo, _In_ raw_const_astring_t _szPropName);
+            const PropertyInfo* __MEGA_UI_API GetPropertyByName(_In_ IControlInfo* _pControlInfo, _In_ raw_const_astring_t _szPropName);
 
             HRESULT __MEGA_UI_API ParserElementNode(_In_ rapidxml::xml_node<char>* _pNote, _Inout_ UIParserRecorder* _pRecorder);
 
-            HRESULT __MEGA_UI_API ParserElementProperty(_In_ rapidxml::xml_attribute<char>* _pAttribute, _In_ IClassInfo* _pClassInfo, _Inout_ UIParserRecorder* _pRecorder);
+            HRESULT __MEGA_UI_API ParserElementProperty(_In_ rapidxml::xml_attribute<char>* _pAttribute, _In_ IControlInfo* _pControlInfo, _Inout_ UIParserRecorder* _pRecorder);
 
-            HRESULT __MEGA_UI_API ParserValue(_In_ IClassInfo* _pClassInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
+            HRESULT __MEGA_UI_API ParserValue(_In_ IControlInfo* _pControlInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
 
             static HRESULT __MEGA_UI_API ParserInt32Value(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
 

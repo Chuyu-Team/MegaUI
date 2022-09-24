@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "..\base\MegaUITypeInt.h"
-#include "ClassInfo.h"
+#include "ControlInfo.h"
 #include "..\base\alloc.h"
 #include "Element.h"
 
@@ -11,18 +11,18 @@ namespace YY
     namespace MegaUI
     {
         template<typename _Class>
-        class ClassInfoBase : public IClassInfo
+        class ControlInfoImp : public IControlInfo
         {
         private:
             uint32_t uRef;
 
         public:
-            ClassInfoBase()
+            ControlInfoImp()
                 : uRef(0)
             {
             }
 
-            virtual ~ClassInfoBase()
+            virtual ~ControlInfoImp()
             {
             }
 
@@ -37,8 +37,8 @@ namespace YY
 
                 if (_uNewRef == 0)
                 {
-                    UnregisterClassInternal(false);
-                    _Class::g_ClassInfoData.pClassInfoPtr = nullptr;
+                    UnregisterControlInternal(false);
+                    _Class::g_ControlInfoData.pControlInfoPtr = nullptr;
                     HDelete(this);
                 }
 
@@ -47,12 +47,12 @@ namespace YY
 
             virtual raw_const_astring_t __MEGA_UI_API GetName() override
             {
-                return _Class::g_ClassInfoData.szClassName;
+                return _Class::g_ControlInfoData.szControlName;
             }
 
-            virtual IClassInfo* __MEGA_UI_API GetBaseClass() override
+            virtual IControlInfo* __MEGA_UI_API GetBaseControlInfo() override
             {
-                return _Class::StaticClassInfo::BaseElement::GetStaticControlClassInfo();
+                return _Class::StaticControlInfo::BaseControl::GetStaticControlInfo();
             }
 
             virtual HRESULT __MEGA_UI_API CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
@@ -61,7 +61,7 @@ namespace YY
                     return E_INVALIDARG;
                 *_ppOutElem = nullptr;
                 _Class* _pClass;
-                auto _hr = _Class::Create(_Class::StaticClassInfo::fDefaultCreate, _pTopLevelElem, _pCookies, &_pClass);
+                auto _hr = _Class::Create(_Class::StaticControlInfo::fDefaultCreate, _pTopLevelElem, _pCookies, &_pClass);
                 if (SUCCEEDED(_hr))
                     *_ppOutElem = static_cast<Element*>(_pClass);
 
@@ -70,19 +70,19 @@ namespace YY
 
             static constexpr uint32_t GetPropertyInfoCount()
             {
-                return _Class::StaticClassInfo::uPropsCount + ClassInfoBase<_Class::StaticClassInfo::BaseElement>::GetPropertyInfoCount();
+                return _Class::StaticControlInfo::uPropsCount + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
             }
 
             static const PropertyInfo* __MEGA_UI_API EnumPropertyInfoImp(uint32_t _uIndex)
             {
-                constexpr auto _uBasePropCount = ClassInfoBase<_Class::StaticClassInfo::BaseElement>::GetPropertyInfoCount();
+                constexpr auto _uBasePropCount = ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
 
                 if (_uIndex >= _uBasePropCount)
                 {
-                    return &_Class::g_ClassInfoData.Props[_uIndex - _uBasePropCount];
+                    return &_Class::g_ControlInfoData.Props[_uIndex - _uBasePropCount];
                 }
 
-                return ClassInfoBase<_Class::StaticClassInfo::BaseElement>::EnumPropertyInfoImp(_uIndex);
+                return ControlInfoImp<_Class::StaticControlInfo::BaseControl>::EnumPropertyInfoImp(_uIndex);
             }
 
             virtual const PropertyInfo* __MEGA_UI_API EnumPropertyInfo(uint32_t _uIndex) override
@@ -99,19 +99,19 @@ namespace YY
                 return GetPropertyInfoIndex(_Prop) >= 0;
             }
 
-            virtual bool __MEGA_UI_API IsSubclassOf(IClassInfo* _pClassInfo) override
+            virtual bool __MEGA_UI_API IsSubclassOf(IControlInfo* _pControlInfo) override
             {
-                if (!_pClassInfo)
+                if (!_pControlInfo)
                     return false;
 
-                IClassInfo* _pThis = this;
+                IControlInfo* _pThis = this;
 
                 do
                 {
-                    if (_pClassInfo == _pThis)
+                    if (_pControlInfo == _pThis)
                         return true;
 
-                    _pThis = GetBaseClass();
+                    _pThis = GetBaseControlInfo();
                 } while (_pThis);
 
                 return false;
@@ -119,14 +119,14 @@ namespace YY
 
             static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
-                const uint32_t _uIndex = &_Prop - &_Class::g_ClassInfoData.Props[0];
+                const uint32_t _uIndex = &_Prop - &_Class::g_ControlInfoData.Props[0];
 
-                if (_uIndex >= _Class::StaticClassInfo::uPropsCount)
+                if (_uIndex >= _Class::StaticControlInfo::uPropsCount)
                 {
-                    return ClassInfoBase<_Class::StaticClassInfo::BaseElement>::GetPropertyInfoIndexImp(_Prop);
+                    return ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoIndexImp(_Prop);
                 }
 
-                return _uIndex + ClassInfoBase<_Class::StaticClassInfo::BaseElement>::GetPropertyInfoCount();
+                return _uIndex + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
             }
 
             virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
@@ -141,32 +141,32 @@ namespace YY
             /// <returns>HRESULT</returns>
             static HRESULT __MEGA_UI_API Register(bool _bExplicitRegister = true)
             {
-                auto _hr = _Class::StaticClassInfo::BaseElement::StaticClassInfo::ClassInfoType::Register(false);
+                auto _hr = _Class::StaticControlInfo::BaseControl::StaticControlInfo::ControlInfoType::Register(false);
 
                 if (FAILED(_hr))
                     return _hr;
 
-                auto& _pClassInfo = _Class::g_ClassInfoData.pClassInfoPtr;
-                if (_pClassInfo)
+                auto& _pControlInfo = _Class::g_ControlInfoData.pControlInfoPtr;
+                if (_pControlInfo)
                 {
-                    _pClassInfo->AddRef();
+                    _pControlInfo->AddRef();
 
                     if (_bExplicitRegister)
                     {
-                        _hr = _pClassInfo->RegisterClassInternal(true);
+                        _hr = _pControlInfo->RegisterControlInternal(true);
 
                         if (FAILED(_hr))
-                            _pClassInfo->Release();
+                            _pControlInfo->Release();
                     }
                 }
                 else
                 {
                     // 这里不会增加引用计数
-                    auto _pTmp = HNewAndZero<_Class::StaticClassInfo::ClassInfoType>();
+                    auto _pTmp = HNewAndZero<_Class::StaticControlInfo::ControlInfoType>();
                     if (!_pTmp)
                         return E_OUTOFMEMORY;
 
-                    _hr = _pTmp->RegisterClassInternal(_bExplicitRegister);
+                    _hr = _pTmp->RegisterControlInternal(_bExplicitRegister);
                     if (FAILED(_hr))
                     {
                         HDelete(_pTmp);
@@ -174,7 +174,7 @@ namespace YY
                     else
                     {
                         _pTmp->AddRef();
-                        _pClassInfo = _pTmp;
+                        _pControlInfo = _pTmp;
                     }
                 }
 
@@ -183,19 +183,19 @@ namespace YY
 
             HRESULT __MEGA_UI_API UnRegister()
             {
-                auto _pClassInfo = _Class::g_ClassInfoData.pClassInfoPtr;
-                if (!_pClassInfo)
+                auto _pControlInfo = _Class::g_ControlInfoData.pControlInfoPtr;
+                if (!_pControlInfo)
                     return S_FALSE;
 
-                auto _hr = _pClassInfo->UnregisterClassInternal(true);
+                auto _hr = _pControlInfo->UnregisterControlInternal(true);
 
                 if (SUCCEEDED(_hr))
                 {
-                    IClassInfo* _pThis = this;
+                    IControlInfo* _pThis = this;
 
                     while (_pThis)
                     {
-                        auto _pTmp = _pThis->GetBaseClass();
+                        auto _pTmp = _pThis->GetBaseControlInfo();
                         _pThis->Release();
                         _pThis = _pTmp;
                     }
@@ -206,18 +206,18 @@ namespace YY
         };
 
         template<>
-        class ClassInfoBase<Element> : public IClassInfo
+        class ControlInfoImp<Element> : public IControlInfo
         {
         private:
             uint32_t uRef;
 
         public:
-            ClassInfoBase()
+            ControlInfoImp()
                 : uRef(0)
             {
             }
 
-            virtual ~ClassInfoBase()
+            virtual ~ControlInfoImp()
             {
             }
 
@@ -232,8 +232,8 @@ namespace YY
 
                 if (_uNewRef == 0)
                 {
-                    UnregisterClassInternal(false);
-                    Element::g_ClassInfoData.pClassInfoPtr = nullptr;
+                    UnregisterControlInternal(false);
+                    Element::g_ControlInfoData.pControlInfoPtr = nullptr;
                     HDelete(this);
                 }
 
@@ -242,27 +242,27 @@ namespace YY
 
             virtual raw_const_astring_t __MEGA_UI_API GetName() override
             {
-                return Element::StaticClassInfo::szClassName;
+                return Element::StaticControlInfo::szControlName;
             }
 
-            virtual IClassInfo* __MEGA_UI_API GetBaseClass() override
+            virtual IControlInfo* __MEGA_UI_API GetBaseControlInfo() override
             {
                 return nullptr;
             }
 
             virtual HRESULT __MEGA_UI_API CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
-                return Element::Create(Element::StaticClassInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
+                return Element::Create(Element::StaticControlInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
             }
 
             static constexpr uint32_t GetPropertyInfoCount()
             {
-                return Element::StaticClassInfo::uPropsCount;
+                return Element::StaticControlInfo::uPropsCount;
             }
 
             static const PropertyInfo* __MEGA_UI_API EnumPropertyInfoImp(unsigned int _uIndex)
             {
-                return &Element::g_ClassInfoData.Props[_uIndex];
+                return &Element::g_ControlInfoData.Props[_uIndex];
             }
 
             virtual const PropertyInfo* __MEGA_UI_API EnumPropertyInfo(unsigned int _uIndex) override
@@ -279,19 +279,19 @@ namespace YY
                 return GetPropertyInfoIndex(_Prop) >= 0;
             }
 
-            virtual bool __MEGA_UI_API IsSubclassOf(IClassInfo* _pClassInfo) override
+            virtual bool __MEGA_UI_API IsSubclassOf(IControlInfo* _pControlInfo) override
             {
-                if (!_pClassInfo)
+                if (!_pControlInfo)
                     return false;
 
-                IClassInfo* _pThis = this;
+                IControlInfo* _pThis = this;
 
                 do
                 {
-                    if (_pClassInfo == _pThis)
+                    if (_pControlInfo == _pThis)
                         return true;
 
-                    _pThis = GetBaseClass();
+                    _pThis = GetBaseControlInfo();
                 } while (_pThis);
 
                 return false;
@@ -299,8 +299,8 @@ namespace YY
 
             static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
-                const uint32_t _uIndex = &_Prop - &Element::g_ClassInfoData.Props[0];
-                if (_uIndex >= Element::StaticClassInfo::uPropsCount)
+                const uint32_t _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
+                if (_uIndex >= Element::StaticControlInfo::uPropsCount)
                     return -1;
 
                 return _uIndex;
@@ -308,8 +308,8 @@ namespace YY
 
             virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
             {
-                const unsigned _uIndex = &_Prop - &Element::g_ClassInfoData.Props[0];
-                if (_uIndex >= Element::StaticClassInfo::uPropsCount)
+                const unsigned _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
+                if (_uIndex >= Element::StaticControlInfo::uPropsCount)
                     return -1;
 
                 return _uIndex;
@@ -323,28 +323,28 @@ namespace YY
             static HRESULT __MEGA_UI_API Register(bool _bExplicitRegister = true)
             {
                 HRESULT _hr = S_OK;
-                auto& _pClassInfo = Element::g_ClassInfoData.pClassInfoPtr;
-                if (_pClassInfo)
+                auto& _pControlInfo = Element::g_ControlInfoData.pControlInfoPtr;
+                if (_pControlInfo)
                 {
-                    _pClassInfo->AddRef();
+                    _pControlInfo->AddRef();
 
                     if (_bExplicitRegister)
                     {
-                        _hr = _pClassInfo->RegisterClassInternal(true);
+                        _hr = _pControlInfo->RegisterControlInternal(true);
                         if (FAILED(_hr))
                         {
-                            _pClassInfo->Release();
+                            _pControlInfo->Release();
                         }
                     }
                 }
                 else
                 {
                     // 这里不会增加引用计数
-                    auto _pTmp = HNewAndZero<Element::StaticClassInfo::ClassInfoType>();
+                    auto _pTmp = HNewAndZero<Element::StaticControlInfo::ControlInfoType>();
                     if (!_pTmp)
                         return E_OUTOFMEMORY;
 
-                    _hr = _pTmp->RegisterClassInternal(_bExplicitRegister);
+                    _hr = _pTmp->RegisterControlInternal(_bExplicitRegister);
                     if (FAILED(_hr))
                     {
                         HDelete(_pTmp);
@@ -352,7 +352,7 @@ namespace YY
                     else
                     {
                         _pTmp->AddRef();
-                        _pClassInfo = _pTmp;
+                        _pControlInfo = _pTmp;
                     }
                 }
 
@@ -361,15 +361,15 @@ namespace YY
 
             HRESULT __MEGA_UI_API UnRegister()
             {
-                auto _pClassInfo = Element::g_ClassInfoData.pClassInfoPtr;
-                if (!_pClassInfo)
+                auto _pControlInfo = Element::g_ControlInfoData.pControlInfoPtr;
+                if (!_pControlInfo)
                     return S_FALSE;
 
-                auto _hr = _pClassInfo->UnregisterClassInternal(true);
+                auto _hr = _pControlInfo->UnregisterControlInternal(true);
 
                 if (SUCCEEDED(_hr))
                 {
-                    _pClassInfo->Release();
+                    _pControlInfo->Release();
                 }
 
                 return _hr;

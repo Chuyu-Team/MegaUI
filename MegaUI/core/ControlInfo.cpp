@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include "ClassInfo.h"
+#include "ControlInfo.h"
 
 #include <unordered_map>
 
@@ -27,25 +27,25 @@ namespace YY
         };
 
 
-        struct RegisterClassInfo
+        struct RegisterControlInfo
         {
-            IClassInfo* pClassInfo;
+            IControlInfo* pControlInfo;
             uint32_t uRef;
         };
 
-        typedef std::unordered_map<raw_const_astring_t, RegisterClassInfo, hash_raw_const_string, equal_to_raw_const_string, YY::MegaUI::allocator<std::pair<const raw_const_astring_t, RegisterClassInfo>>> RegisterClassInfoHashMap;
+        typedef std::unordered_map<raw_const_astring_t, RegisterControlInfo, hash_raw_const_string, equal_to_raw_const_string, YY::MegaUI::allocator<std::pair<const raw_const_astring_t, RegisterControlInfo>>> RegisterClassInfoHashMap;
 
-        static RegisterClassInfoHashMap g_ClassMap;
+        static RegisterClassInfoHashMap g_ControlInfoMap;
 
 
 
-        HRESULT __MEGA_UI_API IClassInfo::RegisterClassInternal(bool _bExplicitRegister)
+        HRESULT __MEGA_UI_API IControlInfo::RegisterControlInternal(bool _bExplicitRegister)
         {
             std::pair<RegisterClassInfoHashMap::iterator, bool> _itInsert;
 
             try
             {
-                _itInsert = g_ClassMap.insert(std::make_pair(GetName(), RegisterClassInfo{this}));
+                _itInsert = g_ControlInfoMap.insert(std::make_pair(GetName(), RegisterControlInfo{this}));
             }
             catch (const std::exception&)
             {
@@ -57,7 +57,7 @@ namespace YY
             if (!_itInsert.second)
             {
                 // Class name相同，但是不是一个 ClassInfo，这种情况我们应该返回错误
-                if (_RegisterInfo.pClassInfo != this)
+                if (_RegisterInfo.pControlInfo != this)
                     return E_ABORT;
             }
 
@@ -69,11 +69,11 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API IClassInfo::UnregisterClassInternal(bool _bExplicitRegister)
+        HRESULT __MEGA_UI_API IControlInfo::UnregisterControlInternal(bool _bExplicitRegister)
         {
-            auto _it = g_ClassMap.find(GetName());
+            auto _it = g_ControlInfoMap.find(GetName());
 
-            if (_it == g_ClassMap.end())
+            if (_it == g_ControlInfoMap.end())
                 return S_FALSE;
 
             auto& _RegisterInfo = _it->second;
@@ -87,48 +87,48 @@ namespace YY
             }
             else
             {
-                g_ClassMap.erase(_it);
+                g_ControlInfoMap.erase(_it);
             }
 
             return S_OK;
         }
         
-        IClassInfo* __MEGA_UI_API GetRegisterControlClassInfo(raw_const_astring_t _szClassName)
+        IControlInfo* __MEGA_UI_API GetRegisterControlInfo(raw_const_astring_t _szControlName)
         {
-            if (!_szClassName)
+            if (!_szControlName)
                 return nullptr;
 
-            auto _it = g_ClassMap.find(_szClassName);
-            if (_it == g_ClassMap.end())
+            auto _it = g_ControlInfoMap.find(_szControlName);
+            if (_it == g_ControlInfoMap.end())
                 return nullptr;
 
-            return _it->second.pClassInfo;
+            return _it->second.pControlInfo;
         }
 
         HRESULT __MEGA_UI_API UnRegisterAllControls()
         {
-            DynamicArray<RegisterClassInfo, false, false> _vecTopRegisterClassInfo;
-            auto _hr = _vecTopRegisterClassInfo.Reserve(g_ClassMap.size());
+            DynamicArray<RegisterControlInfo, false, false> _vecTopRegisterControlInfo;
+            auto _hr = _vecTopRegisterControlInfo.Reserve(g_ControlInfoMap.size());
             if (FAILED(_hr))
                 return _hr;
 
 
-            for(auto& _Info : g_ClassMap)
+            for (auto& _Info : g_ControlInfoMap)
             {
                 if (_Info.second.uRef)
                 {
-                    _hr = _vecTopRegisterClassInfo.Add(_Info.second);
+                    _hr = _vecTopRegisterControlInfo.Add(_Info.second);
 
                     if (FAILED(_hr))
                         return _hr;
                 }
             }
 
-            for (auto& _Info : _vecTopRegisterClassInfo)
+            for (auto& _Info : _vecTopRegisterControlInfo)
             {
                 for (; _Info.uRef; --_Info.uRef)
                 {
-                    auto _hrUnRegister = _Info.pClassInfo->UnRegister();
+                    auto _hrUnRegister = _Info.pControlInfo->UnRegister();
                     if (FAILED(_hrUnRegister))
                     {
                         _hr = _hrUnRegister;
@@ -138,7 +138,7 @@ namespace YY
             }
 
             // 根据预期，Map应该是空的
-            if (SUCCEEDED(_hr) && g_ClassMap.empty() == false)
+            if (SUCCEEDED(_hr) && g_ControlInfoMap.empty() == false)
             {
                 _hr = E_FAIL;
             }

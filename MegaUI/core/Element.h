@@ -6,7 +6,7 @@
 #include "value.h"
 #include "Property.h"
 #include "DeferCycle.h"
-#include "ClassInfo.h"
+#include "ControlInfo.h"
 #include "../Render/Render.h"
 
 // Global layout positions
@@ -93,7 +93,7 @@ namespace YY
 
 		class Element
 		{
-            _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(Element, void, ClassInfoBase<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
+            _APPLY_MEGA_UI_STATIC_CONTROL_INFO_EXTERN(Element, void, ControlInfoImp<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
             friend NativeWindowHost;
             friend StyleSheet;
             friend Window;
@@ -357,11 +357,11 @@ namespace YY
             template<typename _Type>
             _Type* __MEGA_UI_API TryCast()
             {
-                auto _pClassInfo = GetControlClassInfo();
-                if (!_pClassInfo)
+                auto _pControlInfo = GetControlInfo();
+                if (!_pControlInfo)
                     return nullptr;
 
-                if (!_pClassInfo->IsSubclassOf(_Type::GetStaticControlClassInfo()))
+                if (!_pControlInfo->IsSubclassOf(_Type::GetStaticControlInfo()))
                     return nullptr;
 
                 return (_Type*)this;

@@ -19,7 +19,7 @@ namespace YY
 
         class WindowElement : public Element
         {
-            _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN(WindowElement, Element, ClassInfoBase<WindowElement>, 0u, _MEGA_UI_WINDOW_ELEMENT_PROPERTY_TABLE);
+            _APPLY_MEGA_UI_STATIC_CONTROL_INFO_EXTERN(WindowElement, Element, ControlInfoImp<WindowElement>, 0u, _MEGA_UI_WINDOW_ELEMENT_PROPERTY_TABLE);
         protected:
 
         public:

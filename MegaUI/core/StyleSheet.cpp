@@ -60,31 +60,31 @@ namespace YY
             return _uNewRef;
         }
 
-        HRESULT __MEGA_UI_API StyleSheet::AddRule(uString _szRule, IClassInfo* _pClassInfo, DynamicArray<Cond, true> _CondArray, const ArrayView<Decl>& _DeclArray)
+        HRESULT __MEGA_UI_API StyleSheet::AddRule(uString _szRule, IControlInfo* _pControlInfo, DynamicArray<Cond, true> _CondArray, const ArrayView<Decl>& _DeclArray)
         {
             // 添加规则必须要有匹配条件
-            if (_pClassInfo == nullptr || _DeclArray.GetSize() == 0)
+            if (_pControlInfo == nullptr || _DeclArray.GetSize() == 0)
                 return S_FALSE;
 
-            auto _pClassData = GetClassData(_pClassInfo);
+            auto _pControlStyleData = GetControlStyleData(_pControlInfo);
 
-            if (!_pClassData)
+            if (!_pControlStyleData)
             {
-                auto _hr = AddClassData(&_pClassData, _pClassInfo);
+                auto _hr = AddControlStyleData(&_pControlStyleData, _pControlInfo);
                 if (FAILED(_hr))
                     return _hr;
             }
 
-            const auto _uSpecifId = ComputeSpecif(_CondArray, _pClassInfo, uRuleId);
+            const auto _uSpecifId = ComputeSpecif(_CondArray, _pControlInfo, uRuleId);
             bool bFaild = false;
 
             for (auto& _DeclItem : _DeclArray)
             {
-                auto pPropertyData = _pClassData->GetPropertyData(_DeclItem.pProp);
+                auto pPropertyData = _pControlStyleData->GetPropertyData(_DeclItem.pProp);
 
                 if (!pPropertyData)
                 {
-                    if (FAILED(_pClassData->AddPropertyData(&pPropertyData, _DeclItem.pProp)))
+                    if (FAILED(_pControlStyleData->AddPropertyData(&pPropertyData, _DeclItem.pProp)))
                         bFaild = true;
                 }
 
@@ -95,16 +95,16 @@ namespace YY
                 }
             }
 
-            if (FAILED(AddDeps(_pClassData->DependencyPropList, _DeclArray)))
+            if (FAILED(AddDeps(_pControlStyleData->DependencyPropList, _DeclArray)))
                 bFaild = true;
 
             for (auto& _CondItem : _CondArray)
             {
-                auto _pPropData = _pClassData->GetPropertyData(_CondItem.pProp);
+                auto _pPropData = _pControlStyleData->GetPropertyData(_CondItem.pProp);
 
                 if (!_pPropData)
                 {
-                    if (FAILED(_pClassData->AddPropertyData(&_pPropData, _CondItem.pProp)))
+                    if (FAILED(_pControlStyleData->AddPropertyData(&_pPropData, _CondItem.pProp)))
                         bFaild = true;
                 }
 
@@ -127,7 +127,7 @@ namespace YY
 
             bMakeImmutable = true;
 
-            for (auto& _Class : ClassArray)
+            for (auto& _Class : ControlStyleDataArray)
             {
                 for (auto& PropertyData : _Class.PropertyDataRef)
                 {
@@ -145,7 +145,7 @@ namespace YY
             if (_pElement == nullptr || _pProp == nullptr)
                 return Value::GetNull();
 
-            auto pClassData = GetClassData(_pElement->GetControlClassInfo());
+            auto pClassData = GetControlStyleData(_pElement->GetControlInfo());
 
             if (!pClassData)
                 return Value::GetUnset();
@@ -197,11 +197,11 @@ namespace YY
         {
             if (_pElement == nullptr || _pProp == nullptr || _pdr == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
-            auto _pClassInfo = GetClassData(_pElement->GetControlClassInfo());
-            if (!_pClassInfo)
+            auto _pControlStyleData = GetControlStyleData(_pElement->GetControlInfo());
+            if (!_pControlStyleData)
                 return S_OK;
 
-            auto _pPropData = _pClassInfo->GetPropertyData(_pProp);
+            auto _pPropData = _pControlStyleData->GetPropertyData(_pProp);
             if (!_pPropData)
                 return S_OK;
             
@@ -222,13 +222,13 @@ namespace YY
             if (_pElement == nullptr || _pDepRecs == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
 
-            auto _pClassInfo = GetClassData(_pElement->GetControlClassInfo());
-            if (!_pClassInfo)
+            auto _pControlStyleData = GetControlStyleData(_pElement->GetControlInfo());
+            if (!_pControlStyleData)
                 return S_OK;
 
             HRESULT _hr = S_OK;
 
-            for (auto _pDependencyProp : _pClassInfo->DependencyPropList)
+            for (auto _pDependencyProp : _pControlStyleData->DependencyPropList)
             {
                 auto _hrAdd = Element::AddDependency(_pElement, *_pDependencyProp, PropertyIndicies::PI_Specified, _pDepRecs, _pDeferCycle);
                 if (FAILED(_hrAdd))
@@ -248,30 +248,30 @@ namespace YY
             return szSheetResourceID.SetString(_szSheetResourceID);
         }
         
-        ClassData* __MEGA_UI_API StyleSheet::GetClassData(IClassInfo* pClassInfo)
+        ControlStyleData* __MEGA_UI_API StyleSheet::GetControlStyleData(IControlInfo* _pControlInfo)
         {
-            if (!pClassInfo)
+            if (!_pControlInfo)
                 return nullptr;
 
-            for (auto& ClassInfo : ClassArray)
+            for (auto& _ControlStyleData : ControlStyleDataArray)
             {
-                if (ClassInfo.pClassInfo == pClassInfo)
-                    return &ClassInfo;
+                if (_ControlStyleData.pControlInfo == _pControlInfo)
+                    return &_ControlStyleData;
             }
 
             return nullptr;
         }
         
-        HRESULT __MEGA_UI_API StyleSheet::AddClassData(ClassData** ppData, IClassInfo* pClassInfo)
+        HRESULT __MEGA_UI_API StyleSheet::AddControlStyleData(ControlStyleData** ppData, IControlInfo* _pControlInfo)
         {
             if (!ppData)
                 return E_INVALIDARG;
             *ppData = nullptr;
 
-            if (!pClassInfo)
+            if (!_pControlInfo)
                 return E_INVALIDARG;
 
-            auto pInfo = ClassArray.EmplacePtr(pClassInfo);
+            auto pInfo = ControlStyleDataArray.EmplacePtr(_pControlInfo);
             if (!pInfo)
                 return E_OUTOFMEMORY;
 
@@ -280,17 +280,17 @@ namespace YY
             return S_OK;
         }
         
-        uint32_t __MEGA_UI_API StyleSheet::ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IClassInfo* _pClassInfo, uint16_t _uRuleId)
+        uint32_t __MEGA_UI_API StyleSheet::ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IControlInfo* _pControlInfo, uint16_t _uRuleId)
         {
             uint32_t _uWeight = 0u;
 
             for (auto& CondItem : CondArray)
             {
-                if (CondItem.pProp == &Element::g_ClassInfoData.IDProp)
+                if (CondItem.pProp == &Element::g_ControlInfoData.IDProp)
                 {
                     _uWeight += 0x8000u;
                 }
-                else if (CondItem.pProp == &Element::g_ClassInfoData.ClassProp)
+                else if (CondItem.pProp == &Element::g_ControlInfoData.ClassProp)
                 {
                     _uWeight += 0x4000u;
                 }

@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 #include "Window.h"
-#include "../core/ClassInfoBase.h"
+#include "../core/ControlInfoImp.h"
 
 #pragma warning(disable : 28251)
 
@@ -456,7 +456,7 @@ namespace YY
                     {
                         _pElement->StartDefer(&_Cooike);
 
-                        _pElement->PreSourceChange(Element::g_ClassInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolFalse(), Value::GetBoolTrue());
+                        _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolFalse(), Value::GetBoolTrue());
                         _pElement->bLocMouseWithin = TRUE;
                         _pElement->PostSourceChange();
                     }
@@ -483,7 +483,7 @@ namespace YY
             intptr_t _Cooike = 0;
             _pElement->StartDefer(&_Cooike);
 
-            _pElement->PreSourceChange(Element::g_ClassInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolTrue(), Value::GetBoolFalse());
+            _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolTrue(), Value::GetBoolFalse());
             _pElement->bLocMouseWithin = FALSE;
             _pElement->PostSourceChange();
 
