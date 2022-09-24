@@ -27,13 +27,21 @@ namespace YY
             return _TitleValue.GetString();
         }
         
-        void __MEGA_UI_API WindowElement::OnVisiblePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        void __MEGA_UI_API WindowElement::OnVisiblePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
         {
-            // pWindow 的Host是 自己才会调用 HandleVisiblePropertyChanged
+            // pWindow 的Host是 自己才会调用 HandleVisiblePropChanged
             if (pWindow && GetParent() == nullptr)
-                pWindow->HandleVisiblePropertyChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+                pWindow->HandleVisiblePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
             else
-                Element::OnVisiblePropertyChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+                Element::OnVisiblePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+        }
+        
+        void __MEGA_UI_API WindowElement::OnEnabledPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            if (pWindow && GetParent() == nullptr)
+                pWindow->HandleEnabledPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+            else
+                Element::OnEnabledPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
         }
     } // namespace MegaUI
 } // namespace YY

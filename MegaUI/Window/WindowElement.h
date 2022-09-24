@@ -30,7 +30,9 @@ namespace YY
             uString __MEGA_UI_API GetTitle();
             
         protected:
-            virtual void __MEGA_UI_API OnVisiblePropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue) override;
+            virtual void __MEGA_UI_API OnVisiblePropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue) override;
+
+            virtual void __MEGA_UI_API OnEnabledPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue) override;
         };
     } // namespace MegaUI
 } // namespace YY

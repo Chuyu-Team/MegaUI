@@ -41,7 +41,14 @@ namespace YY
             { "RTL", DIRECTION_RTL },
             { }
         };
-
+        
+        static const EnumMap ActiveEnumMap[] =
+        {
+            { "Inactive", ActiveMarks::AE_Inactive },
+            { "Mouse", ActiveMarks::AE_Mouse },
+            { "Keyboard", ActiveMarks::AE_Keyboard },
+            { }
+        };
 		_APPLY_MEGA_UI_STATIC_CONTROL_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
         Element::Element()
@@ -62,9 +69,11 @@ namespace YY
             , fNeedsLayout(0)
             , bLocMouseWithin(FALSE)
             , bDestroy(FALSE)
+            , bSpecVisible(FALSE)
+            , bCmpVisible(FALSE)
+            , bSpecEnabled(TRUE)
             , bNeedsDSUpdate(0)
             , iSpecDirection(DIRECTION_LTR)
-
         {
         }
 
@@ -419,6 +428,26 @@ namespace YY
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.ClassProp, PropertyIndicies::PI_Local, _NewValue);
+        }
+
+        bool __MEGA_UI_API Element::GetEnabled()
+        {
+            return bSpecEnabled;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetEnabled(bool _bEnabled)
+        {
+            return SetValue(Element::g_ControlInfoData.EnabledProp, PropertyIndicies::PI_Local, Value::CreateBool(_bEnabled));
+        }
+
+        ActiveMarks __MEGA_UI_API YY::MegaUI::Element::GetActive()
+        {
+            return uSpecActive;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetActive(ActiveMarks _fActive)
+        {
+            return SetValue(Element::g_ControlInfoData.ActiveProp, PropertyIndicies::PI_Local, Value::CreateInt32(_fActive));
         }
 
         bool __MEGA_UI_API Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
@@ -2044,7 +2073,7 @@ namespace YY
 			return PropertyCustomCacheResult::SkipNone;
 		}
 		
-		void __MEGA_UI_API Element::OnParentPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
+		void __MEGA_UI_API Element::OnParentPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
             if (_eIndicies != PropertyIndicies::PI_Local)
                 return;
@@ -2070,18 +2099,42 @@ namespace YY
                 OnHosted(_pNewWindow);
         }
 
-        void __MEGA_UI_API Element::OnVisiblePropertyChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        void __MEGA_UI_API Element::OnVisiblePropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
         {
-            OnVisiblePropertyChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+            OnVisiblePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
         }
 
-        void __MEGA_UI_API Element::OnVisiblePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        void __MEGA_UI_API Element::OnVisiblePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
         {
             if (_eIndicies == PropertyIndicies::PI_Computed)
             {
                 // 实际计算值改变了才刷新显示
                 Invalidate();
             }
+        }
+
+        void __MEGA_UI_API Element::OnEnabledPropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            OnEnabledPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+        }
+
+        void __MEGA_UI_API Element::OnEnabledPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            // 如果被禁用，那么鼠标是不行了。
+            if (_NewValue.GetBool() == false)
+            {
+                UpdateMouseWithinToFalse();
+            }
+        }
+
+        void __MEGA_UI_API Element::OnActivePropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            OnActivePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+        }
+
+        void __MEGA_UI_API Element::OnActivePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            // todo，
         }
 
         void __MEGA_UI_API Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
@@ -2634,6 +2687,26 @@ namespace YY
 
             pWindow = nullptr;
             return S_OK;
+        }
+        
+        void __MEGA_UI_API Element::UpdateMouseWithinToFalse()
+        {
+            if (!IsMouseWithin())
+                return;
+
+            intptr_t _Cooike = 0;
+            StartDefer(&_Cooike);
+
+            PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
+            bLocMouseWithin = FALSE;
+            PostSourceChange();
+
+            for (auto _pChild : GetChildren())
+            {
+                _pChild->UpdateMouseWithinToFalse();
+            }
+
+            EndDefer(_Cooike);
         }
 	}
 }

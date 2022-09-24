@@ -70,6 +70,11 @@ namespace YY
                     _fStyle |= WS_VISIBLE;
                 else
                     _fStyle &= ~WS_VISIBLE;
+
+                if (pHost->GetEnabled())
+                    _fStyle &= ~WS_DISABLED;
+                else
+                    _fStyle |= WS_DISABLED;
             }
 
             hWnd = CreateWindowExW(
@@ -171,7 +176,7 @@ namespace YY
             return S_OK;
         }
 
-        void __MEGA_UI_API Window::HandleVisiblePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        void __MEGA_UI_API Window::HandleVisiblePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
         {
             if (_eIndicies == PropertyIndicies::PI_Computed && hWnd)
             {
@@ -190,6 +195,28 @@ namespace YY
                 if (dwNewStyle != dwOldStyle)
                     SetWindowLongPtrW(hWnd, GWL_STYLE, dwNewStyle);
             }
+        }
+
+        void __MEGA_UI_API Window::HandleEnabledPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            if (_eIndicies != PropertyIndicies::PI_Specified || hWnd == NULL)
+                return;
+
+            const auto dwOldStyle = GetWindowLongPtrW(hWnd, GWL_STYLE);
+            auto dwNewStyle = dwOldStyle;
+
+            if (_NewValue.GetBool())
+            {
+                dwNewStyle &= ~WS_DISABLED;
+            }
+            else
+            {
+                dwNewStyle |= WS_DISABLED;
+            }
+
+            if (dwNewStyle != dwOldStyle)
+                SetWindowLongPtrW(hWnd, GWL_STYLE, dwNewStyle);
+            
         }
 
         LRESULT Window::WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
@@ -303,7 +330,11 @@ namespace YY
             case WM_MOUSELEAVE:
                 fTrackMouse &= ~TME_LEAVE;
                 if (pHost)
-                    UpdateMouseWithinToFalse(pHost);
+                    pHost->UpdateMouseWithinToFalse();
+                break;
+            case WM_ENABLE:
+                if (pHost)
+                    pHost->SetEnabled(_wParam != FALSE);
                 break;
             default:
                 break;
@@ -435,6 +466,10 @@ namespace YY
 
         void __MEGA_UI_API Window::UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& _ptPoint)
         {
+            // 禁用的控件不分发鼠标消息。
+            if (!_pElement->GetEnabled())
+                return;
+
             auto _Location = _pElement->GetLocation();
             auto _Extent = _pElement->GetExtent();
 
@@ -472,27 +507,7 @@ namespace YY
                 }
             }
 
-            UpdateMouseWithinToFalse(_pElement);
-        }
-
-        void __MEGA_UI_API Window::UpdateMouseWithinToFalse(Element* _pElement)
-        {
-            if (!_pElement->IsMouseWithin())
-                return;
-
-            intptr_t _Cooike = 0;
-            _pElement->StartDefer(&_Cooike);
-
-            _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
-            _pElement->bLocMouseWithin = FALSE;
-            _pElement->PostSourceChange();
-
-            for (auto _pChild : _pElement->GetChildren())
-            {
-                UpdateMouseWithinToFalse(_pChild);
-            }
-
-            _pElement->EndDefer(_Cooike);
+            _pElement->UpdateMouseWithinToFalse();
         }
 
         void __MEGA_UI_API Window::ClearDelayedDestroyList()

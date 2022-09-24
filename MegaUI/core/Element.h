@@ -27,9 +27,16 @@
 #define BDS_Sunken 2
 #define BDS_Rounded 3
 
-
 #define DIRECTION_LTR 0
 #define DIRECTION_RTL 1
+
+// ActiveProp
+enum ActiveMarks
+{
+    AE_Inactive = 0x00000000,
+    AE_Mouse = 0x00000001,
+    AE_Keyboard = 0x00000002,
+};
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -46,9 +53,11 @@ namespace YY
     // clang-format off
 	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                  ChangedFun                                                                       pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::OnParentPropertyChanged, &Element::GetParentDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0), ValueType::Element) \
-    _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0), ValueType::ElementList) \
-    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::OnVisiblePropertyChangedThunk, &Element::GetVisibleDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetVisibleProperty),                     ValueType::boolean   ) \
+    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::OnParentPropChanged,       &Element::GetParentDependenciesThunk,  nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0), ValueType::Element) \
+    _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                              nullptr,                             nullptr,                               nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0), ValueType::ElementList) \
+    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::OnVisiblePropChangedThunk, &Element::GetVisibleDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetVisibleProperty), ValueType::boolean   ) \
+    _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::OnEnabledPropChangedThunk, nullptr,                               nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean   ) \
+    _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::OnActivePropChangedThunk,  nullptr,                               nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, uSpecActive), 0), ValueType::int32_t   ) \
     _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>, nullptr,                         nullptr, nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
     _APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::CreateInt32<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
     _APPLY(Height,         PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::CreateInt32<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
@@ -148,6 +157,7 @@ namespace YY
             // 0x58 ID
             ATOM SpecID;
             
+            ActiveMarks uSpecActive = ActiveMarks::AE_Inactive;
             //bits
 #define _MEGA_UI_ELEMENT_BITS_TABLE(_APPLY) \
     _APPLY(bSelfLayout, 1)                  \
@@ -157,7 +167,8 @@ namespace YY
     _APPLY(bLocMouseWithin, 1)              \
     _APPLY(bDestroy, 1)                     \
     _APPLY(bSpecVisible, 1)                 \
-    _APPLY(bCmpVisible, 1)
+    _APPLY(bCmpVisible, 1)                  \
+    _APPLY(bSpecEnabled, 1)
 
 
             _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
@@ -263,6 +274,27 @@ namespace YY
             uString __MEGA_UI_API GetClass();
 
             HRESULT __MEGA_UI_API SetClass(uString _szClass);
+
+            /// <summary>
+            /// 控件是否被禁用。
+            /// </summary>
+            /// <returns></returns>
+            bool __MEGA_UI_API GetEnabled();
+            
+            HRESULT __MEGA_UI_API SetEnabled(bool _bEnabled);
+
+            /// <summary>
+            /// 返回控件是否需要主动处理鼠标或者键盘的焦点状态。
+            /// </summary>
+            /// <returns>ActiveMarks的位组合</returns>
+            ActiveMarks __MEGA_UI_API GetActive();
+
+            /// <summary>
+            /// 设置控件需要主动处理是焦点状态。比如设置鼠标后可以主动处理鼠标焦点。
+            /// </summary>
+            /// <param name="_fActive">ActiveMarks的位组合</param>
+            /// <returns>HRESULT</returns>
+            HRESULT __MEGA_UI_API SetActive(ActiveMarks _fActive);
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
@@ -394,11 +426,19 @@ namespace YY
 
 			PropertyCustomCacheResult __MEGA_UI_API PropertyGeneralCache(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
-			void __MEGA_UI_API OnParentPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+			void __MEGA_UI_API OnParentPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
             
-			void __MEGA_UI_API OnVisiblePropertyChangedThunk(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+			void __MEGA_UI_API OnVisiblePropChangedThunk(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
             
-            virtual void __MEGA_UI_API OnVisiblePropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+            virtual void __MEGA_UI_API OnVisiblePropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+
+			void __MEGA_UI_API OnEnabledPropChangedThunk(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+            
+            virtual void __MEGA_UI_API OnEnabledPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+
+			void __MEGA_UI_API OnActivePropChangedThunk(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+            
+            virtual void __MEGA_UI_API OnActivePropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
 
             void __MEGA_UI_API FlushDesiredSize(DeferCycle* _pDeferCycle);
 
@@ -439,6 +479,12 @@ namespace YY
             virtual HRESULT __MEGA_UI_API OnHosted(Window* _pNewWindow);
 
             virtual HRESULT __MEGA_UI_API OnUnHosted(Window* _pOldWindow);
+
+            /// <summary>
+            /// 递归将当前控件以及子控件的 MouseWithin 全部清除。
+            /// </summary>
+            /// <returns></returns>
+            void __MEGA_UI_API UpdateMouseWithinToFalse();
 		};
 	}
 }
