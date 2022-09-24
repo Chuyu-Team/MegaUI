@@ -30,7 +30,7 @@
         <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600" Width="800" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet">
             <Element LayoutPos="Absolute" X="100" Y="100" Height="400" Width="300" Background="ARGB(128, 255, 255, 0)"/>
             <Element LayoutPos="Absolute" X="300" Y="300" Height="400" Width="300" Background="ARGB(32, 255, 255, 0)" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 163, 73, 164)"/>
-            <Element LayoutPos="Absolute" X="150" Y="150" Height="50" Width="40" Class="背景黄变黑" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 0, 0)" />
+            <Element LayoutPos="Absolute" X="150" Y="150" Height="50" Width="40" Class="背景黄变黑" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 0, 0)"/>
             <Element LayoutPos="Absolute" X="450" Y="200" Height="50" Width="40" Class="背景蓝色变原谅色" BorderThickness="Rect(2, 4, 6, 8)" BorderColor="ARGB(255, 255, 128, 192)" />
         </WindowElement>
     </Windows>

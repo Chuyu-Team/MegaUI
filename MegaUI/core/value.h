@@ -65,7 +65,7 @@ namespace YY
         template<typename _Type>
         struct ConstValueSharedData
         {
-            uint_t eType : 6;
+            int_t eType : 6;
             uint_t bSkipFree : 1;
 #ifdef _WIN64
             uint_t cRef : 57;
@@ -78,7 +78,7 @@ namespace YY
         template<>
         struct ConstValueSharedData<void>
         {
-            uint_t eType : 6;
+            int_t eType : 6;
             uint_t bSkipFree : 1;
 #ifdef _WIN64
             uint_t cRef : 57;
@@ -119,7 +119,7 @@ namespace YY
                 {
                     struct
                     {
-                        uint_t eType : 6;
+                        int_t eType : 6;
                         // 不要释放内部缓冲区
                         uint_t bSkipFree : 1;
 #ifdef _WIN64

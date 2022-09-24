@@ -567,8 +567,10 @@ namespace YY
             {
                 auto _hr = SetString(std::move(_szSrc));
                 if (FAILED(_hr))
-                    throw Exception(_S("SetString失败！"), _hr);
-
+                {
+                    // move 失败
+                    std::abort();
+                }
                 return *this;
             }
 

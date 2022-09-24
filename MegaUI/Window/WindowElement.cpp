@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "WindowElement.h"
 #include "../core/ClassInfoBase.h"
+#include "Window.h"
 
 #pragma warning(disable : 28251)
 
@@ -24,6 +25,15 @@ namespace YY
             auto _TitleValue = GetValue(WindowElement::g_ClassInfoData.TitleProp);
 
             return _TitleValue.GetString();
+        }
+        
+        void __MEGA_UI_API WindowElement::OnVisiblePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            // pWindow 的Host是 自己才会调用 HandleVisiblePropertyChanged
+            if (pWindow && GetParent() == nullptr)
+                pWindow->HandleVisiblePropertyChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+            else
+                Element::OnVisiblePropertyChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
         }
     } // namespace MegaUI
 } // namespace YY

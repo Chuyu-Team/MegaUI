@@ -25,7 +25,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     
     WindowElement::Register();
 
-    Window _TestWindow;
+    Window* _pTestWindow = HNew<Window>();
     
     UIParser _Parser;
 
@@ -41,10 +41,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     _Parser.Play(u8"测试窗口", nullptr, nullptr, &pWindowElement);
 
-    _TestWindow.SetHost(pWindowElement);
-    _TestWindow.Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+    _pTestWindow->SetHost(pWindowElement);
+    _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
 
-    _TestWindow.ShowWindow(SW_SHOW);
+    _pTestWindow->ShowWindow(SW_SHOWNORMAL);
+
+
 
     //YY::MegaUI::Element* p;
     //YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);

@@ -28,6 +28,9 @@ namespace YY
             HRESULT __MEGA_UI_API SetTitle(uString _szTitle);
 
             uString __MEGA_UI_API GetTitle();
+            
+        protected:
+            virtual void __MEGA_UI_API OnVisiblePropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue) override;
         };
     } // namespace MegaUI
 } // namespace YY

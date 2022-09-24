@@ -158,8 +158,8 @@ namespace YY
                     if (auto _pParent = GetParent())
                     {
                         auto pValueByParent = _pParent->GetValue(_Prop, _eIndicies, false);
-
-                        if (pValueByParent != nullptr && _pValue.GetType() >= ValueType::Null)
+                        auto ValueByParentType = pValueByParent.GetType();
+                        if (ValueByParentType != ValueType::Unset && ValueByParentType != ValueType::Unavailable)
                         {
                             _pValue = std::move(pValueByParent);
                             break;
@@ -736,7 +736,17 @@ namespace YY
             }
 
             --_pDeferCycle->uEnter;
-		}
+        }
+
+        HRESULT __MEGA_UI_API Element::SetVisible(bool bVisible)
+        {
+            return SetValue(Element::g_ClassInfoData.VisibleProp, PropertyIndicies::PI_Local, Value::CreateBool(bVisible));
+        }
+
+        bool __MEGA_UI_API Element::GetVisible()
+        {
+            return bCmpVisible;
+        }
         
         void __MEGA_UI_API Element::OnDestroy()
         {
@@ -1363,8 +1373,13 @@ namespace YY
 
             for (auto i = _pDeferObject->uPropertyChangedPostSourceCount + 1; i < _pDeferObject->vecPropertyChanged.GetSize(); ++i)
             {
+                if (i > int32_max)
+                {
+                    throw Exception(_S("PreSourceChange期间，uPropertyChangedPostSourceCount数值超过 int32_max。"));
+                }
                 auto pc = _pDeferObject->vecPropertyChanged.GetItemPtr(i);
 
+                int32_t _iScanIndex = i;
                 if (pc->iRefCount && pc->vC == -1 && pc->pOldValue == nullptr)
                 {
                     auto p2a = -1;
@@ -1403,7 +1418,7 @@ namespace YY
 
                         j = pcj->iPrevElRec;
 
-                    } while (j >= i);
+                    } while (j >= _iScanIndex);
                 }
             }
 
@@ -2053,7 +2068,21 @@ namespace YY
 
             if (_pNewWindow)
                 OnHosted(_pNewWindow);
-		}
+        }
+
+        void __MEGA_UI_API Element::OnVisiblePropertyChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            OnVisiblePropertyChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+        }
+
+        void __MEGA_UI_API Element::OnVisiblePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            if (_eIndicies == PropertyIndicies::PI_Computed)
+            {
+                // 实际计算值改变了才刷新显示
+                Invalidate();
+            }
+        }
 
         void __MEGA_UI_API Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
         {
@@ -2287,7 +2316,8 @@ namespace YY
 
         void __MEGA_UI_API Element::Invalidate()
         {
-
+            if (pWindow)
+                pWindow->InvalidateRect(nullptr);
         }
         
         PropertyCustomCacheResult __MEGA_UI_API Element::GetExtentProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
@@ -2327,6 +2357,67 @@ namespace YY
                     _Location = Value::CreatePoint(GetX(), GetY());
                 }
             }
+            return PropertyCustomCacheResult::SkipAll;
+        }
+
+        PropertyCustomCacheResult __MEGA_UI_API Element::GetVisibleProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
+        {
+            if (_eMode == PropertyCustomCacheActionMode::GetValue)
+            {
+                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
+                if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Local)
+                {
+                    // 使用通用逻辑
+                    return PropertyCustomCacheResult::SkipNone;
+                }
+                else if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Specified)
+                {
+                    if (!_pGetValueInfo->bUsingCache)
+                    {
+                        return PropertyCustomCacheResult::SkipNone;
+                    }
+
+                    _pGetValueInfo->RetValue = Value::CreateBool(bSpecVisible);
+                }
+                else if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Computed)
+                {
+                    if (!_pGetValueInfo->bUsingCache)
+                    {
+                        auto _bCmpVisibleTmp = true;
+
+                        for (auto _pElement = this; _pElement; _pElement = _pElement->GetParent())
+                        {
+                            if (!_pElement->bSpecVisible)
+                            {
+                                _bCmpVisibleTmp = false;
+                                break;
+                            }
+                        }
+
+                        _pGetValueInfo->RetValue = Value::CreateBool(_bCmpVisibleTmp);
+                    }
+                    else
+                    {
+                        _pGetValueInfo->RetValue = Value::CreateBool(bCmpVisible);
+                    }
+                }
+            }
+            else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
+            {
+                auto _pUpdateValueInfo = (PropertyCustomCacheUpdateValueAction*)_pInfo;
+                if (_pUpdateValueInfo->InputNewValue.GetType() == ValueType::boolean)
+                {
+                    if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Specified)
+                    {
+                        bSpecVisible = _pUpdateValueInfo->InputNewValue.GetBool();
+                    }
+                    else if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Computed)
+                    {
+                        bCmpVisible = _pUpdateValueInfo->InputNewValue.GetBool();
+                    }
+                }
+            }
+
             return PropertyCustomCacheResult::SkipAll;
         }
 
@@ -2451,6 +2542,23 @@ namespace YY
                         _hrLast = _hr;
                 }
 
+            }
+
+            return _hrLast;
+        }
+
+        HRESULT __MEGA_UI_API Element::GetVisibleDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        {
+            HRESULT _hrLast = S_OK;
+
+            if (_eIndicies == PropertyIndicies::PI_Computed)
+            {
+                for (auto _pChildern : GetChildren())
+                {
+                    auto _hr = AddDependency(_pChildern, _Prop, PropertyIndicies::PI_Computed, pdr, _pDeferCycle);
+                    if (FAILED(_hr))
+                        _hrLast = _hr;
+                }
             }
 
             return _hrLast;

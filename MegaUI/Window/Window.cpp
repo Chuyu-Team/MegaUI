@@ -65,6 +65,11 @@ namespace YY
                     _iHeight = CW_USEDEFAULT;
 
                 _szTitle = pHost->GetTitle();
+
+                if (pHost->GetVisible())
+                    _fStyle |= WS_VISIBLE;
+                else
+                    _fStyle &= ~WS_VISIBLE;
             }
 
             hWnd = CreateWindowExW(
@@ -166,6 +171,27 @@ namespace YY
             return S_OK;
         }
 
+        void __MEGA_UI_API Window::HandleVisiblePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            if (_eIndicies == PropertyIndicies::PI_Computed && hWnd)
+            {
+                const auto dwOldStyle = GetWindowLongPtrW(hWnd, GWL_STYLE);
+                auto dwNewStyle = dwOldStyle;
+
+                if (_NewValue.GetBool())
+                {
+                    dwNewStyle |= WS_VISIBLE;
+                }
+                else
+                {
+                    dwNewStyle &= ~WS_VISIBLE;
+                }
+                
+                if (dwNewStyle != dwOldStyle)
+                    SetWindowLongPtrW(hWnd, GWL_STYLE, dwNewStyle);
+            }
+        }
+
         LRESULT Window::WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())
@@ -194,7 +220,6 @@ namespace YY
                     //_pNativeWindow->SetX(_pInfo->x);
                     //_pNativeWindow->SetY(_pInfo->y);
                     _pNativeWindow->OnSize(Client.GetWidth(), Client.GetHeight());
-                    //_pNativeWindow->EndDefer(_Cooike);
                 }
             }
             else
@@ -221,6 +246,27 @@ namespace YY
                 SetWindowLongPtrW(_hWnd, GWLP_USERDATA, NULL);
                 hWnd = NULL;
                 HDelete(this);
+                break;
+            case WM_STYLECHANGED:
+                if (GWL_STYLE == _wParam && _lParam)
+                {
+                    auto _pStyles = (STYLESTRUCT*)_lParam;
+                    UpdateStyles(_pStyles->styleOld, _pStyles->styleNew);
+                }
+                break;
+            case WM_WINDOWPOSCHANGED:
+                if (pHost)
+                {
+                    auto _pWindowPos = (WINDOWPOS*)_lParam;
+                    if (_pWindowPos->flags & SWP_SHOWWINDOW)
+                        pHost->SetVisible(true);
+                    else if (_pWindowPos->flags & SWP_HIDEWINDOW)
+                        pHost->SetVisible(false);
+                }
+                break;
+            case WM_ERASEBKGND:
+                // MegaUI 自己负责背景擦除
+                return 1;
                 break;
             case WM_PAINT:
                 OnPaint();
@@ -293,6 +339,10 @@ namespace YY
         {
             if (_pRender == nullptr || _pElement == nullptr)
                 return E_INVALIDARG;
+
+            // 不显示就不用绘制
+            if (!_pElement->GetVisible())
+                return S_FALSE;
 #if 0
             auto& RenderNode = _pElement->RenderNode;
             auto _uInvalidateMarks = RenderNode.uInvalidateMarks;
@@ -453,8 +503,16 @@ namespace YY
             {
                 pItem->Destroy(false);
             }
+        }
 
-            //return void __MEGA_UI_API();
+        void __MEGA_UI_API Window::UpdateStyles(uint32_t _uOld, uint32_t _uNew)
+        {
+            if (!pHost)
+                return;
+
+            auto _uStyleDiff = _uOld ^ _uNew;
+            if (_uStyleDiff & WS_VISIBLE)
+                pHost->SetVisible(_uNew & WS_VISIBLE);
         }
 
 

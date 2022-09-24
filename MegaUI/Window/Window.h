@@ -30,6 +30,8 @@ namespace YY
             // TODO 需要更换为块式队列更友好。
             DynamicArray<Element*> DelayedDestroyList;
 
+            // bit位
+            uint8_t bWindowVisible : 1;
         public:
             Window();
 
@@ -66,6 +68,8 @@ namespace YY
             }
 
             HRESULT __MEGA_UI_API PostDelayedDestroyElement(Element* _pElement);
+            
+            void __MEGA_UI_API HandleVisiblePropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
 
         protected:
             static LRESULT CALLBACK WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
@@ -91,6 +95,8 @@ namespace YY
             void __MEGA_UI_API UpdateMouseWithinToFalse(Element* _pElement);
 
             void __MEGA_UI_API ClearDelayedDestroyList();
+
+            void __MEGA_UI_API UpdateStyles(_In_opt_ uint32_t _uOld, _In_ uint32_t _uNew);
         };
     }
 } // namespace YY

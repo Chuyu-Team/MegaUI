@@ -48,6 +48,7 @@ namespace YY
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
     _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::GetElementNull,            &Element::OnParentPropertyChanged, &Element::GetParentDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0), ValueType::Element) \
     _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0), ValueType::ElementList) \
+    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::GetBoolFalse,              &Element::OnVisiblePropertyChangedThunk, &Element::GetVisibleDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetVisibleProperty),                     ValueType::boolean   ) \
     _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::GetInt32ConstValue<LP_Auto>, nullptr,                         nullptr, nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
     _APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
     _APPLY(Height,         PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::GetInt32ConstValue<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
@@ -154,7 +155,10 @@ namespace YY
     /* UINT8 LayoutType : 2;*/              \
     _APPLY(fNeedsLayout, 2)                 \
     _APPLY(bLocMouseWithin, 1)              \
-    _APPLY(bDestroy, 1)
+    _APPLY(bDestroy, 1)                     \
+    _APPLY(bSpecVisible, 1)                 \
+    _APPLY(bCmpVisible, 1)
+
 
             _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
             //union
@@ -208,7 +212,7 @@ namespace YY
 			/// <param name="_bUpdateCache">如果为true，那么重新获取值并刷新缓存，如果为 false则直接从缓存返回数据。</param>
 			/// <returns>如果返回，则返回 Unavailable。
 			/// 如果未设置，则返回 Unset</returns>
-            _Ret_notnull_ Value __MEGA_UI_API GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies = PropertyIndicies::PI_Specified, _In_ bool _bUpdateCache = false);
+            Value __MEGA_UI_API GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies = PropertyIndicies::PI_Specified, _In_ bool _bUpdateCache = false);
 			
             /// <summary>
             /// 修改 Local Value
@@ -282,7 +286,11 @@ namespace YY
 			_Ret_maybenull_ DeferCycle* __MEGA_UI_API GetDeferObject(_In_ bool _bAllowCreate = true);
             void __MEGA_UI_API StartDefer(_Out_ intptr_t* _pCooike);
             void __MEGA_UI_API EndDefer(_In_ intptr_t _Cookie);
-			
+            
+            HRESULT __MEGA_UI_API SetVisible(bool bVisible);
+
+            bool __MEGA_UI_API GetVisible();
+
             ElementList __MEGA_UI_API GetChildren();
 
             virtual HRESULT __MEGA_UI_API Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren, _In_ uint32_t _uInsert);
@@ -388,6 +396,10 @@ namespace YY
 
 			void __MEGA_UI_API OnParentPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
             
+			void __MEGA_UI_API OnVisiblePropertyChangedThunk(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+            
+            virtual void __MEGA_UI_API OnVisiblePropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+
             void __MEGA_UI_API FlushDesiredSize(DeferCycle* _pDeferCycle);
 
             void __MEGA_UI_API FlushLayout(DeferCycle* _pDeferCycle);
@@ -411,6 +423,8 @@ namespace YY
             PropertyCustomCacheResult __MEGA_UI_API GetExtentProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
             PropertyCustomCacheResult __MEGA_UI_API GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
+            
+            PropertyCustomCacheResult __MEGA_UI_API GetVisibleProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
             HRESULT __MEGA_UI_API GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
@@ -419,6 +433,8 @@ namespace YY
             HRESULT __MEGA_UI_API GetSheetDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
             virtual HRESULT __MEGA_UI_API GeSheetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+            
+            HRESULT __MEGA_UI_API GetVisibleDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
             virtual HRESULT __MEGA_UI_API OnHosted(Window* _pNewWindow);
 
