@@ -143,16 +143,16 @@ namespace YY
         Value __MEGA_UI_API StyleSheet::GetSheetValue(Element* _pElement, const PropertyInfo* _pProp)
         {
             if (_pElement == nullptr || _pProp == nullptr)
-                return Value::GetNull();
+                return Value::CreateNull();
 
             auto pClassData = GetControlStyleData(_pElement->GetControlInfo());
 
             if (!pClassData)
-                return Value::GetUnset();
+                return Value::CreateUnset();
 
             auto pPropertyData = pClassData->GetPropertyData(_pProp);
             if (!pPropertyData)
-                return Value::GetUnset();
+                return Value::CreateUnset();
 
             for(auto& _ConMap : pPropertyData->CondMapList)
             {
@@ -190,7 +190,7 @@ namespace YY
                 }
             }
 
-            return Value::GetUnset();
+            return Value::CreateUnset();
         }
 
         HRESULT __MEGA_UI_API StyleSheet::GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle)

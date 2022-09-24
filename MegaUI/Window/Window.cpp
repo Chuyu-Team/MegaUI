@@ -456,7 +456,7 @@ namespace YY
                     {
                         _pElement->StartDefer(&_Cooike);
 
-                        _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolFalse(), Value::GetBoolTrue());
+                        _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
                         _pElement->bLocMouseWithin = TRUE;
                         _pElement->PostSourceChange();
                     }
@@ -483,7 +483,7 @@ namespace YY
             intptr_t _Cooike = 0;
             _pElement->StartDefer(&_Cooike);
 
-            _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::GetBoolTrue(), Value::GetBoolFalse());
+            _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
             _pElement->bLocMouseWithin = FALSE;
             _pElement->PostSourceChange();
 

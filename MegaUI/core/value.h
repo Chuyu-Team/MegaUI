@@ -194,29 +194,33 @@ namespace YY
             bool __MEGA_UI_API operator!=(std::nullptr_t) const;
 
             template<int32_t iValue>
-            static Value __MEGA_UI_API GetInt32ConstValue()
+            static Value __MEGA_UI_API CreateInt32()
             {
                 _RETUNR_CONST_VALUE(ValueType::int32_t, iValue);
             }
 
-            static Value __MEGA_UI_API GetAtomZero();
-            static Value __MEGA_UI_API GetBoolFalse();
-            static Value __MEGA_UI_API GetBoolTrue();
+            static Value __MEGA_UI_API CreateAtomZero();
+            static Value __MEGA_UI_API CreateBoolFalse();
+            static Value __MEGA_UI_API CreateBoolTrue();
             //static _Ret_notnull_ Value* __MEGA_UI_API GetColorTrans();
-            static Value __MEGA_UI_API GetCursorNull();
-            static Value __MEGA_UI_API GetElListNull();
-            static Value __MEGA_UI_API GetElementNull();
-            static Value __MEGA_UI_API GetInt32Zero();
-            static Value __MEGA_UI_API GetNull();
-            static Value __MEGA_UI_API GetPointZero();
-            static Value __MEGA_UI_API GetRectZero();
-            static Value __MEGA_UI_API GetSizeZero();
-            static Value __MEGA_UI_API GetStringNull();
-            static Value __MEGA_UI_API GetUnavailable();
-            static Value __MEGA_UI_API GetUnset();
-            static Value __MEGA_UI_API GetLayoutNull();
-            static Value __MEGA_UI_API GetColorTransparant();
-            static Value __MEGA_UI_API GetSheetNull();
+            static Value __MEGA_UI_API CreateCursorNull();
+            static Value __MEGA_UI_API CreateEmptyElementList();
+            static Value __MEGA_UI_API CreateElementNull();
+            static Value __MEGA_UI_API CreateInt32Zero();
+            static Value __MEGA_UI_API CreateNull();
+            static Value __MEGA_UI_API CreatePointZero();
+            static Value __MEGA_UI_API CreateRectZero();
+            static Value __MEGA_UI_API CreateSizeZero();
+            static Value __MEGA_UI_API CreateEmptyString();
+            static Value __MEGA_UI_API CreateUnavailable();
+            static Value __MEGA_UI_API CreateUnset();
+            static Value __MEGA_UI_API CreateLayoutNull();
+            /// <summary>
+            /// 创建一个全透明的颜色。
+            /// </summary>
+            /// <returns></returns>
+            static Value __MEGA_UI_API CreateColorTransparant();
+            static Value __MEGA_UI_API CreateSheetNull();
 
 
             ValueType __MEGA_UI_API GetType() const;

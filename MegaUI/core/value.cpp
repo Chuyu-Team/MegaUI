@@ -57,32 +57,32 @@ namespace YY
         }
 
 
-        Value __MEGA_UI_API Value::GetAtomZero()
+        Value __MEGA_UI_API Value::CreateAtomZero()
         {
             _RETUNR_CONST_VALUE(ValueType::ATOM, 0);
         }
 
-        Value __MEGA_UI_API Value::GetInt32Zero()
+        Value __MEGA_UI_API Value::CreateInt32Zero()
         {
-            return GetInt32ConstValue<0>();
+            return CreateInt32<0>();
         }
 
-        Value __MEGA_UI_API Value::GetBoolFalse()
+        Value __MEGA_UI_API Value::CreateBoolFalse()
         {
             _RETUNR_CONST_VALUE(ValueType::boolean, false);
         }
 
-        Value __MEGA_UI_API Value::GetBoolTrue()
+        Value __MEGA_UI_API Value::CreateBoolTrue()
         {
             _RETUNR_CONST_VALUE(ValueType::boolean, true);
         }
 
-        Value __MEGA_UI_API Value::GetCursorNull()
+        Value __MEGA_UI_API Value::CreateCursorNull()
         {
             _RETUNR_CONST_VALUE(ValueType::HCURSOR, NULL);
         }
 
-        Value __MEGA_UI_API Value::GetElListNull()
+        Value __MEGA_UI_API Value::CreateEmptyElementList()
         {            
             static const ConstValueSharedData<const uchar_t*> g_ListNull =
             {
@@ -95,32 +95,32 @@ namespace YY
             return Value((Value::SharedData*)&g_ListNull);
         }
 
-        Value __MEGA_UI_API Value::GetElementNull()
+        Value __MEGA_UI_API Value::CreateElementNull()
         {
             _RETUNR_CONST_VALUE(ValueType::Element, nullptr);
         }
 
-        Value __MEGA_UI_API Value::GetNull()
+        Value __MEGA_UI_API Value::CreateNull()
         {
-            _RETUNR_CONST_VALUE(ValueType::Null);
+            return Value();
         }
 
-        Value __MEGA_UI_API Value::GetPointZero()
+        Value __MEGA_UI_API Value::CreatePointZero()
         {
             _RETUNR_CONST_VALUE(ValueType::POINT, { 0, 0 });
         }
 
-        Value __MEGA_UI_API Value::GetRectZero()
+        Value __MEGA_UI_API Value::CreateRectZero()
         {
             _RETUNR_CONST_VALUE(ValueType::Rect, {0, 0, 0, 0});
         }
 
-        Value __MEGA_UI_API Value::GetSizeZero()
+        Value __MEGA_UI_API Value::CreateSizeZero()
         {
             _RETUNR_CONST_VALUE(ValueType::SIZE, { 0, 0 });
         }
 
-        Value __MEGA_UI_API Value::GetStringNull()
+        Value __MEGA_UI_API Value::CreateEmptyString()
         {
             static const ConstValueSharedData<const uchar_t*> g_StringNull =
             {
@@ -133,27 +133,27 @@ namespace YY
             return Value((Value::SharedData*)&g_StringNull);
         }
 
-        Value __MEGA_UI_API Value::GetUnavailable()
+        Value __MEGA_UI_API Value::CreateUnavailable()
         {
             _RETUNR_CONST_VALUE(ValueType::Unavailable);
         }
 
-        Value __MEGA_UI_API Value::GetUnset()
+        Value __MEGA_UI_API Value::CreateUnset()
         {
             _RETUNR_CONST_VALUE(ValueType::Unset);
         }
 
-        Value __MEGA_UI_API Value::GetLayoutNull()
+        Value __MEGA_UI_API Value::CreateLayoutNull()
         {
             _RETUNR_CONST_VALUE(ValueType::Layout, nullptr);
         }
 
-        Value __MEGA_UI_API Value::GetColorTransparant()
+        Value __MEGA_UI_API Value::CreateColorTransparant()
         {
             _RETUNR_CONST_VALUE(ValueType::Color, {});
         }
 
-        Value __MEGA_UI_API Value::GetSheetNull()
+        Value __MEGA_UI_API Value::CreateSheetNull()
         {
             _RETUNR_CONST_VALUE(ValueType::StyleSheet, nullptr);
         }
@@ -226,7 +226,7 @@ namespace YY
         Value __MEGA_UI_API Value::CreateInt32(int32_t _iValue)
         {
             if (_iValue == 0)
-                return GetInt32Zero();
+                return CreateInt32Zero();
 
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -241,13 +241,13 @@ namespace YY
         
         Value __MEGA_UI_API Value::CreateBool(bool _bValue)
         {
-            return _bValue ? GetBoolTrue() : GetBoolFalse();
+            return _bValue ? CreateBoolTrue() : CreateBoolFalse();
         }
         
         Value __MEGA_UI_API Value::CreateElementRef(Element* _pValue)
         {
             if (_pValue == nullptr)
-                return GetElementNull();
+                return CreateElementNull();
 
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -263,7 +263,7 @@ namespace YY
         Value __MEGA_UI_API Value::CreateElementList(const ElementList& _pListValue)
         {
             if (_pListValue.GetSize() == 0)
-                return GetElListNull();
+                return CreateEmptyElementList();
 
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -279,7 +279,7 @@ namespace YY
         Value __MEGA_UI_API Value::CreateString(const uString& _szValue)
         {
             if (_szValue.GetSize() == 0)
-                return GetStringNull();
+                return CreateEmptyString();
 
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -399,7 +399,7 @@ namespace YY
         Value __MEGA_UI_API Value::CreateStyleSheet(_In_ StyleSheet* _pStyleSheet)
         {
             if (!_pStyleSheet)
-                return Value::GetSheetNull();
+                return Value::CreateSheetNull();
 
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)

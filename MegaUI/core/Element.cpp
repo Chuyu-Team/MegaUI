@@ -85,7 +85,7 @@ namespace YY
 		Value __MEGA_UI_API Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
         {
             if (_eIndicies >= PropertyIndicies::PI_MAX)
-                return Value::GetUnavailable();
+                return Value::CreateUnavailable();
 
             auto _uIndicies = uint32_t(_eIndicies);
 
@@ -96,9 +96,9 @@ namespace YY
 
             const auto _iIndex = GetControlInfo()->GetPropertyInfoIndex(_Prop);
             if (_iIndex < 0)
-                return Value::GetUnavailable();
+                return Value::CreateUnavailable();
 
-            Value _pValue = Value::GetUnset();
+            Value _pValue = Value::CreateUnset();
 
             FunTypePropertyCustomCache _pFunPropertyCache = nullptr;
 
@@ -184,7 +184,7 @@ namespace YY
             }
 
             if (_pValue == nullptr)
-                _pValue = Value::GetUnset();
+                _pValue = Value::CreateUnset();
 
             return _pValue;
         }
@@ -1107,7 +1107,7 @@ namespace YY
                     _pTmp->pDeferObject = _pDeferObject;
                     _pDeferObject->AddRef();
                     
-                    _pTmp->PreSourceChange(Element::g_ControlInfoData.ParentProp, PropertyIndicies::PI_Local, Value::GetElementNull(), _NewParentValue);
+                    _pTmp->PreSourceChange(Element::g_ControlInfoData.ParentProp, PropertyIndicies::PI_Local, Value::CreateElementNull(), _NewParentValue);
 
                     _pTmp->pLocParent = this;
                     _pTmp->pTopLevel = this;
@@ -1239,7 +1239,7 @@ namespace YY
                         _pDeferObject->AddRef();
                     }
                     
-                    _pItem->PreSourceChange(Element::g_ControlInfoData.ParentProp, PropertyIndicies::PI_Local, _OldParentValue, Value::GetElementNull());
+                    _pItem->PreSourceChange(Element::g_ControlInfoData.ParentProp, PropertyIndicies::PI_Local, _OldParentValue, Value::CreateElementNull());
                     _pItem->pLocParent = nullptr;
                     _pItem->pTopLevel = nullptr;
                     PostSourceChange();
@@ -1893,7 +1893,7 @@ namespace YY
                             const auto _uHasValue = *((uint8_t*)this + _uOffsetToHasCache);
                             if ((_uHasValue & (1 << _uHasCacheBit)) == 0)
 							{
-                                _pRetValue = Value::GetUnset();
+                                _pRetValue = Value::CreateUnset();
 								break;
 							}
 						}
@@ -1930,12 +1930,12 @@ namespace YY
                             _pRetValue = Value::CreateStyleSheet(*(StyleSheet**)_pCache);
                             break;
 						default:
-                            _pRetValue = Value::GetNull();
+                            _pRetValue = Value::CreateNull();
 							break;
 						}
 
                         if (_pRetValue == nullptr)
-                            _pRetValue = Value::GetUnset();
+                            _pRetValue = Value::CreateUnset();
 					}
 				} while (false);
 				
