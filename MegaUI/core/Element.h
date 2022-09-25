@@ -76,6 +76,7 @@ namespace YY
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
     _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
+    _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetMouseFocusedProperty), ValueType::boolean   ) \
     _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(ID,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
     _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              nullptr,                           &Element::GetSheetDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) \
@@ -157,7 +158,7 @@ namespace YY
             // 0x58 ID
             ATOM SpecID;
             
-            ActiveMarks uSpecActive = ActiveMarks::AE_Inactive;
+            uint32_t uSpecActive = ActiveMarks::AE_Inactive;
             //bits
 #define _MEGA_UI_ELEMENT_BITS_TABLE(_APPLY) \
     _APPLY(bSelfLayout, 1)                  \
@@ -168,7 +169,10 @@ namespace YY
     _APPLY(bDestroy, 1)                     \
     _APPLY(bSpecVisible, 1)                 \
     _APPLY(bCmpVisible, 1)                  \
-    _APPLY(bSpecEnabled, 1)
+    _APPLY(bSpecEnabled, 1)                 \
+    _APPLY(bHasLocMouseFocused, 1)          \
+    _APPLY(bLocMouseFocused, 1)             \
+    _APPLY(bSpecMouseFocused, 1)
 
 
             _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
@@ -287,14 +291,16 @@ namespace YY
             /// 返回控件是否需要主动处理鼠标或者键盘的焦点状态。
             /// </summary>
             /// <returns>ActiveMarks的位组合</returns>
-            ActiveMarks __MEGA_UI_API GetActive();
+            uint32_t __MEGA_UI_API GetActive();
 
             /// <summary>
             /// 设置控件需要主动处理是焦点状态。比如设置鼠标后可以主动处理鼠标焦点。
             /// </summary>
             /// <param name="_fActive">ActiveMarks的位组合</param>
             /// <returns>HRESULT</returns>
-            HRESULT __MEGA_UI_API SetActive(ActiveMarks _fActive);
+            HRESULT __MEGA_UI_API SetActive(uint32_t _fActive);
+
+            bool __MEGA_UI_API GetMouseFocused();
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
@@ -325,9 +331,9 @@ namespace YY
 
             ElementList __MEGA_UI_API GetChildren();
 
-            virtual HRESULT __MEGA_UI_API Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren, _In_ uint32_t _uInsert);
+            virtual HRESULT __MEGA_UI_API Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren, _In_ uint_t _uInsert);
 
-            __inline HRESULT __MEGA_UI_API Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren)
+            __inline HRESULT __MEGA_UI_API Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren)
             {
                 return Insert(_ppChildren, _cChildren, vecLocChildren.GetSize());
             }
@@ -337,7 +343,7 @@ namespace YY
                 return Insert(&_ppChildren, 1, vecLocChildren.GetSize());
             }
 
-            virtual HRESULT __MEGA_UI_API Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint32_t _cChildren);
+            virtual HRESULT __MEGA_UI_API Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren);
             
             __inline HRESULT __MEGA_UI_API Remove(_In_ Element* _pChild)
             {
@@ -465,6 +471,8 @@ namespace YY
             PropertyCustomCacheResult __MEGA_UI_API GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
             
             PropertyCustomCacheResult __MEGA_UI_API GetVisibleProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
+
+            PropertyCustomCacheResult __MEGA_UI_API GetMouseFocusedProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 
             HRESULT __MEGA_UI_API GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 

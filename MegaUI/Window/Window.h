@@ -26,12 +26,13 @@ namespace YY
             WindowElement* pHost;
             Render* pRender;
             D2D1_SIZE_U LastRenderSize;
-            uint32_t fTrackMouse = 0u;
+            uint32_t fTrackMouse;
+            uint32_t bCapture;
             // TODO 需要更换为块式队列更友好。
             DynamicArray<Element*> DelayedDestroyList;
+            Element* pLastFocusedElement;
+            Element* pLastPressedElement;
 
-            // bit位
-            uint8_t bWindowVisible : 1;
         public:
             Window();
 
@@ -73,10 +74,12 @@ namespace YY
 
             void __MEGA_UI_API HandleEnabledPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
 
-        protected:
-            static LRESULT CALLBACK WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
+            Element* __MEGA_UI_API FindElementFromPoint(_In_ const POINT& _ptPoint, _In_ uint32_t fActiveMarks);
 
-            virtual LRESULT __thiscall CurrentWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
+        protected:
+            static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
+
+            virtual LRESULT __thiscall WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
             HRESULT __MEGA_UI_API OnPaint();
 

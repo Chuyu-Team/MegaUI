@@ -72,6 +72,9 @@ namespace YY
             , bSpecVisible(FALSE)
             , bCmpVisible(FALSE)
             , bSpecEnabled(TRUE)
+            , bHasLocMouseFocused(FALSE)
+            , bLocMouseFocused(FALSE)
+            , bSpecMouseFocused(FALSE)
             , bNeedsDSUpdate(0)
             , iSpecDirection(DIRECTION_LTR)
         {
@@ -182,7 +185,7 @@ namespace YY
 
             } while (false);
 
-            if (_pFunPropertyCache && _pValue.GetType() >= ValueType::Null && (_Prop.fFlags & PF_ReadOnly) == 0 && _bUpdateCache)
+            if (_pFunPropertyCache && _pValue.GetType() >= ValueType::Null && _bUpdateCache)
             {
                 PropertyCustomCacheUpdateValueAction _Info;
                 _Info.pProp = &_Prop;
@@ -440,14 +443,19 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.EnabledProp, PropertyIndicies::PI_Local, Value::CreateBool(_bEnabled));
         }
 
-        ActiveMarks __MEGA_UI_API YY::MegaUI::Element::GetActive()
+        uint32_t __MEGA_UI_API Element::GetActive()
         {
             return uSpecActive;
         }
 
-        HRESULT __MEGA_UI_API Element::SetActive(ActiveMarks _fActive)
+        HRESULT __MEGA_UI_API Element::SetActive(uint32_t _fActive)
         {
             return SetValue(Element::g_ControlInfoData.ActiveProp, PropertyIndicies::PI_Local, Value::CreateInt32(_fActive));
+        }
+
+        bool __MEGA_UI_API Element::GetMouseFocused()
+        {
+            return bSpecMouseFocused;
         }
 
         bool __MEGA_UI_API Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
@@ -1027,7 +1035,7 @@ namespace YY
             return vecLocChildren;
         }
 
-        HRESULT __MEGA_UI_API Element::Insert(Element* const* _ppChildren, uint32_t _cChildren, uint32_t _uInsert)
+        HRESULT __MEGA_UI_API Element::Insert(Element* const* _ppChildren, uint_t _cChildren, uint_t _uInsert)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -1054,7 +1062,7 @@ namespace YY
 
             do
             {
-                for (uint32_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
+                for (uint_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
                 {
                     auto _pTmp = _ppChildren[_uIndex];
                     if (_pTmp == nullptr || _pTmp == this)
@@ -1074,9 +1082,9 @@ namespace YY
 
                 _NewChildrenList.Add(_OldChildrenList.GetData(), _uInsert);
 
-                uint32_t _uLastIndex = _uInsert;
+                auto _uLastIndex = _uInsert;
 
-                for (uint32_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
+                for (uint_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
                 {
                     auto _pTmp = _ppChildren[_uIndex];
                     if (_pTmp == nullptr || _pTmp == this)
@@ -1087,7 +1095,7 @@ namespace YY
                     ++_uLastIndex;
                 }
 
-                for (uint32_t _uIndex = _uInsert; _uIndex != _cOldChildrenList; ++_uIndex)
+                for (uint_t _uIndex = _uInsert; _uIndex != _cOldChildrenList; ++_uIndex)
                 {
                     auto _pTmp = _OldChildrenList[_uIndex];
                     _pTmp->_iIndex = _uLastIndex;
@@ -1122,7 +1130,7 @@ namespace YY
 
                 auto _pDeferObject = GetDeferObject();
 
-                for (uint32_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
+                for (uint_t _uIndex = 0; _uIndex != _cChildren; ++_uIndex)
                 {
                     auto _pTmp = _ppChildren[_uIndex];
                     if (_pTmp == nullptr || _pTmp == this)
@@ -1154,7 +1162,7 @@ namespace YY
             if (FAILED(hr))
             {
                 auto _OldSize = _OldChildrenList.GetSize();
-                for (uint32_t _uIndex = _uInsert; _uIndex != _OldSize; ++_uIndex)
+                for (uint_t _uIndex = _uInsert; _uIndex != _OldSize; ++_uIndex)
                 {
                     _OldChildrenList[_uIndex]->_iIndex = _uIndex;
                 }
@@ -1163,7 +1171,7 @@ namespace YY
             return hr;
         }
         
-        HRESULT __MEGA_UI_API Element::Remove(Element* const* _ppChildren, uint32_t _cChildren)
+        HRESULT __MEGA_UI_API Element::Remove(Element* const* _ppChildren, uint_t _cChildren)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -1175,7 +1183,7 @@ namespace YY
             if (_ChildrenOld.GetSize() == 0)
                 return S_FALSE;
 
-            uint32_t _uRemoveCount = 0u;
+            uint_t _uRemoveCount = 0u;
 
             for (auto _Index = 0u; _Index != _cChildren; ++_Index)
             {
@@ -1253,7 +1261,7 @@ namespace YY
 
                 auto _pDeferObject = GetDeferObject();
 
-                for (auto _Index = 0u; _Index != _cChildren; ++_Index)
+                for (uint_t _Index = 0u; _Index != _cChildren; ++_Index)
                 {
                     auto _pItem = _ppChildren[_Index];
                     if (_pItem == nullptr)
@@ -2468,6 +2476,70 @@ namespace YY
                     {
                         bCmpVisible = _pUpdateValueInfo->InputNewValue.GetBool();
                     }
+                }
+            }
+
+            return PropertyCustomCacheResult::SkipAll;
+        }
+
+        PropertyCustomCacheResult __MEGA_UI_API Element::GetMouseFocusedProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
+        {
+            if (_eMode == PropertyCustomCacheActionMode::GetValue)
+            {
+                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
+                auto& _RetValue = _pGetValueInfo->RetValue;
+
+                if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Local)
+                {
+                    if (bHasLocMouseFocused)
+                    {
+                        _RetValue = Value::CreateBool(bLocMouseFocused);
+                    }
+                    else
+                    {
+                        _RetValue = Value::CreateUnset();
+                    }
+                    return PropertyCustomCacheResult::SkipAll;
+                }
+                else if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Specified)
+                {
+                    if (_pGetValueInfo->bUsingCache)
+                    {
+                        _pGetValueInfo->RetValue = Value::CreateBool(bSpecMouseFocused);
+                        return PropertyCustomCacheResult::SkipAll;
+                    }
+
+                    if (bHasLocMouseFocused)
+                    {
+                        _RetValue = Value::CreateBool(bLocMouseFocused);
+                        return PropertyCustomCacheResult::SkipAll;
+                    }
+
+                    _RetValue = Value::CreateUnset();
+                    // 如果自己需要处理鼠标焦点，那么阻止 父节点继承
+                    return (GetActive() & ActiveMarks::AE_Mouse) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
+                }
+            }
+            else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
+            {
+                auto _pUpdateValueInfo = (PropertyCustomCacheUpdateValueAction*)_pInfo;
+                auto& _InputNewValue = _pUpdateValueInfo->InputNewValue;
+
+                if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Local)
+                {
+                    if (_InputNewValue.GetType() == ValueType::Unset)
+                    {
+                        bHasLocMouseFocused = false;
+                    }
+                    else
+                    {
+                        bHasLocMouseFocused = true;
+                        bLocMouseFocused = _InputNewValue.GetBool();
+                    }
+                }
+                else if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Specified)
+                {
+                    bSpecMouseFocused = _InputNewValue.GetBool();
                 }
             }
 
