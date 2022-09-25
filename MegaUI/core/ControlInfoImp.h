@@ -119,14 +119,15 @@ namespace YY
 
             static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
-                const uint32_t _uIndex = &_Prop - &_Class::g_ControlInfoData.Props[0];
+                const uint_t _uIndex = &_Prop - &_Class::g_ControlInfoData.Props[0];
 
                 if (_uIndex >= _Class::StaticControlInfo::uPropsCount)
                 {
                     return ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoIndexImp(_Prop);
                 }
 
-                return _uIndex + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
+                static_assert(ControlInfoImp<_Class>::GetPropertyInfoCount() < int32_max, "");
+                return int32_t(_uIndex + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount());
             }
 
             virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
@@ -299,20 +300,22 @@ namespace YY
 
             static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
-                const uint32_t _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
-                if (_uIndex >= Element::StaticControlInfo::uPropsCount)
+                const uint_t _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
+                if (_uIndex >= (uint_t)Element::StaticControlInfo::uPropsCount)
                     return -1;
 
-                return _uIndex;
+                static_assert(Element::StaticControlInfo::uPropsCount <= int32_max, "");
+                return (int32_t)_uIndex;
             }
 
             virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
             {
-                const unsigned _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
-                if (_uIndex >= Element::StaticControlInfo::uPropsCount)
+                const uint_t _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
+                if (_uIndex >= (uint_t)Element::StaticControlInfo::uPropsCount)
                     return -1;
 
-                return _uIndex;
+                static_assert(Element::StaticControlInfo::uPropsCount <= int32_max, "");
+                return (int32_t)_uIndex;
             }
 
             /// <summary>

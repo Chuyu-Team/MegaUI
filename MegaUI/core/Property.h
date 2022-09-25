@@ -126,7 +126,7 @@ namespace YY
         struct PropertyCustomCacheGetValueAction : public PropertyCustomCachenBaseAction
         {
             Value RetValue;
-            bool bUsingCache;
+            bool bUsingCache = true;
         };
 
         struct PropertyCustomCacheUpdateValueAction : public PropertyCustomCachenBaseAction

@@ -236,7 +236,7 @@ namespace YY
 
                 RECT _ClientRect;
                 if (!GetClientRect(_hWnd, &_ClientRect))
-                    return __HRESULT_FROM_WIN32(GetLastError());
+                    return E_UNEXPECTED;
 
                 HRESULT _hr = S_OK;
                 ID2D1Factory1* _pD2DFactory = nullptr;

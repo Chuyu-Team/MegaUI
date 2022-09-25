@@ -103,9 +103,9 @@ namespace YY
 
         struct ValueParserContext
         {
-            const u8char_t* szStart;
-            const u8char_t* szEnd;
-            const u8char_t* szCurrent;
+            const u8char_t* szStart = nullptr;
+            const u8char_t* szEnd = nullptr;
+            const u8char_t* szCurrent = nullptr;
             aStringView TerminateChars;
 
             const u8char_t* __MEGA_UI_API SkipWhiteSpace()

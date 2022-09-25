@@ -240,24 +240,17 @@ namespace YY
                 return memcmp(szString, _Other.szString, cchString * sizeof(szString[0])) == 0;
             }
 
-            bool __MEGA_UI_API operator==(const char_t* _Other)
+            bool __MEGA_UI_API operator==(_In_z_ const char_t* _Other)
             {
-                if (_Other == nullptr && cchString == 0)
-                    return true;
-                uint_t _uIndex = 0;
-                for (; _uIndex != GetSize(); ++_uIndex)
-                {
-                    if (szString[_uIndex] != _Other[_uIndex])
-                        return false;
-                }
-
-                return _Other[_uIndex] == char_t('\0');
+                return Compare(_Other) == 0;
             }
 
-            int __MEGA_UI_API Compare(const char_t* _Other)
+            int __MEGA_UI_API Compare(_In_z_ const char_t* _Other)
             {
-                if (_Other == nullptr && cchString == 0)
-                    return 0;
+                if (_Other == nullptr)
+                {
+                    return cchString ? 1 : 0;
+                }
 
                 uint_t _uIndex = 0;
                 for (; _uIndex != GetSize(); ++_uIndex)
@@ -270,10 +263,12 @@ namespace YY
                 return char_t('\0') - _Other[_uIndex];
             }
             
-            int __MEGA_UI_API CompareI(const char_t* _Other)
+            int32_t __MEGA_UI_API CompareI(_In_z_ const char_t* _Other)
             {
-                if (_Other == nullptr && cchString == 0)
-                    return 0;
+                if (_Other == nullptr)
+                {
+                    return cchString ? 1 : 0;
+                }
 
                 uint_t _uIndex = 0;
                 for (; _uIndex != GetSize(); ++_uIndex)

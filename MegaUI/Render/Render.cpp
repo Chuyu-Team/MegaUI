@@ -4,6 +4,8 @@
 #include "D2D/D2D1.1Render.h"
 #include "GDI+/GdiPlusRender.h"
 
+#pragma warning(disable : 28251)
+
 namespace YY
 {
     namespace MegaUI

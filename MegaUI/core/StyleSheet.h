@@ -22,7 +22,7 @@ namespace YY
         struct Decl
         {
             // 0
-            const PropertyInfo* pProp;
+            const PropertyInfo* pProp = nullptr;
             // 4
             Value Value;
         };
@@ -30,10 +30,10 @@ namespace YY
         struct Cond
         {
             // 0
-            const PropertyInfo* pProp;
+            const PropertyInfo* pProp = nullptr;
             // 0x4
             //int Type;
-            ValueCmpOperation OperationType;
+            ValueCmpOperation OperationType = ValueCmpOperation::Invalid;
 
             // 0x8 表达式的值
             Value Value;
@@ -67,7 +67,7 @@ namespace YY
             {
             }
 
-            CondMap(CondMap&& _Other)
+            CondMap(CondMap&& _Other) noexcept
                 : CondValue(std::move(_Other.CondValue))
                 , uSpecif(_Other.uSpecif)
                 , CondArray(std::move(_Other.CondArray))
@@ -87,7 +87,7 @@ namespace YY
                 return *this;
             }
             
-            CondMap& __MEGA_UI_API operator=(CondMap&& _Other)
+            CondMap& __MEGA_UI_API operator=(CondMap&& _Other) noexcept
             {
                 if (this != &_Other)
                 {
@@ -251,9 +251,9 @@ namespace YY
             // 3
             Value __MEGA_UI_API GetSheetValue(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp);
             // 4
-            HRESULT __MEGA_UI_API GetSheetDependencies(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp, _Out_ DepRecs* _pdr, _In_ DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetSheetDependencies(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp, _Inout_ DepRecs* _pdr, _In_ DeferCycle* _pDeferCycle);
             // 5
-            HRESULT __MEGA_UI_API GetSheetScope(_In_ Element* _pElement, _Out_ DepRecs* pdr, _In_ DeferCycle* _pDeferCycle);
+            HRESULT __MEGA_UI_API GetSheetScope(_In_ Element* _pElement, _Inout_ DepRecs* pdr, _In_ DeferCycle* _pDeferCycle);
             // 6
             u8String __MEGA_UI_API GetSheetResourceID();
 

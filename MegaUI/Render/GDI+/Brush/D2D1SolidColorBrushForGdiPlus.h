@@ -115,7 +115,11 @@ namespace YY
             virtual void STDMETHODCALLTYPE SetColor(
                 _In_ CONST D2D1_COLOR_F* color) override
             {
-                Gdiplus::Color _Color(color->a * 0xFFu, color->r, color->g, color->g);
+                Gdiplus::Color _Color(
+                    color->a < 1.0f ? BYTE(color->a * 0xFFu) : BYTE(0xFFu),
+                    color->r < 1.0f ? BYTE(color->r * 0xFFu) : BYTE(0xFFu),
+                    color->g < 1.0f ? BYTE(color->g * 0xFFu) : BYTE(0xFFu),
+                    color->b < 1.0f ? BYTE(color->b * 0xFFu) : BYTE(0xFFu));
                 Brush.SetColor(_Color);
             }
 

@@ -143,12 +143,16 @@ namespace YY
             if (!_pszDst)
                 return E_POINTER;
 
-            auto _cchSrc = _szSrc.GetSize();
+            uint64_t _cchSrc = _szSrc.GetSize();
             if (_cchSrc == 0)
                 return S_OK;
 
+            // WinAPI限制，无法处理大于 int32_max。
+            if (_cchSrc > int32_max)
+                return E_UNEXPECTED;
+
             const auto _eEncoding = _pszDst->GetEncoding();
-            const auto _cchOldDst = _pszDst->GetSize();
+            const uint64_t _cchOldDst = _pszDst->GetSize();
 
 
             // 大多数场景，u16字符数量的2倍就足够容纳了。
@@ -163,7 +167,12 @@ namespace YY
                 }
 
                 _cchDstBuffer = _pszDst->GetCapacity();
-                auto _cchAppendDst = WideCharToMultiByte(UINT(_eEncoding), 0, _szSrc.GetConstString(), _cchSrc, _szDstBuffer + _cchOldDst, _cchDstBuffer - _cchOldDst, nullptr, nullptr);
+
+                auto _cchOutBufferSize = _cchDstBuffer - _cchOldDst;
+                if (_cchOutBufferSize > int32_max)
+                    _cchOutBufferSize = int32_max;
+
+                auto _cchAppendDst = WideCharToMultiByte(UINT(_eEncoding), 0, _szSrc.GetConstString(), (int)_cchSrc, _szDstBuffer + _cchOldDst, (int)_cchOutBufferSize, nullptr, nullptr);
                 _pszDst->UnlockBuffer(_cchOldDst + _cchAppendDst);
 
                 if (_cchAppendDst != 0)
@@ -263,6 +272,11 @@ namespace YY
             const auto _cchSrc = _szStr.GetSize();
             if (_cchSrc == 0)
                 return S_OK;
+
+            // WinAPI 限制，无法处理超过 int32_max
+            if (_cchSrc > int32_max)
+                return E_UNEXPECTED;
+
             const auto _cchOldDst = _pszDst->GetSize();
 
             // ANSI转UTF16，其缓冲区不会多于当前UTF16字节数量
@@ -271,7 +285,7 @@ namespace YY
                 return E_OUTOFMEMORY;
             _szDstBuffer += _cchOldDst;
 
-            auto _cchDst = MultiByteToWideChar(UINT(_szStr.GetEncoding()), 0, _szStr.GetConstString(), _cchSrc, _szDstBuffer, _cchSrc);
+            auto _cchDst = MultiByteToWideChar(UINT(_szStr.GetEncoding()), 0, _szStr.GetConstString(), (int)_cchSrc, _szDstBuffer, (int)_cchSrc);
 
             _pszDst->UnlockBuffer(_cchOldDst + _cchDst);
             return S_OK;

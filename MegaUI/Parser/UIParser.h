@@ -52,6 +52,8 @@ namespace YY
             // C
             Color cColor;
 
+            // 估计不初始化内存
+            #pragma warning(suppress : 26495)
             ParsedArg()
             {
             }
@@ -59,7 +61,7 @@ namespace YY
 
         struct StyleSheetXmlOption
         {
-            ValueCmpOperation Type;
+            ValueCmpOperation Type = ValueCmpOperation::Invalid;
             u8StringView szPropName;
             u8StringView szPropValue;
         };
@@ -115,10 +117,10 @@ namespace YY
 
             static HRESULT __MEGA_UI_API ParserStringValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
             
-            static HRESULT __MEGA_UI_API ParserFunction(aStringView _szFunctionName, ExprNode* _pExprNode, aStringView _szFormat, _Out_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
+            static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Out_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
             
             template<uint_t _uArgCount>
-            __inline static HRESULT __MEGA_UI_API ParserFunction(aStringView _szFunctionName, ExprNode* _pExprNode, aStringView _szFormat, _Out_ ParsedArg (&_Arg)[_uArgCount])
+            __inline static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Out_ ParsedArg (&_Arg)[_uArgCount])
             {
                 return ParserFunction(_szFunctionName, _pExprNode, _szFormat, _Arg, _uArgCount);
             }

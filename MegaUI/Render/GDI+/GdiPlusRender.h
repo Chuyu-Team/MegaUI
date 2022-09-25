@@ -78,7 +78,7 @@ namespace YY
 
                 RECT _ClientRect;
                 if (!GetClientRect(_hWnd, &_ClientRect))
-                    return __HRESULT_FROM_WIN32(GetLastError());
+                    return E_UNEXPECTED;
                 
                 D2D1_SIZE_U _PixelSize = D2D1::SizeU(
                     static_cast<UINT>(_ClientRect.right - _ClientRect.left),
@@ -147,7 +147,11 @@ namespace YY
                 if (!hDC)
                     return E_FAIL;
                 {
-                    Gdiplus::RectF PaintF(ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top);
+                    Gdiplus::RectF PaintF(
+                        Gdiplus::REAL(ps.rcPaint.left),
+                        Gdiplus::REAL(ps.rcPaint.top),
+                        Gdiplus::REAL(ps.rcPaint.right - ps.rcPaint.left),
+                        Gdiplus::REAL(ps.rcPaint.bottom - ps.rcPaint.top));
                     Gdiplus::Graphics DCSurface(hDC);
                     DCSurface.DrawImage(
                         pSurfaceBitmap,

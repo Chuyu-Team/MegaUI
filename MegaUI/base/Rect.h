@@ -142,10 +142,10 @@ namespace YY
             __MEGA_UI_API operator D2D_RECT_F() const
             {
                 D2D_RECT_F _RectF;
-                _RectF.left = left;
-                _RectF.top = top;
-                _RectF.right = right;
-                _RectF.bottom = bottom;
+                _RectF.left = (FLOAT)left;
+                _RectF.top = (FLOAT)top;
+                _RectF.right = (FLOAT)right;
+                _RectF.bottom = (FLOAT)bottom;
                 return _RectF;
             }
         };

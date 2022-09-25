@@ -87,7 +87,7 @@ namespace YY
             uint8_t cbData = sizeof(CreateElement);
             // 字节码类型
             uint8_t Type = ByteCodeBase::CreateElement;
-            uint16_t uIndexOfElementName;
+            uint16_t uIndexOfElementName = 0;
         };
 
         struct SetProperty
@@ -96,8 +96,8 @@ namespace YY
             uint8_t cbData = sizeof(SetProperty);
             // 字节码类型
             uint8_t Type = ByteCodeBase::SetProperty;
-            uint16_t uIndexOfPropertyValue;
-            const PropertyInfo* pProp;
+            uint16_t uIndexOfPropertyValue = 0;
+            const PropertyInfo* pProp = nullptr;
         };
 #pragma pack(pop)
 
@@ -134,7 +134,7 @@ namespace YY
             try
             {
                 _XmlDocument.parse<rapidxml::parse_default>(_pStringBuffer);
-            } catch (const rapidxml::parse_error& _error)
+            } catch (const rapidxml::parse_error&)
             {
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
             }
@@ -313,6 +313,10 @@ namespace YY
 
             auto _uSize = ControlInfoArray.GetSize();
             auto _pData = ControlInfoArray.GetData();
+
+            if (_uSize > uint32_max)
+                return nullptr;
+
             for (uint32_t _uIndex = 0; _uIndex != _uSize; ++_uIndex)
             {
                 auto _pControlInfo = _pData[_uIndex];
@@ -320,7 +324,7 @@ namespace YY
                 if (_strcmpi(_pControlInfo->GetName(), _szControlName) == 0)
                 {
                     if (_pIndex)
-                        *_pIndex = _uIndex;
+                        *_pIndex = (uint32_t)_uIndex;
                     return _pControlInfo;
                 }
             }
@@ -334,9 +338,12 @@ namespace YY
             if (!_ppBuffer)
                 return nullptr;
 
+            if (_uIndex > uint32_max)
+                throw Exception();
+
             *_ppBuffer = _pControlInfo;
             if (_pIndex)
-                *_pIndex = _uIndex;
+                *_pIndex = (uint32_t)_uIndex;
             return _pControlInfo;
         }
 
@@ -436,11 +443,13 @@ namespace YY
             auto _ppBufer = LocalValueCache.AddAndGetPtr(&_uIndex);
             if (!_ppBufer)
                 return E_OUTOFMEMORY;
+            if (_uIndex > uint16_max)
+                throw Exception();
 
             *_ppBufer = std::move(_Value);
 
             SetProperty SetPropertyByteCode;
-            SetPropertyByteCode.uIndexOfPropertyValue = _uIndex;
+            SetPropertyByteCode.uIndexOfPropertyValue = (uint16_t)_uIndex;
             SetPropertyByteCode.pProp = _pProp;
             _hr = _pRecorder->ByteCode.Add((uint8_t*)&SetPropertyByteCode, sizeof(SetPropertyByteCode));
             if (FAILED(_hr))
@@ -722,6 +731,8 @@ namespace YY
 
         HRESULT __MEGA_UI_API UIParser::ParserFunction(aStringView _szFunctionName, ExprNode* _pExprNode, aStringView _szFormat, ParsedArg* _pArg, uint_t _uArgCount)
         {
+            memset(_pArg, 0, sizeof(_pArg[0]) * _uArgCount);
+
             if (_pExprNode->Type != ExprNodeType::Funcall)
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
@@ -912,6 +923,9 @@ namespace YY
         
         HRESULT __MEGA_UI_API UIParser::Play(ArrayView<uint8_t>& _ByteCode, Element* _pTopElement, intptr_t* _pCooike, DynamicArray<Element*, false, false>* _pElementArray)
         {
+            if (_pCooike)
+                *_pCooike = 0;
+
             Element* _pCurrentElement = nullptr;
             HRESULT _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 

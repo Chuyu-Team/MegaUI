@@ -671,11 +671,7 @@ namespace YY
 
         void __MEGA_UI_API Element::StartDefer(intptr_t* _pCooike)
 		{
-            if (!_pCooike)
-			{
-				throw std::exception("pCooike == nullptr", 0);
-				return;
-			}
+            *_pCooike = 0;
             
 			if (auto _pDeferCycle = GetDeferObject())
 			{
@@ -995,14 +991,14 @@ namespace YY
 
             if (_iGCSlot != -1)
             {
-                _pDeferCycle->vecGroupChangeNormalPriority.GetItemPtr(_iGCSlot)->pElement = nullptr;
+                _pDeferCycle->vecGroupChangeNormalPriority[_iGCSlot].pElement = nullptr;
                 _pDeferCycle->Release();
                 _iGCSlot = -1;
             }
 
             if (_iGCLPSlot != -1)
             {
-                _pDeferCycle->vecGroupChangeLowPriority.GetItemPtr(_iGCLPSlot)->pElement = nullptr;
+                _pDeferCycle->vecGroupChangeLowPriority[_iGCLPSlot].pElement = nullptr;
                 _pDeferCycle->Release();
                 _iGCLPSlot = -1;
             }
@@ -1011,19 +1007,19 @@ namespace YY
             {
                 for (size_t index = _iPCTail; index >= _pDeferCycle->uPropertyChangedFireCount;)
                 {
-                    auto pItem = _pDeferCycle->vecPropertyChanged.GetItemPtr(index);
+                    auto& _ChangedItem = _pDeferCycle->vecPropertyChanged[index];
 
-                    if (pItem->iRefCount)
+                    if (_ChangedItem.iRefCount)
                     {
-                        pItem->pElement = nullptr;
-                        pItem->iRefCount = 0;
-                        pItem->pNewValue = nullptr;
-                        pItem->pOldValue = nullptr;
+                        _ChangedItem.pElement = nullptr;
+                        _ChangedItem.iRefCount = 0;
+                        _ChangedItem.pNewValue = nullptr;
+                        _ChangedItem.pOldValue = nullptr;
 
                         _pDeferCycle->Release();
                     }
 
-                    index = pItem->iPrevElRec;
+                    index = _ChangedItem.iPrevElRec;
                 }
 
                 _iPCTail = -1;
@@ -1049,8 +1045,13 @@ namespace YY
             if (_cOldChildrenList < _uInsert)
                 return E_INVALIDARG;
 
+            const uint64_t _uNewSize = (uint64_t)_cOldChildrenList + (uint64_t)_cChildren;
+            // Element 使用 int32 存储下标，所以 不能超过 int32_max
+            if (_uNewSize > int32_max)
+                return E_NOTIMPL;
+
             ElementList _NewChildrenList;
-            auto _hr = _NewChildrenList.Reserve(_cOldChildrenList + _cChildren);
+            auto _hr = _NewChildrenList.Reserve((uint_t)_uNewSize);
             if (FAILED(_hr))
                 return _hr;
 
@@ -1090,7 +1091,7 @@ namespace YY
                     if (_pTmp == nullptr || _pTmp == this)
                         continue;
 
-                    _pTmp->_iIndex = _uLastIndex;
+                    _pTmp->_iIndex = (int32_t)_uLastIndex;
                     _NewChildrenList.Add(_pTmp);
                     ++_uLastIndex;
                 }
@@ -1098,7 +1099,7 @@ namespace YY
                 for (uint_t _uIndex = _uInsert; _uIndex != _cOldChildrenList; ++_uIndex)
                 {
                     auto _pTmp = _OldChildrenList[_uIndex];
-                    _pTmp->_iIndex = _uLastIndex;
+                    _pTmp->_iIndex = (int32_t)_uLastIndex;
                     _NewChildrenList.Add(_pTmp);
                     ++_uLastIndex;
                 }
@@ -1161,10 +1162,9 @@ namespace YY
 
             if (FAILED(hr))
             {
-                auto _OldSize = _OldChildrenList.GetSize();
-                for (uint_t _uIndex = _uInsert; _uIndex != _OldSize; ++_uIndex)
+                for (uint_t _uIndex = _uInsert; _uIndex != _cOldChildrenList; ++_uIndex)
                 {
-                    _OldChildrenList[_uIndex]->_iIndex = _uIndex;
+                    _OldChildrenList[_uIndex]->_iIndex = (int32_t)_uIndex;
                 }
             }
 
@@ -1180,12 +1180,17 @@ namespace YY
                 return E_INVALIDARG;
             
             auto _ChildrenOld = GetChildren();
-            if (_ChildrenOld.GetSize() == 0)
+            const auto _cChildrenOldSize = _ChildrenOld.GetSize();
+            if (_cChildrenOldSize == 0)
                 return S_FALSE;
+            
+            // 入口明明加了int32_max限制，这里为什么任然出现大于 int32_max？？？
+            if (_cChildrenOldSize > int32_max)
+                return E_UNEXPECTED;
 
             uint_t _uRemoveCount = 0u;
 
-            for (auto _Index = 0u; _Index != _cChildren; ++_Index)
+            for (uint_t _Index = 0u; _Index != _cChildren; ++_Index)
             {
                 auto _pItem = _ppChildren[_Index];
                 if (_pItem == nullptr)
@@ -1206,7 +1211,13 @@ namespace YY
             do
             {
                 ElementList _ChildrenNew;
-                auto _uSizeNew = _ChildrenOld.GetSize() - _uRemoveCount;
+                auto _uSizeNew = _cChildrenOldSize - _uRemoveCount;
+                if (_uSizeNew > int32_max)
+                {
+                    // 入口明明加了int32_max限制，这里为什么任然出现大于 int32_max？？？
+                    hr = E_UNEXPECTED;
+                    break;
+                }
 
                 if (_uSizeNew)
                 {
@@ -1222,7 +1233,7 @@ namespace YY
                         if (_pItem->_iIndex == -1)
                             continue;
 
-                         _pItem->_iIndex = _pBuffer - _ChildrenNew.GetData();
+                         _pItem->_iIndex = int32_t(_pBuffer - _ChildrenNew.GetData());
                         *_pBuffer = _pItem;
                         ++_pBuffer;
                     }
@@ -1288,9 +1299,10 @@ namespace YY
             if (FAILED(hr))
             {
                 // 回滚操作
-                for (auto& _pItem : _ChildrenOld)
+                for (uint_t _uIndex = 0; _uIndex != _cChildrenOldSize; ++_uIndex)
                 {
-                    _pItem->_iIndex = &_pItem - _ChildrenOld.GetData();
+                    // _cChildrenOldSize 保证 <= int32max
+                    _ChildrenOld[_uIndex]->_iIndex = (int32_t)_uIndex;
                 }
             }
 
@@ -1403,7 +1415,7 @@ namespace YY
                 if (FAILED(pc->pElement->GetDependencies(*pc->pProp, pc->iIndex, &DepRecs, TempInt, _pNewValue, _pDeferObject)))
                     bFaild = true;
 
-                pc = _pDeferObject->vecPropertyChanged.GetItemPtr(i);
+                pc = &_pDeferObject->vecPropertyChanged[i];
 
                 pc->dr = DepRecs;
             }
@@ -1414,7 +1426,7 @@ namespace YY
                 {
                     throw Exception(_S("PreSourceChange期间，uPropertyChangedPostSourceCount数值超过 int32_max。"));
                 }
-                auto pc = _pDeferObject->vecPropertyChanged.GetItemPtr(i);
+                auto pc = &_pDeferObject->vecPropertyChanged[i];
 
                 int32_t _iScanIndex = i;
                 if (pc->iRefCount && pc->vC == -1 && pc->pOldValue == nullptr)
@@ -1429,7 +1441,7 @@ namespace YY
 
                     do
                     {
-                        auto pcj = _pDeferObject->vecPropertyChanged.GetItemPtr(j);
+                        auto pcj = &_pDeferObject->vecPropertyChanged[j];
 
                         if (pcj->iIndex == pc->iIndex && pcj->pProp == pc->pProp)
                         {
@@ -1516,6 +1528,8 @@ namespace YY
             {
                 for (; pDeferObject->uPropertyChangedFireCount < pDeferObject->vecPropertyChanged.GetSize(); ++pDeferObject->uPropertyChangedFireCount)
                 {
+                    // 上面已经边界检查了
+                    #pragma warning(suppress : 6011)
                     auto pPCRecord = pDeferObject->vecPropertyChanged.GetItemPtr(pDeferObject->uPropertyChangedFireCount);
 
                     if (pPCRecord->iRefCount)
@@ -1528,9 +1542,10 @@ namespace YY
                         //pPCRecord->pElement->HandleUiaPropertyListener(pPCRecord->pProp, pPCRecord->iIndex, pPCRecord->pOldValue, pPCRecord->pNewValue);
 
                         pPCRecord->pElement->OnPropertyChanged(*pPCRecord->pProp, pPCRecord->iIndex, pPCRecord->pOldValue, pPCRecord->pNewValue);
-
+                        
                         pPCRecord = pDeferObject->vecPropertyChanged.GetItemPtr(pDeferObject->uPropertyChangedFireCount);
 
+                        #pragma warning(suppress : 6011)
                         pPCRecord->pOldValue = nullptr;
 
                         pPCRecord->pNewValue = nullptr;
@@ -1656,6 +1671,11 @@ namespace YY
                 return E_OUTOFMEMORY;
             }
 
+            if (_uIndex > int32_max)
+                throw Exception();
+
+            auto _iIndex = (int32_t)_uIndex;
+
             _pDeferCycle->AddRef();
 
             pItem->iRefCount = 1;
@@ -1666,11 +1686,11 @@ namespace YY
             pItem->pOldValue = nullptr;
             pItem->pNewValue = nullptr;
             pItem->iPrevElRec = _pElement->_iPCTail;
-            _pElement->_iPCTail = _uIndex;
+            _pElement->_iPCTail = _iIndex;
 
             if (!pdr->cDepCnt)
             {
-                pdr->iDepPos = _uIndex;
+                pdr->iDepPos = _iIndex;
             }
 
             ++(pdr->cDepCnt);
@@ -1801,11 +1821,14 @@ namespace YY
                     }
                     else
                     {
+                        if (uAddIndex > int32_max)
+                            throw Exception();
+
                         pDeferCycle->AddRef();
                         pItem->pElement = pElement;
                         pItem->fGroups = 0;
 
-                        pElement->_iGCSlot = uAddIndex;
+                        pElement->_iGCSlot = (int32_t)uAddIndex;
                     }
                 }
                 else
@@ -1832,11 +1855,14 @@ namespace YY
                     }
                     else
                     {
+                        if (uAddIndex > int32_max)
+                            throw Exception();
+
                         pDeferCycle->AddRef();
                         pItem->pElement = pElement;
                         pItem->fGroups = 0;
 
-                        pElement->_iGCLPSlot = uAddIndex;
+                        pElement->_iGCLPSlot = (int32_t)uAddIndex;
                     }
                 }
                 else

@@ -172,12 +172,12 @@ namespace YY
                     throw Exception(_S("DynamicArray构造失败！"), _hr);
             }
 
-            DynamicArray(DynamicArray&& _Src)
+            DynamicArray(DynamicArray&& _Src) noexcept
                 : pData(nullptr)
             {
                 auto _hr = SetArray(std::move(_Src));
                 if (FAILED(_hr))
-                    throw Exception(_S("DynamicArray构造失败！"), _hr);
+                    std::abort();
             }
 
             DynamicArray(std::initializer_list<T> _List)
@@ -550,6 +550,9 @@ namespace YY
 
             auto& __MEGA_UI_API operator[](_In_ uint_t _uIndex)
             {
+                if (_uIndex >= GetSize())
+                    throw Exception();
+
                 return GetData()[_uIndex];
             }
 
@@ -663,7 +666,7 @@ namespace YY
                     if (iRef >= 0)
                         return 0;
 
-                    return iRef * -1;
+                    return uint_t(-iRef);
                 }
 
                 bool __MEGA_UI_API IsLocked()
