@@ -60,22 +60,22 @@ namespace YY
                 return *this;
             }
 
-            __inline bool __MEGA_UI_API operator==(const RECT& _Other)
+            __inline bool __MEGA_UI_API operator==(const RECT& _Other) const
             {
                 return EqualRect(this, &_Other);
             }
             
-            __inline bool __MEGA_UI_API operator!=(const RECT& _Other)
+            __inline bool __MEGA_UI_API operator!=(const RECT& _Other) const
             {
                 return EqualRect(this, &_Other) == FALSE;
             }
 
-            __inline bool __MEGA_UI_API operator==(POINT _Point)
+            __inline bool __MEGA_UI_API operator==(POINT _Point) const
             {
                 return left == _Point.x && top == _Point.y;
             }
 
-            __inline bool __MEGA_UI_API operator==(SIZE _Size)
+            __inline bool __MEGA_UI_API operator==(SIZE _Size) const
             {
                 return right - left == _Size.cx && bottom - top == _Size.cy;
             }
@@ -129,14 +129,19 @@ namespace YY
                 bottom = top + _Size.cy;
             }
 
-            int32_t __MEGA_UI_API GetWidth()
+            int32_t __MEGA_UI_API GetWidth() const
             {
                 return right - left;
             }
 
-            int32_t __MEGA_UI_API GetHeight()
+            int32_t __MEGA_UI_API GetHeight() const
             {
                 return bottom - top;
+            }
+
+            bool __MEGA_UI_API IsEmpty() const
+            {
+                return left >= right || top >= bottom;
             }
 
             __MEGA_UI_API operator D2D_RECT_F() const
