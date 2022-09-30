@@ -24,11 +24,12 @@ namespace YY
             // 默认UTF32值，自动根据平台选择大小端
             UTF32 = UTF32LE,
 
+            UTF8 = 65001,
             // 本机wchar_t编码
             UTFW = sizeof(wchar_t) == 2 ? UTF16 : UTF32,
+            // 最佳Unciode编码
+            UTFN = sizeof(uchar_t) == 1 ? UTF8 : UTFW,
 
-
-            UTF8 = 65001,
         };
 
         template<class T>

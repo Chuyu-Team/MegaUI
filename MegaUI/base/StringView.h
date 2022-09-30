@@ -363,6 +363,7 @@ namespace YY
         typedef StringView<u16char_t, Encoding::UTF16BE> u16StringBEView;
         typedef StringView<u32char_t, Encoding::UTF32LE> u32StringLEView;
         typedef StringView<u32char_t, Encoding::UTF32BE> u32StringBEView;
+        typedef StringView<uchar_t, Encoding::UTFN> uStringView;
 
         typedef StringView<u16char_t, Encoding::UTF16> u16StringView;
         typedef StringView<u32char_t, Encoding::UTF32> u32StringView;
