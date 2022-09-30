@@ -395,7 +395,7 @@ namespace YY
                 else if (_ch >= 0xE0u)
                 {
                     // 3字节
-                    if (_szSrcEnd - _szSrcBuffer < 4)
+                    if (_szSrcEnd - _szSrcBuffer < 3)
                         break;
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
@@ -503,7 +503,7 @@ namespace YY
                 else if (_ch >= 0xE0u)
                 {
                     // 3字节
-                    if (_szSrcEnd - _szSrcBuffer < 4)
+                    if (_szSrcEnd - _szSrcBuffer < 3)
                         break;
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
@@ -642,7 +642,7 @@ namespace YY
                 else if (_ch >= 0xE0u)
                 {
                     // 3字节
-                    if (_szSrcEnd - _szSrcBuffer < 4)
+                    if (_szSrcEnd - _szSrcBuffer < 3)
                         break;
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
@@ -781,7 +781,7 @@ namespace YY
                 else if (_ch >= 0xE0u)
                 {
                     // 3字节
-                    if (_szSrcEnd - _szSrcBuffer < 4)
+                    if (_szSrcEnd - _szSrcBuffer < 3)
                         break;
 
                     if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
