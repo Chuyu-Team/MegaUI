@@ -160,6 +160,7 @@
     <ClInclude Include="base\alloc.h" />
     <ClInclude Include="base\ArrayView.h" />
     <ClInclude Include="base\Color.h" />
+    <ClInclude Include="base\ComPtr.h" />
     <ClInclude Include="base\Encoding.h" />
     <ClInclude Include="base\DynamicArray.h" />
     <ClInclude Include="base\ErrorCode.h" />

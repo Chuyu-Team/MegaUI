@@ -2,14 +2,13 @@
 
 #include "Element.h"
 
-#include <atlcomcli.h>
-
 #include "Property.h"
 #include "value.h"
 #include "ControlInfoImp.h"
 #include "Layout.h"
 #include "../Window/Window.h"
 #include "StyleSheet.h"
+#include <MegaUI/base/ComPtr.h>
 
 #pragma warning(disable : 28251)
 #pragma warning(disable : 26812)
@@ -845,11 +844,6 @@ namespace YY
                 GetValue(Element::g_ControlInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false),
                 _PaintBounds);
 
-            /*auto _SpecPadding = ApplyRTL(SpecPadding);
-
-            auto Background = GetValue(Element::g_ControlInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false);*/
-
-            
         }
 
         void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
@@ -866,7 +860,7 @@ namespace YY
                 {
                 case BDS_Solid:
                 {
-                    ATL::CComPtr<ID2D1SolidColorBrush> _BorderBrush;
+                    ComPtr<ID2D1SolidColorBrush> _BorderBrush;
                     auto hr = _pRenderTarget->CreateSolidColorBrush(
                         _BorderColor.GetColor(),
                         &_BorderBrush);
@@ -890,10 +884,10 @@ namespace YY
                     Rect _BoundsOutter = _Bounds;
                     _BoundsOutter.DeflateRect({_BorderThickness.left / 2, _BorderThickness.top / 2, _BorderThickness.right / 2, _BorderThickness.bottom / 2});
 
-                    ATL::CComPtr<ID2D1SolidColorBrush> hbOLT; // Brush for outter left and top
-                    ATL::CComPtr<ID2D1SolidColorBrush> hbORB; // Brush for outter right and bottom
-                    ATL::CComPtr<ID2D1SolidColorBrush> hbILT; // Brush for inner left top
-                    ATL::CComPtr<ID2D1SolidColorBrush> hbIRB; // Brush for inner right and bottom
+                    ComPtr<ID2D1SolidColorBrush> hbOLT;       // Brush for outter left and top
+                    ComPtr<ID2D1SolidColorBrush> hbORB;       // Brush for outter right and bottom
+                    ComPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner left top
+                    ComPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner right and bottom
 
                     auto _BrushColor = _BorderColor.GetColor();
 
@@ -949,14 +943,10 @@ namespace YY
 
         void __MEGA_UI_API Element::PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds)
         {
-            if (_Background == nullptr)
-                return;
-
             if (_Background.GetType() == ValueType::Color)
             {
-                ATL::CComPtr<ID2D1SolidColorBrush> _BackgroundBrush;
+                ComPtr<ID2D1SolidColorBrush> _BackgroundBrush;
                 auto hr = _pRenderTarget->CreateSolidColorBrush(
-                    /* D2D1::ColorF(D2D1::ColorF::DarkRed)*/
                     _Background.GetColor(),
                     &_BackgroundBrush);
 

@@ -150,6 +150,9 @@
     <ClInclude Include="Window\WindowElement.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
+    <ClInclude Include="base\ComPtr.h">
+      <Filter>UI\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

@@ -5,11 +5,10 @@
 #include <d3d11.h>
 #include <dxgi1_2.h>
 
-#include <atlcomcli.h>
-
 #include "..\..\base\MegaUITypeInt.h"
 #include "..\Render.h"
 #include "..\..\base\alloc.h"
+#include <MegaUI/base/ComPtr.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -75,8 +74,8 @@ namespace YY
                 };
 
                 // Create the DX11 API device object, and get a corresponding context.
-                ATL::CComPtr<ID3D11Device> _pD3DDevice;
-                ATL::CComPtr<ID3D11DeviceContext> _pD3DDeviceContext;
+                ComPtr<ID3D11Device> _pD3DDevice;
+                ComPtr<ID3D11DeviceContext> _pD3DDeviceContext;
 
                 auto _hr = D3D11CreateDevice(
                     nullptr, // specify null to use the default adapter
@@ -95,7 +94,7 @@ namespace YY
 
                 do
                 {
-                    ATL::CComPtr<IDXGIDevice> _pDxgiDevice;
+                    ComPtr<IDXGIDevice> _pDxgiDevice;
                     // Obtain the underlying DXGI device of the Direct3D11 device.
                     _hr = _pD3DDevice->QueryInterface(&_pDxgiDevice);
                     if (FAILED(_hr))
@@ -115,11 +114,11 @@ namespace YY
 
                     pDeviceContext->SetUnitMode(D2D1_UNIT_MODE_PIXELS);
 
-                    ATL::CComPtr<IDXGIAdapter> _pDxgiAdapter;
+                    ComPtr<IDXGIAdapter> _pDxgiAdapter;
                     _hr = _pDxgiDevice->GetAdapter(&_pDxgiAdapter);
                     if (FAILED(_hr))
                         break;
-                    ATL::CComPtr<IDXGIFactory2> _pDxgiFactory;
+                    ComPtr<IDXGIFactory2> _pDxgiFactory;
                     _hr = _pDxgiAdapter->GetParent(IID_PPV_ARGS(&_pDxgiFactory));
                     if (FAILED(_hr))
                         break;
@@ -164,7 +163,7 @@ namespace YY
                         break;
 
                     // Direct2D needs the dxgi version of the backbuffer surface pointer.
-                    ATL::CComPtr<IDXGISurface> _pDxgiBackBuffer;
+                    ComPtr<IDXGISurface> _pDxgiBackBuffer;
                     _hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(&_pDxgiBackBuffer));
                     if (FAILED(_hr))
                         break;
@@ -360,7 +359,7 @@ namespace YY
                         break;
 
                     // Direct2D needs the dxgi version of the backbuffer surface pointer.
-                    ATL::CComPtr<IDXGISurface> pDxgiBackBuffer;
+                    ComPtr<IDXGISurface> pDxgiBackBuffer;
                     _hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pDxgiBackBuffer));
                     if (FAILED(_hr))
                         break;
@@ -398,3 +397,5 @@ namespace YY
         };
     } // namespace MegaUI
 } // namespace YY
+
+#pragma pack(pop)
