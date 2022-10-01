@@ -30,20 +30,20 @@
 #define DIRECTION_LTR 0
 #define DIRECTION_RTL 1
 
-// ActiveProp
-enum ActiveMarks
-{
-    AE_Inactive = 0x00000000,
-    AE_Mouse = 0x00000001,
-    AE_Keyboard = 0x00000002,
-};
-
 #pragma pack(push, __MEGA_UI_PACKING)
 
 namespace YY
 {
     namespace MegaUI
     {
+        // ActiveProp
+        namespace Active
+        {
+            constexpr auto Inactive = 0x00000000;
+            constexpr auto Mouse = 0x00000001;
+            constexpr auto Keyboard = 0x00000002;
+        }
+
 #if 0
 		_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout, Value::CreateElementNull,            nullptr, ValueType::eElement) \
 		_APPLY(Children,       PF_Normal | PF_ReadOnly,               PG_AffectsDesiredSize | PG_AffectsLayout, Value::CreateEmptyElementList,             nullptr, ValueType::eElementList) \
@@ -80,7 +80,10 @@ namespace YY
     _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(ID,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
     _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              nullptr,                           &Element::GetSheetDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) \
-    _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,             nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) 
+    _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
+    _APPLY(Content,        PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        nullptr,                              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
+    _APPLY(ContentAlign,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, ContentAlignEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, fSpecContentAlign), 0), ValueType::int32_t   ) \
+    _APPLY(Font,           PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFont,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Font   ) 
 
     // clang-format on
 
@@ -158,7 +161,7 @@ namespace YY
             // 0x58 ID
             ATOM SpecID;
             
-            uint32_t uSpecActive = ActiveMarks::AE_Inactive;
+            uint32_t uSpecActive = Active::Inactive;
             //bits
 #define _MEGA_UI_ELEMENT_BITS_TABLE(_APPLY) \
     _APPLY(bSelfLayout, 1)                  \
@@ -206,6 +209,7 @@ namespace YY
             // 最小限制
             SIZE SpecMinSize = {};
             int32_t iSpecDirection = 0;
+            int32_t fSpecContentAlign = ContentAlign::Top | ContentAlign::Left;
 
             // 承载控件的窗口
             Window* pWindow = nullptr;
@@ -380,6 +384,13 @@ namespace YY
             void __MEGA_UI_API PaintBorder(_In_ Render* _pRenderTarget, _In_ int32_t _iBorderStyle, _In_ const Rect& _BorderThickness, const Value& _BorderColor, _Inout_ Rect& _Bounds);
 
             void __MEGA_UI_API PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
+            
+            void __MEGA_UI_API PaintContent(
+                _In_ Render* _pRenderTarget,
+                _In_ const Value& _Content,
+                _In_ const Font& _FontInfo,
+                _In_ const Rect& _Bounds
+                );
 
             virtual SIZE __MEGA_UI_API GetContentSize(SIZE _ConstraintSize);
             virtual SIZE __MEGA_UI_API SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);
@@ -494,6 +505,10 @@ namespace YY
             /// <returns></returns>
             void __MEGA_UI_API UpdateMouseWithinToFalse();
 		};
+
+        _Ret_notnull_ const EnumMap* __MEGA_UI_API GetFontWeightEnumMap();
+
+        _Ret_notnull_ const EnumMap* __MEGA_UI_API GetFontStyleEnumMap();
 	}
 }
 

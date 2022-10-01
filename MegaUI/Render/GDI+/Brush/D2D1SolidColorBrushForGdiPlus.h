@@ -2,10 +2,10 @@
 #include <d2d1.h>
 #include <GdiPlus.h>
 
-#include "../../base/MegaUITypeInt.h"
-#include "../../base/Interlocked.h"
-#include "../../base/alloc.h"
-#include "../../base/Color.h"
+#include "../../../base/MegaUITypeInt.h"
+#include "../../../base/Interlocked.h"
+#include "../../../base/alloc.h"
+#include "../../../base/Color.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 

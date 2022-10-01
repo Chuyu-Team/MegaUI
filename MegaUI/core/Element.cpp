@@ -43,11 +43,25 @@ namespace YY
         
         static const EnumMap ActiveEnumMap[] =
         {
-            { "Inactive", ActiveMarks::AE_Inactive },
-            { "Mouse", ActiveMarks::AE_Mouse },
-            { "Keyboard", ActiveMarks::AE_Keyboard },
+            { "Inactive", Active::Inactive },
+            { "Mouse", Active::Mouse },
+            { "Keyboard", Active::Keyboard },
             { }
         };
+
+        static const EnumMap ContentAlignEnumMap[] =
+        {
+            { "Left", ContentAlign::Left },
+            { "Center", ContentAlign::Center },
+            { "Right", ContentAlign::Right },
+            { "Top", ContentAlign::Top },
+            { "Middle", ContentAlign::Middle },
+            { "Bottom", ContentAlign::Bottom },
+            { "Wrap", ContentAlign::Wrap },
+            { "EndEllipsis", ContentAlign::EndEllipsis },
+            { }
+        };
+
 		_APPLY_MEGA_UI_STATIC_CONTROL_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
         Element::Element()
@@ -844,6 +858,14 @@ namespace YY
                 GetValue(Element::g_ControlInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false),
                 _PaintBounds);
 
+            // 应用内边距
+            _PaintBounds.DeflateRect(ApplyRTL(SpecPadding));
+
+            PaintContent(
+                _pRenderTarget,
+                GetValue(Element::g_ControlInfoData.ContentProp),
+                GetValue(Element::g_ControlInfoData.FontProp).GetFont(),
+                _PaintBounds);
         }
 
         void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
@@ -954,6 +976,19 @@ namespace YY
                     return;
 
                 _pRenderTarget->FillRectangle(_Bounds, _BackgroundBrush);
+            }
+        }
+
+        void __MEGA_UI_API Element::PaintContent(
+            Render* _pRenderTarget,
+            const Value& _Content,
+            const Font& _FontInfo,
+            const Rect& _Bounds
+            )
+        {
+            if (_Content.GetType() == ValueType::uString)
+            {
+                _pRenderTarget->DrawString(_Content.GetString(), _FontInfo, _Bounds, fSpecContentAlign);
             }
         }
 
@@ -1302,6 +1337,9 @@ namespace YY
         int32_t __MEGA_UI_API Element::SpecCacheIsEqual(Element* _pElement1, Element* _pElement2, const PropertyInfo& _Prop)
         {
             if (!_Prop.BindCacheInfo.pFunPropertyCustomCache)
+                return -1;
+
+            if (!_Prop.BindCacheInfo.bValueMapOrCustomPropFun)
                 return -1;
 
             const auto _uOffsetToCache = _Prop.BindCacheInfo.OffsetToSpecifiedValue;
@@ -2533,7 +2571,7 @@ namespace YY
 
                     _RetValue = Value::CreateUnset();
                     // 如果自己需要处理鼠标焦点，那么阻止 父节点继承
-                    return (GetActive() & ActiveMarks::AE_Mouse) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
+                    return (GetActive() & Active::Mouse) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
                 }
             }
             else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
@@ -2795,6 +2833,43 @@ namespace YY
             }
 
             EndDefer(_Cooike);
+        }
+        
+        const EnumMap* __MEGA_UI_API GetFontWeightEnumMap()
+        {
+            static constexpr const EnumMap _EnumMaps[] =
+            {
+                {"Thin", FontWeight::Thin},
+                {"ExtraLight", FontWeight::ExtraLight},
+                {"UltraLight", FontWeight::UltraLight},
+                {"Light", FontWeight::Light},
+                {"SemiLight", FontWeight::SemiLight},
+                {"Normal", FontWeight::Normal},
+                {"Regular", FontWeight::Regular},
+                {"Medium", FontWeight::Medium},
+                {"DemiBold", FontWeight::DemiBold},
+                {"SemiBold", FontWeight::SemiBold},
+                {"Bold", FontWeight::Bold},
+                {"ExtraBold", FontWeight::ExtraBold},
+                {"UltraBold", FontWeight::UltraBold},
+                {"Black", FontWeight::Black},
+                {"Heavy", FontWeight::Heavy},
+                {"ExtraBlack", FontWeight::ExtraBlack},
+                {"UltraBlack", FontWeight::UltraBlack},
+            };
+            return _EnumMaps;
+        }
+
+        const EnumMap* __MEGA_UI_API GetFontStyleEnumMap()
+        {
+            static constexpr const EnumMap _EnumMaps[] =
+            {
+                {"None", FontStyle::None},
+                {"Italic", FontStyle::Italic},
+                {"Underline", FontStyle::Underline},
+                {"StrikeOut", FontStyle::StrikeOut},
+            };
+            return _EnumMaps;
         }
 	}
 }

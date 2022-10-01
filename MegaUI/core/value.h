@@ -9,6 +9,7 @@
 #include "..\base\StringBase.h"
 #include "..\base\Color.h"
 #include "..\base\Rect.h"
+#include <MegaUI/base/Font.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -35,7 +36,8 @@ namespace YY
         _APPLY(HCURSOR,     HCURSOR,             hCursorVal) \
         _APPLY(Layout,      Layout*,             pLayout  )  \
         _APPLY(Color,       Color,               ColorValue) \
-        _APPLY(StyleSheet,  StyleSheet*,         pStyleSheet)
+        _APPLY(StyleSheet,  StyleSheet*,         pStyleSheet) \
+        _APPLY(Font,        Font,                FontValue)
 
 		enum class ValueType
         {
@@ -215,6 +217,15 @@ namespace YY
             static Value __MEGA_UI_API CreateUnavailable();
             static Value __MEGA_UI_API CreateUnset();
             static Value __MEGA_UI_API CreateLayoutNull();
+
+            /// <summary>
+            /// 获取默认字体信息。
+            /// </summary>
+            /// <returns></returns>
+            static Value __MEGA_UI_API CreateDefaultFont();
+
+            static Value __MEGA_UI_API CreateFont(uString _szFace, uint32_t _uFontSize, uint32_t _uWeight, uint32_t _fStyle, Color _Color);
+
             /// <summary>
             /// 创建一个全透明的颜色。
             /// </summary>
@@ -225,6 +236,10 @@ namespace YY
 
             ValueType __MEGA_UI_API GetType() const;
 
+            /// <summary>
+            /// 判断是否包含有效的内容，除Unavailable、Unset以及Null外均认为有效。
+            /// </summary>
+            /// <returns></returns>
             bool __MEGA_UI_API HasValue() const;
 
             // Value creation methods
@@ -275,6 +290,8 @@ namespace YY
             uString __MEGA_UI_API GetString() const;
 
             StyleSheet* __MEGA_UI_API GetStyleSheet() const;
+
+            Font& __MEGA_UI_API GetFont() const;
 
             bool __MEGA_UI_API CmpValue(const Value& _Other, ValueCmpOperation _Operation) const;
         };

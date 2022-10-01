@@ -148,6 +148,37 @@ namespace YY
             _RETUNR_CONST_VALUE(ValueType::Layout, nullptr);
         }
 
+        Value __MEGA_UI_API Value::CreateDefaultFont()
+        {
+            return CreateFont(
+                L"Arial",
+                20,
+                FontWeight::Normal,
+                FontStyle::None,
+                Color(255, 0, 0, 0));
+        }
+
+        Value __MEGA_UI_API Value::CreateFont(uString _szFace, uint32_t _uFontSize, uint32_t _uWeight, uint32_t _fStyle, Color _Color)
+        {
+            auto _pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            if (_pValue)
+            {
+                _pValue->eType = uint_t(ValueType::Font);
+                _pValue->bSkipFree = 0;
+                _pValue->cRef = 1;
+                auto& FontValue = _pValue->FontValue;
+                new (&FontValue) Font;
+
+                FontValue.szFace = std::move(_szFace);
+                FontValue.uSize = _uFontSize;
+                FontValue.uWeight = _uWeight;
+                FontValue.fStyle = _fStyle;
+                FontValue.Color = _Color;
+            }
+
+            return Value(_pValue);
+        }
+
         Value __MEGA_UI_API Value::CreateColorTransparant()
         {
             _RETUNR_CONST_VALUE(ValueType::Color, {});
@@ -221,6 +252,11 @@ namespace YY
             if (!pSharedData)
                 return ValueType::Null;
             return ValueType(pSharedData->eType);
+        }
+
+        bool __MEGA_UI_API Value::HasValue() const
+        {
+            return pSharedData && pSharedData->eType > int_t(ValueType::Null);
         }
         
         Value __MEGA_UI_API Value::CreateInt32(int32_t _iValue)
@@ -480,6 +516,13 @@ namespace YY
             if (GetType() != ValueType::StyleSheet)
                 throw Exception();
             return pSharedData->pStyleSheet;
+        }
+
+        Font& __MEGA_UI_API Value::GetFont() const
+        {
+            if (GetType() != ValueType::Font)
+                throw Exception();
+            return pSharedData->FontValue;
         }
 
         bool __MEGA_UI_API Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation) const

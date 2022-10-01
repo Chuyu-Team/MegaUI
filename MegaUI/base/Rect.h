@@ -114,6 +114,11 @@ namespace YY
                 return ::PtInRect(this, _Point) != FALSE;
             }
 
+            const POINT& __MEGA_UI_API GetPoint() const
+            {
+                return *(POINT*)this;
+            }
+
             void __MEGA_UI_API SetPoint(POINT _Point)
             {
                 right += _Point.x - left;

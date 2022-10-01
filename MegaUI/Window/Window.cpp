@@ -410,7 +410,7 @@ namespace YY
                 auto _pOldPressedElement = pLastPressedElement;
                 auto _pOldFocusedElement = pLastFocusedElement;
 
-                auto _pFind = FindElementFromPoint(POINT {LOWORD(_lParam), HIWORD(_lParam)}, ActiveMarks::AE_Mouse);
+                auto _pFind = FindElementFromPoint(POINT {LOWORD(_lParam), HIWORD(_lParam)}, Active::Mouse);
                 if (_pFind && _pFind->GetEnabled())
                 {
                     pLastPressedElement = _pFind;

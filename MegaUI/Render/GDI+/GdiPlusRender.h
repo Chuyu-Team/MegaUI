@@ -16,6 +16,7 @@ namespace YY
 {
     namespace MegaUI
     {
+        // 此版本适用于Windows XP等没有 D2D的Windows系统
         class GdiPlusRender : public Render
         {
         private:
@@ -63,6 +64,12 @@ namespace YY
             static Gdiplus::Rect __MEGA_UI_API ToGdiPlusRect(const Rect& _Rect)
             {
                 Gdiplus::Rect _GdiPlusRect(_Rect.left, _Rect.top, _Rect.right - _Rect.left, _Rect.bottom - _Rect.top);
+                return _GdiPlusRect;
+            }
+            
+            static Gdiplus::RectF __MEGA_UI_API ToGdiPlusRectF(const Rect& _Rect)
+            {
+                Gdiplus::RectF _GdiPlusRect(_Rect.left, _Rect.top, _Rect.right - _Rect.left, _Rect.bottom - _Rect.top);
                 return _GdiPlusRect;
             }
 
@@ -246,6 +253,158 @@ namespace YY
             virtual D2D1_SIZE_U __MEGA_UI_API GetPixelSize()
             {
                 return PixelSize;
+            }
+            
+            virtual
+            HRESULT
+            __MEGA_UI_API CreateTextFormat(
+                _In_z_ uchar_t const* _szFontFamilyName,
+                _In_opt_ IDWriteFontCollection* _pFontCollection,
+                _In_ const Font& _FontInfo,
+                _In_z_ uchar_t const* _szLocaleName,
+                _COM_Outptr_ IDWriteTextFormat** _ppTextFormat
+                ) override
+            {
+                return E_NOTIMPL;
+            }
+
+            virtual
+            HRESULT
+            __MEGA_UI_API CreateTextLayout(
+                _In_ uStringView _szText,
+                _In_ IDWriteTextFormat* _pTextFormat,
+                _In_ uint32_t _uMaxWidth,
+                _In_ uint32_t _uMaxHeight,
+                _COM_Outptr_ IDWriteTextLayout** _ppTextLayout
+                ) override
+            {
+                return E_NOTIMPL;
+            }
+
+            virtual
+            void
+            __MEGA_UI_API DrawTextLayout(
+                _In_ POINT _Origin,
+                _In_ IDWriteTextLayout* _pTextLayout,
+                _In_ ID2D1Brush* _pDefaultFillBrush,
+                _In_ D2D1_DRAW_TEXT_OPTIONS _eOptions
+                ) override
+            {
+                return;
+            }
+
+            static float __MEGA_UI_API GetFontSize(_In_ const Font& _FontInfo)
+            {
+                return _FontInfo.uSize * 72.0f / 96.0f;
+            }
+
+            static int32_t __MEGA_UI_API GetFontStyle(_In_ const Font& _FontInfo)
+            {
+                int32_t _fFontStyle = 0;
+
+                if (_FontInfo.uWeight <= FontWeight::Medium)
+                {
+                    // Regular
+                    if (_FontInfo.fStyle & FontStyle::Italic)
+                    {
+                        _fFontStyle = Gdiplus::FontStyleItalic;
+                    }
+                    else
+                    {
+                        _fFontStyle = Gdiplus::FontStyleRegular;
+                    }
+                }
+                else
+                {
+                    // Bold
+                    if (_FontInfo.fStyle & FontStyle::Italic)
+                    {
+                        _fFontStyle = Gdiplus::FontStyleBoldItalic;
+                    }
+                    else
+                    {
+                        _fFontStyle = Gdiplus::FontStyleBold;
+                    }
+                }
+
+                if (_FontInfo.fStyle & FontStyle::Underline)
+                {
+                    _fFontStyle |= Gdiplus::FontStyleUnderline;
+                }
+
+                if (_FontInfo.fStyle & FontStyle::StrikeOut)
+                {
+                    _fFontStyle |= Gdiplus::FontStyleStrikeout;
+                }
+
+                return _fFontStyle;
+            }
+
+            // 
+            static Gdiplus::StringAlignment __MEGA_UI_API GetFontAlignment(_In_ int32_t _fTextAlign)
+            {
+                if (_fTextAlign & ContentAlign::Right)
+                {
+                    return Gdiplus::StringAlignmentFar;
+                }
+                else if (_fTextAlign & ContentAlign::Center)
+                {
+                    return Gdiplus::StringAlignmentCenter;
+                }
+                else
+                {
+                    return Gdiplus::StringAlignmentNear;
+                }
+            }
+
+            static Gdiplus::StringAlignment __MEGA_UI_API GetFontLineAlignment(_In_ int32_t _fTextAlign)
+            {
+                if (_fTextAlign & ContentAlign::Bottom)
+                {
+                    return Gdiplus::StringAlignmentFar;
+                }
+                else if (_fTextAlign & ContentAlign::Middle)
+                {
+                    return Gdiplus::StringAlignmentCenter;
+                }
+                else
+                {
+                    return Gdiplus::StringAlignmentNear;
+                }
+            }
+
+            virtual
+            void
+            __MEGA_UI_API
+            DrawString(
+                _In_ uStringView _szText,
+                _In_ const Font& _FontInfo,
+                _In_ const Rect& _LayoutRect,
+                _In_ int32_t _fTextAlign
+                ) override
+            {
+                if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty())
+                    return;
+
+                Gdiplus::FontFamily _FontFamily(_FontInfo.szFace);
+                Gdiplus::Font _Font(&_FontFamily, GetFontSize(_FontInfo), GetFontStyle(_FontInfo));
+
+                int32_t _fStringFormatFlags = 0;
+                if ((_fTextAlign & ContentAlign::Wrap) == 0)
+                    _fStringFormatFlags |= Gdiplus::StringFormatFlags::StringFormatFlagsNoWrap;
+
+                Gdiplus::StringFormat _Format(_fStringFormatFlags);
+                _Format.SetAlignment(GetFontAlignment(_fTextAlign));
+                _Format.SetLineAlignment(GetFontLineAlignment(_fTextAlign));
+
+                if (_fTextAlign & ContentAlign::EndEllipsis)
+                    _Format.SetTrimming(Gdiplus::StringTrimming::StringTrimmingEllipsisCharacter);
+
+                Gdiplus::SolidBrush _Brush(Gdiplus::Color(_FontInfo.Color.Alpha, _FontInfo.Color.Red, _FontInfo.Color.Green, _FontInfo.Color.Blue));
+                
+
+
+                pSurface->DrawString(_szText.GetConstString(), _szText.GetSize(), &_Font, ToGdiPlusRectF(_LayoutRect), &_Format, &_Brush);
             }
         };
     }

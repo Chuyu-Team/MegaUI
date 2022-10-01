@@ -225,36 +225,64 @@ namespace YY
 
             ValueParserType __MEGA_UI_API ParseIdentifier(ValueParserContext* _pContext, u8StringView* _pszIdentifier)
             {
-                auto _szIdentifier = _pContext->SkipWhiteSpace();
+                if (_pContext->IsTerminate())
+                    return ValueParserType::ParserEnd;
 
-                // - 只允许开头，这可能表示一个负数。
-                if (_pContext->IsTerminate() == false && *_pContext->szCurrent == '-')
+                if (*_pContext->szCurrent == '\'')
+                {
                     ++_pContext->szCurrent;
+                    auto _szIdentifier = _pContext->SkipWhiteSpace();
 
-                for (; _pContext->IsTerminate() == false; ++_pContext->szCurrent)
-                {
-                    auto _ch = *_pContext->szCurrent;
-
-                    if (!(_ch >= 'A' && _ch <= 'Z'
-                        || _ch >= 'a' && _ch <= 'z'
-                        || _ch >= '0' && _ch <= '9'
-                        || _ch == '_'))
+                    // 以 '' 包裹
+                    for (;; ++_pContext->szCurrent)
                     {
-                        break;
-                    }
-                }
+                        if (_pContext->IsTerminate())
+                            return ValueParserType::ParserOtherChar;
 
-                if (_szIdentifier != _pContext->szCurrent)
-                {
+                        auto _ch = *_pContext->szCurrent;
+
+                        if (_ch == '\'')
+                            break;
+                    }
+
                     _pszIdentifier->SetString(_szIdentifier, _pContext->szCurrent - _szIdentifier);
+                    ++_pContext->szCurrent;
 
                     return ValueParserType::ParserSuccess;
                 }
-
-                if (_pContext->IsTerminate())
-                    return ValueParserType::ParserEnd;
                 else
-                    return ValueParserType::ParserOtherChar;
+                {
+                    auto _szIdentifier = _pContext->SkipWhiteSpace();
+                    // 这是一个简化的 Identifier
+                    // - 只允许开头，这可能表示一个负数。
+                    if (_pContext->IsTerminate() == false && *_pContext->szCurrent == '-')
+                        ++_pContext->szCurrent;
+
+                    for (; _pContext->IsTerminate() == false; ++_pContext->szCurrent)
+                    {
+                        auto _ch = *_pContext->szCurrent;
+
+                        if (!(_ch >= 'A' && _ch <= 'Z'
+                            || _ch >= 'a' && _ch <= 'z'
+                            || _ch >= '0' && _ch <= '9'
+                            || _ch == '_'))
+                        {
+                            break;
+                        }
+                    }
+
+                    if (_szIdentifier != _pContext->szCurrent)
+                    {
+                        _pszIdentifier->SetString(_szIdentifier, _pContext->szCurrent - _szIdentifier);
+
+                        return ValueParserType::ParserSuccess;
+                    }
+
+                    if (_pContext->IsTerminate())
+                        return ValueParserType::ParserEnd;
+                    else
+                        return ValueParserType::ParserOtherChar;
+                }
             }
 
             HRESULT __MEGA_UI_API ParseFuncall(ValueParserContext* _pContext, ExprNode* _pExprNode)

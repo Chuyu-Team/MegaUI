@@ -4,6 +4,7 @@
 #include "../Window/WindowElement.h"
 #include "../base/DynamicArray.h"
 #include "../base/ArrayView.h"
+#include <MegaUI/core/Property.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -41,22 +42,30 @@ namespace YY
 
         };
         
-        union ParsedArg
+        struct ParsedArg
         {
-            // , 跳过
-            // * 忽略
-            // I
-            int32_t iNumber;
-            // S
-            u8StringView szString;
-            // C
-            Color cColor;
+            const EnumMap* pEnumMaps;
 
-            // 估计不初始化内存
+            union
+            {
+                // , 跳过
+                // * 忽略
+                // I
+                int32_t iNumber;
+                // S
+                u8StringView szString;
+                // C
+                Color cColor;
+            };
+
+            // 故意不初始化内存
             #pragma warning(suppress : 26495)
-            ParsedArg()
+            ParsedArg(const EnumMap* _pEnumMaps = nullptr)
+                : pEnumMaps(_pEnumMaps)
             {
             }
+
+            
         };
 
         struct StyleSheetXmlOption
@@ -99,6 +108,8 @@ namespace YY
                 _Out_opt_ intptr_t* _pCooike,
                 _Outptr_ WindowElement** _ppElement
                 );
+
+            
         protected:
 
             IControlInfo* __MEGA_UI_API FindControlInfo(_In_ raw_const_astring_t _szControlName, _Out_opt_ uint32_t* _pIndex = nullptr);
@@ -111,30 +122,39 @@ namespace YY
 
             HRESULT __MEGA_UI_API ParserValue(_In_ IControlInfo* _pControlInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserInt32Value(const u8StringView& _szValue, int32_t* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserBoolValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, int32_t* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserStringValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue);
+
+            static HRESULT __MEGA_UI_API ParserBoolValue(ExprNode* _pExprNode, Value* _pValue);
+
+            static HRESULT __MEGA_UI_API ParserStringValue(ExprNode* _pExprNode, u8StringView* _pValue);
+
+            static HRESULT __MEGA_UI_API ParserStringValue(ExprNode* _pExprNode, Value* _pValue);
             
-            static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Out_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
+            static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Inout_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
             
             template<uint_t _uArgCount>
-            __inline static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Out_ ParsedArg (&_Arg)[_uArgCount])
+            __inline static HRESULT ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Out_ ParsedArg (&_Arg)[_uArgCount])
             {
                 return ParserFunction(_szFunctionName, _pExprNode, _szFormat, _Arg, _uArgCount);
             }
 
-            static HRESULT __MEGA_UI_API ParserPointValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserPointValue(ExprNode* _pExprNode, Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserSizeValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserSizeValue(ExprNode* _pExprNode, Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserRectValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserRectValue(ExprNode* _pExprNode, Value* _pValue);
+            
+            static HRESULT __MEGA_UI_API ParserColorValue(ExprNode* _pExprNode, Color* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserColorValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserColorValue(ExprNode* _pExprNode, Value* _pValue);
 
-            HRESULT __MEGA_UI_API ParserStyleSheetValue(const PropertyInfo* _pProp, ExprNode* _pExprNode, Value* _pValue);
+            HRESULT __MEGA_UI_API ParserStyleSheetValue(ExprNode* _pExprNode, Value* _pValue);
 
+            static HRESULT __MEGA_UI_API ParserFontValue(ExprNode* _pExprNode, Value* _pValue);
 
             HRESULT __MEGA_UI_API Play(
                 _In_ ArrayView<uint8_t>& _ByteCode,
