@@ -40,57 +40,59 @@ public:                                                                         
     static HRESULT __MEGA_UI_API Register();                                                      \
     static HRESULT __MEGA_UI_API UnRegister();                                                    \
     static HRESULT __MEGA_UI_API Create(                                                          \
+        _In_ int32_t _iDPI,                                                                       \
         _In_ uint32_t _fCreate,                                                                   \
         _In_opt_ Element* _pTopLevel,                                                             \
         _Out_opt_ intptr_t* _pCooike,                                                             \
         _Outptr_ _CONTROL_NAME** _ppOut);
 
 // 展开控件类信息
-#define _APPLY_MEGA_UI_STATIC_CONTROL_INFO(_CONTROL_NAME, _PROPERTY_TABLE)                                                          \
-    _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST);                                                                   \
-                                                                                                                                \
-    _CONTROL_NAME::StaticControlInfo _CONTROL_NAME::g_ControlInfoData =                                                                 \
-        {                                                                                                                       \
-            nullptr,                                                                                                            \
-            {{_PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY)}}};                                                                      \
-    IControlInfo* __MEGA_UI_API _CONTROL_NAME::GetControlInfo()                                                                \
-    {                                                                                                                           \
-        return g_ControlInfoData.pControlInfoPtr;                                                                                   \
-    }                                                                                                                           \
-    IControlInfo* __MEGA_UI_API _CONTROL_NAME::GetStaticControlInfo()                                                          \
-    {                                                                                                                           \
-        return g_ControlInfoData.pControlInfoPtr;                                                                                   \
-    }                                                                                                                           \
-    HRESULT __MEGA_UI_API _CONTROL_NAME::Register()                                                                               \
-    {                                                                                                                           \
-        return _CONTROL_NAME::StaticControlInfo::ControlInfoType::Register();                                                         \
-    }                                                                                                                           \
-    HRESULT __MEGA_UI_API _CONTROL_NAME::UnRegister()                                                                             \
-    {                                                                                                                           \
-        if (!g_ControlInfoData.pControlInfoPtr)                                                                                     \
-            return S_FALSE;                                                                                                     \
-        return g_ControlInfoData.pControlInfoPtr->UnRegister();                                                                     \
-    }                                                                                                                           \
-    HRESULT __MEGA_UI_API _CONTROL_NAME::Create(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, _CONTROL_NAME** _ppOut) \
-    {                                                                                                                           \
-        if (!_ppOut)                                                                                                            \
-            return E_INVALIDARG;                                                                                                \
-        *_ppOut = nullptr;                                                                                                      \
-                                                                                                                                \
-        auto _pElement = HNew<_CONTROL_NAME>();                                                                                   \
-        if (!_pElement)                                                                                                         \
-            return E_OUTOFMEMORY;                                                                                               \
-                                                                                                                                \
-        auto _hr = _pElement->Initialize(_fCreate, _pTopLevel, _pCooike);                                                       \
-        if (SUCCEEDED(_hr))                                                                                                     \
-        {                                                                                                                       \
-            *_ppOut = _pElement;                                                                                                \
-        }                                                                                                                       \
-        else                                                                                                                    \
-        {                                                                                                                       \
-            HDelete(_pElement);                                                                                                 \
-        }                                                                                                                       \
-        return _hr;                                                                                                             \
+#define _APPLY_MEGA_UI_STATIC_CONTROL_INFO(_CONTROL_NAME, _PROPERTY_TABLE)                                                                         \
+    _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST);                                                                                      \
+                                                                                                                                                   \
+    _CONTROL_NAME::StaticControlInfo _CONTROL_NAME::g_ControlInfoData =                                                                            \
+    {                                                                                                                                              \
+        nullptr,                                                                                                                                   \
+        {{_PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY)}}                                                                                               \
+    };                                                                                                                                             \
+    IControlInfo* __MEGA_UI_API _CONTROL_NAME::GetControlInfo()                                                                                    \
+    {                                                                                                                                              \
+        return g_ControlInfoData.pControlInfoPtr;                                                                                                  \
+    }                                                                                                                                              \
+    IControlInfo* __MEGA_UI_API _CONTROL_NAME::GetStaticControlInfo()                                                                              \
+    {                                                                                                                                              \
+        return g_ControlInfoData.pControlInfoPtr;                                                                                                  \
+    }                                                                                                                                              \
+    HRESULT __MEGA_UI_API _CONTROL_NAME::Register()                                                                                                \
+    {                                                                                                                                              \
+        return _CONTROL_NAME::StaticControlInfo::ControlInfoType::Register();                                                                      \
+    }                                                                                                                                              \
+    HRESULT __MEGA_UI_API _CONTROL_NAME::UnRegister()                                                                                              \
+    {                                                                                                                                              \
+        if (!g_ControlInfoData.pControlInfoPtr)                                                                                                    \
+            return S_FALSE;                                                                                                                        \
+        return g_ControlInfoData.pControlInfoPtr->UnRegister();                                                                                    \
+    }                                                                                                                                              \
+    HRESULT __MEGA_UI_API _CONTROL_NAME::Create(int32_t _iDPI, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, _CONTROL_NAME** _ppOut) \
+    {                                                                                                                                              \
+        if (!_ppOut)                                                                                                                               \
+            return E_INVALIDARG;                                                                                                                   \
+        *_ppOut = nullptr;                                                                                                                         \
+                                                                                                                                                   \
+        auto _pElement = HNew<_CONTROL_NAME>();                                                                                                    \
+        if (!_pElement)                                                                                                                            \
+            return E_OUTOFMEMORY;                                                                                                                  \
+                                                                                                                                                   \
+        auto _hr = _pElement->Initialize(_iDPI, _fCreate, _pTopLevel, _pCooike);                                                                   \
+        if (SUCCEEDED(_hr))                                                                                                                        \
+        {                                                                                                                                          \
+            *_ppOut = _pElement;                                                                                                                   \
+        }                                                                                                                                          \
+        else                                                                                                                                       \
+        {                                                                                                                                          \
+            HDelete(_pElement);                                                                                                                    \
+        }                                                                                                                                          \
+        return _hr;                                                                                                                                \
     }
 
 namespace YY
@@ -110,11 +112,12 @@ namespace YY
             /// <summary>
             /// 创建Element，此接口一般给脚本解析器使用。
             /// </summary>
+            /// <param name="_iDPI">控件的初始DPI值。</param>
             /// <param name="pTopLevelElem_">顶层Element，如果传入，那么后续将通过pTopLevelElem_的 Defer接口进行推迟更改通知。</param>
             /// <param name="pCookies_">返回 Defer 的Cookies值，如果为 nullptr，那么不会触发Defer</param>
             /// <param name="ppElem_">返回创建的Element</param>
             /// <returns>如果函数成功，那么 >=0 </returns>
-            virtual HRESULT __MEGA_UI_API CreateInstance(_In_opt_ Element* _pTopLevelElem, _Out_opt_ intptr_t* _pCookies, _Outptr_ Element** _ppElem_) = 0;
+            virtual HRESULT __MEGA_UI_API CreateInstance(_In_ int32_t _iDPI, _In_opt_ Element* _pTopLevelElem, _Out_opt_ intptr_t* _pCookies, _Outptr_ Element** _ppElem_) = 0;
 
             virtual _Ret_maybenull_ const PropertyInfo* __MEGA_UI_API EnumPropertyInfo(_In_ uint32_t _uIndex) = 0;
 

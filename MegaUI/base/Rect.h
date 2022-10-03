@@ -1,8 +1,11 @@
 ﻿#pragma once
 #include <Windows.h>
 #include <d2d1.h>
+#include <GdiPlus.h>
 
 #include "MegaUITypeInt.h"
+#include "Size.h"
+#include "Point.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -10,177 +13,238 @@ namespace YY
 {
     namespace MegaUI
     {
-        class Rect : public RECT
+        class Rect
         {
         public:
+            float Left;
+            float Top;
+            float Right;
+            float Bottom;
+
             __inline constexpr Rect()
-                : RECT {}
+                : Left(0)
+                , Top(0)
+                , Right(0)
+                , Bottom(0)
+            {
+            }
+
+            __inline constexpr Rect(float _Left, float _Top, float _Right, float _Bottom)
+                : Left(_Left)
+                , Top(_Top)
+                , Right(_Right)
+                , Bottom(_Bottom)
+            {
+            }
+
+            __inline constexpr Rect(const Rect& _Other)
+                : Left(_Other.Left)
+                , Top(_Other.Top)
+                , Right(_Other.Right)
+                , Bottom(_Other.Bottom)
             {
             }
 
             __inline constexpr Rect(const RECT& _Other)
-                : RECT {_Other}
+                : Left((float)_Other.left)
+                , Top((float)_Other.top)
+                , Right((float)_Other.right)
+                , Bottom((float)_Other.bottom)
             {
             }
 
-            __inline constexpr Rect(const POINT& _Point, const SIZE& _Size)
-                : RECT {_Point.x, _Point.y, _Point.x + _Size.cx, _Point.y + _Size.cy}
+            __inline constexpr Rect(const Point& _Point, const Size& _Size)
+                : Left(_Point.X)
+                , Top(_Point.Y)
+                , Right(_Point.X + _Size.Width)
+                , Bottom(_Point.Y + _Size.Height)
             {
             }
 
-            __inline constexpr Rect(int32_t _Left, int32_t _Top, int32_t _Right, int32_t _Bottom)
-                : RECT {_Left, _Top, _Right, _Bottom}
+            __inline Rect& __MEGA_UI_API operator=(const Rect& _Other)
             {
-            }
-
-            __inline Rect& __MEGA_UI_API operator=(const RECT& _Other)
-            {
-                left = _Other.left;
-                top = _Other.top;
-                right = _Other.right;
-                bottom = _Other.bottom;
+                Left = _Other.Left;
+                Top = _Other.Top;
+                Right = _Other.Right;
+                Bottom = _Other.Bottom;
                 return *this;
             }
 
-            __inline Rect& __MEGA_UI_API operator|=(const RECT& _Other)
+            __inline Rect& __MEGA_UI_API operator|=(const Rect& _Other)
             {
-                UnionRect(this, this, &_Other);
+                // UnionRect
+                if (Left > _Other.Left)
+                    Left = _Other.Left;
+                
+                if (Top > _Other.Top)
+                    Top = _Other.Top;
+
+                if (Right < _Other.Right)
+                    Right = _Other.Right;
+
+                if (Bottom < _Other.Bottom)
+                    Bottom = _Other.Bottom;
+
                 return *this;
             }
 
-            __inline Rect& __MEGA_UI_API operator&=(const RECT& _Other)
+            __inline Rect& __MEGA_UI_API operator&=(const Rect& _Other)
             {
-                IntersectRect(this, this, &_Other);
+                // IntersectRect
+                if (Left >= _Other.Right || Top > _Other.Bottom || Right <= _Other.Left || Bottom <= _Other.Top)
+                {
+                    // 空集合
+                    Left = 0;
+                    Top = 0;
+                    Right = 0;
+                    Bottom = 0;
+                }
+                else
+                {
+                    if (Left < _Other.Left)
+                        Left = _Other.Left;
+
+                    if (Top < _Other.Top)
+                        Top = _Other.Top;
+
+                    if (Right > _Other.Right)
+                        Right = _Other.Right;
+
+                    if (Bottom > _Other.Bottom)
+                        Bottom = _Other.Bottom;
+                }
                 return *this;
             }
 
-            __inline Rect& __MEGA_UI_API operator-=(const RECT& _Other)
+            /*__inline Rect& __MEGA_UI_API operator-=(const RECT& _Other)
             {
                 SubtractRect(this, this, &_Other);
                 return *this;
-            }
+            }*/
 
-            __inline bool __MEGA_UI_API operator==(const RECT& _Other) const
+            __inline bool __MEGA_UI_API operator==(const Rect& _Other) const
             {
-                return EqualRect(this, &_Other);
+                return Left == _Other.Left && Top == _Other.Top && Right == _Other.Right && Bottom == _Other.Bottom;
             }
             
-            __inline bool __MEGA_UI_API operator!=(const RECT& _Other) const
+            __inline bool __MEGA_UI_API operator!=(const Rect& _Other) const
             {
-                return EqualRect(this, &_Other) == FALSE;
+                return Left != _Other.Left || Top != _Other.Top || Right != _Other.Right || Bottom != _Other.Bottom;
             }
 
-            __inline bool __MEGA_UI_API operator==(POINT _Point) const
+            __inline bool __MEGA_UI_API operator==(Point _Point) const
             {
-                return left == _Point.x && top == _Point.y;
+                return Left == _Point.X && Top == _Point.Y;
             }
 
-            __inline bool __MEGA_UI_API operator==(SIZE _Size) const
+            __inline bool __MEGA_UI_API operator==(Size _Size) const
             {
-                return right - left == _Size.cx && bottom - top == _Size.cy;
+                return GetWidth() == _Size.Width && GetHeight() == _Size.Height;
             }
 
-            void __MEGA_UI_API DeflateRect(_In_ const RECT& _Other)
+            void __MEGA_UI_API DeflateRect(_In_ const Rect& _Other)
             {
-                left += _Other.left;
-                if (left < right)
+                Left += _Other.Left;
+                if (Left < Right)
                 {
-                    right -= _Other.right;
+                    Right -= _Other.Right;
 
-                    if (right < left)
-                        right = left;
+                    if (Right < Left)
+                        Right = Left;
                 }
                 else
                 {
-                    left = right;
+                    Left = Right;
                 }
 
-                top += _Other.top;
-                if (top < bottom)
+                Top += _Other.Top;
+                if (Top < Bottom)
                 {
-                    bottom -= _Other.bottom;
+                    Bottom -= _Other.Bottom;
 
-                    if (bottom < top)
-                        bottom = top;
+                    if (Bottom < Top)
+                        Bottom = Top;
                 }
                 else
                 {
-                    top = bottom;
+                    Top = Bottom;
                 }
             }
 
-            bool __MEGA_UI_API PointInRect(POINT _Point)
+            bool __MEGA_UI_API PointInRect(Point _Point)
             {
-                return ::PtInRect(this, _Point) != FALSE;
+                // return ::PtInRect(this, _Point) != FALSE;
+                return Left <= _Point.X && Right >= _Point.X && Top <= _Point.Y && Bottom >= _Point.Y;
             }
 
-            const POINT& __MEGA_UI_API GetPoint() const
+            const Point& __MEGA_UI_API GetPoint() const
             {
-                return *(POINT*)this;
+                return *(Point*)this;
             }
 
-            void __MEGA_UI_API SetPoint(POINT _Point)
+            void __MEGA_UI_API SetPoint(Point _Point)
             {
-                right += _Point.x - left;
-                left = _Point.x;
+                Right += _Point.X - Left;
+                Left = _Point.X;
 
-                bottom += _Point.y - top;
-                top = _Point.y;
+                Bottom += _Point.Y - Top;
+                Top = _Point.Y;
             }
 
-            void __MEGA_UI_API SetSize(SIZE _Size)
+            void __MEGA_UI_API SetSize(Size _Size)
             {
-                right = left + _Size.cx;
-                bottom = top + _Size.cy;
+                Right = Left + _Size.Width;
+                Bottom = Top + _Size.Height;
             }
 
-            int32_t __MEGA_UI_API GetWidth() const
+            float __MEGA_UI_API GetWidth() const
             {
-                return right - left;
+                return Right - Left;
             }
 
-            int32_t __MEGA_UI_API GetHeight() const
+            float __MEGA_UI_API GetHeight() const
             {
-                return bottom - top;
+                return Bottom - Top;
             }
 
             bool __MEGA_UI_API IsEmpty() const
             {
-                return left >= right || top >= bottom;
+                return Left >= Right || Top >= Bottom;
             }
 
-            __MEGA_UI_API operator D2D_RECT_F() const
+            __MEGA_UI_API operator D2D_RECT_F&() const
             {
-                D2D_RECT_F _RectF;
-                _RectF.left = (FLOAT)left;
-                _RectF.top = (FLOAT)top;
-                _RectF.right = (FLOAT)right;
-                _RectF.bottom = (FLOAT)bottom;
-                return _RectF;
+                return *(D2D_RECT_F*)this;
+            }
+
+            __MEGA_UI_API operator Gdiplus::RectF() const
+            {
+                Gdiplus::RectF _Rect(Left, Top, GetWidth(), GetHeight());
+                return _Rect;
             }
         };
 
 
         __inline Rect __MEGA_UI_API operator|(const Rect& _Left, const Rect& _Rigth)
         {
-            Rect _Tmp;
-            UnionRect(&_Tmp, &_Left, &_Rigth);
+            Rect _Tmp = _Left;
+            _Tmp |= _Rigth;
             return _Tmp;
         }
 
         __inline Rect __MEGA_UI_API operator&(const Rect& _Left, const Rect& _Rigth)
         {
-            Rect _Tmp;
-            IntersectRect(&_Tmp, &_Left, &_Rigth);
+            Rect _Tmp = _Left;
+            _Tmp &= _Rigth;
             return _Tmp;
         }
-        
-        __inline Rect __MEGA_UI_API operator-(const Rect& _Left, const Rect& _Rigth)
-        {
-            Rect _Tmp;
-            SubtractRect(&_Tmp, &_Left, &_Rigth);
-            return _Tmp;
-        }
+        //
+        //__inline Rect __MEGA_UI_API operator-(const Rect& _Left, const Rect& _Rigth)
+        //{
+        //    Rect _Tmp;
+        //    SubtractRect(&_Tmp, &_Left, &_Rigth);
+        //    return _Tmp;
+        //}
     }
 } // namespace YY
 

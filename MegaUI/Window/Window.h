@@ -32,9 +32,9 @@ namespace YY
             DynamicArray<Element*> DelayedDestroyList;
             Element* pLastFocusedElement;
             Element* pLastPressedElement;
-
+            int32_t iDpi;
         public:
-            Window();
+            Window(_In_ int32_t _DefaultDpi = 96);
 
             Window(const Window&) = delete;
             void operator=(const Window&) = delete;
@@ -74,7 +74,15 @@ namespace YY
 
             void __MEGA_UI_API HandleEnabledPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
 
-            Element* __MEGA_UI_API FindElementFromPoint(_In_ const POINT& _ptPoint, _In_ uint32_t fActiveMarks);
+            Element* __MEGA_UI_API FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fActiveMarks);
+
+            int32_t __MEGA_UI_API GetDpi() const;
+
+            /// <summary>
+            /// 原生窗口是否已经创建？
+            /// </summary>
+            /// <returns></returns>
+            bool __MEGA_UI_API IsInitialized() const;
 
         protected:
             static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
@@ -95,11 +103,15 @@ namespace YY
                 Element* _pElement,
                 const Rect& _ParentBounds,
                 const Rect& _ParentVisibleBounds,
-                const POINT& _ptPoint);
+                const Point& _ptPoint);
 
             void __MEGA_UI_API ClearDelayedDestroyList();
 
             void __MEGA_UI_API UpdateStyles(_In_opt_ uint32_t _uOld, _In_ uint32_t _uNew);
+
+            void __MEGA_UI_API OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect);
+
+            HRESULT __MEGA_UI_API UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue);
         };
     }
 } // namespace YY

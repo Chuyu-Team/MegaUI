@@ -169,7 +169,9 @@
     <ClInclude Include="base\HashSet.h" />
     <ClInclude Include="base\Interlocked.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />
+    <ClInclude Include="base\Point.h" />
     <ClInclude Include="base\Rect.h" />
+    <ClInclude Include="base\Size.h" />
     <ClInclude Include="base\String.h" />
     <ClInclude Include="base\StringBase.h" />
     <ClInclude Include="base\StringTransform.h" />

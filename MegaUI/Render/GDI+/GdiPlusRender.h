@@ -28,7 +28,7 @@ namespace YY
             PAINTSTRUCT ps;
             Gdiplus::Bitmap* pSurfaceBitmap;
             Gdiplus::Graphics* pSurface;
-            DynamicArray<Gdiplus::Rect, false, false> vecClip;
+            DynamicArray<Gdiplus::RectF, false, false> vecClip;
         public:
             GdiPlusRender(HWND _hWnd, const D2D1_SIZE_U& _PixelSize)
                 : hWnd(_hWnd)
@@ -59,18 +59,6 @@ namespace YY
             HRESULT __MEGA_UI_API Init()
             {
                 return Gdiplus::GdiplusStartup(&GdiplusToken, &GdiplusStartupInput, NULL) == Gdiplus::Status::Ok ? S_OK : E_FAIL;
-            }
-
-            static Gdiplus::Rect __MEGA_UI_API ToGdiPlusRect(const Rect& _Rect)
-            {
-                Gdiplus::Rect _GdiPlusRect(_Rect.left, _Rect.top, _Rect.right - _Rect.left, _Rect.bottom - _Rect.top);
-                return _GdiPlusRect;
-            }
-            
-            static Gdiplus::RectF __MEGA_UI_API ToGdiPlusRectF(const Rect& _Rect)
-            {
-                Gdiplus::RectF _GdiPlusRect(_Rect.left, _Rect.top, _Rect.right - _Rect.left, _Rect.bottom - _Rect.top);
-                return _GdiPlusRect;
             }
 
             static HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
@@ -177,16 +165,16 @@ namespace YY
             PushAxisAlignedClip(
                 _In_ const Rect& _ClipRect) override
             {
-                Gdiplus::Rect _NewClipRect;
+                Gdiplus::RectF _NewClipRect;
 
                 if (auto _uSize = vecClip.GetSize())
                 {
-                    _NewClipRect = ToGdiPlusRect(_ClipRect);
+                    _NewClipRect = _ClipRect;
                     _NewClipRect.Intersect(vecClip[_uSize - 1]);
                 }
                 else
                 {
-                    _NewClipRect = ToGdiPlusRect(_ClipRect & ps.rcPaint);
+                    _NewClipRect = _ClipRect & ps.rcPaint;
                 }
 
                 pSurface->SetClip(_NewClipRect);
@@ -224,7 +212,7 @@ namespace YY
             {
                 pSurface->FillRectangle(
                     ((D2D1SolidColorBrushForGdiPlus*)_pBrush)->GetBrush(),
-                    ToGdiPlusRect(_Rect));
+                    _Rect);
             }
 
             virtual HRESULT __MEGA_UI_API CreateSolidColorBrush(
@@ -265,6 +253,8 @@ namespace YY
                 _COM_Outptr_ IDWriteTextFormat** _ppTextFormat
                 ) override
             {
+                if (_ppTextFormat)
+                    *_ppTextFormat = nullptr;
                 return E_NOTIMPL;
             }
 
@@ -273,18 +263,19 @@ namespace YY
             __MEGA_UI_API CreateTextLayout(
                 _In_ uStringView _szText,
                 _In_ IDWriteTextFormat* _pTextFormat,
-                _In_ uint32_t _uMaxWidth,
-                _In_ uint32_t _uMaxHeight,
+                _In_ Size _MaxBound,
                 _COM_Outptr_ IDWriteTextLayout** _ppTextLayout
                 ) override
             {
+                if (_ppTextLayout)
+                    *_ppTextLayout = nullptr;
                 return E_NOTIMPL;
             }
 
             virtual
             void
             __MEGA_UI_API DrawTextLayout(
-                _In_ POINT _Origin,
+                _In_ Point _Origin,
                 _In_ IDWriteTextLayout* _pTextLayout,
                 _In_ ID2D1Brush* _pDefaultFillBrush,
                 _In_ D2D1_DRAW_TEXT_OPTIONS _eOptions
@@ -295,7 +286,7 @@ namespace YY
 
             static float __MEGA_UI_API GetFontSize(_In_ const Font& _FontInfo)
             {
-                return _FontInfo.uSize * 72.0f / 96.0f;
+                return _FontInfo.iSize * 72.0f / 96.0f;
             }
 
             static int32_t __MEGA_UI_API GetFontStyle(_In_ const Font& _FontInfo)
@@ -386,8 +377,11 @@ namespace YY
                 if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty())
                     return;
 
+                if (_szText.GetSize() > int32_max)
+                    throw Exception();
+
                 Gdiplus::FontFamily _FontFamily(_FontInfo.szFace);
-                Gdiplus::Font _Font(&_FontFamily, GetFontSize(_FontInfo), GetFontStyle(_FontInfo));
+                Gdiplus::Font _Font(&_FontFamily, _FontInfo.iSize, GetFontStyle(_FontInfo), Gdiplus::Unit::UnitPixel);
 
                 int32_t _fStringFormatFlags = 0;
                 if ((_fTextAlign & ContentAlign::Wrap) == 0)
@@ -404,7 +398,7 @@ namespace YY
                 
 
 
-                pSurface->DrawString(_szText.GetConstString(), _szText.GetSize(), &_Font, ToGdiPlusRectF(_LayoutRect), &_Format, &_Brush);
+                pSurface->DrawString(_szText.GetConstString(), (INT)_szText.GetSize(), &_Font, _LayoutRect, &_Format, &_Brush);
             }
         };
     }

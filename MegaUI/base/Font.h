@@ -45,13 +45,13 @@ namespace YY
             // 字体名称
             uString szFace;
             // 字体大小
-            uint32_t uSize;
+            float iSize = 0;
             // 字体的粗细，FontWeight
-            uint32_t uWeight;
+            uint32_t uWeight = 0;
             // FontStyle 的位组合
-            uint32_t fStyle;
+            uint32_t fStyle = 0;
             // 字体颜色
-            Color Color;
+            Color Color = 0;
         };
     }
 } // namespace YY

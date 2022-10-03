@@ -9,7 +9,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        Window::Window()
+        Window::Window(int32_t _DefaultDpi)
             : hWnd(nullptr)
             , pHost(nullptr)
             , pRender(nullptr)
@@ -18,6 +18,7 @@ namespace YY
             , bCapture(false)
             , pLastFocusedElement(nullptr)
             , pLastPressedElement(nullptr)
+            , iDpi(_DefaultDpi ? _DefaultDpi : 96)
         {
         }
 
@@ -60,11 +61,11 @@ namespace YY
 
             if (pHost)
             {
-                _iWidth = pHost->GetWidth();
+                _iWidth = (int32_t)pHost->GetWidth();
                 if (_iWidth < 0)
                     _iWidth = CW_USEDEFAULT;
 
-                _iHeight = pHost->GetHeight();
+                _iHeight = (int32_t)pHost->GetHeight();
                 if (_iHeight < 0)
                     _iHeight = CW_USEDEFAULT;
 
@@ -162,7 +163,7 @@ namespace YY
         void __MEGA_UI_API Window::InvalidateRect(const Rect* _pRect)
         {
             if (hWnd)
-                ::InvalidateRect(hWnd, _pRect, FALSE);
+                ::InvalidateRect(hWnd, nullptr, FALSE);
         }
 
         HRESULT __MEGA_UI_API Window::PostDelayedDestroyElement(Element* _pElement)
@@ -223,7 +224,7 @@ namespace YY
             
         }
 
-        Element* __MEGA_UI_API Window::FindElementFromPoint(const POINT& _ptPoint, uint32_t fActiveMarks)
+        Element* __MEGA_UI_API Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fActiveMarks)
         {
             if (!pHost)
                 return nullptr;
@@ -231,7 +232,7 @@ namespace YY
             if (!pHost->GetVisible())
                 return nullptr;
 
-            Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
+            Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
             Rect _VisibleBounds = _Bounds;
             
             if (!_VisibleBounds.PointInRect(_ptPoint))
@@ -265,14 +266,14 @@ namespace YY
                     auto _Extent = _pChild->GetExtent();
 
                     Rect _ChildBoundsElement;
-                    _ChildBoundsElement.left = _Bounds.left + _Location.x;
-                    _ChildBoundsElement.right = _ChildBoundsElement.left + _Extent.cx;
+                    _ChildBoundsElement.Left = _Bounds.Left + _Location.X;
+                    _ChildBoundsElement.Right = _ChildBoundsElement.Left + _Extent.Width;
 
-                    _ChildBoundsElement.top = _Bounds.top + _Location.y;
-                    _ChildBoundsElement.bottom = _ChildBoundsElement.top + _Extent.cy;
+                    _ChildBoundsElement.Top = _Bounds.Top + _Location.Y;
+                    _ChildBoundsElement.Bottom = _ChildBoundsElement.Top + _Extent.Height;
 
-                    Rect _ChildVisibleBounds;
-                    if (!IntersectRect(&_ChildVisibleBounds, &_VisibleBounds, &_ChildBoundsElement))
+                    Rect _ChildVisibleBounds = _VisibleBounds & _ChildBoundsElement;
+                    if (_ChildVisibleBounds.IsEmpty())
                     {
                         continue;
                     }
@@ -292,6 +293,16 @@ namespace YY
             return _pLastFind;
         }
 
+        int32_t __MEGA_UI_API Window::GetDpi() const
+        {
+            return iDpi;
+        }
+
+        bool __MEGA_UI_API Window::IsInitialized() const
+        {
+            return hWnd != NULL;
+        }
+
         LRESULT Window::StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())
@@ -301,25 +312,50 @@ namespace YY
             }
 
             Window* _pNativeWindow = nullptr;
-
-            if (_uMsg == WM_CREATE)
+            if (_uMsg == WM_NCCREATE)
+            {
+                EnableNonClientDpiScaling(_hWnd);
+            }
+            else if (_uMsg == WM_CREATE)
             {
                 auto _pInfo = (CREATESTRUCTW*)_lParam;
                 if (_pInfo && _pInfo->lpCreateParams)
                 {
                     _pNativeWindow = (Window*)_pInfo->lpCreateParams;
+                    _pNativeWindow->hWnd = _hWnd;
                     SetWindowLongPtrW(_hWnd, GWLP_USERDATA, (LONG_PTR)_pNativeWindow);
 
                     //Rect Client2;
                     //::GetWindowRect(_hWnd, &Client2);
 
-                    Rect Client;
+                    RECT Client;
                     ::GetClientRect(_hWnd, &Client);
                     //intptr_t _Cooike;
                     //_pNativeWindow->StartDefer(&_Cooike);
                     //_pNativeWindow->SetX(_pInfo->x);
                     //_pNativeWindow->SetY(_pInfo->y);
-                    _pNativeWindow->OnSize(Client.GetWidth(), Client.GetHeight());
+                    intptr_t _Cooike = 0;
+                    if (_pNativeWindow->pHost)
+                        _pNativeWindow->pHost->StartDefer(&_Cooike);
+
+                    _pNativeWindow->OnSize(Client.right - Client.left, Client.bottom - Client.top);
+                    
+                    const auto _iNewDpi = GetDpiForWindow(_hWnd);
+                    const auto _iOldDpi = _pNativeWindow->GetDpi();
+                    if (_iNewDpi != _iOldDpi)
+                    {
+                        RECT Client2;
+                        ::GetWindowRect(_hWnd, &Client2);
+                        //Client2.Left = UpdatePixel(Client2.Left, _iOldDpi, _iNewDpi);
+                        //Client2.Top = UpdatePixel(Client2.Top, _iOldDpi, _iNewDpi);
+                        Client2.right = Client2.left + (int32_t)UpdatePixel(float(Client2.right - Client2.left), _iOldDpi, _iNewDpi);
+                        Client2.bottom = Client2.top + (int32_t)UpdatePixel(float(Client2.bottom - Client2.top), _iOldDpi, _iNewDpi);
+                        MoveWindow(_hWnd, Client2.left, Client2.top, Client2.right, Client2.bottom, TRUE);
+                        _pNativeWindow->OnDpiChanged(_iNewDpi, nullptr);
+                    }
+
+                    if (_Cooike && _pNativeWindow->pHost)
+                        _pNativeWindow->pHost->EndDefer(_Cooike);
                 }
             }
             else
@@ -368,6 +404,8 @@ namespace YY
                 // MegaUI 自己负责背景擦除
                 return 1;
                 break;
+            case WM_DISPLAYCHANGE:
+                break;
             case WM_PAINT:
                 OnPaint();
                 ValidateRect(_hWnd, NULL);
@@ -378,13 +416,14 @@ namespace YY
                 if (!IsMinimized())
                 {
                     OnSize(LOWORD(_lParam), HIWORD(_lParam));
+                    InvalidateRect(nullptr);
                 }
                 break;
             case WM_MOUSEMOVE:
                 if (pHost && _wParam != MK_LBUTTON)
                 {
-                    Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
-                    UpdateMouseWithin(pHost, _Bounds, _Bounds, POINT {LOWORD(_lParam), HIWORD(_lParam)});
+                    Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
+                    UpdateMouseWithin(pHost, _Bounds, _Bounds, Point((float)LOWORD(_lParam), (float)HIWORD(_lParam)));
                 }
 
                 if ((fTrackMouse & TME_LEAVE) == 0)
@@ -410,7 +449,7 @@ namespace YY
                 auto _pOldPressedElement = pLastPressedElement;
                 auto _pOldFocusedElement = pLastFocusedElement;
 
-                auto _pFind = FindElementFromPoint(POINT {LOWORD(_lParam), HIWORD(_lParam)}, Active::Mouse);
+                auto _pFind = FindElementFromPoint(Point((float)LOWORD(_lParam), (float)HIWORD(_lParam)), Active::Mouse);
                 if (_pFind && _pFind->GetEnabled())
                 {
                     pLastPressedElement = _pFind;
@@ -474,6 +513,9 @@ namespace YY
                 if (pHost)
                     pHost->SetEnabled(_wParam != FALSE);
                 break;
+            case WM_DPICHANGED:
+                OnDpiChanged(LOWORD(_wParam), (Rect*)_lParam);
+                break;
             default:
                 break;
             }
@@ -493,13 +535,16 @@ namespace YY
                     return hr;
             }
 
+             RECT Client;
+            ::GetClientRect(hWnd, &Client);
+
             pRender->SetPixelSize(LastRenderSize);
 
             Rect _NeedPaint;
             auto _hr = pRender->BeginDraw(&_NeedPaint);
             if (FAILED(_hr))
                 return _hr;
-            Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
+            Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
             PaintElement(pRender, pHost, _Bounds, _NeedPaint);
             return pRender->EndDraw();
         }
@@ -521,8 +566,8 @@ namespace YY
                 if (_uInvalidateMarks & ElementRenderNode::InvalidatePosition)
                 {
                     auto _Location = _pElement->GetLocation();
-                    _Location.x += _ParentBounds.left;
-                    _Location.y += _ParentBounds.top;
+                    _Location.x += _ParentBounds.Left;
+                    _Location.y += _ParentBounds.Top;
 
                     if(_NewBounds == _Location)
                     {
@@ -555,15 +600,15 @@ namespace YY
             auto _Extent = _pElement->GetExtent();
 
             Rect _BoundsElement;
-            _BoundsElement.left = _ParentBounds.left + _Location.x;
-            _BoundsElement.right = _BoundsElement.left + _Extent.cx;
+            _BoundsElement.Left = _ParentBounds.Left + _Location.X;
+            _BoundsElement.Right = _BoundsElement.Left + _Extent.Width;
 
-            _BoundsElement.top = _ParentBounds.top + _Location.y;
-            _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
+            _BoundsElement.Top = _ParentBounds.Top + _Location.Y;
+            _BoundsElement.Bottom = _BoundsElement.Top + _Extent.Height;
 #endif
             // 如果没有交集，那么我们可以不绘制
-            Rect _PaintRect;
-            if (!IntersectRect(&_PaintRect, &_ParentPaintRect, &_BoundsElement))
+            Rect _PaintRect = _ParentPaintRect & _BoundsElement;
+            if (_PaintRect.IsEmpty())
                 return S_OK;
 
             const auto _bNeedClip = _PaintRect != _BoundsElement;
@@ -595,14 +640,14 @@ namespace YY
                 intptr_t _Cooike;
                 pHost->StartDefer(&_Cooike);
 
-                pHost->SetWidth(_uWidth);
-                pHost->SetHeight(_uHeight);
+                pHost->SetWidth((float)_uWidth);
+                pHost->SetHeight((float)_uHeight);
 
                 pHost->EndDefer(_Cooike);
             }
         }
 
-        void __MEGA_UI_API Window::UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& _ptPoint)
+        void __MEGA_UI_API Window::UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const Point& _ptPoint)
         {
             // 禁用的控件不分发鼠标消息。
             if (!_pElement->GetEnabled())
@@ -612,14 +657,14 @@ namespace YY
             auto _Extent = _pElement->GetExtent();
 
             Rect _BoundsElement;
-            _BoundsElement.left = _ParentBounds.left + _Location.x;
-            _BoundsElement.right = _BoundsElement.left + _Extent.cx;
+            _BoundsElement.Left = _ParentBounds.Left + _Location.X;
+            _BoundsElement.Right = _BoundsElement.Left + _Extent.Width;
 
-            _BoundsElement.top = _ParentBounds.top + _Location.y;
-            _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
+            _BoundsElement.Top = _ParentBounds.Top + _Location.Y;
+            _BoundsElement.Bottom = _BoundsElement.Top + _Extent.Height;
 
-            Rect _VisibleBounds;
-            if (IntersectRect(&_VisibleBounds, &_ParentVisibleBounds, &_BoundsElement))
+            Rect _VisibleBounds = _ParentVisibleBounds & _BoundsElement;
+            if (!_VisibleBounds.IsEmpty())
             {
                 if (_VisibleBounds.PointInRect(_ptPoint))
                 {
@@ -666,6 +711,71 @@ namespace YY
             auto _uStyleDiff = _uOld ^ _uNew;
             if (_uStyleDiff & WS_VISIBLE)
                 pHost->SetVisible(_uNew & WS_VISIBLE);
+        }
+
+        void __MEGA_UI_API Window::OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect)
+        {
+            if (_iNewDPI == 0 || _iNewDPI == iDpi)
+                return;
+            iDpi = _iNewDPI;
+
+            //if ((pHost == nullptr || pHost->GetHighDpi()) && _pNewRect)
+            //{
+            //    MoveWindow(hWnd, _pNewRect->Left, _pNewRect->Top, _pNewRect->Right, _pNewRect->Bottom, TRUE);
+            //}
+
+            if (!pHost)
+            {
+                return;
+            }
+
+            intptr_t _Cooike = 0;
+            pHost->StartDefer(&_Cooike);
+            
+            /*if (_pNewRect)
+            {
+                OnSize(_pNewRect->GetWidth(), _pNewRect->GetHeight());
+            }*/
+
+            auto _OldValue = Value::CreateInt32(pHost->GetDpi());
+            auto _NewValue = Value::CreateInt32(_iNewDPI);
+
+            if (pHost->iLocDpi != _iNewDPI)
+            {
+                pHost->PreSourceChange(Element::g_ControlInfoData.DPIProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
+                pHost->iLocDpi = _iNewDPI;
+                pHost->PostSourceChange();
+            }
+
+            UpdateDPI(pHost, _OldValue, _NewValue);
+            pHost->EndDefer(_Cooike);
+        }
+        
+        HRESULT __MEGA_UI_API Window::UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue)
+        {
+            const auto _iNewDPI = _NewValue.GetInt32();
+            for (auto pChild : _pElement->GetChildren())
+            {
+                const auto _iOldDPI = pChild->GetDpi();
+                if (_iNewDPI != _iOldDPI)
+                {
+                    if (_iOldDPI != _OldValue.GetInt32())
+                    {
+                        _OldValue = Value::CreateInt32(_iOldDPI);
+                        if (_OldValue == nullptr)
+                            return E_OUTOFMEMORY;
+                    }
+                    pChild->PreSourceChange(Element::g_ControlInfoData.DPIProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
+                    pChild->iLocDpi = _iNewDPI;
+                    pChild->PostSourceChange();
+                }
+
+                auto _hr = UpdateDPI(pChild, _OldValue, _NewValue);
+                if (FAILED(_hr))
+                    return _hr;
+            }
+
+            return S_OK;
         }
     } // namespace MegaUI
 } // namespace YY

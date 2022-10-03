@@ -149,10 +149,10 @@ namespace YY
             {
                 if (_pNeedPaintRect)
                 {
-                    _pNeedPaintRect->left = 0;
-                    _pNeedPaintRect->top = 0;
-                    _pNeedPaintRect->right = PixelSize.width;
-                    _pNeedPaintRect->bottom = PixelSize.height;
+                    _pNeedPaintRect->Left = 0;
+                    _pNeedPaintRect->Top = 0;
+                    _pNeedPaintRect->Right = (float)PixelSize.width;
+                    _pNeedPaintRect->Bottom = (float)PixelSize.height;
                 }
                 auto _hr = InitializeRenderTarget();
                 if (FAILED(_hr))
@@ -268,7 +268,7 @@ namespace YY
                     DWRITE_FONT_WEIGHT(_FontInfo.uWeight),
                     _eFontStyle,
                     DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-                    _FontInfo.uSize,
+                    _FontInfo.iSize,
                     _szLocaleName,
                     _ppTextFormat);
             }
@@ -278,39 +278,42 @@ namespace YY
             __MEGA_UI_API CreateTextLayout(
                 _In_ uStringView _szText,
                 _In_ IDWriteTextFormat* _pTextFormat,
-                _In_ uint32_t _uMaxWidth,
-                _In_ uint32_t _uMaxHeight,
+                _In_ Size _MaxBound,
                 _COM_Outptr_ IDWriteTextLayout** _ppTextLayout
                 ) override
             {
                 if (!_ppTextLayout)
                     return E_INVALIDARG;
+
                 *_ppTextLayout = nullptr;
                 
+                if (_szText.GetSize() > uint32_max)
+                    return E_UNEXPECTED;
+
                 auto _pDWriteFactory = TryGetDWriteFactory();
                 if (!_pDWriteFactory)
                     return E_NOINTERFACE;
 
                 return _pDWriteFactory->CreateTextLayout(
                     _szText.GetConstString(),
-                    _szText.GetSize(),
+                    (UINT32)_szText.GetSize(),
                     _pTextFormat,
-                    _uMaxWidth,
-                    _uMaxHeight,
+                    _MaxBound.Width,
+                    _MaxBound.Height,
                     _ppTextLayout);
             }
 
             virtual
             void
             __MEGA_UI_API DrawTextLayout(
-                _In_ POINT _Origin,
+                _In_ Point _Origin,
                 _In_ IDWriteTextLayout* _pTextLayout,
                 _In_ ID2D1Brush* _pDefaultFillBrush,
                 _In_ D2D1_DRAW_TEXT_OPTIONS _eOptions
                 ) override
             {
                 pRenderTarget->DrawTextLayout(
-                    D2D1_POINT_2F{ FLOAT(_Origin.x), FLOAT(_Origin.y) },
+                    _Origin,
                     _pTextLayout,
                     _pDefaultFillBrush,
                     _eOptions);
@@ -329,6 +332,9 @@ namespace YY
                 if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty() || pRenderTarget == nullptr)
                     return;
 
+                if (_szText.GetSize() > uint32_max)
+                    throw Exception();
+
                 auto _pDWriteFactory = TryGetDWriteFactory();
                 if (!_pDWriteFactory)
                     return;
@@ -344,7 +350,7 @@ namespace YY
                     DWRITE_FONT_WEIGHT(_FontInfo.uWeight),
                     _eFontStyle,
                     DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-                    _FontInfo.uSize,
+                    _FontInfo.iSize,
                     _S(""),
                     &_pTextFormat);
 
@@ -393,7 +399,7 @@ namespace YY
                 ComPtr<IDWriteTextLayout> _pTextLayout;
                 _hr = _pDWriteFactory->CreateTextLayout(
                     _szText.GetConstString(),
-                    _szText.GetSize() * 96.0f / 72.0f,
+                    (UINT32)_szText.GetSize(),
                     _pTextFormat,
                     _LayoutRect.GetWidth(),
                     _LayoutRect.GetHeight(),
@@ -414,7 +420,7 @@ namespace YY
                     return;
 
                 pRenderTarget->DrawTextLayout(
-                    D2D1_POINT_2F {(FLOAT)_LayoutRect.left, (FLOAT)_LayoutRect.top},
+                    _LayoutRect.GetPoint(),
                     _pTextLayout,
                     _pDefaultFillBrush,
                     D2D1_DRAW_TEXT_OPTIONS::D2D1_DRAW_TEXT_OPTIONS_CLIP);

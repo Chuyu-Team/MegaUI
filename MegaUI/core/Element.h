@@ -59,20 +59,20 @@ namespace YY
     _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::OnEnabledPropChangedThunk, nullptr,                               nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean   ) \
     _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::OnActivePropChangedThunk,  nullptr,                               nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, uSpecActive), 0), ValueType::int32_t   ) \
     _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>, nullptr,                         nullptr, nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
-    _APPLY(Width,          PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::CreateInt32<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
-    _APPLY(Height,         PF_Normal | PF_Cascade,                PG_AffectsDesiredSize,                          &Value::CreateInt32<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
-    _APPLY(X,              PF_Normal,                             0,                                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
-    _APPLY(Y,              PF_Normal,                             0,                                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t) \
-    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::CreatePointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetLocationProperty),                      ValueType::POINT  ) \
-    _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetExtentProperty),                        ValueType::SIZE   ) \
-    _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreatePointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0),     ValueType::POINT  ) \
-    _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocSizeInLayout), 0, 0, 0),     ValueType::SIZE   ) \
-    _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0),      ValueType::SIZE   ) \
-    _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0), ValueType::SIZE   ) \
+    _APPLY(Width,          PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(Height,         PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(X,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(Y,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::CreatePointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetLocationProperty),                      ValueType::Point  ) \
+    _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetExtentProperty),                        ValueType::Size   ) \
+    _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreatePointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0),     ValueType::Point  ) \
+    _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocSizeInLayout), 0, 0, 0),     ValueType::Size   ) \
+    _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0),      ValueType::Size   ) \
+    _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0), ValueType::Size   ) \
     _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateLayoutNull,             nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Layout   ) \
     _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
-    _APPLY(MinSize,        PF_Normal | PF_Cascade, PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,  &Value::CreateSizeZero, nullptr,                     nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0), ValueType::SIZE   ) \
-    _APPLY(BorderThickness, PF_Normal | PF_Cascade,               PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0), ValueType::Rect   ) \
+    _APPLY(MinSize,        PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,  &Value::CreateSizeZero, nullptr,                     nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0), ValueType::Size   ) \
+    _APPLY(BorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0), ValueType::Rect   ) \
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
     _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
@@ -83,12 +83,15 @@ namespace YY
     _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
     _APPLY(Content,        PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        nullptr,                              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
     _APPLY(ContentAlign,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, ContentAlignEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, fSpecContentAlign), 0), ValueType::int32_t   ) \
-    _APPLY(Font,           PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFont,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Font   ) 
+    _APPLY(Font,           PF_Normal | PF_Cascade | PF_Inherit | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFont,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Font   ) \
+    _APPLY(HighDPI,        PF_Normal,                             0,                                              &Value::CreateBoolTrue,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocHighDPI), 0, 0, 0), ValueType::boolean   ) \
+    _APPLY(DPI,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::OnDpiPropChangedThunk,   nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0), ValueType::int32_t   ) 
 
     // clang-format on
 
         class NativeWindowHost;
         class Window;
+        class UIParser;
 
         struct NavReference
         {
@@ -140,16 +143,16 @@ namespace YY
 
             // 0x2C
             // Position in layout local
-            POINT LocPosInLayout;
+            Point LocPosInLayout;
             // 0x34 LayoutSize
             // Size in layout local
-            SIZE LocSizeInLayout;
+            Size LocSizeInLayout;
             // 0x3C
             // Desired size local
-            SIZE LocDesiredSize;
+            Size LocDesiredSize;
             // 0x44 DesiredSize
             // Last desired size constraint local
-            SIZE LocLastDesiredSizeConstraint;
+            Size LocLastDesiredSizeConstraint;
             
             // 0x4C LayoutPos
             // Cached Layout Position
@@ -175,7 +178,8 @@ namespace YY
     _APPLY(bSpecEnabled, 1)                 \
     _APPLY(bHasLocMouseFocused, 1)          \
     _APPLY(bLocMouseFocused, 1)             \
-    _APPLY(bSpecMouseFocused, 1)
+    _APPLY(bSpecMouseFocused, 1)            \
+    _APPLY(bLocHighDPI, 1)
 
 
             _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
@@ -207,10 +211,11 @@ namespace YY
             //Layout* pLayout = nullptr;
 
             // 最小限制
-            SIZE SpecMinSize = {};
+            Size SpecMinSize = {};
             int32_t iSpecDirection = 0;
             int32_t fSpecContentAlign = ContentAlign::Top | ContentAlign::Left;
-
+            // 当前DPI值
+            int32_t iLocDpi = 96;
             // 承载控件的窗口
             Window* pWindow = nullptr;
 		public:
@@ -221,7 +226,7 @@ namespace YY
             // 此函数来自 _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN
             // static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
-            HRESULT __MEGA_UI_API Initialize(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
+            HRESULT __MEGA_UI_API Initialize(_In_ int32_t _iDPI, _In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
 			/// <summary>
 			/// 根据属性获取Value
@@ -247,21 +252,21 @@ namespace YY
             int32_t __MEGA_UI_API GetLayoutPos();
             HRESULT __MEGA_UI_API SetLayoutPos(int32_t _iLayoutPos);
 
-            int32_t __MEGA_UI_API GetWidth();
-            HRESULT __MEGA_UI_API SetWidth(int32_t _iWidth);
+            float __MEGA_UI_API GetWidth();
+            HRESULT __MEGA_UI_API SetWidth(float _iWidth);
 
-            int32_t __MEGA_UI_API GetHeight();
-            HRESULT __MEGA_UI_API SetHeight(int32_t _iHeight);
+            float __MEGA_UI_API GetHeight();
+            HRESULT __MEGA_UI_API SetHeight(float _iHeight);
 
-            int32_t __MEGA_UI_API GetX();
-            HRESULT __MEGA_UI_API SetX(int32_t _iX);
+            float __MEGA_UI_API GetX();
+            HRESULT __MEGA_UI_API SetX(float _iX);
             
-            int32_t __MEGA_UI_API GetY();
-            HRESULT __MEGA_UI_API SetY(int32_t _iY);
+            float __MEGA_UI_API GetY();
+            HRESULT __MEGA_UI_API SetY(float _iY);
 
-            POINT __MEGA_UI_API GetLocation();
+            Point __MEGA_UI_API GetLocation();
 
-            SIZE __MEGA_UI_API GetExtent();
+            Size __MEGA_UI_API GetExtent();
 
             ValueIs<ValueType::Layout> __MEGA_UI_API GetLayout();
 
@@ -305,6 +310,14 @@ namespace YY
             HRESULT __MEGA_UI_API SetActive(uint32_t _fActive);
 
             bool __MEGA_UI_API GetMouseFocused();
+
+            /// <summary>
+            /// 高DPI支持是否已经开启
+            /// </summary>
+            /// <returns></returns>
+            bool __MEGA_UI_API GetHighDpi();
+
+            int32_t __MEGA_UI_API GetDpi();
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
@@ -392,9 +405,9 @@ namespace YY
                 _In_ const Rect& _Bounds
                 );
 
-            virtual SIZE __MEGA_UI_API GetContentSize(SIZE _ConstraintSize);
-            virtual SIZE __MEGA_UI_API SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize);
-            virtual void __MEGA_UI_API SelfLayoutDoLayout(SIZE _ConstraintSize);
+            virtual Size __MEGA_UI_API GetContentSize(Size _ConstraintSize);
+            virtual Size __MEGA_UI_API SelfLayoutUpdateDesiredSize(Size _ConstraintSize);
+            virtual void __MEGA_UI_API SelfLayoutDoLayout(Size _ConstraintSize);
 
             void __MEGA_UI_API Detach(DeferCycle* _pDeferCycle);
 
@@ -456,6 +469,10 @@ namespace YY
 			void __MEGA_UI_API OnActivePropChangedThunk(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
             
             virtual void __MEGA_UI_API OnActivePropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+			
+            void __MEGA_UI_API OnDpiPropChangedThunk(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+
+            virtual void __MEGA_UI_API OnDpiPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
 
             void __MEGA_UI_API FlushDesiredSize(DeferCycle* _pDeferCycle);
 
@@ -471,11 +488,11 @@ namespace YY
 
             bool __MEGA_UI_API SetNeedsLayout(uint32_t _fNeedsLayoutNew);
 
-            SIZE __MEGA_UI_API UpdateDesiredSize(SIZE _ConstraintSize);
+            Size __MEGA_UI_API UpdateDesiredSize(Size _ConstraintSize);
 
-            void __MEGA_UI_API UpdateLayoutPosition(POINT _LayoutPosition);
+            void __MEGA_UI_API UpdateLayoutPosition(Point _LayoutPosition);
             
-            void __MEGA_UI_API UpdateLayoutSize(SIZE _LayoutSize);
+            void __MEGA_UI_API UpdateLayoutSize(Size _LayoutSize);
 
             PropertyCustomCacheResult __MEGA_UI_API GetExtentProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo);
 

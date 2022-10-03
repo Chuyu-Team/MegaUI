@@ -21,65 +21,32 @@ namespace YY
 {
     namespace MegaUI
     {
-
         struct ExprNode;
+        struct ParsedArg;
 
-        struct UIParserRecorder
+        struct UIParserPlayContext
         {
-            // 缩写为 resid
-            u8String szResourceID;
-            // 中间字节码，UIParser 会将 Xml中的内容转换为字节码，加速 Xml -> Element。
-            // 使用者不需要关心字节码的实现。
-            DynamicArray<uint8_t, false, false> ByteCode;
-
-            //UIParserRecorder()
-            //{
-            //}
-
-            //UIParserRecorder(const UIParserRecorder&) = default;
-
-            //UIParserRecorder(UIParserRecorder&&) = default;
-
-        };
-        
-        struct ParsedArg
-        {
-            const EnumMap* pEnumMaps;
-
-            union
-            {
-                // , 跳过
-                // * 忽略
-                // I
-                int32_t iNumber;
-                // S
-                u8StringView szString;
-                // C
-                Color cColor;
-            };
-
-            // 故意不初始化内存
-            #pragma warning(suppress : 26495)
-            ParsedArg(const EnumMap* _pEnumMaps = nullptr)
-                : pEnumMaps(_pEnumMaps)
-            {
-            }
-
-            
+            int32_t iDPI = 96;
+            // 可选，顶层控件，创建控件时使用，用于加速StartDefer
+            Element* pTopElement = nullptr;
         };
 
-        struct StyleSheetXmlOption
-        {
-            ValueCmpOperation Type = ValueCmpOperation::Invalid;
-            u8StringView szPropName;
-            u8StringView szPropValue;
-        };
+
 
 
         // 从 XML 或者 二进制XML反序列出 Element
         class UIParser
         {
         private:
+            struct UIParserRecorder
+            {
+                // 缩写为 resid
+                u8String szResourceID;
+                // 中间字节码，UIParser 会将 Xml中的内容转换为字节码，加速 Xml -> Element。
+                // 使用者不需要关心字节码的实现。
+                DynamicArray<uint8_t, false, false> ByteCode;
+            };
+
             DynamicArray<Value> LocalValueCache;
 
             DynamicArray<UIParserRecorder> RecorderArray;
@@ -104,7 +71,7 @@ namespace YY
 
             HRESULT __MEGA_UI_API Play(
                 _In_ u8StringView _szResID,
-                _In_opt_ Element* _pTopElement,
+                _In_opt_ UIParserPlayContext* _pContext,
                 _Out_opt_ intptr_t* _pCooike,
                 _Outptr_ WindowElement** _ppElement
                 );
@@ -122,11 +89,13 @@ namespace YY
 
             HRESULT __MEGA_UI_API ParserValue(_In_ IControlInfo* _pControlInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(const u8StringView& _szValue, int32_t* _pValue);
+            static HRESULT __MEGA_UI_API ParserInt32Value(_In_ const u8StringView& _szValue, _Out_ int32_t* _pValue, _Out_opt_ ValueSuffixType* _pParserSuffixType);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, int32_t* _pValue);
+            static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ int32_t* _pValue, _Out_opt_ ValueSuffixType* _pParserSuffixType);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
+            
+            static HRESULT __MEGA_UI_API ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
 
             static HRESULT __MEGA_UI_API ParserBoolValue(ExprNode* _pExprNode, Value* _pValue);
 
@@ -158,11 +127,18 @@ namespace YY
 
             HRESULT __MEGA_UI_API Play(
                 _In_ ArrayView<uint8_t>& _ByteCode,
-                _In_opt_ Element* _pTopElement,
+                _In_ UIParserPlayContext* _pContext,
                 _Out_opt_ intptr_t* _pCooike,
                 _Inout_ DynamicArray<Element*, false, false>* _ppElement
                 );
             
+            struct StyleSheetXmlOption
+            {
+                ValueCmpOperation Type = ValueCmpOperation::Invalid;
+                u8StringView szPropName;
+                u8StringView szPropValue;
+            };
+
             /// <summary>
             /// 解析样式表，将结果设置到 _pStyleSheet
             /// </summary>

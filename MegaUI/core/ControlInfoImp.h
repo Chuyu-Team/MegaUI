@@ -55,13 +55,13 @@ namespace YY
                 return _Class::StaticControlInfo::BaseControl::GetStaticControlInfo();
             }
 
-            virtual HRESULT __MEGA_UI_API CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
+            virtual HRESULT __MEGA_UI_API CreateInstance(int32_t _iDPI, Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
                 if (!_ppOutElem)
                     return E_INVALIDARG;
                 *_ppOutElem = nullptr;
                 _Class* _pClass;
-                auto _hr = _Class::Create(_Class::StaticControlInfo::fDefaultCreate, _pTopLevelElem, _pCookies, &_pClass);
+                auto _hr = _Class::Create(_iDPI, _Class::StaticControlInfo::fDefaultCreate, _pTopLevelElem, _pCookies, &_pClass);
                 if (SUCCEEDED(_hr))
                     *_ppOutElem = static_cast<Element*>(_pClass);
 
@@ -251,9 +251,9 @@ namespace YY
                 return nullptr;
             }
 
-            virtual HRESULT __MEGA_UI_API CreateInstance(Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
+            virtual HRESULT __MEGA_UI_API CreateInstance(int32_t _iDPI, Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
-                return Element::Create(Element::StaticControlInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
+                return Element::Create(_iDPI, Element::StaticControlInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
             }
 
             static constexpr uint32_t GetPropertyInfoCount()

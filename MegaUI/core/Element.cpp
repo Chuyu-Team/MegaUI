@@ -88,6 +88,7 @@ namespace YY
             , bHasLocMouseFocused(FALSE)
             , bLocMouseFocused(FALSE)
             , bSpecMouseFocused(FALSE)
+            , bLocHighDPI(true)
             , bNeedsDSUpdate(0)
             , iSpecDirection(DIRECTION_LTR)
         {
@@ -97,9 +98,10 @@ namespace YY
         {
         }
 
-        HRESULT __MEGA_UI_API Element::Initialize(uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
+        HRESULT __MEGA_UI_API Element::Initialize(int32_t _iDPI, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
         {
             pTopLevel = _pTopLevel;
+            iLocDpi = _iDPI;
 
             if (_pCooike)
                 StartDefer(_pCooike);
@@ -274,7 +276,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.LayoutPosProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __MEGA_UI_API Element::GetWidth()
+        float __MEGA_UI_API Element::GetWidth()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.WidthProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -282,19 +284,19 @@ namespace YY
                 throw Exception();
                 return -1;
             }
-            return _pValue.GetInt32();
+            return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetWidth(int32_t _iWidth)
+        HRESULT __MEGA_UI_API Element::SetWidth(float _iWidth)
         {
-            auto _pValue = Value::CreateInt32(_iWidth);
+            auto _pValue = Value::CreateFloat(_iWidth);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.WidthProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __MEGA_UI_API Element::GetHeight()
+        float __MEGA_UI_API Element::GetHeight()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.HeightProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -302,19 +304,19 @@ namespace YY
                 throw Exception();
                 return -1;
             }
-            return _pValue.GetInt32();
+            return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetHeight(int32_t _iHeight)
+        HRESULT __MEGA_UI_API Element::SetHeight(float _iHeight)
         {
-            auto _pValue = Value::CreateInt32(_iHeight);
+            auto _pValue = Value::CreateFloat(_iHeight);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.HeightProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __MEGA_UI_API Element::GetX()
+        float __MEGA_UI_API Element::GetX()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.XProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -323,19 +325,19 @@ namespace YY
                 return -1;
             }
 
-            return _pValue.GetInt32();
+            return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetX(int32_t _iX)
+        HRESULT __MEGA_UI_API Element::SetX(float _iX)
         {
-            auto _pValue = Value::CreateInt32(_iX);
+            auto _pValue = Value::CreateFloat(_iX);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.XProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        int32_t __MEGA_UI_API Element::GetY()
+        float __MEGA_UI_API Element::GetY()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.YProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -344,21 +346,21 @@ namespace YY
                 return -1;
             }
 
-            return _pValue.GetInt32();
+            return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetY(int32_t _iY)
+        HRESULT __MEGA_UI_API Element::SetY(float _iY)
         {
-            auto _pValue = Value::CreateInt32(_iY);
+            auto _pValue = Value::CreateFloat(_iY);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.YProp, PropertyIndicies::PI_Local, _pValue);
         }
 
-        POINT __MEGA_UI_API Element::GetLocation()
+        Point __MEGA_UI_API Element::GetLocation()
         {
-            POINT _Location = {};
+            Point _Location = {};
             auto _pValue = GetValue(Element::g_ControlInfoData.LocationProp, PropertyIndicies::PI_Local, false);
 
             if (_pValue != nullptr)
@@ -369,9 +371,9 @@ namespace YY
             return _Location;
         }
 
-        SIZE __MEGA_UI_API Element::GetExtent()
+        Size __MEGA_UI_API Element::GetExtent()
         {
-            SIZE _Extent = {};
+            Size _Extent = {};
 
             auto _pValue = GetValue(Element::g_ControlInfoData.ExtentProp, PropertyIndicies::PI_Local, false);
             if (_pValue != nullptr)
@@ -469,6 +471,16 @@ namespace YY
         bool __MEGA_UI_API Element::GetMouseFocused()
         {
             return bSpecMouseFocused;
+        }
+
+        bool __MEGA_UI_API Element::GetHighDpi()
+        {
+            return bLocHighDPI;
+        }
+
+        int32_t __MEGA_UI_API Element::GetDpi()
+        {
+            return iLocDpi;
         }
 
         bool __MEGA_UI_API Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
@@ -593,10 +605,10 @@ namespace YY
 
                             auto _Location = _pItem->GetLocation();
 
-                            _InvalidateRectNew.left += _Location.x;
-                            _InvalidateRectNew.right += _Location.x;
-                            _InvalidateRectNew.top += _Location.y;
-                            _InvalidateRectNew.bottom += _Location.y;
+                            _InvalidateRectNew.Left += _Location.x;
+                            _InvalidateRectNew.Right += _Location.x;
+                            _InvalidateRectNew.Top += _Location.y;
+                            _InvalidateRectNew.Bottom += _Location.y;
 
                             Rect _ParentRect(POINT {}, _pParent->GetExtent());
 
@@ -843,7 +855,7 @@ namespace YY
         void __MEGA_UI_API Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
         {
             Rect _PaintBounds = _Bounds;
-            if (SpecBorderThickness.left != 0 || SpecBorderThickness.top != 0 || SpecBorderThickness.right != 0 || SpecBorderThickness.bottom != 0)
+            if (SpecBorderThickness.Left != 0 || SpecBorderThickness.Top != 0 || SpecBorderThickness.Right != 0 || SpecBorderThickness.Bottom != 0)
             {
                 PaintBorder(
                     _pRenderTarget,
@@ -870,7 +882,7 @@ namespace YY
 
         void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
         {
-            if (_BorderThickness.left == 0 && _BorderThickness.top == 0 && _BorderThickness.right == 0 && _BorderThickness.bottom == 0)
+            if (_BorderThickness.Left == 0 && _BorderThickness.Top == 0 && _BorderThickness.Right == 0 && _BorderThickness.Bottom == 0)
                 return;
 
             Rect _NewBounds = _Bounds;
@@ -890,13 +902,13 @@ namespace YY
                     if (SUCCEEDED(hr))
                     {
                         // 左边
-                        _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.top, _NewBounds.left, _NewBounds.bottom}, _BorderBrush);
+                        _pRenderTarget->FillRectangle({_Bounds.Left, _NewBounds.Top, _NewBounds.Left, _NewBounds.Bottom}, _BorderBrush);
                         // 上面
-                        _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _Bounds.right, _NewBounds.top}, _BorderBrush);
+                        _pRenderTarget->FillRectangle({_Bounds.Left, _Bounds.Top, _Bounds.Right, _NewBounds.Top}, _BorderBrush);
                         // 右边
-                        _pRenderTarget->FillRectangle({_NewBounds.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, _BorderBrush);
+                        _pRenderTarget->FillRectangle({_NewBounds.Right, _Bounds.Top, _Bounds.Right, _Bounds.Bottom}, _BorderBrush);
                         // 下面
-                        _pRenderTarget->FillRectangle({_Bounds.left, _NewBounds.bottom, _Bounds.right, _Bounds.bottom}, _BorderBrush);
+                        _pRenderTarget->FillRectangle({_Bounds.Left, _NewBounds.Bottom, _Bounds.Right, _Bounds.Bottom}, _BorderBrush);
                     }
                     break;
                 }
@@ -904,12 +916,12 @@ namespace YY
                 case BDS_Sunken:
                 {
                     Rect _BoundsOutter = _Bounds;
-                    _BoundsOutter.DeflateRect({_BorderThickness.left / 2, _BorderThickness.top / 2, _BorderThickness.right / 2, _BorderThickness.bottom / 2});
+                    _BoundsOutter.DeflateRect({_BorderThickness.Left / 2, _BorderThickness.Top / 2, _BorderThickness.Right / 2, _BorderThickness.Bottom / 2});
 
-                    ComPtr<ID2D1SolidColorBrush> hbOLT;       // Brush for outter left and top
-                    ComPtr<ID2D1SolidColorBrush> hbORB;       // Brush for outter right and bottom
-                    ComPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner left top
-                    ComPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner right and bottom
+                    ComPtr<ID2D1SolidColorBrush> hbOLT;       // Brush for outter Left and Top
+                    ComPtr<ID2D1SolidColorBrush> hbORB;       // Brush for outter Right and Bottom
+                    ComPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner Left Top
+                    ComPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner Right and Bottom
 
                     auto _BrushColor = _BorderColor.GetColor();
 
@@ -945,14 +957,14 @@ namespace YY
                     }
 
                     // Paint etches
-                    _pRenderTarget->FillRectangle({_Bounds.left, _Bounds.top, _BoundsOutter.left, _BoundsOutter.bottom}, hbOLT);            // Outter left
-                    _pRenderTarget->FillRectangle({_BoundsOutter.left, _Bounds.top, _BoundsOutter.right, _BoundsOutter.top}, hbOLT);        // Outter top
-                    _pRenderTarget->FillRectangle({_BoundsOutter.right, _Bounds.top, _Bounds.right, _Bounds.bottom}, hbORB);                // Outter right
-                    _pRenderTarget->FillRectangle({_Bounds.left, _BoundsOutter.bottom, _BoundsOutter.right, _Bounds.bottom}, hbORB);        // Outter bottom
-                    _pRenderTarget->FillRectangle({_BoundsOutter.left, _BoundsOutter.top, _NewBounds.left, _NewBounds.bottom}, hbILT);      // Inner left
-                    _pRenderTarget->FillRectangle({_NewBounds.left, _BoundsOutter.top, _NewBounds.right, _NewBounds.top}, hbILT);           // Inner top
-                    _pRenderTarget->FillRectangle({_NewBounds.right, _BoundsOutter.top, _BoundsOutter.right, _BoundsOutter.bottom}, hbIRB); // Inner right
-                    _pRenderTarget->FillRectangle({_BoundsOutter.left, _NewBounds.bottom, _NewBounds.right, _BoundsOutter.bottom}, hbIRB);  // Inner bottom
+                    _pRenderTarget->FillRectangle({_Bounds.Left, _Bounds.Top, _BoundsOutter.Left, _BoundsOutter.Bottom}, hbOLT);            // Outter left
+                    _pRenderTarget->FillRectangle({_BoundsOutter.Left, _Bounds.Top, _BoundsOutter.Right, _BoundsOutter.Top}, hbOLT);        // Outter Top
+                    _pRenderTarget->FillRectangle({_BoundsOutter.Right, _Bounds.Top, _Bounds.Right, _Bounds.Bottom}, hbORB);                // Outter Right
+                    _pRenderTarget->FillRectangle({_Bounds.Left, _BoundsOutter.Bottom, _BoundsOutter.Right, _Bounds.Bottom}, hbORB);        // Outter Bottom
+                    _pRenderTarget->FillRectangle({_BoundsOutter.Left, _BoundsOutter.Top, _NewBounds.Left, _NewBounds.Bottom}, hbILT);      // Inner Left
+                    _pRenderTarget->FillRectangle({_NewBounds.Left, _BoundsOutter.Top, _NewBounds.Right, _NewBounds.Top}, hbILT);           // Inner Top
+                    _pRenderTarget->FillRectangle({_NewBounds.Right, _BoundsOutter.Top, _BoundsOutter.Right, _BoundsOutter.Bottom}, hbIRB); // Inner Right
+                    _pRenderTarget->FillRectangle({_BoundsOutter.Left, _NewBounds.Bottom, _NewBounds.Right, _BoundsOutter.Bottom}, hbIRB);  // Inner Bottom
                     break;
                 }
                 default:
@@ -992,19 +1004,19 @@ namespace YY
             }
         }
 
-        SIZE __MEGA_UI_API Element::GetContentSize(SIZE _ConstraintSize)
+        Size __MEGA_UI_API Element::GetContentSize(Size _ConstraintSize)
         {
             // todo
             return _ConstraintSize;
         }
 
-        SIZE __MEGA_UI_API Element::SelfLayoutUpdateDesiredSize(SIZE _ConstraintSize)
+        Size __MEGA_UI_API Element::SelfLayoutUpdateDesiredSize(Size _ConstraintSize)
         {
             // 仅给子类留一个口，什么也不用做
             return SIZE{};
         }
 
-        void __MEGA_UI_API Element::SelfLayoutDoLayout(SIZE _ConstraintSize)
+        void __MEGA_UI_API Element::SelfLayoutDoLayout(Size _ConstraintSize)
         {
             // 仅给子类留一个口，什么也不用做
         }
@@ -1368,6 +1380,9 @@ namespace YY
             case ValueType::int32_t:
                 return *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
                 break;
+            case ValueType::float_t:
+                return *(float*)_pRawBuffer1 == *(float*)_pRawBuffer2;
+                break;
             case ValueType::boolean:
             {
                 auto _bValue1 = ((*(uint8_t*)_pRawBuffer1) & (1 << _Prop.BindCacheInfo.SpecifiedValueBit)) != 0;
@@ -1379,11 +1394,11 @@ namespace YY
             case ValueType::Color:
                 return (*(Color*)_pRawBuffer1).ColorRGBA == (*(Color*)_pRawBuffer2).ColorRGBA;
                 break;
-            case ValueType::POINT:
-                return (*(POINT*)_pRawBuffer1).x == (*(POINT*)_pRawBuffer2).x && (*(POINT*)_pRawBuffer1).y == (*(POINT*)_pRawBuffer2).y;
+            case ValueType::Point:
+                return (*(Point*)_pRawBuffer1) == (*(Point*)_pRawBuffer2);
                 break;
-            case ValueType::SIZE:
-                return (*(SIZE*)_pRawBuffer1).cx == (*(SIZE*)_pRawBuffer2).cx && (*(SIZE*)_pRawBuffer1).cy == (*(SIZE*)_pRawBuffer2).cy;
+            case ValueType::Size:
+                return (*(Size*)_pRawBuffer1) == (*(Size*)_pRawBuffer2);
                 break;
             case ValueType::Rect:
                 return *(Rect*)_pRawBuffer1 == *(Rect*)_pRawBuffer2;
@@ -1996,17 +2011,20 @@ namespace YY
 						case ValueType::int32_t:
                             _pRetValue = Value::CreateInt32(*(int32_t*)_pCache);
 							break;
+                        case ValueType::float_t:
+                            _pRetValue = Value::CreateFloat(*(float*)_pCache);
+                            break;
 						case ValueType::boolean:
                             _pRetValue = Value::CreateBool((*(uint8_t*)_pCache) & (1 << _uCacheBit));
 							break;
                         case ValueType::Color:
                             _pRetValue = Value::CreateColor(*(Color*)_pCache);
                             break;
-                        case ValueType::POINT:
-                            _pRetValue = Value::CreatePoint(*(POINT*)_pCache);
+                        case ValueType::Point:
+                            _pRetValue = Value::CreatePoint(*(Point*)_pCache);
                             break;
-                        case ValueType::SIZE:
-                            _pRetValue = Value::CreateSize(*(SIZE*)_pCache);
+                        case ValueType::Size:
+                            _pRetValue = Value::CreateSize(*(Size*)_pCache);
                             break;
                         case ValueType::Rect:
                             _pRetValue = Value::CreateRect(*(Rect*)_pCache);
@@ -2080,6 +2098,9 @@ namespace YY
 						case ValueType::int32_t:
                             *(int32_t*)_pCache = *(int32_t*)_pDataBuffer;
 							break;
+                        case ValueType::float_t:
+                            *(float*)_pCache = *(float*)_pDataBuffer;
+                            break;
 						case ValueType::boolean:
                             if (*(bool*)_pDataBuffer)
 							{
@@ -2093,11 +2114,11 @@ namespace YY
                         case ValueType::Color:
                             *(Color*)_pCache = *(Color*)_pDataBuffer;
                             break;
-                        case ValueType::POINT:
-                            *(POINT*)_pCache = *(POINT*)_pDataBuffer;
+                        case ValueType::Point:
+                            *(Point*)_pCache = *(Point*)_pDataBuffer;
                             break;
-                        case ValueType::SIZE:
-                            *(SIZE*)_pCache = *(SIZE*)_pDataBuffer;
+                        case ValueType::Size:
+                            *(Size*)_pCache = *(Size*)_pDataBuffer;
                             break;
                         case ValueType::Rect:
                             *(Rect*)_pCache = *(Rect*)_pDataBuffer;
@@ -2199,17 +2220,109 @@ namespace YY
             // todo，
         }
 
+        void __MEGA_UI_API Element::OnDpiPropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            OnDpiPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+        }
+
+        void __MEGA_UI_API Element::OnDpiPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        {
+            // 如果关闭 高DPI支持，那么不要更新大小与偏移
+            if (!GetHighDpi())
+                return;
+
+            const auto _iOldDpi = _pOldValue.GetInt32();
+
+            auto _pControlInfo = GetControlInfo();
+
+            const PropertyInfo* _pProp;
+            for (uint32_t _uIndex = 0u; _pProp = _pControlInfo->EnumPropertyInfo(_uIndex); ++_uIndex)
+            {
+                if ((_pProp->fFlags & PF_UpdateDpi) == 0)
+                    continue;
+
+                if (pWindow && GetParent() == nullptr)
+                {
+                    if (_pProp == &Element::g_ControlInfoData.WidthProp || _pProp == &Element::g_ControlInfoData.HeightProp)
+                        continue;
+                }
+
+                auto _Value = GetValue(*_pProp, PropertyIndicies::PI_Local);
+                if (!_Value.HasValue())
+                    continue;
+
+                switch (_Value.GetType())
+                {
+                case ValueType::float_t:
+                {
+                    auto _iOld = _Value.GetFloat();
+                    const auto _iNew = UpdatePixel(_iOld, _iOldDpi, GetDpi());
+                    if (_iOld != _iNew)
+                    {
+                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateFloat(_iNew));
+                    }
+                    break;
+                }
+                case ValueType::Size:
+                {
+                    auto&& _iOld = _Value.GetSize();
+                    const auto _iNewX = UpdatePixel(_iOld.Width, _iOldDpi, GetDpi());
+                    const auto _iNewY = UpdatePixel(_iOld.Height, _iOldDpi, GetDpi());
+                    if (_iNewX != _iOld.Width || _iNewY != _iOld.Height)
+                    {
+                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateSize(_iNewX, _iNewY));
+                    }
+                    break;
+                }
+                case ValueType::Rect:
+                {
+                    auto& _iOld = _Value.GetRect();
+                    const auto _iNewLeft = UpdatePixel(_iOld.Left, _iOldDpi, GetDpi());
+                    const auto _iNewTop = UpdatePixel(_iOld.Top, _iOldDpi, GetDpi());
+                    const auto _iNewRight = UpdatePixel(_iOld.Right, _iOldDpi, GetDpi());
+                    const auto _iNewBottom = UpdatePixel(_iOld.Bottom, _iOldDpi, GetDpi());
+                    if (_iNewLeft != _iOld.Left || _iNewTop != _iOld.Top || _iNewRight != _iOld.Right || _iNewBottom != _iOld.Bottom)
+                    {
+                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateRect(_iNewLeft, _iNewTop, _iNewRight, _iNewBottom));
+                    }
+                    break;
+                }
+                case ValueType::Font:
+                {
+                    auto& _Old = _Value.GetFont();
+                    const auto _iNew = UpdatePixel(_Old.iSize, _iOldDpi, GetDpi());
+                    if (_iNew != _Old.iSize)
+                    {
+                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateFont(_Old.szFace, _iNew, _Old.uWeight, _Old.fStyle, _Old.Color));
+                    }
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+
+
+            const auto _X = GetX();
+            const auto _Y = GetY();
+
+            const auto _NewX = UpdatePixel(_X, _iOldDpi, GetDpi());
+            const auto _NewY = UpdatePixel(_Y, _iOldDpi, GetDpi());
+
+            
+        }
+
         void __MEGA_UI_API Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
         {
             if ((pLocParent == nullptr || iSpecLayoutPos == LP_Absolute))
             {
-                SIZE _ConstraintSize = { GetWidth(), GetHeight() };
+                Size _ConstraintSize = { GetWidth(), GetHeight() };
 
-                if (_ConstraintSize.cx == -1)
-                    _ConstraintSize.cx = int16_max;
+                if (_ConstraintSize.Width == -1)
+                    _ConstraintSize.Width = int16_max;
 
-                if (_ConstraintSize.cy == -1)
-                    _ConstraintSize.cy = int16_max;
+                if (_ConstraintSize.Height == -1)
+                    _ConstraintSize.Height = int16_max;
 
                 UpdateDesiredSize(_ConstraintSize);
 
@@ -2247,22 +2360,22 @@ namespace YY
                 {
                     auto Extent = GetExtent();
 
-                    Extent.cx -= SpecBorderThickness.left + SpecBorderThickness.right;
-                    Extent.cy -= SpecBorderThickness.top + SpecBorderThickness.bottom;
+                    Extent.Width -= SpecBorderThickness.Left + SpecBorderThickness.Right;
+                    Extent.Height -= SpecBorderThickness.Top + SpecBorderThickness.Bottom;
 
-                    Extent.cx -= SpecPadding.left + SpecPadding.right;
-                    Extent.cy -= SpecPadding.top + SpecPadding.bottom;
+                    Extent.Width -= SpecPadding.Left + SpecPadding.Right;
+                    Extent.Height -= SpecPadding.Top + SpecPadding.Bottom;
 
-                    if (Extent.cx < 0)
-                        Extent.cx = 0;
+                    if (Extent.Width < 0)
+                        Extent.Width = 0;
 
-                    if (Extent.cy < 0)
-                        Extent.cy = 0;
+                    if (Extent.Height < 0)
+                        Extent.Height = 0;
 
                     if (bSelfLayout)
                         SelfLayoutDoLayout(Extent);
                     else
-                        _Layout.GetValue()->DoLayout(this, Extent.cx, Extent.cy);
+                        _Layout.GetValue()->DoLayout(this, Extent);
                 }
 
                 for (auto pChildren : GetChildren())
@@ -2270,8 +2383,8 @@ namespace YY
                     auto _iLayoutPos = pChildren->GetLayoutPos();
                     if (_iLayoutPos == LP_None)
                     {
-                        pChildren->UpdateLayoutPosition(POINT{ 0, 0 });
-                        pChildren->UpdateLayoutSize(SIZE {0, 0});
+                        pChildren->UpdateLayoutPosition(Point{ 0, 0 });
+                        pChildren->UpdateLayoutSize(Size {0, 0});
                     }
                     else if (_iLayoutPos != LP_Absolute)
                     {
@@ -2281,16 +2394,16 @@ namespace YY
             }
         }
         
-        SIZE __MEGA_UI_API Element::UpdateDesiredSize(SIZE _ConstraintSize)
+        Size __MEGA_UI_API Element::UpdateDesiredSize(Size _ConstraintSize)
         {
-            SIZE sizeDesired = {};
-            if (_ConstraintSize.cx < 0)
-                _ConstraintSize.cx = 0;
+            Size sizeDesired = {};
+            if (_ConstraintSize.Width < 0)
+                _ConstraintSize.Width = 0;
 
-            if (_ConstraintSize.cy < 0)
-                _ConstraintSize.cy = 0;
+            if (_ConstraintSize.Height < 0)
+                _ConstraintSize.Height = 0;
 
-            const auto _bChangedConst = LocDesiredSize.cx != _ConstraintSize.cx || LocDesiredSize.cy != _ConstraintSize.cy;
+            const auto _bChangedConst = LocDesiredSize.Width != _ConstraintSize.Width || LocDesiredSize.Height != _ConstraintSize.Height;
 
             if (bNeedsDSUpdate || _bChangedConst)
             {
@@ -2305,8 +2418,7 @@ namespace YY
                     {
                         PreSourceChange(Element::g_ControlInfoData.LastDesiredSizeConstraintProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
 
-                        LocDesiredSize.cx = _ConstraintSize.cx;
-                        LocDesiredSize.cy = _ConstraintSize.cy;
+                        LocDesiredSize = _ConstraintSize;
 
                         PostSourceChange();
                     }
@@ -2314,39 +2426,39 @@ namespace YY
 
                 auto nWidth = GetWidth();
 
-                if (nWidth > _ConstraintSize.cx)
-                    nWidth = _ConstraintSize.cx;
+                if (nWidth > _ConstraintSize.Width)
+                    nWidth = _ConstraintSize.Width;
 
                 auto nHeight = GetHeight();
-                if (nHeight > _ConstraintSize.cy)
-                    nHeight = _ConstraintSize.cy;
+                if (nHeight > _ConstraintSize.Height)
+                    nHeight = _ConstraintSize.Height;
 
-                sizeDesired.cx = nWidth == -1 ? _ConstraintSize.cx : nWidth;
-                sizeDesired.cy = nHeight == -1 ? _ConstraintSize.cy : nHeight;
+                sizeDesired.Width = nWidth == -1 ? _ConstraintSize.Width : nWidth;
+                sizeDesired.Height = nHeight == -1 ? _ConstraintSize.Height : nHeight;
 
-                auto BorderX = SpecBorderThickness.left + SpecBorderThickness.right;
-                auto BorderY = SpecBorderThickness.top + SpecBorderThickness.bottom;
+                auto BorderX = SpecBorderThickness.Left + SpecBorderThickness.Right;
+                auto BorderY = SpecBorderThickness.Top + SpecBorderThickness.Bottom;
 
-                BorderX += SpecPadding.left + SpecPadding.right;
-                BorderY += SpecPadding.top + SpecPadding.bottom;
+                BorderX += SpecPadding.Left + SpecPadding.Right;
+                BorderY += SpecPadding.Top + SpecPadding.Bottom;
 
-                SIZE _ConstraintContentSize;
-                _ConstraintContentSize.cx = sizeDesired.cx - BorderX;
+                Size _ConstraintContentSize;
+                _ConstraintContentSize.Width = sizeDesired.Width - BorderX;
 
-                if (_ConstraintContentSize.cx < 0)
+                if (_ConstraintContentSize.Width < 0)
                 {
-                    BorderX += _ConstraintContentSize.cx;
-                    _ConstraintContentSize.cx = 0;
+                    BorderX += _ConstraintContentSize.Width;
+                    _ConstraintContentSize.Width = 0;
                 }
 
-                _ConstraintContentSize.cy = sizeDesired.cy - BorderY;
-                if (_ConstraintContentSize.cy < 0)
+                _ConstraintContentSize.Height = sizeDesired.Height - BorderY;
+                if (_ConstraintContentSize.Height < 0)
                 {
-                    BorderY += _ConstraintContentSize.cy;
-                    _ConstraintContentSize.cy = 0;
+                    BorderY += _ConstraintContentSize.Height;
+                    _ConstraintContentSize.Height = 0;
                 }
 
-                SIZE TmpSize;
+                Size TmpSize;
 
                 if (bSelfLayout)
                 {
@@ -2366,43 +2478,43 @@ namespace YY
                     }
                 }
 
-                if (TmpSize.cx < 0)
+                if (TmpSize.Width < 0)
                 {
-                    TmpSize.cx = 0;
+                    TmpSize.Width = 0;
                 }
-                else if (TmpSize.cx > _ConstraintContentSize.cx)
+                else if (TmpSize.Width > _ConstraintContentSize.Width)
                 {
-                    TmpSize.cx = _ConstraintContentSize.cx;
+                    TmpSize.Width = _ConstraintContentSize.Width;
                 }
-                if (TmpSize.cy < 0)
+                if (TmpSize.Height < 0)
                 {
-                    TmpSize.cy = 0;
+                    TmpSize.Height = 0;
                 }
-                else if (TmpSize.cy > _ConstraintContentSize.cy)
+                else if (TmpSize.Height > _ConstraintContentSize.Height)
                 {
-                    TmpSize.cy = _ConstraintContentSize.cy;
+                    TmpSize.Height = _ConstraintContentSize.Height;
                 }
 
                 if (nWidth == -1)
                 {
-                    if (TmpSize.cx + BorderX < sizeDesired.cx)
-                        sizeDesired.cx = TmpSize.cx + BorderX;
+                    if (TmpSize.Width + BorderX < sizeDesired.Width)
+                        sizeDesired.Width = TmpSize.Width + BorderX;
                 }
 
                 if (nHeight == -1)
                 {
-                    if (TmpSize.cy + BorderY < sizeDesired.cy)
-                        sizeDesired.cy = TmpSize.cy + BorderY;
+                    if (TmpSize.Height + BorderY < sizeDesired.Height)
+                        sizeDesired.Height = TmpSize.Height + BorderY;
                 }
 
-                if (sizeDesired.cx < SpecMinSize.cx)
+                if (sizeDesired.Height < SpecMinSize.Width)
                 {
-                    sizeDesired.cx = min(_ConstraintSize.cx, SpecMinSize.cx);
+                    sizeDesired.Width = min(_ConstraintSize.Width, SpecMinSize.Width);
                 }
 
-                if (sizeDesired.cy < SpecMinSize.cy)
+                if (sizeDesired.Height < SpecMinSize.Height)
                 {
-                    sizeDesired.cy = min(_ConstraintSize.cy, SpecMinSize.cy);
+                    sizeDesired.Height = min(_ConstraintSize.Height, SpecMinSize.Height);
                 }
 
                 auto pSizeOld = Value::CreateSize(LocLastDesiredSizeConstraint);
@@ -2424,7 +2536,7 @@ namespace YY
         Rect __MEGA_UI_API Element::ApplyRTL(const Rect& _Src)
         {
             if (IsRTL())
-                return Rect(_Src.right, _Src.top, _Src.left, _Src.bottom);
+                return Rect(_Src.Right, _Src.Top, _Src.Left, _Src.Bottom);
             else
                 return _Src;
         }
@@ -2743,9 +2855,9 @@ namespace YY
             return _hrLast;
         }
 
-        void __MEGA_UI_API Element::UpdateLayoutPosition(POINT _LayoutPosition)
+        void __MEGA_UI_API Element::UpdateLayoutPosition(Point _LayoutPosition)
         {
-            if (LocPosInLayout.x == _LayoutPosition.x && LocPosInLayout.y == _LayoutPosition.y)
+            if (LocPosInLayout == _LayoutPosition)
                 return;
 
             auto _pPointOld = Value::CreatePoint(LocPosInLayout);
@@ -2763,9 +2875,9 @@ namespace YY
             PostSourceChange();
         }
 
-        void __MEGA_UI_API Element::UpdateLayoutSize(SIZE _LayoutSize)
+        void __MEGA_UI_API Element::UpdateLayoutSize(Size _LayoutSize)
         {
-            if (LocSizeInLayout.cx == _LayoutSize.cx && LocSizeInLayout.cy == _LayoutSize.cy)
+            if (LocSizeInLayout == _LayoutSize)
                 return;
             
             auto _pSizeOld = Value::CreateSize(LocSizeInLayout);
@@ -2788,12 +2900,29 @@ namespace YY
             if (pWindow || _pNewWindow == nullptr)
                 return E_INVALIDARG;
 
+            intptr_t _Cooike = 0;
             pWindow = _pNewWindow;
+            if (_pNewWindow->IsInitialized() && iLocDpi != _pNewWindow->GetDpi())
+            {
+                StartDefer(&_Cooike);
+                PreSourceChange(
+                    Element::g_ControlInfoData.DPIProp,
+                    PropertyIndicies::PI_Local,
+                    Value::CreateInt32(iLocDpi),
+                    Value::CreateInt32(_pNewWindow->GetDpi()));
+
+                iLocDpi = _pNewWindow->GetDpi();
+
+                PostSourceChange();
+            }
 
             for (auto pElement : GetChildren())
             {
                 pElement->OnHosted(_pNewWindow);
             }
+
+            if (_Cooike)
+                EndDefer(_Cooike);
 
             return S_OK;
         }

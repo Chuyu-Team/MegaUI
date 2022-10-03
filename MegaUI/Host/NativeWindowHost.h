@@ -86,7 +86,7 @@ namespace YY
 
             void __MEGA_UI_API OnSize(UINT _uWidth, UINT _uHeight);
 
-            void __MEGA_UI_API UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const POINT& ptPoint);
+            void __MEGA_UI_API UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const Point& ptPoint);
 
             void __MEGA_UI_API UpdateMouseWithinToFalse(Element* _pElement);
         };

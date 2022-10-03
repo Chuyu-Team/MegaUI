@@ -149,8 +149,7 @@ namespace YY
             __MEGA_UI_API CreateTextLayout(
                 _In_ uStringView _szText,
                 _In_ IDWriteTextFormat* _pTextFormat,
-                _In_ uint32_t _uMaxWidth,
-                _In_ uint32_t _uMaxHeight,
+                _In_ Size _Maxbound,
                 _COM_Outptr_ IDWriteTextLayout** _ppTextLayout
                 ) =0;
 
@@ -165,7 +164,7 @@ namespace YY
             virtual
             void
             __MEGA_UI_API DrawTextLayout(
-                _In_ POINT _Origin,
+                _In_ Point _Origin,
                 _In_ IDWriteTextLayout* _pTextLayout,
                 _In_ ID2D1Brush* _pDefaultFillBrush,
                 _In_ D2D1_DRAW_TEXT_OPTIONS options = D2D1_DRAW_TEXT_OPTIONS_NONE

@@ -163,8 +163,8 @@ namespace YY
             intptr_t _Cooike;
             pHost->StartDefer(&_Cooike);
 
-            pHost->SetWidth(LastRenderSize.width);
-            pHost->SetHeight(LastRenderSize.height);
+            pHost->SetWidth((float)LastRenderSize.width);
+            pHost->SetHeight((float)LastRenderSize.height);
 
             pHost->EndDefer(_Cooike);
 
@@ -220,10 +220,10 @@ namespace YY
                     const auto fwKeys = _wParam;
                     if (_pNativeWindow->pHost && fwKeys != MK_LBUTTON)
                     {
-                        Rect _Bounds;
+                        RECT _Bounds;
                         ::GetWindowRect(_hWnd, &_Bounds);
-
-                        _pNativeWindow->UpdateMouseWithin(_pNativeWindow->pHost, _Bounds, _Bounds, POINT {LOWORD(_lParam), HIWORD(_lParam)});
+                        Rect _BoundsF = _Bounds;
+                        _pNativeWindow->UpdateMouseWithin(_pNativeWindow->pHost, _BoundsF, _BoundsF, Point((float)LOWORD(_lParam), (float)HIWORD(_lParam)));
                     }
                     break;
                 }
@@ -262,7 +262,7 @@ namespace YY
             auto _hr = pRender->BeginDraw(&_NeedPaint);
             if (FAILED(_hr))
                 return _hr;
-            Rect _Bounds(0, 0, LastRenderSize.width, LastRenderSize.height);
+            Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
             PaintElement(pRender, pHost, _Bounds, _NeedPaint);
             return pRender->EndDraw();
         }
@@ -314,15 +314,15 @@ namespace YY
             auto _Extent = _pElement->GetExtent();
 
             Rect _BoundsElement;
-            _BoundsElement.left = _ParentBounds.left + _Location.x;
-            _BoundsElement.right = _BoundsElement.left + _Extent.cx;
+            _BoundsElement.Left = _ParentBounds.Left + _Location.X;
+            _BoundsElement.Right = _BoundsElement.Left + _Extent.Width;
 
-            _BoundsElement.top = _ParentBounds.top + _Location.y;
-            _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
+            _BoundsElement.Top = _ParentBounds.Top + _Location.Y;
+            _BoundsElement.Bottom = _BoundsElement.Top + _Extent.Height;
             #endif
             // 如果没有交集，那么我们可以不绘制
-            Rect _PaintRect;
-            if (!IntersectRect(&_PaintRect, &_ParentPaintRect, &_BoundsElement))
+            Rect _PaintRect = _ParentPaintRect & _BoundsElement;
+            if (_PaintRect.IsEmpty())
                 return S_OK;
 
             const auto _bNeedClip = _PaintRect != _BoundsElement;
@@ -348,20 +348,20 @@ namespace YY
             Element* _pElement,
             const Rect& _ParentBounds,
             const Rect& _ParentVisibleBounds,
-            const POINT& _ptPoint)
+            const Point& _ptPoint)
         {
             auto _Location = _pElement->GetLocation();
             auto _Extent = _pElement->GetExtent();
 
             Rect _BoundsElement;
-            _BoundsElement.left = _ParentBounds.left + _Location.x;
-            _BoundsElement.right = _BoundsElement.left + _Extent.cx;
+            _BoundsElement.Left = _ParentBounds.Left + _Location.X;
+            _BoundsElement.Right = _BoundsElement.Left + _Extent.Width;
 
-            _BoundsElement.top = _ParentBounds.top + _Location.y;
-            _BoundsElement.bottom = _BoundsElement.top + _Extent.cy;
+            _BoundsElement.Top = _ParentBounds.Top + _Location.Y;
+            _BoundsElement.Bottom = _BoundsElement.Top + _Extent.Height;
 
-            Rect _VisibleBounds;
-            if (IntersectRect(&_VisibleBounds, &_ParentVisibleBounds, &_BoundsElement))
+            Rect _VisibleBounds = _ParentVisibleBounds & _BoundsElement;
+            if (!_VisibleBounds.IsEmpty())
             {
                 if (_VisibleBounds.PointInRect(_ptPoint))
                 {
@@ -418,8 +418,8 @@ namespace YY
             intptr_t _Cooike;
             pHost->StartDefer(&_Cooike);
 
-            pHost->SetWidth(_uWidth);
-            pHost->SetHeight(_uHeight);
+            pHost->SetWidth((float)_uWidth);
+            pHost->SetHeight((float)_uHeight);
 
             pHost->EndDefer(_Cooike);
         }

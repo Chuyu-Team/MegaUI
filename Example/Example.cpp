@@ -39,7 +39,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     YY::MegaUI::WindowElement* pWindowElement;
 
-    _Parser.Play(u8"测试窗口", nullptr, nullptr, &pWindowElement);
+    UIParserPlayContext _Context;
+    _Context.iDPI = 96;
+    _Parser.Play(u8"测试窗口", &_Context, nullptr, &pWindowElement);
 
     _pTestWindow->SetHost(pWindowElement);
     _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);

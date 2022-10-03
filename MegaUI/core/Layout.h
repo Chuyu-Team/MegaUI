@@ -35,7 +35,7 @@ namespace YY
             int __MEGA_UI_API GetLayoutIndexFromChild(Element*, Element*);
             void __MEGA_UI_API Initialize();
             // 0
-            virtual void __MEGA_UI_API DoLayout(Element*, int, int);
+            virtual void __MEGA_UI_API DoLayout(Element*, Size);
 
             // 1
             virtual SIZE __MEGA_UI_API UpdateDesiredSize(Element*, int, int);
