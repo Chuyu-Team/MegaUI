@@ -164,7 +164,7 @@ namespace YY
                     {
                         // 如果扫描到结束，那么说明命中条件。
                         // 这些规则只有 && 逻辑，引入 || 逻辑破坏性较大。
-                        return _ConMap.CondValue.MakeSureValue(_pElement);
+                        return _ConMap.CondValue.UpdateDpi(_pElement->GetDpi());
                     }
 
                     
@@ -184,7 +184,7 @@ namespace YY
                     }
                     else
                     {
-                        if (!_ElementValue.CmpValue(pCond->Value.MakeSureValue(_pElement), pCond->OperationType))
+                        if (!_ElementValue.CmpValue(pCond->Value, pCond->OperationType, false))
                             break;
                     }
                 }

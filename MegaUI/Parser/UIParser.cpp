@@ -766,7 +766,8 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
 
-            auto _Value = Value::CreateFloat((float)_iValue, (uint8_t)_SuffixType);
+            ValueSuffix _Suffix = {_SuffixType, ValueSuffixType::None, ValueSuffixType::None, ValueSuffixType::None, 96};
+            auto _Value = Value::CreateFloat((float)_iValue, _Suffix);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -915,9 +916,8 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
 
-            uint8_t SuffixType[] = {uint8_t(_Arg[0].SuffixType), uint8_t(_Arg[1].SuffixType)};
-
-            auto _Value = Value::CreateSize((float)_Arg[0].iNumber, (float)_Arg[1].iNumber, SuffixType);
+            ValueSuffix _Suffix = {_Arg[0].SuffixType, _Arg[1].SuffixType, ValueSuffixType::None, ValueSuffixType::None, 96};
+            auto _Value = Value::CreateSize((float)_Arg[0].iNumber, (float)_Arg[1].iNumber, _Suffix);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
             *_pValue = std::move(_Value);
@@ -941,9 +941,8 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
 
-            uint8_t SuffixType[] = {uint8_t(_Arg[0].SuffixType), uint8_t(_Arg[1].SuffixType), uint8_t(_Arg[2].SuffixType), uint8_t(_Arg[3].SuffixType)};
-
-            auto _Value = Value::CreateRect((float)_Arg[0].iNumber, (float)_Arg[1].iNumber, (float)_Arg[2].iNumber, (float)_Arg[3].iNumber, SuffixType);
+            ValueSuffix _Suffix = {_Arg[0].SuffixType, _Arg[1].SuffixType, _Arg[2].SuffixType, _Arg[3].SuffixType, 96};
+            auto _Value = Value::CreateRect((float)_Arg[0].iNumber, (float)_Arg[1].iNumber, (float)_Arg[2].iNumber, (float)_Arg[3].iNumber, _Suffix);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
             *_pValue = std::move(_Value);
@@ -1050,7 +1049,8 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
 
-            auto _FontValue = Value::CreateFont(_szFace, abs((float)_Arg[1].iNumber), (uint8_t)_Arg[1].SuffixType, _Arg[2].iNumber, _Arg[3].iNumber, _Arg[4].cColor);
+            ValueSuffix _Suffix = {_Arg[1].SuffixType, ValueSuffixType::None, ValueSuffixType::None, ValueSuffixType::None, 96};
+            auto _FontValue = Value::CreateFont(_szFace, abs((float)_Arg[1].iNumber), _Arg[2].iNumber, _Arg[3].iNumber, _Arg[4].cColor, _Suffix);
             if (_FontValue == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -1185,7 +1185,7 @@ namespace YY
                     }
 
                     // 忽略错误
-                    _pCurrentElement->SetValue(*_pSetProperty->pProp, PropertyIndicies::PI_Local, _ppValue->MakeSureValue(_pCurrentElement));
+                    _pCurrentElement->SetValue(*_pSetProperty->pProp, PropertyIndicies::PI_Local, _ppValue->UpdateDpi(_pCurrentElement->GetDpi()));
                 }
                 else
                 {

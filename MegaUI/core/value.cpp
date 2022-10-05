@@ -11,6 +11,24 @@ namespace YY
 {
     namespace MegaUI
     {
+        static float __MEGA_UI_API UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type)
+        {
+            switch (_Type)
+            {
+            case ValueSuffixType::None:
+            case ValueSuffixType::Pixel:
+                return _iValue;
+                break;
+            case ValueSuffixType::DevicePixel:
+            case ValueSuffixType::FontPoint:
+                return UpdatePixel(_iValue, _iOldDpi, _iNewDpi);
+                break;
+            default:
+                std::abort();
+                break;
+            }
+        }
+
         void __MEGA_UI_API Value::SharedData::AddRef()
         {
             if (IsReadOnly())
@@ -64,7 +82,12 @@ namespace YY
 
         bool __MEGA_UI_API Value::SharedData::NeedCalculate()
         {
-            return IsReadOnly() == false && *(uint32_t*)SuffixType;
+            return IsReadOnly() == false && SuffixType.RawView != 0;
+        }
+
+        int32_t __MEGA_UI_API Value::SharedData::GetDpi()
+        {
+            return (IsReadOnly() == false && SuffixType.RawView) ? SuffixType.Dpi : 96;
         }
 
         Value __MEGA_UI_API Value::CreateAtomZero()
@@ -168,9 +191,9 @@ namespace YY
                 Color(255, 0, 0, 0));
         }
 
-        Value __MEGA_UI_API Value::CreateFont(uString _szFace, float _uFontSize, uint8_t _FontSizeSuffixType, uint32_t _uWeight, uint32_t _fStyle, Color _Color)
+        Value __MEGA_UI_API Value::CreateFont(uString _szFace, float _uFontSize, uint32_t _uWeight, uint32_t _fStyle, Color _Color, ValueSuffix _Suffix)
         {
-            auto _pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
+            auto _pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (_pValue)
             {
                 _pValue->eType = uint_t(ValueType::Font);
@@ -185,15 +208,10 @@ namespace YY
                 FontValue.fStyle = _fStyle;
                 FontValue.Color = _Color;
 
-                _pValue->SuffixType[0] = _FontSizeSuffixType;
+                _pValue->SuffixType.RawView = _Suffix.RawView;
             }
 
             return Value(_pValue);
-        }
-        
-        Value __MEGA_UI_API Value::CreateFont(uString _szFace, float _uFontSize, uint32_t _uWeight, uint32_t _fStyle, Color _Color)
-        {
-            return CreateFont(_szFace, _uFontSize, 0, _uWeight, _fStyle, _Color);
         }
 
         Value __MEGA_UI_API Value::CreateColorTransparant()
@@ -281,7 +299,7 @@ namespace YY
             if (_iValue == 0)
                 return CreateInt32Zero();
 
-            auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::int32_t);
@@ -292,23 +310,18 @@ namespace YY
             return Value(pValue);
         }
 
-        Value __MEGA_UI_API Value::CreateFloat(_In_ float _iValue, _In_ uint8_t _SuffixType)
+        Value __MEGA_UI_API Value::CreateFloat(float _iValue, ValueSuffix _Suffix)
         {
-            auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::float_t);
                 pValue->bSkipFree = 0;
                 pValue->cRef = 1;
                 pValue->floatValue = _iValue;
-                pValue->SuffixType[0] = _SuffixType;
+                pValue->SuffixType.RawView = _Suffix.RawView;
             }
             return Value(pValue);
-        }
-
-        Value __MEGA_UI_API Value::CreateFloat(float _iValue)
-        {
-            return CreateFloat(_iValue, 0);
         }
 
         Value __MEGA_UI_API Value::CreateBool(bool _bValue)
@@ -379,10 +392,8 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateSize(float _iCX, float _iCY, uint8_t* _pSuffixType)
+        Value __MEGA_UI_API Value::CreateSize(float _iCX, float _iCY, ValueSuffix _Suffix)
         {
-            static_assert(sizeof(Value::SharedData) >= offsetof(Value::SharedData, sizeVal) + sizeof(Value::SharedData::sizeVal) + sizeof(int32_t), "");
-
             auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
             if (pValue)
             {
@@ -391,25 +402,14 @@ namespace YY
                 pValue->cRef = 1;
                 pValue->sizeVal.Width = _iCX;
                 pValue->sizeVal.Height = _iCY;                
-
-                if (_pSuffixType)
-                {
-                    pValue->SuffixType[0] = _pSuffixType[0];
-                    pValue->SuffixType[1] = _pSuffixType[1];
-                }
+                
+                pValue->SuffixType.RawView = _Suffix.RawView;                
             }
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateSize(float _iCX, float _iCY)
+        Value __MEGA_UI_API Value::CreateRect(float _iLeft, float _iTop, float _iRight, float _iBottom, ValueSuffix _Suffix)
         {
-            return CreateSize(_iCX, _iCY, nullptr);
-        }
-        
-        Value __MEGA_UI_API Value::CreateRect(float _iLeft, float _iTop, float _iRight, float _iBottom, uint8_t* _pSuffixType)
-        {
-            static_assert(sizeof(Value::SharedData) >= offsetof(Value::SharedData, rectVal) + sizeof(Value::SharedData::rectVal) + sizeof(int32_t), "");
-
             auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
             if (pValue)
             {
@@ -421,20 +421,9 @@ namespace YY
                 pValue->rectVal.Right = _iRight;
                 pValue->rectVal.Bottom = _iBottom;
 
-                if (_pSuffixType)
-                {
-                    pValue->SuffixType[0] = _pSuffixType[0];
-                    pValue->SuffixType[1] = _pSuffixType[1];
-                    pValue->SuffixType[2] = _pSuffixType[2];
-                    pValue->SuffixType[3] = _pSuffixType[3];
-                }
+                pValue->SuffixType.RawView = _Suffix.RawView;
             }
             return Value(pValue);
-        }
-        
-        Value __MEGA_UI_API Value::CreateRect(float _iLeft, float _iTop, float _iRight, float _iBottom)
-        {
-            return CreateRect(_iLeft, _iTop, _iRight, _iBottom, nullptr);
         }
 
         Value __MEGA_UI_API Value::CreateAtom(raw_const_ustring_t _szValue)
@@ -604,7 +593,7 @@ namespace YY
             return pSharedData->rectVal;
         }
 
-        bool __MEGA_UI_API Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation) const
+        bool __MEGA_UI_API Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi) const
         {
             if (pSharedData == _Other.pSharedData)
             {
@@ -650,28 +639,35 @@ namespace YY
                 }
                 break;
             case ValueType::float_t:
+            {
+                auto _iLeft = pSharedData->floatValue;
+                auto _iRight = _Other.pSharedData->floatValue;
+                if (_bIgnoreDpi == false && _Other.pSharedData->NeedCalculate())
+                    _iRight = MegaUI::UpdateDpi(_iRight, _Other.pSharedData->GetDpi(), pSharedData->GetDpi(), _Other.pSharedData->SuffixType.Type1);
+
                 switch (_Operation)
                 {
                 case ValueCmpOperation::Equal:
-                    return GetFloat() == _Other.GetFloat();
+                    return _iLeft == _iRight;
                     break;
                 case ValueCmpOperation::NotEqual:
-                    return GetFloat() != _Other.GetFloat();
+                    return _iLeft != _iRight;
                     break;
                 case ValueCmpOperation::GreaterThan:
-                    return GetFloat() > _Other.GetFloat();
+                    return _iLeft > _iRight;
                     break;
                 case ValueCmpOperation::GreaterThanOrEqual:
-                    return GetFloat() >= _Other.GetFloat();
+                    return _iLeft >= _iRight;
                     break;
                 case ValueCmpOperation::LessThan:
-                    return GetFloat() < _Other.GetFloat();
+                    return _iLeft < _iRight;
                     break;
                 case ValueCmpOperation::LessThanOrEqual:
-                    return GetFloat() <= _Other.GetFloat();
+                    return _iLeft <= _iRight;
                     break;
                 }
                 break;
+            }
             case ValueType::boolean:
                 switch (_Operation)
                 {
@@ -706,17 +702,48 @@ namespace YY
                 }
                 break;
             case ValueType::Size:
+            {
+                auto& _iLeft = pSharedData->sizeVal;
+                auto _iRight = _Other.pSharedData->sizeVal;
+                if (_bIgnoreDpi == false && _Other.pSharedData->NeedCalculate())
+                {
+                    auto _iOldDpi = _Other.pSharedData->GetDpi();
+                    auto _iNewDpi = pSharedData->GetDpi();
+                    if (_iOldDpi != _iNewDpi)
+                    {
+                        _iRight.Width = MegaUI::UpdateDpi(_iRight.Width, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type1);
+                        _iRight.Height = MegaUI::UpdateDpi(_iRight.Height, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type2);
+                    }
+                }
+
                 switch (_Operation)
                 {
                 case ValueCmpOperation::Equal:
-                    return pSharedData->sizeVal == _Other.pSharedData->sizeVal;
+                    return _iLeft == _iRight;
                     break;
                 case ValueCmpOperation::NotEqual:
-                    return pSharedData->sizeVal != _Other.pSharedData->sizeVal;
+                    return _iLeft != _iRight;
                     break;
                 }
                 break;
+            }
             case ValueType::Rect:
+            {
+                auto& _iLeft = pSharedData->rectVal;
+                auto _iRight = _Other.pSharedData->rectVal;
+                if (_bIgnoreDpi == false && _Other.pSharedData->NeedCalculate())
+                {
+                    auto _iOldDpi = _Other.pSharedData->GetDpi();
+                    auto _iNewDpi = pSharedData->GetDpi();
+                    if (_iOldDpi != _iNewDpi)
+                    {
+                        _iRight.Left = MegaUI::UpdateDpi(_iRight.Left, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type1);
+                        _iRight.Top = MegaUI::UpdateDpi(_iRight.Top, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type2);
+                        _iRight.Right = MegaUI::UpdateDpi(_iRight.Right, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type3);
+                        _iRight.Bottom = MegaUI::UpdateDpi(_iRight.Bottom, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type4);
+                    }
+                }
+
                 switch (_Operation)
                 {
                 case ValueCmpOperation::Equal:
@@ -727,6 +754,7 @@ namespace YY
                     break;
                 }
                 break;
+            }
             case ValueType::Element:
                 switch (_Operation)
                 {
@@ -799,84 +827,103 @@ namespace YY
                     break;
                 }
                 break;
+            case ValueType::Font:
+            {
+                if (pSharedData->FontValue.uWeight == _Other.pSharedData->FontValue.uWeight
+                    && pSharedData->FontValue.fStyle == _Other.pSharedData->FontValue.fStyle
+                    && pSharedData->FontValue.Color == _Other.pSharedData->FontValue.Color
+                    && pSharedData->FontValue.szFace.GetSize() == _Other.pSharedData->FontValue.szFace.GetSize()
+                    && pSharedData->FontValue.szFace.CompareI(_Other.pSharedData->FontValue.szFace) == 0)
+                {
+                    auto _iLeft = pSharedData->FontValue.iSize;
+                    auto _iRight = _Other.pSharedData->FontValue.iSize;
+                    if (_bIgnoreDpi == false && _Other.pSharedData->NeedCalculate())
+                    {
+                        auto _iOldDpi = _Other.pSharedData->GetDpi();
+                        auto _iNewDpi = pSharedData->GetDpi();
+
+                        _iRight = MegaUI::UpdateDpi(_iRight, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type1);
+                    }
+
+                    if (_iLeft == _iRight)
+                    {
+                        if (_Operation == ValueCmpOperation::Equal)
+                            return true;
+                    }
+                }
+
+                return false;
+                break;
+            }
             default:
                 break;
             }
 
             return false;
         }
-        
-        static float __MEGA_UI_API MakeSureValue(float _iValue, int32_t _iDPI, uint8_t _SuffixType)
-        {
-            switch (ValueSuffixType(_SuffixType))
-            {
-            case ValueSuffixType::None:
-            case ValueSuffixType::Pixel:
-                return _iValue;
-                break;
-            case ValueSuffixType::DevicePixel:
-                return DevicePixelToPixel(_iValue, _iDPI);
-                break;
-            case ValueSuffixType::FontPoint:
-                return PointToPixel(_iValue, _iDPI);
-                break;
-            default:
-                std::abort();
-                break;
-            }
-        }
 
-        Value __MEGA_UI_API Value::MakeSureValue(Element* _pElement) const
+        bool __MEGA_UI_API Value::IsSame(const Value& _Other) const
+        {
+            return pSharedData == _Other.pSharedData;
+        }
+        
+        Value __MEGA_UI_API Value::UpdateDpi(_In_ int32_t _iNewDpi) const
         {
             if (pSharedData && pSharedData->NeedCalculate())
             {
-                const auto _iDPI = _pElement->GetDpi();
+                if (_iNewDpi == 0 || _iNewDpi > uint16_max)
+                    throw Exception(_S("DPI错误！"));
+
                 auto _pSuffixType = pSharedData->SuffixType;
+                auto _iOldDpi = _pSuffixType.Dpi;
+                _pSuffixType.Dpi = (uint16_t)_iNewDpi;
+
+                if (_iOldDpi == _pSuffixType.Dpi)
+                    return *this;
 
                 switch (ValueType(pSharedData->eType))
                 {
                 case ValueType::float_t:
                 {
-                    const auto _iNewValue = YY::MegaUI::MakeSureValue(pSharedData->floatValue, _iDPI, _pSuffixType[0]);
+                    const auto _iNewValue = YY::MegaUI::UpdateDpi(pSharedData->floatValue, _iOldDpi, _iNewDpi, _pSuffixType.Type1);
                     if (_iNewValue == pSharedData->floatValue)
                         break;
-
-                    return Value::CreateFloat(_iNewValue);
+                    return Value::CreateFloat(_iNewValue, _pSuffixType);
                     break;
                 }
                 case ValueType::Size:
                 {
-                    const auto _cx = YY::MegaUI::MakeSureValue(pSharedData->sizeVal.Width, _iDPI, _pSuffixType[0]);
-                    const auto _cy = YY::MegaUI::MakeSureValue(pSharedData->sizeVal.Height, _iDPI, _pSuffixType[1]);
+                    const auto _cx = YY::MegaUI::UpdateDpi(pSharedData->sizeVal.Width, _iOldDpi, _iNewDpi, _pSuffixType.Type1);
+                    const auto _cy = YY::MegaUI::UpdateDpi(pSharedData->sizeVal.Height, _iOldDpi, _iNewDpi, _pSuffixType.Type2);
                     if (_cx == pSharedData->sizeVal.Width && _cy == pSharedData->sizeVal.Height)
                         break;
-
-                    return Value::CreateSize(_cx, _cy);
+                    return Value::CreateSize(_cx, _cy, _pSuffixType);
                     break;
                 }
                 case ValueType::Rect:
                 {
-                    const auto _left = YY::MegaUI::MakeSureValue(pSharedData->rectVal.Left, _iDPI, _pSuffixType[0]);
-                    const auto _top = YY::MegaUI::MakeSureValue(pSharedData->rectVal.Top, _iDPI, _pSuffixType[1]);
-                    const auto _right = YY::MegaUI::MakeSureValue(pSharedData->rectVal.Right, _iDPI, _pSuffixType[2]);
-                    const auto _bottom = YY::MegaUI::MakeSureValue(pSharedData->rectVal.Bottom, _iDPI, _pSuffixType[3]);
+                    const auto _left = YY::MegaUI::UpdateDpi(pSharedData->rectVal.Left, _iOldDpi, _iNewDpi, _pSuffixType.Type1);
+                    const auto _top = YY::MegaUI::UpdateDpi(pSharedData->rectVal.Top, _iOldDpi, _iNewDpi, _pSuffixType.Type2);
+                    const auto _right = YY::MegaUI::UpdateDpi(pSharedData->rectVal.Right, _iOldDpi, _iNewDpi, _pSuffixType.Type3);
+                    const auto _bottom = YY::MegaUI::UpdateDpi(pSharedData->rectVal.Bottom, _iOldDpi, _iNewDpi, _pSuffixType.Type4);
                     if (_left == pSharedData->rectVal.Left && _top == pSharedData->rectVal.Top && _right == pSharedData->rectVal.Right && _bottom == pSharedData->rectVal.Bottom)
                         break;
-
-                    return Value::CreateRect(_left, _top, _right, _bottom);
+                    return Value::CreateRect(_left, _top, _right, _bottom, _pSuffixType);
                     break;
                 }
                 case ValueType::Font:
                 {
-                    const auto _iSize = YY::MegaUI::MakeSureValue(pSharedData->FontValue.iSize, _iDPI, _pSuffixType[0]);
+                    const auto _iSize = YY::MegaUI::UpdateDpi(pSharedData->FontValue.iSize, _iOldDpi, _iNewDpi, _pSuffixType.Type1);
                     if (_iSize == pSharedData->FontValue.iSize)
                         break;
+
                     return Value::CreateFont(
                         pSharedData->FontValue.szFace,
                         _iSize,
                         pSharedData->FontValue.uWeight,
                         pSharedData->FontValue.fStyle,
-                        pSharedData->FontValue.Color);
+                        pSharedData->FontValue.Color,
+                        _pSuffixType);
                     break;
                 }
                 }

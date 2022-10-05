@@ -69,6 +69,11 @@ namespace YY
             {
                 return GetFloatColorRGBA();
             }
+
+            bool __MEGA_UI_API operator==(Color _Other) const
+            {
+                return ColorRGBA == _Other.ColorRGBA;
+            }
         };
     }
 } // namespace YY

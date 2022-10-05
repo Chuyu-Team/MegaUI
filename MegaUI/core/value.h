@@ -57,7 +57,7 @@ namespace YY
 #undef _APPLY
         };
         
-        enum class ValueSuffixType
+        enum class ValueSuffixType : uint16_t
         {
             None,
             // 设备无关像素（缩写px），等价于 None
@@ -67,6 +67,24 @@ namespace YY
             // 字体的点数，也称呼为磅（缩写 pt），px = pt * dpi / 72
             FontPoint,
         };
+
+        // 一共4组位置信息，这是为了适应 Rect 这样的拥有4个成员的情况
+        union ValueSuffix
+        {
+            struct
+            {
+                ValueSuffixType Type1 : 4;
+                ValueSuffixType Type2 : 4;
+                ValueSuffixType Type3 : 4;
+                ValueSuffixType Type4 : 4;
+                // 当前数值的Dpi
+                uint16_t Dpi;
+            };
+            
+            uint32_t RawView;
+        };
+        
+        static_assert(sizeof(ValueSuffix) == sizeof(uint32_t), "");
 
         enum class ValueCmpOperation
         {
@@ -159,7 +177,7 @@ namespace YY
 #undef _APPLY
                 };
 
-                uint8_t SuffixType[4];
+                ValueSuffix SuffixType;
 
                 SharedData() = delete;
                 SharedData(const SharedData&) = delete;
@@ -178,6 +196,8 @@ namespace YY
                 /// </summary>
                 /// <returns></returns>
                 bool __MEGA_UI_API NeedCalculate();
+
+                int32_t __MEGA_UI_API GetDpi();
             };
 
         private:
@@ -257,7 +277,13 @@ namespace YY
             /// <returns></returns>
             static Value __MEGA_UI_API CreateDefaultFont();
 
-            static Value __MEGA_UI_API CreateFont(uString _szFace, float _uFontSize, uint32_t _uWeight, uint32_t _fStyle, Color _Color);
+            static Value __MEGA_UI_API CreateFont(
+                uString _szFace,
+                float _uFontSize,
+                uint32_t _uWeight,
+                uint32_t _fStyle,
+                Color _Color,
+                _In_ ValueSuffix _Suffix = {});
 
             /// <summary>
             /// 创建一个全透明的颜色。
@@ -277,7 +303,7 @@ namespace YY
 
             static Value __MEGA_UI_API CreateInt32(_In_ int32_t _iValue);
             
-            static Value __MEGA_UI_API CreateFloat(_In_ float _iValue);
+            static Value __MEGA_UI_API CreateFloat(_In_ float _iValue, _In_ ValueSuffix _Suffix = {});
          
             static Value __MEGA_UI_API CreateBool(_In_ bool _bValue);
             static Value __MEGA_UI_API CreateElementRef(_In_opt_ Element* _pValue);
@@ -291,18 +317,23 @@ namespace YY
                 return CreatePoint(_Point.X, _Point.Y);
             }
 
-            static Value __MEGA_UI_API CreateSize(_In_ float _iCX, _In_ float _iCY);
+            static Value __MEGA_UI_API CreateSize(_In_ float _iCX, _In_ float _iCY, _In_ ValueSuffix _Suffix = {});
 
-            __inline static Value __MEGA_UI_API CreateSize(_In_ Size _Size)
+            __inline static Value __MEGA_UI_API CreateSize(_In_ Size _Size, _In_ ValueSuffix _Suffix = {})
             {
-                return CreateSize(_Size.Width, _Size.Height);
+                return CreateSize(_Size.Width, _Size.Height, _Suffix);
             }
 
-            static Value __MEGA_UI_API CreateRect(_In_ float _iLeft, _In_ float _iTop, _In_ float _iRight, _In_ float _iBottom);
+            static Value __MEGA_UI_API CreateRect(
+                _In_ float _iLeft,
+                _In_ float _iTop,
+                _In_ float _iRight,
+                _In_ float _iBottom,
+                _In_ ValueSuffix _Suffix = {});
             
-            __inline static Value __MEGA_UI_API CreateRect(_In_ const Rect& _Rect)
+            __inline static Value __MEGA_UI_API CreateRect(_In_ const Rect& _Rect, _In_ ValueSuffix _Suffix = {})
             {
-                return CreateRect(_Rect.Left, _Rect.Top, _Rect.Right, _Rect.Bottom);
+                return CreateRect(_Rect.Left, _Rect.Top, _Rect.Right, _Rect.Bottom, _Suffix);
             }
             
             //static _Ret_maybenull_ Value* __MEGA_UI_API CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
@@ -333,18 +364,14 @@ namespace YY
 
             Rect& __MEGA_UI_API GetRect() const;
 
-            bool __MEGA_UI_API CmpValue(const Value& _Other, ValueCmpOperation _Operation) const;
+            bool __MEGA_UI_API CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi = true) const;
 
-            Value __MEGA_UI_API MakeSureValue(_In_ Element* _pElement) const;
-            
-        protected:
-            static Value __MEGA_UI_API CreateFloat(_In_ float _iValue, _In_ uint8_t _SuffixType);
+            Value __MEGA_UI_API UpdateDpi(_In_ int32_t _iNewDpi) const;
 
-            static Value __MEGA_UI_API CreateSize(_In_ float _iCX, _In_ float _iCY, _In_reads_opt_(2) uint8_t* _pSuffixType);
-            
-            static Value __MEGA_UI_API CreateRect(_In_ float _iLeft, _In_ float _iTop, _In_ float _iRight, _In_ float _iBottom, _In_reads_opt_(4) uint8_t* _pSuffixType);
-
-            static Value __MEGA_UI_API CreateFont(uString _szFace, float _uFontSize, uint8_t _FontSizeSuffixType, uint32_t _uWeight, uint32_t _fStyle, Color _Color);
+            /// <summary>
+            /// 判断二个Value是否是同一个变量。
+            /// </summary>
+            bool __MEGA_UI_API IsSame(const Value& _Other) const;
         };
 
         template<ValueType _eType>

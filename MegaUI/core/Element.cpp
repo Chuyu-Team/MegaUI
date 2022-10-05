@@ -474,11 +474,6 @@ namespace YY
             return bSpecMouseFocused;
         }
 
-        bool __MEGA_UI_API Element::GetHighDpi()
-        {
-            return bLocHighDPI;
-        }
-
         int32_t __MEGA_UI_API Element::GetDpi()
         {
             return iLocDpi;
@@ -2247,12 +2242,6 @@ namespace YY
 
         void __MEGA_UI_API Element::OnDpiPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
         {
-            // 如果关闭 高DPI支持，那么不要更新大小与偏移
-            if (!GetHighDpi())
-                return;
-
-            const auto _iOldDpi = _pOldValue.GetInt32();
-
             auto _pControlInfo = GetControlInfo();
 
             const PropertyInfo* _pProp;
@@ -2271,55 +2260,11 @@ namespace YY
                 if (!_Value.HasValue())
                     continue;
 
-                switch (_Value.GetType())
-                {
-                case ValueType::float_t:
-                {
-                    auto _iOld = _Value.GetFloat();
-                    const auto _iNew = UpdatePixel(_iOld, _iOldDpi, GetDpi());
-                    if (_iOld != _iNew)
-                    {
-                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateFloat(_iNew));
-                    }
-                    break;
-                }
-                case ValueType::Size:
-                {
-                    auto&& _iOld = _Value.GetSize();
-                    const auto _iNewX = UpdatePixel(_iOld.Width, _iOldDpi, GetDpi());
-                    const auto _iNewY = UpdatePixel(_iOld.Height, _iOldDpi, GetDpi());
-                    if (_iNewX != _iOld.Width || _iNewY != _iOld.Height)
-                    {
-                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateSize(_iNewX, _iNewY));
-                    }
-                    break;
-                }
-                case ValueType::Rect:
-                {
-                    auto& _iOld = _Value.GetRect();
-                    const auto _iNewLeft = UpdatePixel(_iOld.Left, _iOldDpi, GetDpi());
-                    const auto _iNewTop = UpdatePixel(_iOld.Top, _iOldDpi, GetDpi());
-                    const auto _iNewRight = UpdatePixel(_iOld.Right, _iOldDpi, GetDpi());
-                    const auto _iNewBottom = UpdatePixel(_iOld.Bottom, _iOldDpi, GetDpi());
-                    if (_iNewLeft != _iOld.Left || _iNewTop != _iOld.Top || _iNewRight != _iOld.Right || _iNewBottom != _iOld.Bottom)
-                    {
-                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateRect(_iNewLeft, _iNewTop, _iNewRight, _iNewBottom));
-                    }
-                    break;
-                }
-                case ValueType::Font:
-                {
-                    auto& _Old = _Value.GetFont();
-                    const auto _iNew = UpdatePixel(_Old.iSize, _iOldDpi, GetDpi());
-                    if (_iNew != _Old.iSize)
-                    {
-                        SetValue(*_pProp, PropertyIndicies::PI_Local, Value::CreateFont(_Old.szFace, _iNew, _Old.uWeight, _Old.fStyle, _Old.Color));
-                    }
-                    break;
-                }
-                default:
-                    break;
-                }
+                auto _NewValue = _Value.UpdateDpi(GetDpi());
+                if (_NewValue == nullptr || _NewValue.IsSame(_Value))
+                    continue;
+
+                SetValue(*_pProp, PropertyIndicies::PI_Local, _NewValue);
             }
         }
 

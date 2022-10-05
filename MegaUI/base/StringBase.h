@@ -619,6 +619,23 @@ namespace YY
                 return this->GetConstString() + this->GetSize();
             }
 
+            int32_t __MEGA_UI_API CompareI(_In_ StringView<char_t, eEncoding> _Other) const
+            {
+                auto _iLeftSize = GetSize();
+                auto _iRightSize = _Other.GetSize();
+                auto _iMinSize = min(_iLeftSize, _iRightSize);
+
+                uint_t _uIndex = 0;
+                for (; _uIndex != _iMinSize; ++_uIndex)
+                {
+                    int32_t _result = CharUpperASCII(szString[_uIndex]) - CharUpperASCII(_Other[_uIndex]);
+                    if (_result != 0)
+                        return _result;
+                }
+
+                return (int32_t)int_t(_iLeftSize - _iRightSize);
+            }
+
             struct StringData
             {
                 union

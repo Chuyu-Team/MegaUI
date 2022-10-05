@@ -84,7 +84,6 @@ namespace YY
     _APPLY(Content,        PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        nullptr,                              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
     _APPLY(ContentAlign,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, ContentAlignEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, fSpecContentAlign), 0), ValueType::int32_t   ) \
     _APPLY(Font,           PF_Normal | PF_Cascade | PF_Inherit | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFont,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Font   ) \
-    _APPLY(HighDPI,        PF_Normal,                             0,                                              &Value::CreateBoolTrue,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocHighDPI), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(DPI,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::OnDpiPropChangedThunk,   nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0), ValueType::int32_t   ) 
 
     // clang-format on
@@ -310,12 +309,6 @@ namespace YY
             HRESULT __MEGA_UI_API SetActive(uint32_t _fActive);
 
             bool __MEGA_UI_API GetMouseFocused();
-
-            /// <summary>
-            /// 高DPI支持是否已经开启
-            /// </summary>
-            /// <returns></returns>
-            bool __MEGA_UI_API GetHighDpi();
 
             int32_t __MEGA_UI_API GetDpi();
 
