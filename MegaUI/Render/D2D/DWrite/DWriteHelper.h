@@ -3,7 +3,7 @@
 
 #include <MegaUI/Render/Render.h>
 #include <MegaUI/base/ComPtr.h>
-#include <MegaUI/base/Font.h>
+#include <MegaUI/Render/Font.h>
 
 #pragma comment(lib, "Dwrite.lib")
 

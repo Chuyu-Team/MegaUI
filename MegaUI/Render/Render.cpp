@@ -21,12 +21,12 @@ namespace YY
         
         float __MEGA_UI_API DevicePixelToPixel(float _iDevicePixel, int32_t _DPI)
         {
-            return float(double(_iDevicePixel) * double(_DPI) / 96.0);
+            return _iDevicePixel * float(_DPI) / 96.0f;
         }
 
         float __MEGA_UI_API PointToPixel(float _iFontPoint, int32_t _DPI)
         {
-            return float(double(_iFontPoint) * double(_DPI) / 72.0);
+            return _iFontPoint * float(_DPI) / 72.0f;
         }
 
         Rect __MEGA_UI_API DevicePixelToPixel(Rect _iDevicePixelRect, int32_t _DPI)

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "MegaUITypeInt.h"
-#include "StringBase.h"
-#include "Color.h"
+#include <MegaUI/base/MegaUITypeInt.h>
+#include <MegaUI/base/StringBase.h>
+#include <MegaUI/base/Color.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
 

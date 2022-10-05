@@ -3,10 +3,10 @@
 #include <d2d1.h>
 #include <dwrite.h>
 
-#include "..\..\base\MegaUITypeInt.h"
-#include "..\Render.h"
-#include "..\..\base\alloc.h"
-#include <MegaUI/base/Font.h>
+#include <MegaUI/base/MegaUITypeInt.h>
+#include <MegaUI/Render/Render.h>
+#include <MegaUI/base/alloc.h>
+#include <MegaUI/Render/Font.h>
 #include <MegaUI/base/ComPtr.h>
 #include <MegaUI/Render/D2D/DWrite/DWriteHelper.h>
 

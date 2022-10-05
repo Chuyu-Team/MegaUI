@@ -4,12 +4,12 @@
 
 #include <Windows.h>
 
-#include "..\base\MegaUITypeInt.h"
-#include "..\base\DynamicArray.h"
-#include "..\base\StringBase.h"
-#include "..\base\Color.h"
-#include "..\base\Rect.h"
-#include <MegaUI/base/Font.h>
+#include <MegaUI/base/MegaUITypeInt.h>
+#include <MegaUI/base/DynamicArray.h>
+#include <MegaUI/base/StringBase.h>
+#include <MegaUI/base/Color.h>
+#include <MegaUI/base/Rect.h>
+#include <MegaUI/Render/Font.h>
 #include <MegaUI/base/Size.h>
 #include <MegaUI/base/Point.h>
 

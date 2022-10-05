@@ -1,11 +1,11 @@
 ﻿#pragma once
 #include <dwrite.h>
 
-#include "..\base\MegaUITypeInt.h"
-#include "..\base\Rect.h"
-#include "..\base\Color.h"
+#include <MegaUI/base/MegaUITypeInt.h>
+#include <MegaUI/base/Rect.h>
+#include <MegaUI/base/Color.h>
 #include <MegaUI/base/StringView.h>
-#include <MegaUI/base/Font.h>
+#include <MegaUI/Render/Font.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
