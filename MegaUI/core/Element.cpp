@@ -79,6 +79,7 @@ namespace YY
             , iSpecLayoutPos(g_ControlInfoData.LayoutPosProp.pFunDefaultValue().GetInt32())
             , pSheet(nullptr)
             , SpecID(0)
+            , bSelfLayout(false)
             , fNeedsLayout(0)
             , bLocMouseWithin(FALSE)
             , bDestroy(FALSE)
@@ -89,7 +90,7 @@ namespace YY
             , bLocMouseFocused(FALSE)
             , bSpecMouseFocused(FALSE)
             , bLocHighDPI(true)
-            , bNeedsDSUpdate(0)
+            , bNeedsDSUpdate(true)
             , iSpecDirection(DIRECTION_LTR)
         {
         }
@@ -877,7 +878,8 @@ namespace YY
                 _pRenderTarget,
                 GetValue(Element::g_ControlInfoData.ContentProp),
                 GetValue(Element::g_ControlInfoData.FontProp).GetFont(),
-                _PaintBounds);
+                _PaintBounds,
+                fSpecContentAlign);
         }
 
         void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
@@ -995,19 +997,37 @@ namespace YY
             Render* _pRenderTarget,
             const Value& _Content,
             const Font& _FontInfo,
-            const Rect& _Bounds
+            const Rect& _Bounds,
+            int32_t _fContentAlign
             )
         {
             if (_Content.GetType() == ValueType::uString)
             {
-                _pRenderTarget->DrawString(_Content.GetString(), _FontInfo, _Bounds, fSpecContentAlign);
+                _pRenderTarget->DrawString(_Content.GetString(), _FontInfo, _Bounds, _fContentAlign);
             }
         }
 
         Size __MEGA_UI_API Element::GetContentSize(Size _ConstraintSize)
         {
             // todo
-            return _ConstraintSize;
+            Size _ContentSize;
+
+            auto _ContentValue = GetValue(Element::g_ControlInfoData.ContentProp);
+            switch (_ContentValue.GetType())
+            {
+            case ValueType::uString:
+            {
+                auto _pRender = pWindow->GetRender();
+                auto _FontValue = GetValue(Element::g_ControlInfoData.FontProp);
+                _pRender->MeasureString(_ContentValue.GetString(), _FontValue.GetFont(), _ConstraintSize, fSpecContentAlign, &_ContentSize);
+                break;
+            }
+            default:
+                return _ConstraintSize;
+                __debugbreak();
+                break;
+            }
+            return _ContentSize;
         }
 
         Size __MEGA_UI_API Element::SelfLayoutUpdateDesiredSize(Size _ConstraintSize)
@@ -2301,15 +2321,6 @@ namespace YY
                     break;
                 }
             }
-
-
-            const auto _X = GetX();
-            const auto _Y = GetY();
-
-            const auto _NewX = UpdatePixel(_X, _iOldDpi, GetDpi());
-            const auto _NewY = UpdatePixel(_Y, _iOldDpi, GetDpi());
-
-            
         }
 
         void __MEGA_UI_API Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
@@ -2403,22 +2414,22 @@ namespace YY
             if (_ConstraintSize.Height < 0)
                 _ConstraintSize.Height = 0;
 
-            const auto _bChangedConst = LocDesiredSize.Width != _ConstraintSize.Width || LocDesiredSize.Height != _ConstraintSize.Height;
+            const auto _bChangedConst = LocLastDesiredSizeConstraint != _ConstraintSize;
 
-            if (bNeedsDSUpdate || _bChangedConst)
+            if (pWindow && bNeedsDSUpdate || _bChangedConst)
             {
                 bNeedsDSUpdate = false;
 
                 if (_bChangedConst)
                 {
-                    auto pSizeOld = Value::CreateSize(LocDesiredSize);
+                    auto pSizeOld = Value::CreateSize(LocLastDesiredSizeConstraint);
                     auto pSizeNew = Value::CreateSize(_ConstraintSize);
 
                     if (pSizeNew != nullptr)
                     {
                         PreSourceChange(Element::g_ControlInfoData.LastDesiredSizeConstraintProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
 
-                        LocDesiredSize = _ConstraintSize;
+                        LocLastDesiredSizeConstraint = _ConstraintSize;
 
                         PostSourceChange();
                     }
@@ -2458,11 +2469,11 @@ namespace YY
                     _ConstraintContentSize.Height = 0;
                 }
 
-                Size TmpSize;
+                Size _ContentSize;
 
                 if (bSelfLayout)
                 {
-                    TmpSize = SelfLayoutUpdateDesiredSize(_ConstraintContentSize);
+                    _ContentSize = SelfLayoutUpdateDesiredSize(_ConstraintContentSize);
                 }
                 else
                 {
@@ -2474,37 +2485,37 @@ namespace YY
                     else
                     #endif
                     {
-                        TmpSize = GetContentSize(_ConstraintContentSize);
+                        _ContentSize = GetContentSize(_ConstraintContentSize);
                     }
                 }
 
-                if (TmpSize.Width < 0)
+                if (_ContentSize.Width < 0)
                 {
-                    TmpSize.Width = 0;
+                    _ContentSize.Width = 0;
                 }
-                else if (TmpSize.Width > _ConstraintContentSize.Width)
+                else if (_ContentSize.Width > _ConstraintContentSize.Width)
                 {
-                    TmpSize.Width = _ConstraintContentSize.Width;
+                    _ContentSize.Width = _ConstraintContentSize.Width;
                 }
-                if (TmpSize.Height < 0)
+                if (_ContentSize.Height < 0)
                 {
-                    TmpSize.Height = 0;
+                    _ContentSize.Height = 0;
                 }
-                else if (TmpSize.Height > _ConstraintContentSize.Height)
+                else if (_ContentSize.Height > _ConstraintContentSize.Height)
                 {
-                    TmpSize.Height = _ConstraintContentSize.Height;
+                    _ContentSize.Height = _ConstraintContentSize.Height;
                 }
 
                 if (nWidth == -1)
                 {
-                    if (TmpSize.Width + BorderX < sizeDesired.Width)
-                        sizeDesired.Width = TmpSize.Width + BorderX;
+                    if (_ContentSize.Width + BorderX < sizeDesired.Width)
+                        sizeDesired.Width = _ContentSize.Width + BorderX;
                 }
 
                 if (nHeight == -1)
                 {
-                    if (TmpSize.Height + BorderY < sizeDesired.Height)
-                        sizeDesired.Height = TmpSize.Height + BorderY;
+                    if (_ContentSize.Height + BorderY < sizeDesired.Height)
+                        sizeDesired.Height = _ContentSize.Height + BorderY;
                 }
 
                 if (sizeDesired.Height < SpecMinSize.Width)
@@ -2517,18 +2528,18 @@ namespace YY
                     sizeDesired.Height = min(_ConstraintSize.Height, SpecMinSize.Height);
                 }
 
-                auto pSizeOld = Value::CreateSize(LocLastDesiredSizeConstraint);
+                auto pSizeOld = Value::CreateSize(LocDesiredSize);
                 auto pSizeNew = Value::CreateSize(sizeDesired);
 
                 PreSourceChange(g_ControlInfoData.DesiredSizeProp, PropertyIndicies::PI_Local, pSizeOld, pSizeNew);
 
-                LocLastDesiredSizeConstraint = sizeDesired;
+                LocDesiredSize = sizeDesired;
 
                 PostSourceChange();
             }
             else
             {
-                sizeDesired = LocLastDesiredSizeConstraint;
+                sizeDesired = LocDesiredSize;
             }
             return sizeDesired;
         }

@@ -811,10 +811,11 @@ namespace YY
             switch (ValueSuffixType(_SuffixType))
             {
             case ValueSuffixType::None:
+            case ValueSuffixType::Pixel:
                 return _iValue;
                 break;
-            case ValueSuffixType::RelativePixel:
-                return RelativePixelToPixel(_iValue, _iDPI);
+            case ValueSuffixType::DevicePixel:
+                return DevicePixelToPixel(_iValue, _iDPI);
                 break;
             case ValueSuffixType::FontPoint:
                 return PointToPixel(_iValue, _iDPI);
@@ -884,38 +885,7 @@ namespace YY
             return *this;
         }
         
-        float __MEGA_UI_API RelativePixelToPixel(float _iRelativePixel, int32_t _DPI)
-        {
-            return float(double(_iRelativePixel) * double(_DPI) / 96.0);
-        }
-        
-        float __MEGA_UI_API PointToPixel(float _iFontPoint, int32_t _DPI)
-        {
-            return float(double(_iFontPoint) * double(_DPI) / 72.0);
-        }
-        
-        Rect __MEGA_UI_API RelativePixelToPixel(Rect _iRelativePixelRect, int32_t _DPI)
-        {
-            _iRelativePixelRect.Left = RelativePixelToPixel(_iRelativePixelRect.Left, _DPI);
-            _iRelativePixelRect.Top = RelativePixelToPixel(_iRelativePixelRect.Top, _DPI);
-            _iRelativePixelRect.Right = RelativePixelToPixel(_iRelativePixelRect.Right, _DPI);
-            _iRelativePixelRect.Bottom = RelativePixelToPixel(_iRelativePixelRect.Bottom, _DPI);
 
-            return _iRelativePixelRect;
-        }
-        
-        Size __MEGA_UI_API RelativePixelToPixel(Size _iRelativePixelSize, int32_t _DPI)
-        {
-            _iRelativePixelSize.Width = RelativePixelToPixel(_iRelativePixelSize.Width, _DPI);
-            _iRelativePixelSize.Height = RelativePixelToPixel(_iRelativePixelSize.Height, _DPI);
-
-            return _iRelativePixelSize;
-        }
-        
-        float __MEGA_UI_API UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI)
-        {
-            return (float)(double(_iOldPixel) * double(_NewDPI) / double(_OldDPI));
-        }
 
     } // namespace MegaUI
 }

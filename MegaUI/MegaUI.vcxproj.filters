@@ -43,6 +43,9 @@
     <Filter Include="UI\Parser">
       <UniqueIdentifier>{7587d627-2fbc-43c0-b592-b31c1c1eadd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Render\D2D\DWrite">
+      <UniqueIdentifier>{c2520be1-66f0-4d70-9d7f-43f5785cd918}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -161,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="base\Point.h">
       <Filter>UI\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\D2D\DWrite\DWriteHelper.h">
+      <Filter>UI\Render\D2D\DWrite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

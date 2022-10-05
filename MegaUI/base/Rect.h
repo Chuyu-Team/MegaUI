@@ -191,6 +191,11 @@ namespace YY
                 Top = _Point.Y;
             }
 
+            Size __MEGA_UI_API GetSize() const
+            {
+                return Size(GetWidth(), GetHeight());
+            }
+
             void __MEGA_UI_API SetSize(Size _Size)
             {
                 Right = Left + _Size.Width;

@@ -33,19 +33,27 @@ namespace YY
                     p->Release();
             }
 
-            _Type** operator&()
+            _Type** __MEGA_UI_API operator&()
             {
                 return &p;
             }
 
-            operator _Type*() const
+            __MEGA_UI_API operator _Type*() const
             {
                 return p;
             }
 
-            _Type* operator->() const
+            _Type * __MEGA_UI_API operator->() const
             {
                 return p;
+            }
+
+
+            inline _Type* __MEGA_UI_API Detach()
+            {
+                auto _p = p;
+                p = nullptr;
+                return _p;
             }
         };
     }

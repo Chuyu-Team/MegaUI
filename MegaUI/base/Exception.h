@@ -26,6 +26,12 @@ namespace YY
             {
             }
 
+            Exception(HRESULT _hr)
+                : szErrorMessage(nullptr)
+                , hr(_hr)
+            {
+            }
+
             HRESULT __MEGA_UI_API GetErrorCode()
             {
                 return hr;

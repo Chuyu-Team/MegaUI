@@ -94,6 +94,23 @@ namespace YY
                 return S_OK;
             }
 
+            _Ret_notnull_ Gdiplus::Graphics* __MEGA_UI_API GetSurface()
+            {
+                if (!pSurface)
+                {
+                    if (!pSurfaceBitmap)
+                    {
+                        pSurfaceBitmap = new Gdiplus::Bitmap(PixelSize.width, PixelSize.height);
+                        if (!pSurfaceBitmap)
+                            return nullptr;
+                    }
+
+                    pSurface = new Gdiplus::Graphics(pSurfaceBitmap);
+                }
+
+                return pSurface;
+            }
+
             virtual HRESULT __MEGA_UI_API BeginDraw(Rect* _pNeedPaintRect) override
             {
                 vecClip.Clear();
@@ -116,24 +133,12 @@ namespace YY
                     }
                 }
 
-                if (!pSurfaceBitmap)
-                {
-                    pSurfaceBitmap = new Gdiplus::Bitmap(PixelSize.width, PixelSize.height);
-                    if (!pSurfaceBitmap)
-                        return E_OUTOFMEMORY;
-                }
-
-                if (!pSurface)
-                {
-                    pSurface = new Gdiplus::Graphics(pSurfaceBitmap);
-                    if (!pSurface)
-                        return E_OUTOFMEMORY;
-                }
-                else
-                {
-                    pSurface->Clear(Gdiplus::Color());
-                    pSurface->ResetClip();
-                }
+                auto _pSurface = GetSurface();
+                if (!_pSurface)
+                    return E_OUTOFMEMORY;
+                
+                _pSurface->Clear(Gdiplus::Color());
+                _pSurface->ResetClip();
                 return S_OK;
             }
 
@@ -242,52 +247,6 @@ namespace YY
             {
                 return PixelSize;
             }
-            
-            virtual
-            HRESULT
-            __MEGA_UI_API CreateTextFormat(
-                _In_z_ uchar_t const* _szFontFamilyName,
-                _In_opt_ IDWriteFontCollection* _pFontCollection,
-                _In_ const Font& _FontInfo,
-                _In_z_ uchar_t const* _szLocaleName,
-                _COM_Outptr_ IDWriteTextFormat** _ppTextFormat
-                ) override
-            {
-                if (_ppTextFormat)
-                    *_ppTextFormat = nullptr;
-                return E_NOTIMPL;
-            }
-
-            virtual
-            HRESULT
-            __MEGA_UI_API CreateTextLayout(
-                _In_ uStringView _szText,
-                _In_ IDWriteTextFormat* _pTextFormat,
-                _In_ Size _MaxBound,
-                _COM_Outptr_ IDWriteTextLayout** _ppTextLayout
-                ) override
-            {
-                if (_ppTextLayout)
-                    *_ppTextLayout = nullptr;
-                return E_NOTIMPL;
-            }
-
-            virtual
-            void
-            __MEGA_UI_API DrawTextLayout(
-                _In_ Point _Origin,
-                _In_ IDWriteTextLayout* _pTextLayout,
-                _In_ ID2D1Brush* _pDefaultFillBrush,
-                _In_ D2D1_DRAW_TEXT_OPTIONS _eOptions
-                ) override
-            {
-                return;
-            }
-
-            static float __MEGA_UI_API GetFontSize(_In_ const Font& _FontInfo)
-            {
-                return _FontInfo.iSize * 72.0f / 96.0f;
-            }
 
             static int32_t __MEGA_UI_API GetFontStyle(_In_ const Font& _FontInfo)
             {
@@ -374,7 +333,7 @@ namespace YY
                 _In_ int32_t _fTextAlign
                 ) override
             {
-                if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty())
+                if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty() || pSurface == nullptr)
                     return;
 
                 if (_szText.GetSize() > int32_max)
@@ -396,9 +355,58 @@ namespace YY
 
                 Gdiplus::SolidBrush _Brush(Gdiplus::Color(_FontInfo.Color.Alpha, _FontInfo.Color.Red, _FontInfo.Color.Green, _FontInfo.Color.Blue));
                 
-
-
                 pSurface->DrawString(_szText.GetConstString(), (INT)_szText.GetSize(), &_Font, _LayoutRect, &_Format, &_Brush);
+            }
+
+            virtual
+            void
+            __MEGA_UI_API
+            MeasureString(
+                _In_ uStringView _szText,
+                _In_ const Font& _FontInfo,
+                _In_ const Size& _LayoutSize,
+                _In_ int32_t _fTextAlign,
+                _Out_ Size* _pExtent) override
+            {
+                _pExtent->Width = 0;
+                _pExtent->Height = 0;
+
+                if (_szText.GetSize() > int32_max)
+                    throw Exception();
+
+                Gdiplus::FontFamily _FontFamily(_FontInfo.szFace);
+                Gdiplus::Font _Font(&_FontFamily, _FontInfo.iSize, GetFontStyle(_FontInfo), Gdiplus::Unit::UnitPixel);
+
+                int32_t _fStringFormatFlags = 0;
+                if ((_fTextAlign & ContentAlign::Wrap) == 0)
+                    _fStringFormatFlags |= Gdiplus::StringFormatFlags::StringFormatFlagsNoWrap;
+
+                Gdiplus::StringFormat _Format(_fStringFormatFlags);
+                _Format.SetAlignment(GetFontAlignment(_fTextAlign));
+                _Format.SetLineAlignment(GetFontLineAlignment(_fTextAlign));
+
+                if (_fTextAlign & ContentAlign::EndEllipsis)
+                    _Format.SetTrimming(Gdiplus::StringTrimming::StringTrimmingEllipsisCharacter);
+
+                Gdiplus::SolidBrush _Brush(Gdiplus::Color(_FontInfo.Color.Alpha, _FontInfo.Color.Red, _FontInfo.Color.Green, _FontInfo.Color.Blue));
+                Gdiplus::SizeF _Extent;
+
+                auto _pSurface = GetSurface();
+                if (_pSurface == nullptr)
+                    throw Exception(E_OUTOFMEMORY);
+
+                auto _Status = _pSurface->MeasureString(
+                    _szText.GetConstString(),
+                    (INT)_szText.GetSize(),
+                    &_Font,
+                    _LayoutSize,
+                    &_Format,
+                    &_Extent);
+                if (_Status != Gdiplus::Status::Ok)
+                    throw Exception();
+
+                _pExtent->Width = _Extent.Width;
+                _pExtent->Height = _Extent.Height;
             }
         };
     }

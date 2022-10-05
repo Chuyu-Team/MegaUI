@@ -43,6 +43,11 @@ namespace YY
             {
                 return Width != _Other.Width || Height != _Other.Height;
             }
+
+            __MEGA_UI_API operator Gdiplus::SizeF&() const
+            {
+                return *(Gdiplus::SizeF*)this;
+            }
         };
     }
 } // namespace YY

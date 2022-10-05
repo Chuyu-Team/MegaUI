@@ -60,9 +60,11 @@ namespace YY
         enum class ValueSuffixType
         {
             None,
-            // 相对像素（缩写 rp）
-            RelativePixel,
-            // 字体的点数，也称呼为磅（缩写 pt）
+            // 设备无关像素（缩写px），等价于 None
+            Pixel,
+            // 设备相关像素（缩写 dp）, px = dp * dpi / 96
+            DevicePixel,
+            // 字体的点数，也称呼为磅（缩写 pt），px = pt * dpi / 72
             FontPoint,
         };
 
@@ -344,16 +346,6 @@ namespace YY
 
             static Value __MEGA_UI_API CreateFont(uString _szFace, float _uFontSize, uint8_t _FontSizeSuffixType, uint32_t _uWeight, uint32_t _fStyle, Color _Color);
         };
-
-        float __MEGA_UI_API RelativePixelToPixel(float _iRelativePixel, int32_t _DPI);
-
-        float __MEGA_UI_API PointToPixel(float _iFontPoint, int32_t _DPI);
-
-        Rect __MEGA_UI_API RelativePixelToPixel(Rect _iRelativePixelRect, int32_t _DPI);
-
-        Size __MEGA_UI_API RelativePixelToPixel(Size _iRelativePixelSize, int32_t _DPI);
-
-        float __MEGA_UI_API UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI);
 
         template<ValueType _eType>
         class ValueIs : public Value

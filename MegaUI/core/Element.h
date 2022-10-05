@@ -147,12 +147,12 @@ namespace YY
             // 0x34 LayoutSize
             // Size in layout local
             Size LocSizeInLayout;
-            // 0x3C
-            // Desired size local
-            Size LocDesiredSize;
-            // 0x44 DesiredSize
+            // 0x3C _sizeLocLastDSConst
             // Last desired size constraint local
             Size LocLastDesiredSizeConstraint;
+            // 0x44 DesiredSize
+            // Desired size local
+            Size LocDesiredSize;
             
             // 0x4C LayoutPos
             // Cached Layout Position
@@ -402,7 +402,8 @@ namespace YY
                 _In_ Render* _pRenderTarget,
                 _In_ const Value& _Content,
                 _In_ const Font& _FontInfo,
-                _In_ const Rect& _Bounds
+                _In_ const Rect& _Bounds,
+                _In_ int32_t _fContentAlign
                 );
 
             virtual Size __MEGA_UI_API GetContentSize(Size _ConstraintSize);

@@ -574,15 +574,20 @@ namespace YY
                 *_pParserSuffixType = ValueSuffixType::None;
                 if (_cchValue > 2)
                 {
-                    if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'T')
+                    if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'X')
+                    {
+                        _cchValue -= 2;
+                        *_pParserSuffixType = ValueSuffixType::Pixel;
+                    }
+                    else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'D' && CharUpperASCII(_szValue[_cchValue - 1]) == 'P')
+                    {
+                        _cchValue -= 2;
+                        *_pParserSuffixType = ValueSuffixType::DevicePixel;
+                    }
+                    else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'T')
                     {
                         _cchValue -= 2;
                         *_pParserSuffixType = ValueSuffixType::FontPoint;
-                    }
-                    else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'R' && CharUpperASCII(_szValue[_cchValue - 1]) == 'P')
-                    {
-                        _cchValue -= 2;
-                        *_pParserSuffixType = ValueSuffixType::RelativePixel;
                     }
                 }
             }

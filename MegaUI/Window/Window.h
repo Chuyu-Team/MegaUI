@@ -84,6 +84,8 @@ namespace YY
             /// <returns></returns>
             bool __MEGA_UI_API IsInitialized() const;
 
+            _Ret_notnull_ Render* __MEGA_UI_API GetRender();
+
         protected:
             static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 

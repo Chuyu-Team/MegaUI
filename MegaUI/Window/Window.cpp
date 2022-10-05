@@ -303,6 +303,18 @@ namespace YY
             return hWnd != NULL;
         }
 
+        Render* __MEGA_UI_API Window::GetRender()
+        {
+            if (!pRender)
+            {
+                auto _hr = CreateRender(hWnd, &pRender);
+                if (FAILED(_hr))
+                    throw Exception(_hr);
+            }
+
+            return pRender;
+        }
+
         LRESULT Window::StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())

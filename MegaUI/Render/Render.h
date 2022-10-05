@@ -103,73 +103,6 @@ namespace YY
             virtual
             D2D1_SIZE_U __MEGA_UI_API GetPixelSize() = 0;
             
-            /// <summary>
-            /// Create a text format object used for text layout.
-            /// </summary>
-            /// <param name="_szFontFamilyName">Name of the font family</param>
-            /// <param name="_pFontCollection">Font collection. NULL indicates the system font collection.</param>
-            /// <param name="_eFontWeight">Font weight</param>
-            /// <param name="_eFontStyle">Font style</param>
-            /// <param name="_eFontStretch">Font stretch</param>
-            /// <param name="_uFontSize">Logical size of the font in DIP units. A DIP ("device-independent pixel") equals 1/96 inch.</param>
-            /// <param name="_szLocaleName">Locale name</param>
-            /// <param name="_ppTextFormat">Contains newly created text format object, or NULL in case of failure.</param>
-            /// <returns>
-            /// Standard HRESULT error code.
-            /// </returns>
-            /// <remarks>
-            /// If fontCollection is nullptr, the system font collection is used, grouped by typographic family name
-            /// (DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE) without downloadable fonts.
-            /// </remarks>
-            virtual
-            HRESULT
-            __MEGA_UI_API CreateTextFormat(
-                _In_z_ uchar_t const* _szFontFamilyName,
-                _In_opt_ IDWriteFontCollection* _pFontCollection,
-                _In_ const Font& _FontInfo,
-                _In_z_ uchar_t const* _szLocaleName,
-                _COM_Outptr_ IDWriteTextFormat** _ppTextFormat
-                ) = 0;
-
-            /// <summary>
-            /// CreateTextLayout takes a string, format, and associated constraints
-            /// and produces an object representing the fully analyzed
-            /// and formatted result.
-            /// </summary>
-            /// <param name="_szText">The string to layout.</param>
-            /// <param name="_pTextFormat">The format to apply to the string.</param>
-            /// <param name="_uMaxWidth">Width of the layout box.</param>
-            /// <param name="_uMaxHeight">Height of the layout box.</param>
-            /// <param name="_ppTextLayout">The resultant object.</param>
-            /// <returns>
-            /// Standard HRESULT error code.
-            /// </returns>
-            virtual
-            HRESULT
-            __MEGA_UI_API CreateTextLayout(
-                _In_ uStringView _szText,
-                _In_ IDWriteTextFormat* _pTextFormat,
-                _In_ Size _Maxbound,
-                _COM_Outptr_ IDWriteTextLayout** _ppTextLayout
-                ) =0;
-
-            /// <summary>
-            /// Draw a text layout object. If the layout is not subsequently changed, this can
-            /// be more efficient than DrawText when drawing the same layout repeatedly.
-            /// </summary>
-            /// <param name="options">The specified text options. If D2D1_DRAW_TEXT_OPTIONS_CLIP
-            /// is used, the text is clipped to the layout bounds. These bounds are derived from
-            /// the origin and the layout bounds of the corresponding IDWriteTextLayout object.
-            /// </param>
-            virtual
-            void
-            __MEGA_UI_API DrawTextLayout(
-                _In_ Point _Origin,
-                _In_ IDWriteTextLayout* _pTextLayout,
-                _In_ ID2D1Brush* _pDefaultFillBrush,
-                _In_ D2D1_DRAW_TEXT_OPTIONS options = D2D1_DRAW_TEXT_OPTIONS_NONE
-                ) = 0;
-
             virtual
             void
             __MEGA_UI_API
@@ -179,6 +112,16 @@ namespace YY
                 _In_ const Rect& _LayoutRect,
                 _In_ int32_t _fTextAlign
                 ) = 0;
+
+            virtual
+            void
+            __MEGA_UI_API
+            MeasureString(
+                _In_ uStringView _szText,
+                _In_ const Font& _FontInfo,
+                _In_ const Size& _LayoutSize,
+                _In_ int32_t _fTextAlign,
+                _Out_ Size* _pExtent) = 0;
         };
 
         HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender);
@@ -213,6 +156,16 @@ namespace YY
 
             return Color(cr.Alpha, (uint8_t)r, (uint8_t)g, (uint8_t)b);
         }
+        
+        float __MEGA_UI_API DevicePixelToPixel(float _iRelativePixel, int32_t _DPI);
+
+        float __MEGA_UI_API PointToPixel(float _iFontPoint, int32_t _DPI);
+
+        Rect __MEGA_UI_API DevicePixelToPixel(Rect _iRelativePixelRect, int32_t _DPI);
+
+        Size __MEGA_UI_API DevicePixelToPixel(Size _iRelativePixelSize, int32_t _DPI);
+
+        float __MEGA_UI_API UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI);
 
     } // namespace MegaUI
 } // namespace YY

@@ -8,11 +8,11 @@
 #include "..\..\base\alloc.h"
 #include <MegaUI/base/Font.h>
 #include <MegaUI/base/ComPtr.h>
-
-#pragma pack(push, __MEGA_UI_PACKING)
+#include <MegaUI/Render/D2D/DWrite/DWriteHelper.h>
 
 #pragma comment(lib, "d2d1.lib")
-#pragma comment(lib, "Dwrite.lib")
+
+#pragma pack(push, __MEGA_UI_PACKING)
 
 namespace YY
 {
@@ -27,6 +27,7 @@ namespace YY
             ID2D1HwndRenderTarget* pRenderTarget;
             D2D1_SIZE_U PixelSize;
             IDWriteFactory* pDWriteFactory;
+            DWriteHelper DWrite;
 
         public:
             D2D1_0Render(HWND _hWnd, ID2D1Factory* _pD2DFactory, ID2D1HwndRenderTarget* _pRenderTarget, const D2D1_SIZE_U& _PixelSize)
@@ -227,98 +228,6 @@ namespace YY
                 return pRenderTarget->CreateSolidColorBrush(_Color, _ppSolidColorBrush);
             }
             
-            _Ret_maybenull_ IDWriteFactory* __MEGA_UI_API TryGetDWriteFactory()
-            {
-                if (pDWriteFactory)
-                    return pDWriteFactory;
-
-                auto _hr = DWriteCreateFactory(
-                    DWRITE_FACTORY_TYPE_SHARED,
-                    __uuidof(IDWriteFactory),
-                    reinterpret_cast<IUnknown**>(&pDWriteFactory));
-
-                return pDWriteFactory;
-            }
-
-            virtual
-            HRESULT
-            __MEGA_UI_API CreateTextFormat(
-                _In_z_ uchar_t const* _szFontFamilyName,
-                _In_opt_ IDWriteFontCollection* _pFontCollection,
-                _In_ const Font& _FontInfo,
-                _In_z_ uchar_t const* _szLocaleName,
-                _COM_Outptr_ IDWriteTextFormat** _ppTextFormat
-                ) override
-            {
-                if (!_ppTextFormat)
-                    return E_INVALIDARG;
-                *_ppTextFormat = nullptr;
-
-                auto _pDWriteFactory = TryGetDWriteFactory();
-                if (!_pDWriteFactory)
-                    return E_NOINTERFACE;
-
-                DWRITE_FONT_STYLE _eFontStyle = DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL;
-                if (_FontInfo.fStyle & FontStyle::Italic)
-                    _eFontStyle = DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_ITALIC;
-
-                return _pDWriteFactory->CreateTextFormat(
-                    _szFontFamilyName,
-                    _pFontCollection,
-                    DWRITE_FONT_WEIGHT(_FontInfo.uWeight),
-                    _eFontStyle,
-                    DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-                    _FontInfo.iSize,
-                    _szLocaleName,
-                    _ppTextFormat);
-            }
-
-            virtual
-            HRESULT
-            __MEGA_UI_API CreateTextLayout(
-                _In_ uStringView _szText,
-                _In_ IDWriteTextFormat* _pTextFormat,
-                _In_ Size _MaxBound,
-                _COM_Outptr_ IDWriteTextLayout** _ppTextLayout
-                ) override
-            {
-                if (!_ppTextLayout)
-                    return E_INVALIDARG;
-
-                *_ppTextLayout = nullptr;
-                
-                if (_szText.GetSize() > uint32_max)
-                    return E_UNEXPECTED;
-
-                auto _pDWriteFactory = TryGetDWriteFactory();
-                if (!_pDWriteFactory)
-                    return E_NOINTERFACE;
-
-                return _pDWriteFactory->CreateTextLayout(
-                    _szText.GetConstString(),
-                    (UINT32)_szText.GetSize(),
-                    _pTextFormat,
-                    _MaxBound.Width,
-                    _MaxBound.Height,
-                    _ppTextLayout);
-            }
-
-            virtual
-            void
-            __MEGA_UI_API DrawTextLayout(
-                _In_ Point _Origin,
-                _In_ IDWriteTextLayout* _pTextLayout,
-                _In_ ID2D1Brush* _pDefaultFillBrush,
-                _In_ D2D1_DRAW_TEXT_OPTIONS _eOptions
-                ) override
-            {
-                pRenderTarget->DrawTextLayout(
-                    _Origin,
-                    _pTextLayout,
-                    _pDefaultFillBrush,
-                    _eOptions);
-            }
-            
             virtual
             void
             __MEGA_UI_API
@@ -329,102 +238,21 @@ namespace YY
                 _In_ int32_t _fTextAlign
                 ) override
             {
-                if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty() || pRenderTarget == nullptr)
-                    return;
+                DWrite.DrawString(pRenderTarget, _szText, _FontInfo, _LayoutRect, _fTextAlign);
+            }
 
-                if (_szText.GetSize() > uint32_max)
-                    throw Exception();
-
-                auto _pDWriteFactory = TryGetDWriteFactory();
-                if (!_pDWriteFactory)
-                    return;
-
-                DWRITE_FONT_STYLE _eFontStyle = DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL;
-                if (_FontInfo.fStyle & FontStyle::Italic)
-                    _eFontStyle = DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_ITALIC;
-
-                ComPtr<IDWriteTextFormat> _pTextFormat;
-                auto _hr = _pDWriteFactory->CreateTextFormat(
-                    _FontInfo.szFace,
-                    nullptr,
-                    DWRITE_FONT_WEIGHT(_FontInfo.uWeight),
-                    _eFontStyle,
-                    DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-                    _FontInfo.iSize,
-                    _S(""),
-                    &_pTextFormat);
-
-                if (FAILED(_hr))
-                    return;
-                DWRITE_TEXT_ALIGNMENT _TextAlignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING;
-                if (_fTextAlign & ContentAlign::Right)
-                {
-                    _TextAlignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_TRAILING;
-                }
-                else if (_fTextAlign & ContentAlign::Center)
-                {
-                    _TextAlignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_CENTER;
-                }
-
-                _pTextFormat->SetTextAlignment(_TextAlignment);
-
-                DWRITE_PARAGRAPH_ALIGNMENT _ParagraphAlignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR;
-                if (_fTextAlign & ContentAlign::Bottom)
-                {
-                    _ParagraphAlignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_FAR;
-                }
-                else if (_fTextAlign & ContentAlign::Middle)
-                {
-                    _ParagraphAlignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_CENTER;
-                }
-                _pTextFormat->SetParagraphAlignment(_ParagraphAlignment);
-
-                auto _WordWrapping = (_fTextAlign & ContentAlign::Wrap) ? DWRITE_WORD_WRAPPING::DWRITE_WORD_WRAPPING_WRAP : DWRITE_WORD_WRAPPING::DWRITE_WORD_WRAPPING_NO_WRAP;
-                _pTextFormat->SetWordWrapping(_WordWrapping);
-                
-                if (_fTextAlign & ContentAlign::EndEllipsis)
-                {
-                    ComPtr<IDWriteInlineObject> pDWriteInlineObject;
-                    auto _hr = _pDWriteFactory->CreateEllipsisTrimmingSign(_pTextFormat, &pDWriteInlineObject);
-                    if (SUCCEEDED(_hr))
-                    {
-                        DWRITE_TRIMMING trim;
-                        trim.granularity = DWRITE_TRIMMING_GRANULARITY_CHARACTER;
-                        trim.delimiter = 1;
-                        trim.delimiterCount = 3;
-                        _pTextFormat->SetTrimming(&trim, pDWriteInlineObject);
-                    }
-                }
-
-                ComPtr<IDWriteTextLayout> _pTextLayout;
-                _hr = _pDWriteFactory->CreateTextLayout(
-                    _szText.GetConstString(),
-                    (UINT32)_szText.GetSize(),
-                    _pTextFormat,
-                    _LayoutRect.GetWidth(),
-                    _LayoutRect.GetHeight(),
-                    &_pTextLayout);
-
-                if (FAILED(_hr))
-                    return;
-
-                if (_FontInfo.fStyle & FontStyle::Underline)
-                    _pTextLayout->SetUnderline(TRUE, DWRITE_TEXT_RANGE {0, (UINT32)_szText.GetSize()});
-
-                if (_FontInfo.fStyle & FontStyle::StrikeOut)
-                    _pTextLayout->SetStrikethrough(TRUE, DWRITE_TEXT_RANGE {0, (UINT32)_szText.GetSize()});
-
-                ComPtr<ID2D1SolidColorBrush> _pDefaultFillBrush;
-                _hr = pRenderTarget->CreateSolidColorBrush(_FontInfo.Color, &_pDefaultFillBrush);
-                if (FAILED(_hr))
-                    return;
-
-                pRenderTarget->DrawTextLayout(
-                    _LayoutRect.GetPoint(),
-                    _pTextLayout,
-                    _pDefaultFillBrush,
-                    D2D1_DRAW_TEXT_OPTIONS::D2D1_DRAW_TEXT_OPTIONS_CLIP);
-
+            virtual
+            void
+            __MEGA_UI_API
+            MeasureString(
+                _In_ uStringView _szText,
+                _In_ const Font& _FontInfo,
+                _In_ const Size& _LayoutSize,
+                _In_ int32_t _fTextAlign,
+                _Out_ Size* _pExtent
+                ) override
+            {
+                DWrite.MeasureString(_szText, _FontInfo, _LayoutSize, _fTextAlign, _pExtent);
             }
         };
     } // namespace MegaUI
