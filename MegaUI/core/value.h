@@ -61,7 +61,7 @@ namespace YY
         {
             None,
             // 设备无关像素（缩写px），等价于 None
-            Pixel,
+            Pixel = None,
             // 设备相关像素（缩写 dp）, px = dp * dpi / 96
             DevicePixel,
             // 字体的点数，也称呼为磅（缩写 pt），px = pt * dpi / 72
@@ -373,6 +373,10 @@ namespace YY
             /// </summary>
             bool __MEGA_UI_API IsSame(const Value& _Other) const;
         };
+
+        float __MEGA_UI_API UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type);
+        
+        Rect __MEGA_UI_API UpdateDpi(_In_ Rect _Rect, _In_ int32_t _iNewDpi, _In_ ValueSuffix _Suffix);
 
         template<ValueType _eType>
         class ValueIs : public Value

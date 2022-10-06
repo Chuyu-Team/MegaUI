@@ -49,6 +49,12 @@ namespace YY
 
         float __MEGA_UI_API UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI)
         {
+            if (_OldDPI == 0)
+                _OldDPI = 96;
+
+            if (_NewDPI == 0)
+                _NewDPI = 96;
+
             return (float)(double(_iOldPixel) * double(_NewDPI) / double(_OldDPI));
         }
     } // namespace MegaUI

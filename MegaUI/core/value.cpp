@@ -11,12 +11,12 @@ namespace YY
 {
     namespace MegaUI
     {
-        static float __MEGA_UI_API UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type)
+        float __MEGA_UI_API UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type)
         {
             switch (_Type)
             {
             case ValueSuffixType::None:
-            case ValueSuffixType::Pixel:
+            //case ValueSuffixType::Pixel:
                 return _iValue;
                 break;
             case ValueSuffixType::DevicePixel:
@@ -27,6 +27,22 @@ namespace YY
                 std::abort();
                 break;
             }
+        }
+
+        Rect __MEGA_UI_API UpdateDpi(Rect _Rect, int32_t _iNewDpi, ValueSuffix _Suffix)
+        {
+            if (_Suffix.RawView == 0)
+            {
+                if (_iNewDpi == 0)
+                    throw Exception();
+
+                _Rect.Left = UpdateDpi(_Rect.Left, _Suffix.Dpi, _iNewDpi, _Suffix.Type1);
+                _Rect.Top = UpdateDpi(_Rect.Top, _Suffix.Dpi, _iNewDpi, _Suffix.Type2);
+                _Rect.Right = UpdateDpi(_Rect.Right, _Suffix.Dpi, _iNewDpi, _Suffix.Type3);
+                _Rect.Bottom = UpdateDpi(_Rect.Bottom, _Suffix.Dpi, _iNewDpi, _Suffix.Type4);
+            }
+
+            return _Rect;
         }
 
         void __MEGA_UI_API Value::SharedData::AddRef()

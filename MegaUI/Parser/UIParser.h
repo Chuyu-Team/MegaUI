@@ -89,12 +89,14 @@ namespace YY
 
             HRESULT __MEGA_UI_API ParserValue(_In_ IControlInfo* _pControlInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(_In_ const u8StringView& _szValue, _Out_ int32_t* _pValue, _Out_opt_ ValueSuffixType* _pParserSuffixType);
+            static HRESULT __MEGA_UI_API ParserInt32Value(_In_ const u8StringView& _szValue, _Out_ ParsedArg* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ int32_t* _pValue, _Out_opt_ ValueSuffixType* _pParserSuffixType);
+            static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
 
             static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
             
+            static HRESULT __MEGA_UI_API ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
+
             static HRESULT __MEGA_UI_API ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
 
             static HRESULT __MEGA_UI_API ParserBoolValue(ExprNode* _pExprNode, Value* _pValue);
@@ -114,6 +116,8 @@ namespace YY
             static HRESULT __MEGA_UI_API ParserPointValue(ExprNode* _pExprNode, Value* _pValue);
 
             static HRESULT __MEGA_UI_API ParserSizeValue(ExprNode* _pExprNode, Value* _pValue);
+
+            static HRESULT __MEGA_UI_API ParserRectValue(ExprNode* _pExprNode, ParsedArg* _pValue);
 
             static HRESULT __MEGA_UI_API ParserRectValue(ExprNode* _pExprNode, Value* _pValue);
             

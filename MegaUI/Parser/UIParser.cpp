@@ -1,10 +1,10 @@
 ﻿#include "pch.h"
 #include "UIParser.h"
 
-#include "../base/alloc.h"
-#include "../base/StringTransform.h"
+#include <MegaUI/base/alloc.h>
+#include <MegaUI/base/StringTransform.h>
 #include "ValueParser.h"
-#include "../core/StyleSheet.h"
+#include <MegaUI/core/StyleSheet.h>
 
 #define RAPIDXML_STATIC_POOL_SIZE 4 * 1024
 
@@ -104,27 +104,31 @@ namespace YY
         struct ParsedArg
         {
             const EnumMap* pEnumMaps;
+            ValueSuffix SuffixType;
 
             union
             {
                 // , 跳过
                 // * 忽略
                 // I
-                struct
-                {
-                    int32_t iNumber;
-                    ValueSuffixType SuffixType;
-                };
+                int32_t iNumber;
+
+                // F
+                float FloatNumber;
+
                 // S
                 u8StringView szString;
                 // C
                 Color cColor;
+                // R 
+                Rect rcRect;
             };
 
             // 故意不初始化内存
             #pragma warning(suppress : 26495)
             ParsedArg(const EnumMap* _pEnumMaps = nullptr)
                 : pEnumMaps(_pEnumMaps)
+                , SuffixType {}
             {
             }
         };
@@ -565,30 +569,27 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserInt32Value(const u8StringView& _szValue, int32_t* _pValue, ValueSuffixType* _pParserSuffixType)
+        HRESULT __MEGA_UI_API UIParser::ParserInt32Value(const u8StringView& _szValue, ParsedArg* _pValue)
         {
             auto _cchValue = _szValue.GetSize();
 
-            if (_pParserSuffixType)
+            _pValue->SuffixType.RawView = 0;
+            if (_cchValue > 2)
             {
-                *_pParserSuffixType = ValueSuffixType::None;
-                if (_cchValue > 2)
+                if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'X')
                 {
-                    if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'X')
-                    {
-                        _cchValue -= 2;
-                        *_pParserSuffixType = ValueSuffixType::Pixel;
-                    }
-                    else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'D' && CharUpperASCII(_szValue[_cchValue - 1]) == 'P')
-                    {
-                        _cchValue -= 2;
-                        *_pParserSuffixType = ValueSuffixType::DevicePixel;
-                    }
-                    else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'T')
-                    {
-                        _cchValue -= 2;
-                        *_pParserSuffixType = ValueSuffixType::FontPoint;
-                    }
+                    _cchValue -= 2;
+                    _pValue->SuffixType.Type1 = ValueSuffixType::Pixel;
+                }
+                else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'D' && CharUpperASCII(_szValue[_cchValue - 1]) == 'P')
+                {
+                    _cchValue -= 2;
+                    _pValue->SuffixType.Type1 = ValueSuffixType::DevicePixel;
+                }
+                else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'T')
+                {
+                    _cchValue -= 2;
+                    _pValue->SuffixType.Type1 = ValueSuffixType::FontPoint;
                 }
             }
 
@@ -649,14 +650,21 @@ namespace YY
                     _iValue *= -1;
             }
 
-            *_pValue = _iValue;
+            _pValue->iNumber = _iValue;
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, int32_t* _pValue, ValueSuffixType* _pParserSuffixType)
+        HRESULT __MEGA_UI_API UIParser::ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, ParsedArg* _pValue)
         {
-            if (_pParserSuffixType)
-                *_pParserSuffixType = ValueSuffixType::None;
+            if (_pExprNode->Type == ExprNodeType::Root)
+            {
+                if (_pExprNode->ChildExprNode.GetSize() == 0)
+                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+
+                _pExprNode = &_pExprNode->ChildExprNode[0];
+            }
+
+            _pValue->SuffixType.RawView = 0;
 
             if (_pExprNode->Type == ExprNodeType::Or)
             {
@@ -666,14 +674,16 @@ namespace YY
                 int32_t _iValueOr = 0;
                 for (auto& Expr : _pExprNode->ChildExprNode)
                 {
-                    int32_t _iValue = 0;
-                    auto _hr = ParserInt32Value(pEnumMaps, &Expr, &_iValue, nullptr);
+                    ParsedArg _iValue;
+                    auto _hr = ParserInt32Value(pEnumMaps, &Expr, &_iValue);
                     if (FAILED(_hr))
                         return _hr;
+                    if (_iValue.SuffixType.RawView != 0)
+                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                    _iValueOr |= _iValue;
+                    _iValueOr |= _iValue.iNumber;
                 }
-                *_pValue = _iValueOr;
+                _pValue->iNumber = _iValueOr;
                 return S_OK;
             }
             else if (_pExprNode->Type == ExprNodeType::BaseIdentifier)
@@ -682,7 +692,7 @@ namespace YY
                 if (szValue.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
                 
-                if (SUCCEEDED(ParserInt32Value(_pExprNode->szValue, _pValue, _pParserSuffixType)))
+                if (SUCCEEDED(ParserInt32Value(_pExprNode->szValue, _pValue)))
                     return S_OK;
 
                 // 转换失败，但是Int32 可能映射到枚举值
@@ -692,7 +702,7 @@ namespace YY
                     {
                         if (_pExprNode->szValue.CompareI((u8char_t*)_pEnum->pszEnum) == 0)
                         {
-                            *_pValue = _pEnum->nEnum;
+                            _pValue->iNumber = _pEnum->nEnum;
                             return S_OK;
                         }
                     }
@@ -728,20 +738,15 @@ namespace YY
 
         HRESULT __MEGA_UI_API UIParser::ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
         {
-            if (_pExprNode->Type == ExprNodeType::Root)
-            {
-                if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-                
-                _pExprNode = &_pExprNode->ChildExprNode[0];
-            }
-
-            int32_t _iValue = 0;
-            auto _hr = ParserInt32Value(pEnumMaps, _pExprNode, &_iValue, nullptr);
+            ParsedArg _iValue;
+            auto _hr = ParserInt32Value(pEnumMaps, _pExprNode, &_iValue);
             if(FAILED(_hr))
                 return _hr;
 
-            auto _Value = Value::CreateInt32(_iValue);
+            if (_iValue.SuffixType.RawView != 0)
+                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT); 
+
+            auto _Value = Value::CreateInt32(_iValue.iNumber);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -749,25 +754,35 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserFloatValue(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __MEGA_UI_API UIParser::ParserFloatValue(const EnumMap* pEnumMaps, ExprNode* _pExprNode, ParsedArg* _pValue)
         {
-            if (_pExprNode->Type == ExprNodeType::Root)
-            {
-                if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-
-                _pExprNode = &_pExprNode->ChildExprNode[0];
-            }
-
             // 只接受整形输入，使用浮点只是为了减少运算精度损失
-            int32_t _iValue = 0;
-            ValueSuffixType _SuffixType;
-            auto _hr = ParserInt32Value(pEnumMaps, _pExprNode, &_iValue, &_SuffixType);
+            auto _hr = ParserInt32Value(pEnumMaps, _pExprNode, _pValue);
             if (FAILED(_hr))
                 return _hr;
 
-            ValueSuffix _Suffix = {_SuffixType, ValueSuffixType::None, ValueSuffixType::None, ValueSuffixType::None, 96};
-            auto _Value = Value::CreateFloat((float)_iValue, _Suffix);
+            _pValue->FloatNumber = (float)_pValue->iNumber;
+
+            switch (_pValue->SuffixType.Type1)
+            {
+            case ValueSuffixType::FontPoint:
+                _pValue->FloatNumber = PointToPixel(_pValue->FloatNumber, 96);
+            case ValueSuffixType::DevicePixel:
+                _pValue->SuffixType.Dpi = 96;
+                break;
+            }
+
+            return S_OK;
+        }
+
+        HRESULT __MEGA_UI_API UIParser::ParserFloatValue(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
+        {
+            ParsedArg _fValue;
+            auto _hr = ParserFloatValue(pEnumMaps, _pExprNode, &_fValue);
+            if (FAILED(_hr))
+                return _hr;
+
+            auto _Value = Value::CreateFloat(_fValue.FloatNumber, _fValue.SuffixType);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -849,20 +864,25 @@ namespace YY
                 {
                 case '*':
                     // 纯占位
-                    ++_uArgIndex;
                     break;
                 case 'I':
                     // int32_t
-                    _hr = ParserInt32Value(_pArg[_uArgIndex].pEnumMaps, &_pExprNode->ChildExprNode[_uArgIndex], &_pArg[_uArgIndex].iNumber, &_pArg[_uArgIndex].SuffixType);
-                    ++_uArgIndex;
+                    _hr = ParserInt32Value(_pArg[_uArgIndex].pEnumMaps, &_pExprNode->ChildExprNode[_uArgIndex], &_pArg[_uArgIndex]);
+                    // 整形不支持缩放后缀
+                    if (_pArg[_uArgIndex].SuffixType.RawView)
+                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    break;
+                case 'F':
+                    _hr = ParserFloatValue(_pArg[_uArgIndex].pEnumMaps, &_pExprNode->ChildExprNode[_uArgIndex], &_pArg[_uArgIndex]);
                     break;
                 case 'S':
                     _hr = ParserStringValue(&_pExprNode->ChildExprNode[_uArgIndex], &_pArg[_uArgIndex].szString);
-                    ++_uArgIndex;
                     break;
                 case 'C':
                     _hr = ParserColorValue(&_pExprNode->ChildExprNode[_uArgIndex], &_pArg[_uArgIndex].cColor);
-                    ++_uArgIndex;
+                    break;
+                case 'R':
+                    _hr = ParserRectValue(&_pExprNode->ChildExprNode[_uArgIndex], &_pArg[_uArgIndex]);
                     break;
                 default:
                     _hr = E_NOTIMPL;
@@ -871,6 +891,8 @@ namespace YY
                 
                 if (FAILED(_hr))
                     return _hr;
+                
+                ++_uArgIndex;
             }
 
             return S_OK;
@@ -910,22 +932,24 @@ namespace YY
                 _pExprNode = &_pExprNode->ChildExprNode[0];
             }
 
-            ParsedArg _Arg[2] = {};
+            ParsedArg _Args[2] = {};
 
-            auto _hr = ParserFunction("Size", _pExprNode, "II", _Arg);
+            auto _hr = ParserFunction("Size", _pExprNode, "FF", _Args);
             if (FAILED(_hr))
                 return _hr;
 
-            ValueSuffix _Suffix = {_Arg[0].SuffixType, _Arg[1].SuffixType, ValueSuffixType::None, ValueSuffixType::None, 96};
-            auto _Value = Value::CreateSize((float)_Arg[0].iNumber, (float)_Arg[1].iNumber, _Suffix);
+            ValueSuffix _Suffix = {_Args[0].SuffixType.Type1, _Args[1].SuffixType.Type1, ValueSuffixType::None, ValueSuffixType::None, 0};
+            _Suffix.Dpi = _Suffix.RawView ? 96 : 0;
+
+            auto _Value = Value::CreateSize(_Args[0].FloatNumber, _Args[1].FloatNumber, _Suffix);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
             *_pValue = std::move(_Value);
 
             return S_OK;
         }
-        
-        HRESULT __MEGA_UI_API UIParser::ParserRectValue(ExprNode* _pExprNode, Value* _pValue)
+
+        HRESULT __MEGA_UI_API UIParser::ParserRectValue(ExprNode* _pExprNode, ParsedArg* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
@@ -935,14 +959,35 @@ namespace YY
                 _pExprNode = &_pExprNode->ChildExprNode[0];
             }
 
-            ParsedArg _Arg[4] = {};
+            ParsedArg _Args[4] = {};
 
-            auto _hr = ParserFunction("Rect", _pExprNode, "IIII", _Arg);
+            auto _hr = ParserFunction("Rect", _pExprNode, "FFFF", _Args);
             if (FAILED(_hr))
                 return _hr;
 
-            ValueSuffix _Suffix = {_Arg[0].SuffixType, _Arg[1].SuffixType, _Arg[2].SuffixType, _Arg[3].SuffixType, 96};
-            auto _Value = Value::CreateRect((float)_Arg[0].iNumber, (float)_Arg[1].iNumber, (float)_Arg[2].iNumber, (float)_Arg[3].iNumber, _Suffix);
+            _pValue->rcRect.Left = _Args[0].FloatNumber;
+            _pValue->rcRect.Top = _Args[1].FloatNumber;
+            _pValue->rcRect.Right = _Args[2].FloatNumber;
+            _pValue->rcRect.Bottom = _Args[3].FloatNumber;
+            
+            _pValue->SuffixType.RawView = 0;
+            _pValue->SuffixType.Type1 = _Args[0].SuffixType.Type1;
+            _pValue->SuffixType.Type2 = _Args[1].SuffixType.Type1;
+            _pValue->SuffixType.Type3 = _Args[2].SuffixType.Type1;
+            _pValue->SuffixType.Type4 = _Args[3].SuffixType.Type1;
+            _pValue->SuffixType.Dpi = _pValue->SuffixType.RawView ? 96 : 0;
+            
+            return S_OK;
+        }
+        
+        HRESULT __MEGA_UI_API UIParser::ParserRectValue(ExprNode* _pExprNode, Value* _pValue)
+        {
+            ParsedArg _rcValue;
+            auto _hr = ParserRectValue(_pExprNode, &_rcValue);
+            if (FAILED(_hr))
+                return _hr;
+
+            auto _Value = Value::CreateRect(_rcValue.rcRect, _rcValue.SuffixType);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
             *_pValue = std::move(_Value);
@@ -1040,7 +1085,7 @@ namespace YY
             
             ParsedArg _Arg[] = {{}, {}, {GetFontWeightEnumMap()}, {GetFontStyleEnumMap()}, {}};
 
-            auto _hr = ParserFunction("Font", _pExprNode, "SIIIC", _Arg);
+            auto _hr = ParserFunction("Font", _pExprNode, "SFIIC", _Arg);
             if (FAILED(_hr))
                 return _hr;
 
@@ -1049,8 +1094,8 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
 
-            ValueSuffix _Suffix = {_Arg[1].SuffixType, ValueSuffixType::None, ValueSuffixType::None, ValueSuffixType::None, 96};
-            auto _FontValue = Value::CreateFont(_szFace, abs((float)_Arg[1].iNumber), _Arg[2].iNumber, _Arg[3].iNumber, _Arg[4].cColor, _Suffix);
+            _Arg[1].FloatNumber = abs(_Arg[1].FloatNumber);
+            auto _FontValue = Value::CreateFont(_szFace, _Arg[1].FloatNumber, _Arg[2].iNumber, _Arg[3].iNumber, _Arg[4].cColor, _Arg[1].SuffixType);
             if (_FontValue == nullptr)
                 return E_OUTOFMEMORY;
 
