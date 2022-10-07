@@ -329,6 +329,7 @@ namespace YY
             DrawString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
+                _In_ Color _crTextColor,
                 _In_ const Rect& _LayoutRect,
                 _In_ int32_t _fTextAlign
                 ) override
@@ -353,7 +354,7 @@ namespace YY
                 if (_fTextAlign & ContentAlign::EndEllipsis)
                     _Format.SetTrimming(Gdiplus::StringTrimming::StringTrimmingEllipsisCharacter);
 
-                Gdiplus::SolidBrush _Brush(Gdiplus::Color(_FontInfo.Color.Alpha, _FontInfo.Color.Red, _FontInfo.Color.Green, _FontInfo.Color.Blue));
+                Gdiplus::SolidBrush _Brush(_crTextColor);
                 
                 pSurface->DrawString(_szText.GetConstString(), (INT)_szText.GetSize(), &_Font, _LayoutRect, &_Format, &_Brush);
             }
@@ -388,7 +389,6 @@ namespace YY
                 if (_fTextAlign & ContentAlign::EndEllipsis)
                     _Format.SetTrimming(Gdiplus::StringTrimming::StringTrimmingEllipsisCharacter);
 
-                Gdiplus::SolidBrush _Brush(Gdiplus::Color(_FontInfo.Color.Alpha, _FontInfo.Color.Red, _FontInfo.Color.Green, _FontInfo.Color.Blue));
                 Gdiplus::SizeF _Extent;
 
                 auto _pSurface = GetSurface();

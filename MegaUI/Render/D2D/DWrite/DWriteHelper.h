@@ -178,6 +178,7 @@ namespace YY
                 _In_ ID2D1RenderTarget* pRenderTarget,
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
+                _In_ Color _crTextColor,
                 _In_ const Rect& _LayoutRect,
                 _In_ int32_t _fTextAlign
                 )
@@ -200,7 +201,7 @@ namespace YY
                 }
 
                 ComPtr<ID2D1SolidColorBrush> _pDefaultFillBrush;
-                _hr = pRenderTarget->CreateSolidColorBrush(_FontInfo.Color, &_pDefaultFillBrush);
+                _hr = pRenderTarget->CreateSolidColorBrush(_crTextColor, &_pDefaultFillBrush);
                 if (FAILED(_hr))
                     return;
 

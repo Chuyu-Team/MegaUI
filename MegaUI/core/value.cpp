@@ -203,11 +203,10 @@ namespace YY
                 L"Arial",
                 20,
                 FontWeight::Normal,
-                FontStyle::None,
-                Color(255, 0, 0, 0));
+                FontStyle::None);
         }
 
-        Value __MEGA_UI_API Value::CreateFont(uString _szFace, float _uFontSize, uint32_t _uWeight, uint32_t _fStyle, Color _Color, ValueSuffix _Suffix)
+        Value __MEGA_UI_API Value::CreateFont(uString _szFace, float _uFontSize, uint32_t _uWeight, uint32_t _fStyle, ValueSuffix _Suffix)
         {
             auto _pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (_pValue)
@@ -222,9 +221,8 @@ namespace YY
                 FontValue.iSize = _uFontSize;
                 FontValue.uWeight = _uWeight;
                 FontValue.fStyle = _fStyle;
-                FontValue.Color = _Color;
 
-                _pValue->SuffixType.RawView = _Suffix.RawView;
+                _pValue->SuffixType = _Suffix;
             }
 
             return Value(_pValue);
@@ -847,7 +845,6 @@ namespace YY
             {
                 if (pSharedData->FontValue.uWeight == _Other.pSharedData->FontValue.uWeight
                     && pSharedData->FontValue.fStyle == _Other.pSharedData->FontValue.fStyle
-                    && pSharedData->FontValue.Color == _Other.pSharedData->FontValue.Color
                     && pSharedData->FontValue.szFace.GetSize() == _Other.pSharedData->FontValue.szFace.GetSize()
                     && pSharedData->FontValue.szFace.CompareI(_Other.pSharedData->FontValue.szFace) == 0)
                 {
@@ -938,7 +935,6 @@ namespace YY
                         _iSize,
                         pSharedData->FontValue.uWeight,
                         pSharedData->FontValue.fStyle,
-                        pSharedData->FontValue.Color,
                         _pSuffixType);
                     break;
                 }

@@ -17,7 +17,7 @@ namespace YY
             if (_TitleValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(WindowElement::g_ControlInfoData.TitleProp, PropertyIndicies::PI_Local, _TitleValue);
+            return SetValue(WindowElement::g_ControlInfoData.TitleProp, _TitleValue);
         }
         
         uString __MEGA_UI_API WindowElement::GetTitle()

@@ -282,7 +282,6 @@ namespace YY
                 float _uFontSize,
                 uint32_t _uWeight,
                 uint32_t _fStyle,
-                Color _Color,
                 _In_ ValueSuffix _Suffix = {});
 
             /// <summary>

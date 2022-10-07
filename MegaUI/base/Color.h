@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Windows.h>
 #include <d2d1.h>
+#include <GdiPlus.h>
 
 #include "MegaUITypeInt.h"
 
@@ -55,7 +56,7 @@ namespace YY
             {
             }
 
-            DXGI_RGBA __MEGA_UI_API GetFloatColorRGBA() const
+            __MEGA_UI_API operator DXGI_RGBA() const
             {
                 DXGI_RGBA _Color;
                 _Color.r = float(Red) / 255.0f;
@@ -65,9 +66,9 @@ namespace YY
                 return _Color;
             }
 
-            __MEGA_UI_API operator DXGI_RGBA() const
+            __MEGA_UI_API operator Gdiplus::Color() const
             {
-                return GetFloatColorRGBA();
+                return Gdiplus::Color(Alpha, Red, Green, Blue);
             }
 
             bool __MEGA_UI_API operator==(Color _Other) const

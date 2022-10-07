@@ -29,6 +29,8 @@ namespace YY
             constexpr auto Wrap = 0x00000010;
             // 将显示不下的字符统一显示为 "..."
             constexpr auto EndEllipsis = 0x00000020;
+            // 显示焦点框
+            constexpr auto FocusBorder = 0x00000040;
         }
 
         // 用于保存 Element 的位置以及是否缓存绘制信息
@@ -109,6 +111,7 @@ namespace YY
             DrawString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
+                _In_ Color _crTextColor,
                 _In_ const Rect& _LayoutRect,
                 _In_ int32_t _fTextAlign
                 ) = 0;

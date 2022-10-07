@@ -404,11 +404,12 @@ namespace YY
             DrawString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
+                _In_ Color _crTextColor,
                 _In_ const Rect& _LayoutRect,
                 _In_ int32_t _fTextAlign
                 ) override
             {
-                DWrite.DrawString(pDeviceContext, _szText, _FontInfo, _LayoutRect, _fTextAlign);
+                DWrite.DrawString(pDeviceContext, _szText, _FontInfo, _crTextColor, _LayoutRect, _fTextAlign);
             }
 
             virtual

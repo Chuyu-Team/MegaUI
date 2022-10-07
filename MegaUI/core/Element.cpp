@@ -59,6 +59,7 @@ namespace YY
             { "Bottom", ContentAlign::Bottom },
             { "Wrap", ContentAlign::Wrap },
             { "EndEllipsis", ContentAlign::EndEllipsis },
+            { "FocusBorder", ContentAlign::FocusBorder },
             { }
         };
 
@@ -217,13 +218,10 @@ namespace YY
             return _pValue;
         }
 
-        HRESULT __MEGA_UI_API Element::SetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pValue)
+        HRESULT __MEGA_UI_API Element::SetValue(const PropertyInfo& _Prop, const Value& _pValue)
         {
             if (_pValue == nullptr)
                 return E_INVALIDARG;
-
-            if (_eIndicies != PropertyIndicies::PI_Local)
-                return E_NOTIMPL;
 
             if (_Prop.fFlags & PF_ReadOnly)
                 return E_NOTIMPL;
@@ -234,17 +232,17 @@ namespace YY
 
             const auto _uIndex = (size_t)_iIndex;
 
-            auto _pvOld = GetValue(_Prop, _eIndicies, false);
+            auto _pvOld = GetValue(_Prop, PropertyIndicies::PI_Local, false);
             if (_pvOld == nullptr)
                 return E_OUTOFMEMORY;
 
             if (_pvOld == _pValue)
                 return S_OK;
 
-            if (!OnPropertyChanging(_Prop, _eIndicies, _pvOld, _pValue))
+            if (!OnPropertyChanging(_Prop, PropertyIndicies::PI_Local, _pvOld, _pValue))
                 return __HRESULT_FROM_WIN32(ERROR_CANCELLED);
 
-            PreSourceChange(_Prop, _eIndicies, _pvOld, _pValue);
+            PreSourceChange(_Prop, PropertyIndicies::PI_Local, _pvOld, _pValue);
 
             auto _hr = S_OK;
             if (LocalPropValue.GetSize() <= _uIndex)
@@ -274,7 +272,7 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.LayoutPosProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.LayoutPosProp, _pValue);
         }
 
         float __MEGA_UI_API Element::GetWidth()
@@ -294,7 +292,7 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.WidthProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.WidthProp, _pValue);
         }
 
         float __MEGA_UI_API Element::GetHeight()
@@ -314,7 +312,7 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.HeightProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.HeightProp, _pValue);
         }
 
         float __MEGA_UI_API Element::GetX()
@@ -335,7 +333,7 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.XProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.XProp, _pValue);
         }
 
         float __MEGA_UI_API Element::GetY()
@@ -356,7 +354,7 @@ namespace YY
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.YProp, PropertyIndicies::PI_Local, _pValue);
+            return SetValue(Element::g_ControlInfoData.YProp, _pValue);
         }
 
         Point __MEGA_UI_API Element::GetLocation()
@@ -407,7 +405,13 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.BorderStyleProp, PropertyIndicies::PI_Local, _NewValue);
+            return SetValue(Element::g_ControlInfoData.BorderStyleProp, _NewValue);
+        }
+
+        Color __MEGA_UI_API Element::GetBorderColor()
+        {
+            auto _BorderColorValue = GetValue(Element::g_ControlInfoData.BorderColorProp);
+            return _BorderColorValue.HasValue() ? _BorderColorValue.GetColor() : Color();
         }
 
         HRESULT __MEGA_UI_API Element::SetBorderColor(Color _BorderColor)
@@ -416,7 +420,43 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
             
-            return SetValue(Element::g_ControlInfoData.BorderColorProp, PropertyIndicies::PI_Local, _NewValue);
+            return SetValue(Element::g_ControlInfoData.BorderColorProp, _NewValue);
+        }
+
+        int32_t __MEGA_UI_API Element::GetFocusBorderStyle()
+        {
+            int32_t _iValue = {};
+
+            auto _pValue = GetValue(Element::g_ControlInfoData.FocusBorderStyleProp, PropertyIndicies::PI_Specified, false);
+            if (_pValue != nullptr)
+            {
+                _iValue = _pValue.GetInt32();
+            }
+            return _iValue;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetFocusBorderStyle(int32_t _iBorderStyle)
+        {
+            auto _NewValue = Value::CreateInt32(_iBorderStyle);
+            if (_NewValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ControlInfoData.FocusBorderStyleProp, _NewValue);
+        }
+
+        Color __MEGA_UI_API Element::GetFocusBorderColor()
+        {
+            auto _FocusBorderColorValue = GetValue(Element::g_ControlInfoData.FocusBorderColorProp);
+            return _FocusBorderColorValue.HasValue() ? _FocusBorderColorValue.GetColor() : Color();
+        }
+
+        HRESULT __MEGA_UI_API Element::SetFocusBorderColor(Color _BorderColor)
+        {
+            auto _NewValue = Value::CreateColor(_BorderColor);
+            if (_NewValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ControlInfoData.FocusBorderColorProp, _NewValue);
         }
 
         bool __MEGA_UI_API Element::IsRTL()
@@ -446,7 +486,7 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.ClassProp, PropertyIndicies::PI_Local, _NewValue);
+            return SetValue(Element::g_ControlInfoData.ClassProp, _NewValue);
         }
 
         bool __MEGA_UI_API Element::GetEnabled()
@@ -456,7 +496,7 @@ namespace YY
 
         HRESULT __MEGA_UI_API Element::SetEnabled(bool _bEnabled)
         {
-            return SetValue(Element::g_ControlInfoData.EnabledProp, PropertyIndicies::PI_Local, Value::CreateBool(_bEnabled));
+            return SetValue(Element::g_ControlInfoData.EnabledProp, Value::CreateBool(_bEnabled));
         }
 
         uint32_t __MEGA_UI_API Element::GetActive()
@@ -466,7 +506,7 @@ namespace YY
 
         HRESULT __MEGA_UI_API Element::SetActive(uint32_t _fActive)
         {
-            return SetValue(Element::g_ControlInfoData.ActiveProp, PropertyIndicies::PI_Local, Value::CreateInt32(_fActive));
+            return SetValue(Element::g_ControlInfoData.ActiveProp, Value::CreateInt32(_fActive));
         }
 
         bool __MEGA_UI_API Element::GetMouseFocused()
@@ -794,7 +834,7 @@ namespace YY
 
         HRESULT __MEGA_UI_API Element::SetVisible(bool bVisible)
         {
-            return SetValue(Element::g_ControlInfoData.VisibleProp, PropertyIndicies::PI_Local, Value::CreateBool(bVisible));
+            return SetValue(Element::g_ControlInfoData.VisibleProp, Value::CreateBool(bVisible));
         }
 
         bool __MEGA_UI_API Element::GetVisible()
@@ -857,7 +897,7 @@ namespace YY
                     _pRenderTarget,
                     GetBorderStyle(),
                     ApplyRTL(SpecBorderThickness),
-                    GetValue(Element::g_ControlInfoData.BorderColorProp, PropertyIndicies::PI_Specified, false),
+                    GetBorderColor(),
                     _PaintBounds);
             }
 
@@ -869,15 +909,28 @@ namespace YY
             // 应用内边距
             _PaintBounds.DeflateRect(ApplyRTL(SpecPadding));
 
+            // 绘制焦点框
+            if ((fSpecContentAlign & ContentAlign::FocusBorder) 
+                && SpecFocusBorderThickness.Left != 0 || SpecFocusBorderThickness.Top != 0 || SpecFocusBorderThickness.Right != 0 || SpecFocusBorderThickness.Bottom != 0)
+            {
+                PaintBorder(
+                    _pRenderTarget,
+                    GetFocusBorderStyle(),
+                    ApplyRTL(SpecFocusBorderThickness),
+                    GetFocusBorderColor(),
+                    _PaintBounds);
+            }
+
             PaintContent(
                 _pRenderTarget,
                 GetValue(Element::g_ControlInfoData.ContentProp),
                 GetValue(Element::g_ControlInfoData.FontProp).GetFont(),
+                GetValue(Element::g_ControlInfoData.ForegroundProp).GetColor(),
                 _PaintBounds,
                 fSpecContentAlign);
         }
 
-        void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, const Value& _BorderColor, Rect& _Bounds)
+        void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, Color _BorderColor, Rect& _Bounds)
         {
             if (_BorderThickness.Left == 0 && _BorderThickness.Top == 0 && _BorderThickness.Right == 0 && _BorderThickness.Bottom == 0)
                 return;
@@ -885,7 +938,7 @@ namespace YY
             Rect _NewBounds = _Bounds;
             _NewBounds.DeflateRect(_BorderThickness);
 
-            if (_BorderColor != nullptr)
+            if (_BorderColor.Alpha != 0)
             {
                 switch (_iBorderStyle)
                 {
@@ -893,7 +946,7 @@ namespace YY
                 {
                     ComPtr<ID2D1SolidColorBrush> _BorderBrush;
                     auto hr = _pRenderTarget->CreateSolidColorBrush(
-                        _BorderColor.GetColor(),
+                        _BorderColor,
                         &_BorderBrush);
 
                     if (SUCCEEDED(hr))
@@ -920,36 +973,34 @@ namespace YY
                     ComPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner Left Top
                     ComPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner Right and Bottom
 
-                    auto _BrushColor = _BorderColor.GetColor();
-
                     if (_iBorderStyle == BDS_Raised)
                     {
                         _pRenderTarget->CreateSolidColorBrush(
-                            _BrushColor,
+                            _BorderColor,
                             &hbOLT);
                         _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BrushColor, VERYDARK),
+                            AdjustBrightness(_BorderColor, VERYDARK),
                             &hbORB);
                         _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BrushColor, VERYLIGHT),
+                            AdjustBrightness(_BorderColor, VERYLIGHT),
                             &hbILT);
                         _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BrushColor, DARK),
+                            AdjustBrightness(_BorderColor, DARK),
                             &hbIRB);
                     }
                     else
                     {
                         _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BrushColor, VERYDARK),
+                            AdjustBrightness(_BorderColor, VERYDARK),
                             &hbOLT);
                         _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BrushColor, VERYLIGHT),
+                            AdjustBrightness(_BorderColor, VERYLIGHT),
                             &hbORB);
                         _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BrushColor, DARK),
+                            AdjustBrightness(_BorderColor, DARK),
                             &hbILT);
                         _pRenderTarget->CreateSolidColorBrush(
-                            _BrushColor,
+                            _BorderColor,
                             &hbIRB);
                     }
 
@@ -976,6 +1027,10 @@ namespace YY
         {
             if (_Background.GetType() == ValueType::Color)
             {
+                auto _BackgroundColor = _Background.GetColor();
+                if (_BackgroundColor.Alpha == 0)
+                    return;
+
                 ComPtr<ID2D1SolidColorBrush> _BackgroundBrush;
                 auto hr = _pRenderTarget->CreateSolidColorBrush(
                     _Background.GetColor(),
@@ -992,13 +1047,14 @@ namespace YY
             Render* _pRenderTarget,
             const Value& _Content,
             const Font& _FontInfo,
+            Color _ForegroundColor,
             const Rect& _Bounds,
             int32_t _fContentAlign
             )
         {
             if (_Content.GetType() == ValueType::uString)
             {
-                _pRenderTarget->DrawString(_Content.GetString(), _FontInfo, _Bounds, _fContentAlign);
+                _pRenderTarget->DrawString(_Content.GetString(), _FontInfo, _ForegroundColor, _Bounds, _fContentAlign);
             }
         }
 
@@ -2264,7 +2320,7 @@ namespace YY
                 if (_NewValue == nullptr || _NewValue.IsSame(_Value))
                     continue;
 
-                SetValue(*_pProp, PropertyIndicies::PI_Local, _NewValue);
+                SetValue(*_pProp, _NewValue);
             }
         }
 
@@ -2397,6 +2453,12 @@ namespace YY
 
                 BorderX += SpecPadding.Left + SpecPadding.Right;
                 BorderY += SpecPadding.Top + SpecPadding.Bottom;
+
+                if (fSpecContentAlign & ContentAlign::FocusBorder)
+                {
+                    BorderX += SpecFocusBorderThickness.Left + SpecFocusBorderThickness.Right;
+                    BorderY += SpecFocusBorderThickness.Top + SpecFocusBorderThickness.Bottom;
+                }
 
                 Size _ConstraintContentSize;
                 _ConstraintContentSize.Width = sizeDesired.Width - BorderX;

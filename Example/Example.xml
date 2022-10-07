@@ -38,9 +38,13 @@
     <Windows>
         <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600dp" Width="800dp" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet">
             <Element LayoutPos="Absolute" X="100dp" Y="100dp" Width="300dp" Background="ARGB(128, 255, 255, 0)"
-                     Content="聊天止到底的观对方的嘀咕嘀咕嘀咕嘀咕的嘀咕嘀咕的点的地方的于呵呵"
-                     Font="Font('微软雅黑', 20pt, Normal, 0, RGB(50,0,0))"
-                     ContentAlign="Wrap | EndEllipsis"/>
+                     Font="Font('微软雅黑', 20pt, Normal, 0)"
+                     Foreground="RGB(50,0,0)"
+                     ContentAlign="Wrap | EndEllipsis | FocusBorder"
+                     FocusBorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusBorderStyle="Solid" FocusBorderColor="RGB(0, 0, 0)">
+聊天止到底
+   的观对方
+   的嘀咕嘀咕嘀咕嘀咕的嘀咕嘀咕的点的地方的于呵呵</Element>
             <Element LayoutPos="Absolute" X="300dp" Y="305dp" Height="400dp" Width="300dp" Background="ARGB(32, 255, 255, 0)" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 163, 73, 164)"/>
             <Element LayoutPos="Absolute" X="150dp" Y="155dp" Height="50dp" Width="40dp" Class="背景黄变黑" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 0, 0)" Active="Mouse"/>
             <Element LayoutPos="Absolute" X="450dp" Y="205dp" Height="50dp" Width="40dp" Class="背景蓝色变原谅色" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 128, 192)" Active="Mouse"/>

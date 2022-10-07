@@ -50,8 +50,6 @@ namespace YY
             uint32_t uWeight = 0;
             // FontStyle 的位组合
             uint32_t fStyle = 0;
-            // 字体颜色
-            Color Color = 0;
         };
     }
 } // namespace YY

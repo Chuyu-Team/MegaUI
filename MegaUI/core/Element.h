@@ -71,11 +71,15 @@ namespace YY
     _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0), ValueType::Size   ) \
     _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateLayoutNull,             nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Layout   ) \
     _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
+    _APPLY(Foreground,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
     _APPLY(MinSize,        PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,  &Value::CreateSizeZero, nullptr,                     nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, UFIELD_OFFSET(Element, SpecMinSize), 0), ValueType::Size   ) \
-    _APPLY(BorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0), ValueType::Rect   ) \
+    _APPLY(BorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,       &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0), ValueType::Rect   ) \
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
-    _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              nullptr,                           nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
-    _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                           nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
+    _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
+    _APPLY(FocusBorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,  &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecFocusBorderThickness), 0), ValueType::Rect   ) \
+    _APPLY(FocusBorderStyle, PF_Normal | PF_Cascade,              PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
+    _APPLY(FocusBorderColor, PF_Normal | PF_Cascade,              PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
+    _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
     _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetMouseFocusedProperty), ValueType::boolean   ) \
     _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(ID,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
@@ -206,6 +210,8 @@ namespace YY
             Rect SpecBorderThickness;
             // 内边距
             Rect SpecPadding;
+            // 边框宽度，四个方向，左上右下
+            Rect SpecFocusBorderThickness;
 
             //Layout* pLayout = nullptr;
 
@@ -241,10 +247,9 @@ namespace YY
             /// 修改 Local Value
             /// </summary>
             /// <param name="_Prop">元数据</param>
-            /// <param name="_eIndicies">只能为 PI_Local</param>
             /// <param name="_pValue">需要设置的新值</param>
             /// <returns></returns>
-            HRESULT __MEGA_UI_API SetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _Value);
+            HRESULT __MEGA_UI_API SetValue(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value);
 
 			_Ret_maybenull_ Element* __MEGA_UI_API GetParent();
             
@@ -272,8 +277,18 @@ namespace YY
             int32_t __MEGA_UI_API GetBorderStyle();
 
             HRESULT __MEGA_UI_API SetBorderStyle(int32_t _iBorderStyle);
+            
+            Color __MEGA_UI_API GetBorderColor();
 
             HRESULT __MEGA_UI_API SetBorderColor(Color _BorderColor);
+            
+            int32_t __MEGA_UI_API GetFocusBorderStyle();
+
+            HRESULT __MEGA_UI_API SetFocusBorderStyle(int32_t _iBorderStyle);
+            
+            Color __MEGA_UI_API GetFocusBorderColor();
+
+            HRESULT __MEGA_UI_API SetFocusBorderColor(Color _BorderColor);
 
             bool __MEGA_UI_API IsRTL();
 
@@ -387,7 +402,7 @@ namespace YY
 
             virtual void __MEGA_UI_API Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
 
-            void __MEGA_UI_API PaintBorder(_In_ Render* _pRenderTarget, _In_ int32_t _iBorderStyle, _In_ const Rect& _BorderThickness, const Value& _BorderColor, _Inout_ Rect& _Bounds);
+            void __MEGA_UI_API PaintBorder(_In_ Render* _pRenderTarget, _In_ int32_t _iBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
 
             void __MEGA_UI_API PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
             
@@ -395,6 +410,7 @@ namespace YY
                 _In_ Render* _pRenderTarget,
                 _In_ const Value& _Content,
                 _In_ const Font& _FontInfo,
+                _In_ Color _ForegroundColor,
                 _In_ const Rect& _Bounds,
                 _In_ int32_t _fContentAlign
                 );

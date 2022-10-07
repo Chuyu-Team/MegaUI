@@ -417,6 +417,17 @@ namespace YY
                     return _hr;
             }
 
+            // Note内容转换为 Content
+            if (_pNote->value_size())
+            {
+                rapidxml::xml_attribute<char> _ContentAttribute;
+                _ContentAttribute.name(_RAPAIDXML_STAATIC_STRING("Content"));
+                _ContentAttribute.value(_pNote->value(), _pNote->value_size());
+                _hr = ParserElementProperty(&_ContentAttribute, _pControlInfo, _pRecorder);
+                if (FAILED(_hr))
+                    return _hr;
+            }
+
             bool _bHasChild = false;
             
             for (auto _pChildNote = _pNote->first_node(); _pChildNote; _pChildNote = _pChildNote->next_sibling())
@@ -1083,9 +1094,9 @@ namespace YY
                 _pExprNode = &_pExprNode->ChildExprNode[0];
             }
             
-            ParsedArg _Arg[] = {{}, {}, {GetFontWeightEnumMap()}, {GetFontStyleEnumMap()}, {}};
+            ParsedArg _Arg[] = {{}, {}, {GetFontWeightEnumMap()}, {GetFontStyleEnumMap()}};
 
-            auto _hr = ParserFunction("Font", _pExprNode, "SFIIC", _Arg);
+            auto _hr = ParserFunction("Font", _pExprNode, "SFII", _Arg);
             if (FAILED(_hr))
                 return _hr;
 
@@ -1095,7 +1106,7 @@ namespace YY
                 return _hr;
 
             _Arg[1].FloatNumber = abs(_Arg[1].FloatNumber);
-            auto _FontValue = Value::CreateFont(_szFace, _Arg[1].FloatNumber, _Arg[2].iNumber, _Arg[3].iNumber, _Arg[4].cColor, _Arg[1].SuffixType);
+            auto _FontValue = Value::CreateFont(_szFace, _Arg[1].FloatNumber, _Arg[2].iNumber, _Arg[3].iNumber, _Arg[1].SuffixType);
             if (_FontValue == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -1230,7 +1241,7 @@ namespace YY
                     }
 
                     // 忽略错误
-                    _pCurrentElement->SetValue(*_pSetProperty->pProp, PropertyIndicies::PI_Local, _ppValue->UpdateDpi(_pCurrentElement->GetDpi()));
+                    _pCurrentElement->SetValue(*_pSetProperty->pProp, _ppValue->UpdateDpi(_pCurrentElement->GetDpi()));
                 }
                 else
                 {
