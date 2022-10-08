@@ -2,8 +2,8 @@
 #include <vcruntime.h>
 #include <Windows.h>
 
-#include "..\base\MegaUITypeInt.h"
-#include "..\core\value.h"
+#include <MegaUI/base/MegaUITypeInt.h>
+#include <MegaUI/core/value.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -227,6 +227,12 @@ namespace YY
 
 #define _MEGA_UI_PROP_BIND_INT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
     _MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+
+#define _MEGA_UI_PROP_BIND_FLOAT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::float_t, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+
+#define _MEGA_UI_PROP_BIND_STRING(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::uString, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
 
 #define _MEGA_UI_PROP_BIND_ELEMENT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
     _MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)

@@ -38,7 +38,9 @@
     <Windows>
         <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600dp" Width="800dp" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet">
             <Element LayoutPos="Absolute" X="100dp" Y="100dp" Width="300dp" Background="ARGB(128, 255, 255, 0)"
-                     Font="Font('微软雅黑', 20pt, Normal, 0)"
+                     BorderStyle="Raised" BorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" BorderColor="ARGB(255, 163, 73, 164)"
+                     Padding="Rect(4dp, 4dp, 4dp, 4dp)"
+                     FontFamily="GetSystemFontFamily(MessageFont)" FontSize="20pt" FontWeight="Normal" FontStyle="Italic"
                      Foreground="RGB(50,0,0)"
                      ContentAlign="Wrap | EndEllipsis | FocusBorder"
                      FocusBorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusBorderStyle="Solid" FocusBorderColor="RGB(0, 0, 0)">

@@ -206,6 +206,9 @@
     <ClCompile Include="Window\WindowElement.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
+    <ClCompile Include="Render\Font.cpp">
+      <Filter>UI\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="MegaUI.natvis">

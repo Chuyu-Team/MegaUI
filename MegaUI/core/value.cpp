@@ -197,35 +197,9 @@ namespace YY
             _RETUNR_CONST_VALUE(ValueType::Layout, nullptr);
         }
 
-        Value __MEGA_UI_API Value::CreateDefaultFont()
+        Value __MEGA_UI_API Value::CreateDefaultFontFamily()
         {
-            return CreateFont(
-                L"Arial",
-                20,
-                FontWeight::Normal,
-                FontStyle::None);
-        }
-
-        Value __MEGA_UI_API Value::CreateFont(uString _szFace, float _uFontSize, uint32_t _uWeight, uint32_t _fStyle, ValueSuffix _Suffix)
-        {
-            auto _pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
-            if (_pValue)
-            {
-                _pValue->eType = uint_t(ValueType::Font);
-                _pValue->bSkipFree = 0;
-                _pValue->cRef = 1;
-                auto& FontValue = _pValue->FontValue;
-                new (&FontValue) Font;
-
-                FontValue.szFace = std::move(_szFace);
-                FontValue.iSize = _uFontSize;
-                FontValue.uWeight = _uWeight;
-                FontValue.fStyle = _fStyle;
-
-                _pValue->SuffixType = _Suffix;
-            }
-
-            return Value(_pValue);
+            return Value::CreateString(L"Arial");
         }
 
         Value __MEGA_UI_API Value::CreateColorTransparant()
@@ -593,13 +567,6 @@ namespace YY
             return pSharedData->pStyleSheet;
         }
 
-        Font& __MEGA_UI_API Value::GetFont() const
-        {
-            if (GetType() != ValueType::Font)
-                throw Exception();
-            return pSharedData->FontValue;
-        }
-
         Rect& __MEGA_UI_API Value::GetRect() const
         {
             if (GetType() != ValueType::Rect)
@@ -841,33 +808,6 @@ namespace YY
                     break;
                 }
                 break;
-            case ValueType::Font:
-            {
-                if (pSharedData->FontValue.uWeight == _Other.pSharedData->FontValue.uWeight
-                    && pSharedData->FontValue.fStyle == _Other.pSharedData->FontValue.fStyle
-                    && pSharedData->FontValue.szFace.GetSize() == _Other.pSharedData->FontValue.szFace.GetSize()
-                    && pSharedData->FontValue.szFace.CompareI(_Other.pSharedData->FontValue.szFace) == 0)
-                {
-                    auto _iLeft = pSharedData->FontValue.iSize;
-                    auto _iRight = _Other.pSharedData->FontValue.iSize;
-                    if (_bIgnoreDpi == false && _Other.pSharedData->NeedCalculate())
-                    {
-                        auto _iOldDpi = _Other.pSharedData->GetDpi();
-                        auto _iNewDpi = pSharedData->GetDpi();
-
-                        _iRight = MegaUI::UpdateDpi(_iRight, _iOldDpi, _iNewDpi, _Other.pSharedData->SuffixType.Type1);
-                    }
-
-                    if (_iLeft == _iRight)
-                    {
-                        if (_Operation == ValueCmpOperation::Equal)
-                            return true;
-                    }
-                }
-
-                return false;
-                break;
-            }
             default:
                 break;
             }
@@ -922,20 +862,6 @@ namespace YY
                     if (_left == pSharedData->rectVal.Left && _top == pSharedData->rectVal.Top && _right == pSharedData->rectVal.Right && _bottom == pSharedData->rectVal.Bottom)
                         break;
                     return Value::CreateRect(_left, _top, _right, _bottom, _pSuffixType);
-                    break;
-                }
-                case ValueType::Font:
-                {
-                    const auto _iSize = YY::MegaUI::UpdateDpi(pSharedData->FontValue.iSize, _iOldDpi, _iNewDpi, _pSuffixType.Type1);
-                    if (_iSize == pSharedData->FontValue.iSize)
-                        break;
-
-                    return Value::CreateFont(
-                        pSharedData->FontValue.szFace,
-                        _iSize,
-                        pSharedData->FontValue.uWeight,
-                        pSharedData->FontValue.fStyle,
-                        _pSuffixType);
                     break;
                 }
                 }

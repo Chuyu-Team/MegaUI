@@ -6,7 +6,7 @@
 #include "value.h"
 #include "ControlInfoImp.h"
 #include "Layout.h"
-#include "../Window/Window.h"
+#include <MegaUI/Window/Window.h>
 #include "StyleSheet.h"
 #include <MegaUI/base/ComPtr.h>
 
@@ -63,6 +63,37 @@ namespace YY
             { }
         };
 
+        static constexpr const EnumMap FontWeightEnumMaps[] =
+        {
+            {"Thin", FontWeight::Thin},
+            {"ExtraLight", FontWeight::ExtraLight},
+            {"UltraLight", FontWeight::UltraLight},
+            {"Light", FontWeight::Light},
+            {"SemiLight", FontWeight::SemiLight},
+            {"Normal", FontWeight::Normal},
+            {"Regular", FontWeight::Regular},
+            {"Medium", FontWeight::Medium},
+            {"DemiBold", FontWeight::DemiBold},
+            {"SemiBold", FontWeight::SemiBold},
+            {"Bold", FontWeight::Bold},
+            {"ExtraBold", FontWeight::ExtraBold},
+            {"UltraBold", FontWeight::UltraBold},
+            {"Black", FontWeight::Black},
+            {"Heavy", FontWeight::Heavy},
+            {"ExtraBlack", FontWeight::ExtraBlack},
+            {"UltraBlack", FontWeight::UltraBlack},
+            { },
+        };
+
+        static constexpr const EnumMap FontStyleEnumMap[] =
+        {
+            {"None", FontStyle::None},
+            {"Italic", FontStyle::Italic},
+            {"Underline", FontStyle::Underline},
+            {"StrikeOut", FontStyle::StrikeOut},
+            {},
+        };
+
 		_APPLY_MEGA_UI_STATIC_CONTROL_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
         Element::Element()
@@ -94,6 +125,10 @@ namespace YY
             , bNeedsDSUpdate(true)
             , iSpecDirection(DIRECTION_LTR)
         {
+            SpecFont.szFace = Element::g_ControlInfoData.FontFamilyProp.pFunDefaultValue().GetString();
+            SpecFont.iSize = Element::g_ControlInfoData.FontSizeProp.pFunDefaultValue().GetFloat();
+            SpecFont.uWeight = Element::g_ControlInfoData.FontWeightProp.pFunDefaultValue().GetInt32();
+            SpecFont.fStyle = Element::g_ControlInfoData.FontStyleProp.pFunDefaultValue().GetInt32();
         }
 
         Element::~Element()
@@ -742,7 +777,63 @@ namespace YY
                 _pDeferCycle->AddRef();
                 ++_pDeferCycle->uEnter;
 			}
-		}
+        }
+
+        uString __MEGA_UI_API Element::GetFontFamily()
+        {
+            return SpecFont.szFace;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetFontFamily(uString _szFontFamily)
+        {
+            auto _FontFamilyValue = Value::CreateString(_szFontFamily);
+            if (_FontFamilyValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ControlInfoData.FontFamilyProp, _FontFamilyValue);
+        }
+
+        float __MEGA_UI_API Element::GetFontSize()
+        {
+            return SpecFont.iSize;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetFontSize(float _iFontSize)
+        {
+            auto _FontSizeValue = Value::CreateFloat(_iFontSize);
+            if (_FontSizeValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ControlInfoData.FontSizeProp, _FontSizeValue);
+        }
+
+        uint32_t __MEGA_UI_API Element::GetFontWeight()
+        {
+            return SpecFont.uWeight;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetFontWeight(uint32_t _iFontWeight)
+        {
+            auto _FontWeightValue = Value::CreateInt32(_iFontWeight);
+            if (_FontWeightValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ControlInfoData.FontWeightProp, _FontWeightValue);
+        }
+
+        uint32_t __MEGA_UI_API Element::GetFontStyle()
+        {
+            return SpecFont.fStyle;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetFontStyle(uint32_t _fFontStyle)
+        {
+            auto _FontStyleValue = Value::CreateInt32(_fFontStyle);
+            if (_FontStyleValue == nullptr)
+                return E_OUTOFMEMORY;
+
+            return SetValue(Element::g_ControlInfoData.FontStyleProp, _FontStyleValue);
+        }
 
 		void __MEGA_UI_API Element::EndDefer(intptr_t _Cookie)
 		{
@@ -924,7 +1015,7 @@ namespace YY
             PaintContent(
                 _pRenderTarget,
                 GetValue(Element::g_ControlInfoData.ContentProp),
-                GetValue(Element::g_ControlInfoData.FontProp).GetFont(),
+                SpecFont,
                 GetValue(Element::g_ControlInfoData.ForegroundProp).GetColor(),
                 _PaintBounds,
                 fSpecContentAlign);
@@ -1069,8 +1160,7 @@ namespace YY
             case ValueType::uString:
             {
                 auto _pRender = pWindow->GetRender();
-                auto _FontValue = GetValue(Element::g_ControlInfoData.FontProp);
-                _pRender->MeasureString(_ContentValue.GetString(), _FontValue.GetFont(), _ConstraintSize, fSpecContentAlign, &_ContentSize);
+                _pRender->MeasureString(_ContentValue.GetString(), SpecFont, _ConstraintSize, fSpecContentAlign, &_ContentSize);
                 break;
             }
             default:
@@ -2109,7 +2199,11 @@ namespace YY
                         case ValueType::StyleSheet:
                             _pRetValue = Value::CreateStyleSheet(*(StyleSheet**)_pCache);
                             break;
+                        case ValueType::uString:
+                            _pRetValue = Value::CreateString(*(uString*)_pCache);
+                            break;
 						default:
+                            __debugbreak();
                             _pRetValue = Value::CreateNull();
 							break;
 						}
@@ -2203,7 +2297,7 @@ namespace YY
                         case ValueType::StyleSheet:
                         {
                             auto& _pOldStyleSheet = *(StyleSheet**)_pCache;
-                            auto& _pNewStyleSheet = *(StyleSheet**)_pDataBuffer;
+                            auto _pNewStyleSheet = *(StyleSheet**)_pDataBuffer;
 
                             if (_pOldStyleSheet != _pNewStyleSheet)
                             {
@@ -2212,6 +2306,16 @@ namespace YY
                                 if (_pNewStyleSheet)
                                     _pNewStyleSheet->AddRef();
                                 _pOldStyleSheet = _pNewStyleSheet;
+                            }
+                            break;
+                        }
+                        case ValueType::uString:
+                        {
+                            auto& _szOldString = *(uString*)_pCache;
+                            auto& _szNewString = *(uString*)_pDataBuffer;
+                            if (_szOldString != _szNewString)
+                            {
+                                _szOldString = _szNewString;
                             }
                             break;
                         }
@@ -2980,43 +3084,6 @@ namespace YY
             }
 
             EndDefer(_Cooike);
-        }
-        
-        const EnumMap* __MEGA_UI_API GetFontWeightEnumMap()
-        {
-            static constexpr const EnumMap _EnumMaps[] =
-            {
-                {"Thin", FontWeight::Thin},
-                {"ExtraLight", FontWeight::ExtraLight},
-                {"UltraLight", FontWeight::UltraLight},
-                {"Light", FontWeight::Light},
-                {"SemiLight", FontWeight::SemiLight},
-                {"Normal", FontWeight::Normal},
-                {"Regular", FontWeight::Regular},
-                {"Medium", FontWeight::Medium},
-                {"DemiBold", FontWeight::DemiBold},
-                {"SemiBold", FontWeight::SemiBold},
-                {"Bold", FontWeight::Bold},
-                {"ExtraBold", FontWeight::ExtraBold},
-                {"UltraBold", FontWeight::UltraBold},
-                {"Black", FontWeight::Black},
-                {"Heavy", FontWeight::Heavy},
-                {"ExtraBlack", FontWeight::ExtraBlack},
-                {"UltraBlack", FontWeight::UltraBlack},
-            };
-            return _EnumMaps;
-        }
-
-        const EnumMap* __MEGA_UI_API GetFontStyleEnumMap()
-        {
-            static constexpr const EnumMap _EnumMaps[] =
-            {
-                {"None", FontStyle::None},
-                {"Italic", FontStyle::Italic},
-                {"Underline", FontStyle::Underline},
-                {"StrikeOut", FontStyle::StrikeOut},
-            };
-            return _EnumMaps;
         }
 	}
 }

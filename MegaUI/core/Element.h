@@ -7,7 +7,7 @@
 #include "Property.h"
 #include "DeferCycle.h"
 #include "ControlInfo.h"
-#include "../Render/Render.h"
+#include <MegaUI/Render/Render.h>
 
 // Global layout positions
 #define LP_None         -3
@@ -58,11 +58,11 @@ namespace YY
     _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::OnVisiblePropChangedThunk, &Element::GetVisibleDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetVisibleProperty), ValueType::boolean   ) \
     _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::OnEnabledPropChangedThunk, nullptr,                               nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean   ) \
     _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::OnActivePropChangedThunk,  nullptr,                               nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, uSpecActive), 0), ValueType::int32_t   ) \
-    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>, nullptr,                         nullptr, nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
-    _APPLY(Width,          PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(Height,         PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,    nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(X,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(Y,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>,         nullptr,                           nullptr, nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
+    _APPLY(Width,          PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(Height,         PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(X,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
+    _APPLY(Y,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
     _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::CreatePointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetLocationProperty),                      ValueType::Point  ) \
     _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::CreateSizeZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetExtentProperty),                        ValueType::Size   ) \
     _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreatePointZero,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0),     ValueType::Point  ) \
@@ -76,6 +76,7 @@ namespace YY
     _APPLY(BorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,       &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecBorderThickness), 0), ValueType::Rect   ) \
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
+    _APPLY(Padding,        PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDisplay | PG_AffectsDesiredSize,      &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecPadding), 0), ValueType::Rect   ) \
     _APPLY(FocusBorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,  &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecFocusBorderThickness), 0), ValueType::Rect   ) \
     _APPLY(FocusBorderStyle, PF_Normal | PF_Cascade,              PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(FocusBorderColor, PF_Normal | PF_Cascade,              PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
@@ -87,7 +88,10 @@ namespace YY
     _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
     _APPLY(Content,        PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        nullptr,                              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
     _APPLY(ContentAlign,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, ContentAlignEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, fSpecContentAlign), 0), ValueType::int32_t   ) \
-    _APPLY(Font,           PF_Normal | PF_Cascade | PF_Inherit | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFont,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Font   ) \
+    _APPLY(FontFamily,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFontFamily,      nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_STRING(0, 0, UFIELD_OFFSET(Element, SpecFont.szFace), 0), ValueType::uString   ) \
+    _APPLY(FontSize,       PF_Normal | PF_Cascade | PF_Inherit | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay, &Value::CreateFloat<20>,        nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_FLOAT(0, 0, UFIELD_OFFSET(Element, SpecFont.iSize), 0), ValueType::float_t   ) \
+    _APPLY(FontWeight,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32<FontWeight::Normal>, nullptr,                        nullptr, nullptr, FontWeightEnumMaps, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.uWeight), 0), ValueType::int32_t   ) \
+    _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<FontStyle::None>, nullptr,                           nullptr, nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t   ) \
     _APPLY(DPI,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::OnDpiPropChangedThunk,   nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0), ValueType::int32_t   ) 
 
     // clang-format on
@@ -223,6 +227,9 @@ namespace YY
             int32_t iLocDpi = 96;
             // 承载控件的窗口
             Window* pWindow = nullptr;
+
+            // 缓存的字体信息
+            Font SpecFont;
 		public:
             Element();
 
@@ -326,6 +333,22 @@ namespace YY
             bool __MEGA_UI_API GetMouseFocused();
 
             int32_t __MEGA_UI_API GetDpi();
+
+            uString __MEGA_UI_API GetFontFamily();
+
+            HRESULT __MEGA_UI_API SetFontFamily(uString _szFontFamily);
+
+            float __MEGA_UI_API GetFontSize();
+
+            HRESULT __MEGA_UI_API SetFontSize(float _iFontSize);
+
+            uint32_t __MEGA_UI_API GetFontWeight();
+
+            HRESULT __MEGA_UI_API SetFontWeight(uint32_t _iFontWeight);
+
+            uint32_t __MEGA_UI_API GetFontStyle();
+
+            HRESULT __MEGA_UI_API SetFontStyle(uint32_t _fFontStyle);
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
@@ -532,10 +555,6 @@ namespace YY
             /// <returns></returns>
             void __MEGA_UI_API UpdateMouseWithinToFalse();
 		};
-
-        _Ret_notnull_ const EnumMap* __MEGA_UI_API GetFontWeightEnumMap();
-
-        _Ret_notnull_ const EnumMap* __MEGA_UI_API GetFontStyleEnumMap();
 	}
 }
 

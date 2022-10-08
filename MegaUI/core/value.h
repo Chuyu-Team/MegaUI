@@ -40,8 +40,7 @@ namespace YY
         _APPLY(HCURSOR,     HCURSOR,             hCursorVal) \
         _APPLY(Layout,      Layout*,             pLayout  )  \
         _APPLY(Color,       Color,               ColorValue) \
-        _APPLY(StyleSheet,  StyleSheet*,         pStyleSheet) \
-        _APPLY(Font,        Font,                FontValue)
+        _APPLY(StyleSheet,  StyleSheet*,         pStyleSheet)
 
 		enum class ValueType
         {
@@ -275,14 +274,7 @@ namespace YY
             /// 获取默认字体信息。
             /// </summary>
             /// <returns></returns>
-            static Value __MEGA_UI_API CreateDefaultFont();
-
-            static Value __MEGA_UI_API CreateFont(
-                uString _szFace,
-                float _uFontSize,
-                uint32_t _uWeight,
-                uint32_t _fStyle,
-                _In_ ValueSuffix _Suffix = {});
+            static Value __MEGA_UI_API CreateDefaultFontFamily();
 
             /// <summary>
             /// 创建一个全透明的颜色。
@@ -358,8 +350,6 @@ namespace YY
             uString __MEGA_UI_API GetString() const;
 
             StyleSheet* __MEGA_UI_API GetStyleSheet() const;
-
-            Font& __MEGA_UI_API GetFont() const;
 
             Rect& __MEGA_UI_API GetRect() const;
 

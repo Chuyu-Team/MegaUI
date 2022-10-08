@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include "../base/MegaUITypeInt.h"
-#include "../Window/WindowElement.h"
-#include "../base/DynamicArray.h"
-#include "../base/ArrayView.h"
+#include <MegaUI/base/MegaUITypeInt.h>
+#include <MegaUI/Window/WindowElement.h>
+#include <MegaUI/base/DynamicArray.h>
+#include <MegaUI/base/ArrayView.h>
 #include <MegaUI/core/Property.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
@@ -91,26 +91,26 @@ namespace YY
 
             static HRESULT __MEGA_UI_API ParserInt32Value(_In_ const u8StringView& _szValue, _Out_ ParsedArg* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
+            static HRESULT __MEGA_UI_API ParserInt32Value(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
 
             static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
             
-            static HRESULT __MEGA_UI_API ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
+            static HRESULT __MEGA_UI_API ParserFloatValue(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
 
             static HRESULT __MEGA_UI_API ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
 
             static HRESULT __MEGA_UI_API ParserBoolValue(ExprNode* _pExprNode, Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserStringValue(ExprNode* _pExprNode, u8StringView* _pValue);
+            static HRESULT __MEGA_UI_API ParserStringValue(ExprNode* _pExprNode, uString* _pValue);
 
             static HRESULT __MEGA_UI_API ParserStringValue(ExprNode* _pExprNode, Value* _pValue);
             
-            static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Inout_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
+            static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
             
             template<uint_t _uArgCount>
-            __inline static HRESULT ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _In_ aStringView _szFormat, _Out_ ParsedArg (&_Arg)[_uArgCount])
+            __inline static HRESULT ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_ ParsedArg (&_Arg)[_uArgCount])
             {
-                return ParserFunction(_szFunctionName, _pExprNode, _szFormat, _Arg, _uArgCount);
+                return ParserFunction(_szFunctionName, _pExprNode, _Arg, _uArgCount);
             }
 
             static HRESULT __MEGA_UI_API ParserPointValue(ExprNode* _pExprNode, Value* _pValue);

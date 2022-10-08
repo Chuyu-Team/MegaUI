@@ -10,6 +10,8 @@ namespace YY
 {
     namespace MegaUI
     {
+        struct EnumMap;
+
         namespace FontWeight
         {
             constexpr auto Thin = 100;
@@ -39,7 +41,7 @@ namespace YY
             constexpr auto StrikeOut = 0x00000004;
         }
 
-        // 保持字体的基本信息
+        // 保存字体的基本信息
         struct Font
         {
             // 字体名称
@@ -51,6 +53,22 @@ namespace YY
             // FontStyle 的位组合
             uint32_t fStyle = 0;
         };
+
+        enum class SystemFont : uint32_t
+        {
+            CaptionFont,
+            MenuFont,
+            MessageFont,
+            SmCaptionFont,
+            StatusFont,
+            IconFont,
+            SystemFontCount,
+        };
+
+        HRESULT __MEGA_UI_API GetSystemFont(_In_ SystemFont _eSystemFont, _Out_ Font* _pFont);
+
+
+        _Ret_notnull_ const EnumMap* __MEGA_UI_API GetSystemFontEnumMap();
     }
 } // namespace YY
 
