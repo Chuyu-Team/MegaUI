@@ -33,6 +33,8 @@ namespace YY
             Element* pLastFocusedElement;
             Element* pLastPressedElement;
             int32_t iDpi;
+            // WM_UPDATEUISTATE的缓存
+            uint16_t fUIState = 0;
         public:
             Window(_In_ int32_t _DefaultDpi = 96);
 
@@ -91,6 +93,8 @@ namespace YY
 
             virtual LRESULT __thiscall WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
+            bool __MEGA_UI_API OnCreate();
+
             HRESULT __MEGA_UI_API OnPaint();
 
             HRESULT __MEGA_UI_API PaintElement(
@@ -114,6 +118,10 @@ namespace YY
             void __MEGA_UI_API OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect);
 
             HRESULT __MEGA_UI_API UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue);
+
+            void __MEGA_UI_API OnUpdateUiState(uint16_t _eType, uint16_t _fState);
+
+            void __MEGA_UI_API UpdateFocusVisible(Element* _pElement, bool _bCanShowFocus);
         };
     }
 } // namespace YY

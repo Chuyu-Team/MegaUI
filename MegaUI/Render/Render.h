@@ -29,8 +29,6 @@ namespace YY
             constexpr auto Wrap = 0x00000010;
             // 将显示不下的字符统一显示为 "..."
             constexpr auto EndEllipsis = 0x00000020;
-            // 显示焦点框
-            constexpr auto FocusBorder = 0x00000040;
         }
 
         // 用于保存 Element 的位置以及是否缓存绘制信息

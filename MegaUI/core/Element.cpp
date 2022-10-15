@@ -59,7 +59,6 @@ namespace YY
             { "Bottom", ContentAlign::Bottom },
             { "Wrap", ContentAlign::Wrap },
             { "EndEllipsis", ContentAlign::EndEllipsis },
-            { "FocusBorder", ContentAlign::FocusBorder },
             { }
         };
 
@@ -121,7 +120,7 @@ namespace YY
             , bHasLocMouseFocused(FALSE)
             , bLocMouseFocused(FALSE)
             , bSpecMouseFocused(FALSE)
-            , bLocHighDPI(true)
+            , bSpecFocusVisible(false)
             , bNeedsDSUpdate(true)
             , iSpecDirection(DIRECTION_LTR)
         {
@@ -462,7 +461,7 @@ namespace YY
         {
             int32_t _iValue = {};
 
-            auto _pValue = GetValue(Element::g_ControlInfoData.FocusBorderStyleProp, PropertyIndicies::PI_Specified, false);
+            auto _pValue = GetValue(Element::g_ControlInfoData.FocusStyleProp, PropertyIndicies::PI_Specified, false);
             if (_pValue != nullptr)
             {
                 _iValue = _pValue.GetInt32();
@@ -476,12 +475,12 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.FocusBorderStyleProp, _NewValue);
+            return SetValue(Element::g_ControlInfoData.FocusStyleProp, _NewValue);
         }
 
         Color __MEGA_UI_API Element::GetFocusBorderColor()
         {
-            auto _FocusBorderColorValue = GetValue(Element::g_ControlInfoData.FocusBorderColorProp);
+            auto _FocusBorderColorValue = GetValue(Element::g_ControlInfoData.FocusColorProp);
             return _FocusBorderColorValue.HasValue() ? _FocusBorderColorValue.GetColor() : Color();
         }
 
@@ -491,7 +490,7 @@ namespace YY
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            return SetValue(Element::g_ControlInfoData.FocusBorderColorProp, _NewValue);
+            return SetValue(Element::g_ControlInfoData.FocusColorProp, _NewValue);
         }
 
         bool __MEGA_UI_API Element::IsRTL()
@@ -1001,13 +1000,13 @@ namespace YY
             _PaintBounds.DeflateRect(ApplyRTL(SpecPadding));
 
             // 绘制焦点框
-            if ((fSpecContentAlign & ContentAlign::FocusBorder) 
-                && SpecFocusBorderThickness.Left != 0 || SpecFocusBorderThickness.Top != 0 || SpecFocusBorderThickness.Right != 0 || SpecFocusBorderThickness.Bottom != 0)
+            if (bSpecFocusVisible 
+                && (SpecFocusThickness.Left != 0 || SpecFocusThickness.Top != 0 || SpecFocusThickness.Right != 0 || SpecFocusThickness.Bottom != 0))
             {
                 PaintBorder(
                     _pRenderTarget,
                     GetFocusBorderStyle(),
-                    ApplyRTL(SpecFocusBorderThickness),
+                    ApplyRTL(SpecFocusThickness),
                     GetFocusBorderColor(),
                     _PaintBounds);
             }
@@ -1553,7 +1552,7 @@ namespace YY
                 break;
             }
             case ValueType::Color:
-                return (*(Color*)_pRawBuffer1).ColorRGBA == (*(Color*)_pRawBuffer2).ColorRGBA;
+                return (*(Color*)_pRawBuffer1) == (*(Color*)_pRawBuffer2);
                 break;
             case ValueType::Point:
                 return (*(Point*)_pRawBuffer1) == (*(Point*)_pRawBuffer2);
@@ -2558,10 +2557,10 @@ namespace YY
                 BorderX += SpecPadding.Left + SpecPadding.Right;
                 BorderY += SpecPadding.Top + SpecPadding.Bottom;
 
-                if (fSpecContentAlign & ContentAlign::FocusBorder)
+                if (bSpecFocusVisible)
                 {
-                    BorderX += SpecFocusBorderThickness.Left + SpecFocusBorderThickness.Right;
-                    BorderY += SpecFocusBorderThickness.Top + SpecFocusBorderThickness.Bottom;
+                    BorderX += SpecFocusThickness.Left + SpecFocusThickness.Right;
+                    BorderY += SpecFocusThickness.Top + SpecFocusThickness.Bottom;
                 }
 
                 Size _ConstraintContentSize;

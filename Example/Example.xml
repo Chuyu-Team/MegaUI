@@ -42,8 +42,9 @@
                      Padding="Rect(4dp, 4dp, 4dp, 4dp)"
                      FontFamily="GetSystemFontFamily(MessageFont)" FontSize="20pt" FontWeight="Normal" FontStyle="Italic"
                      Foreground="RGB(50,0,0)"
-                     ContentAlign="Wrap | EndEllipsis | FocusBorder"
-                     FocusBorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusBorderStyle="Solid" FocusBorderColor="RGB(0, 0, 0)">
+                     ContentAlign="Wrap | EndEllipsis"
+                     FocusVisible="true"
+                     FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)">
 聊天止到底
    的观对方
    的嘀咕嘀咕嘀咕嘀咕的嘀咕嘀咕的点的地方的于呵呵</Element>

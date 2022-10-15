@@ -100,8 +100,8 @@ namespace YY
             //SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)Window::WndProc);
 
             // If top-level, initialize keyboard cue state, start all hidden
-            if (!_hWndParent)
-                SendMessage(hWnd, WM_CHANGEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEACCEL | UISF_HIDEFOCUS), 0);
+            //if (!_hWndParent)
+             //   SendMessage(hWnd, WM_CHANGEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEACCEL | UISF_HIDEFOCUS), 0);
 
             return S_OK;
         }
@@ -326,49 +326,14 @@ namespace YY
             Window* _pNativeWindow = nullptr;
             if (_uMsg == WM_NCCREATE)
             {
-                EnableNonClientDpiScaling(_hWnd);
-            }
-            else if (_uMsg == WM_CREATE)
-            {
                 auto _pInfo = (CREATESTRUCTW*)_lParam;
                 if (_pInfo && _pInfo->lpCreateParams)
                 {
                     _pNativeWindow = (Window*)_pInfo->lpCreateParams;
                     _pNativeWindow->hWnd = _hWnd;
                     SetWindowLongPtrW(_hWnd, GWLP_USERDATA, (LONG_PTR)_pNativeWindow);
-
-                    //Rect Client2;
-                    //::GetWindowRect(_hWnd, &Client2);
-
-                    RECT Client;
-                    ::GetClientRect(_hWnd, &Client);
-                    //intptr_t _Cooike;
-                    //_pNativeWindow->StartDefer(&_Cooike);
-                    //_pNativeWindow->SetX(_pInfo->x);
-                    //_pNativeWindow->SetY(_pInfo->y);
-                    intptr_t _Cooike = 0;
-                    if (_pNativeWindow->pHost)
-                        _pNativeWindow->pHost->StartDefer(&_Cooike);
-
-                    _pNativeWindow->OnSize(Client.right - Client.left, Client.bottom - Client.top);
-                    
-                    const auto _iNewDpi = GetDpiForWindow(_hWnd);
-                    const auto _iOldDpi = _pNativeWindow->GetDpi();
-                    if (_iNewDpi != _iOldDpi)
-                    {
-                        RECT Client2;
-                        ::GetWindowRect(_hWnd, &Client2);
-                        //Client2.Left = UpdatePixel(Client2.Left, _iOldDpi, _iNewDpi);
-                        //Client2.Top = UpdatePixel(Client2.Top, _iOldDpi, _iNewDpi);
-                        Client2.right = Client2.left + (int32_t)UpdatePixel(float(Client2.right - Client2.left), _iOldDpi, _iNewDpi);
-                        Client2.bottom = Client2.top + (int32_t)UpdatePixel(float(Client2.bottom - Client2.top), _iOldDpi, _iNewDpi);
-                        MoveWindow(_hWnd, Client2.left, Client2.top, Client2.right, Client2.bottom, TRUE);
-                        _pNativeWindow->OnDpiChanged(_iNewDpi, nullptr);
-                    }
-
-                    if (_Cooike && _pNativeWindow->pHost)
-                        _pNativeWindow->pHost->EndDefer(_Cooike);
                 }
+                EnableNonClientDpiScaling(_hWnd);
             }
             else
             {
@@ -385,6 +350,9 @@ namespace YY
         {
             switch (_uMsg)
             {
+            case WM_CREATE:
+                return OnCreate();
+                break;
             case WM_CLOSE:
                 DestroyWindow();
                 return 0;
@@ -428,7 +396,6 @@ namespace YY
                 if (!IsMinimized())
                 {
                     OnSize(LOWORD(_lParam), HIWORD(_lParam));
-                    InvalidateRect(nullptr);
                 }
                 break;
             case WM_MOUSEMOVE:
@@ -528,11 +495,52 @@ namespace YY
             case WM_DPICHANGED:
                 OnDpiChanged(LOWORD(_wParam), (Rect*)_lParam);
                 break;
+            case WM_UPDATEUISTATE:
+                OnUpdateUiState(LOWORD(_wParam), HIWORD(_wParam));
+                break;
             default:
                 break;
             }
 
             return DefWindowProcW(_hWnd, _uMsg, _wParam, _lParam);
+        }
+
+        bool __MEGA_UI_API Window::OnCreate()
+        {
+            //Rect Client2;
+            //::GetWindowRect(_hWnd, &Client2);
+            fUIState = LOWORD(SendMessageW(hWnd, WM_QUERYUISTATE, 0, 0));
+
+            RECT Client;
+            ::GetClientRect(hWnd, &Client);
+            //intptr_t _Cooike;
+            //_pNativeWindow->StartDefer(&_Cooike);
+            //_pNativeWindow->SetX(_pInfo->x);
+            //_pNativeWindow->SetY(_pInfo->y);
+            intptr_t _Cooike = 0;
+            if (pHost)
+                pHost->StartDefer(&_Cooike);
+
+            OnSize(Client.right - Client.left, Client.bottom - Client.top);
+
+            const auto _iNewDpi = GetDpiForWindow(hWnd);
+            const auto _iOldDpi = GetDpi();
+            if (_iNewDpi != _iOldDpi)
+            {
+                RECT Client2;
+                ::GetWindowRect(hWnd, &Client2);
+                //Client2.Left = UpdatePixel(Client2.Left, _iOldDpi, _iNewDpi);
+                //Client2.Top = UpdatePixel(Client2.Top, _iOldDpi, _iNewDpi);
+                Client2.right = Client2.left + (int32_t)UpdatePixel(float(Client2.right - Client2.left), _iOldDpi, _iNewDpi);
+                Client2.bottom = Client2.top + (int32_t)UpdatePixel(float(Client2.bottom - Client2.top), _iOldDpi, _iNewDpi);
+                MoveWindow(hWnd, Client2.left, Client2.top, Client2.right, Client2.bottom, TRUE);
+                OnDpiChanged(_iNewDpi, nullptr);
+            }
+
+            if (_Cooike && pHost)
+                pHost->EndDefer(_Cooike);
+
+            return true;
         }
 
         HRESULT __MEGA_UI_API Window::OnPaint()
@@ -788,6 +796,23 @@ namespace YY
             }
 
             return S_OK;
+        }
+        
+        void __MEGA_UI_API Window::OnUpdateUiState(uint16_t _eType, uint16_t _fState)
+        {
+            auto _fOldUIState = fUIState;
+
+            switch (_eType)
+            {
+            case UIS_SET:
+                fUIState |= _fState;
+                break;
+            case UIS_CLEAR:
+                fUIState &= ~_fState;
+                break;
+            default:
+                break;
+            }
         }
     } // namespace MegaUI
 } // namespace YY

@@ -77,9 +77,10 @@ namespace YY
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
     _APPLY(Padding,        PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDisplay | PG_AffectsDesiredSize,      &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecPadding), 0), ValueType::Rect   ) \
-    _APPLY(FocusBorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,  &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecFocusBorderThickness), 0), ValueType::Rect   ) \
-    _APPLY(FocusBorderStyle, PF_Normal | PF_Cascade,              PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
-    _APPLY(FocusBorderColor, PF_Normal | PF_Cascade,              PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
+    _APPLY(FocusVisible,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecFocusVisible), 0), ValueType::boolean   ) \
+    _APPLY(FocusThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecFocusThickness), 0), ValueType::Rect   ) \
+    _APPLY(FocusStyle,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
+    _APPLY(FocusColor,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
     _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
     _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetMouseFocusedProperty), ValueType::boolean   ) \
     _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
@@ -186,7 +187,7 @@ namespace YY
     _APPLY(bHasLocMouseFocused, 1)          \
     _APPLY(bLocMouseFocused, 1)             \
     _APPLY(bSpecMouseFocused, 1)            \
-    _APPLY(bLocHighDPI, 1)
+    _APPLY(bSpecFocusVisible, 1)
 
 
             _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
@@ -215,7 +216,7 @@ namespace YY
             // 内边距
             Rect SpecPadding;
             // 边框宽度，四个方向，左上右下
-            Rect SpecFocusBorderThickness;
+            Rect SpecFocusThickness;
 
             //Layout* pLayout = nullptr;
 
