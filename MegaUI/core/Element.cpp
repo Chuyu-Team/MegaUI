@@ -34,10 +34,10 @@ namespace YY
             { }
         };
 
-        static const EnumMap DirectionEnumMap[] =
+        static const EnumMap FlowDirectionEnumMap[] =
         {
-            { "LTR", DIRECTION_LTR },
-            { "RTL", DIRECTION_RTL },
+            { "LeftToRight", (int32_t)FlowDirection::LeftToRight },
+            { "RightToLeft", (int32_t)FlowDirection::RightToLeft },
             { }
         };
         
@@ -122,7 +122,6 @@ namespace YY
             , bSpecMouseFocused(FALSE)
             , bSpecFocusVisible(false)
             , bNeedsDSUpdate(true)
-            , iSpecDirection(DIRECTION_LTR)
         {
             SpecFont.szFace = Element::g_ControlInfoData.FontFamilyProp.pFunDefaultValue().GetString();
             SpecFont.iSize = Element::g_ControlInfoData.FontSizeProp.pFunDefaultValue().GetFloat();
@@ -493,9 +492,29 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FocusColorProp, _NewValue);
         }
 
-        bool __MEGA_UI_API Element::IsRTL()
+        FlowDirection __MEGA_UI_API Element::GetFlowDirection()
         {
-            return iSpecDirection == DIRECTION_RTL;
+            return iSpecFlowDirection;
+        }
+
+        HRESULT __MEGA_UI_API Element::SetFlowDirection(FlowDirection _eFlowDirection)
+        {
+            switch (_eFlowDirection)
+            {
+            case FlowDirection::LeftToRight:
+            case FlowDirection::RightToLeft:
+            {
+                auto _FlowDirectionValue = Value::CreateInt32((int32_t)_eFlowDirection);
+                if (_FlowDirectionValue == nullptr)
+                    return E_OUTOFMEMORY;
+
+                return SetValue(Element::g_ControlInfoData.FlowDirectionProp, _FlowDirectionValue);
+                break;
+            }
+            default:
+                return E_INVALIDARG;
+                break;
+            }
         }
 
         bool __MEGA_UI_API Element::IsMouseWithin()
@@ -986,7 +1005,7 @@ namespace YY
                 PaintBorder(
                     _pRenderTarget,
                     GetBorderStyle(),
-                    ApplyRTL(SpecBorderThickness),
+                    ApplyFlowDirection(SpecBorderThickness),
                     GetBorderColor(),
                     _PaintBounds);
             }
@@ -997,7 +1016,7 @@ namespace YY
                 _PaintBounds);
 
             // 应用内边距
-            _PaintBounds.DeflateRect(ApplyRTL(SpecPadding));
+            _PaintBounds.DeflateRect(ApplyFlowDirection(SpecPadding));
 
             // 绘制焦点框
             if (bSpecFocusVisible 
@@ -1006,7 +1025,7 @@ namespace YY
                 PaintBorder(
                     _pRenderTarget,
                     GetFocusBorderStyle(),
-                    ApplyRTL(SpecFocusThickness),
+                    ApplyFlowDirection(SpecFocusThickness),
                     GetFocusBorderColor(),
                     _PaintBounds);
             }
@@ -2654,9 +2673,9 @@ namespace YY
             return sizeDesired;
         }
 
-        Rect __MEGA_UI_API Element::ApplyRTL(const Rect& _Src)
+        Rect __MEGA_UI_API Element::ApplyFlowDirection(const Rect& _Src)
         {
-            if (IsRTL())
+            if (GetFlowDirection() == FlowDirection::RightToLeft)
                 return Rect(_Src.Right, _Src.Top, _Src.Left, _Src.Bottom);
             else
                 return _Src;

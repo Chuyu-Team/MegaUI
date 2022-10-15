@@ -21,9 +21,6 @@
 #define LC_Normal 2
 #define LC_Optimize 3
 
-#define DIRECTION_LTR 0
-#define DIRECTION_RTL 1
-
 #pragma pack(push, __MEGA_UI_PACKING)
 
 namespace YY
@@ -49,6 +46,15 @@ namespace YY
             Sunken,
             // 圆角样式边框
             Rounded,
+        };
+
+        // FlowDirectionProp
+        enum class FlowDirection
+        {
+            // 内容从右到左开始流动。
+            LeftToRight,
+            // 内容从左到右开始流动。
+            RightToLeft,
         };
 
 #if 0
@@ -88,7 +94,7 @@ namespace YY
     _APPLY(FocusThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, UFIELD_OFFSET(Element, SpecFocusThickness), 0), ValueType::Rect   ) \
     _APPLY(FocusStyle,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                           nullptr, nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(), ValueType::int32_t   ) \
     _APPLY(FocusColor,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
-    _APPLY(Direction,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                           nullptr, nullptr, DirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecDirection), 0), ValueType::int32_t   ) \
+    _APPLY(FlowDirection,  PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                           nullptr, nullptr, FlowDirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecFlowDirection), 0), ValueType::int32_t   ) \
     _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetMouseFocusedProperty), ValueType::boolean   ) \
     _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(ID,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
@@ -229,7 +235,7 @@ namespace YY
 
             // 最小限制
             Size SpecMinSize = {};
-            int32_t iSpecDirection = 0;
+            FlowDirection iSpecFlowDirection = FlowDirection::LeftToRight;
             int32_t fSpecContentAlign = ContentAlign::Top | ContentAlign::Left;
             // 当前DPI值
             int32_t iLocDpi = 96;
@@ -305,7 +311,15 @@ namespace YY
 
             HRESULT __MEGA_UI_API SetFocusBorderColor(Color _BorderColor);
 
-            bool __MEGA_UI_API IsRTL();
+            /// <summary>
+            /// 获取内容流动方式，从左到右还是从右到左。
+            /// </summary>
+            /// <returns></returns>
+            FlowDirection __MEGA_UI_API GetFlowDirection();
+            
+            HRESULT __MEGA_UI_API SetFlowDirection(FlowDirection _eFlowDirection);
+            
+            Rect __MEGA_UI_API ApplyFlowDirection(const Rect& _Src);
 
             bool __MEGA_UI_API IsMouseWithin();
             
@@ -451,8 +465,6 @@ namespace YY
             virtual void __MEGA_UI_API SelfLayoutDoLayout(Size _ConstraintSize);
 
             void __MEGA_UI_API Detach(DeferCycle* _pDeferCycle);
-
-            Rect __MEGA_UI_API ApplyRTL(const Rect& _Src);
 
             void __MEGA_UI_API Invalidate();
 
