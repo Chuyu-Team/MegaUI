@@ -21,12 +21,6 @@
 #define LC_Normal 2
 #define LC_Optimize 3
 
-// BorderStyleProp
-#define BDS_Solid 0
-#define BDS_Raised 1
-#define BDS_Sunken 2
-#define BDS_Rounded 3
-
 #define DIRECTION_LTR 0
 #define DIRECTION_RTL 1
 
@@ -43,6 +37,19 @@ namespace YY
             constexpr auto Mouse = 0x00000001;
             constexpr auto Keyboard = 0x00000002;
         }
+
+        // BorderStyleProp
+        enum class BorderStyle
+        {
+            // 实心边框
+            Solid,
+            // 凸起样式边框
+            Raised,
+            // 凹起样式边框
+            Sunken,
+            // 圆角样式边框
+            Rounded,
+        };
 
 #if 0
 		_APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout, Value::CreateElementNull,            nullptr, ValueType::eElement) \
@@ -282,17 +289,17 @@ namespace YY
 
             ValueIs<ValueType::Layout> __MEGA_UI_API GetLayout();
 
-            int32_t __MEGA_UI_API GetBorderStyle();
+            BorderStyle __MEGA_UI_API GetBorderStyle();
 
-            HRESULT __MEGA_UI_API SetBorderStyle(int32_t _iBorderStyle);
+            HRESULT __MEGA_UI_API SetBorderStyle(BorderStyle _eBorderStyle);
             
             Color __MEGA_UI_API GetBorderColor();
 
             HRESULT __MEGA_UI_API SetBorderColor(Color _BorderColor);
             
-            int32_t __MEGA_UI_API GetFocusBorderStyle();
+            BorderStyle __MEGA_UI_API GetFocusBorderStyle();
 
-            HRESULT __MEGA_UI_API SetFocusBorderStyle(int32_t _iBorderStyle);
+            HRESULT __MEGA_UI_API SetFocusBorderStyle(BorderStyle _eBorderStyle);
             
             Color __MEGA_UI_API GetFocusBorderColor();
 
@@ -426,7 +433,7 @@ namespace YY
 
             virtual void __MEGA_UI_API Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
 
-            void __MEGA_UI_API PaintBorder(_In_ Render* _pRenderTarget, _In_ int32_t _iBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
+            void __MEGA_UI_API PaintBorder(_In_ Render* _pRenderTarget, _In_ BorderStyle _eBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
 
             void __MEGA_UI_API PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
             

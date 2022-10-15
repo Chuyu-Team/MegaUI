@@ -27,10 +27,10 @@ namespace YY
 
         static const EnumMap BorderStyleEnumMap[] =
         {
-            { "Solid",   BDS_Solid  },
-            { "Raised",  BDS_Raised },
-            { "Sunken",  BDS_Sunken },
-            { "Rounded", BDS_Rounded },
+            { "Solid",   int32_t(BorderStyle::Solid) },
+            { "Raised",  int32_t(BorderStyle::Raised) },
+            { "Sunken",  int32_t(BorderStyle::Sunken) },
+            { "Rounded", int32_t(BorderStyle::Rounded) },
             { }
         };
 
@@ -421,21 +421,21 @@ namespace YY
             return GetValue(Element::g_ControlInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
         }
 
-        int32_t __MEGA_UI_API Element::GetBorderStyle()
+        BorderStyle __MEGA_UI_API Element::GetBorderStyle()
         {
-            int32_t _iValue = {};
+            int32_t _iValue = 0;
 
             auto _pValue = GetValue(Element::g_ControlInfoData.BorderStyleProp, PropertyIndicies::PI_Specified, false);
             if (_pValue != nullptr)
             {
                 _iValue = _pValue.GetInt32();
             }
-            return _iValue;
+            return BorderStyle(_iValue);
         }
 
-        HRESULT __MEGA_UI_API Element::SetBorderStyle(int32_t _iBorderStyle)
+        HRESULT __MEGA_UI_API Element::SetBorderStyle(BorderStyle _eBorderStyle)
         {
-            auto _NewValue = Value::CreateInt32(_iBorderStyle);
+            auto _NewValue = Value::CreateInt32((int32_t)_eBorderStyle);
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -457,21 +457,21 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.BorderColorProp, _NewValue);
         }
 
-        int32_t __MEGA_UI_API Element::GetFocusBorderStyle()
+        BorderStyle __MEGA_UI_API Element::GetFocusBorderStyle()
         {
-            int32_t _iValue = {};
+            int32_t _iValue = 0;
 
             auto _pValue = GetValue(Element::g_ControlInfoData.FocusStyleProp, PropertyIndicies::PI_Specified, false);
             if (_pValue != nullptr)
             {
                 _iValue = _pValue.GetInt32();
             }
-            return _iValue;
+            return BorderStyle(_iValue);
         }
 
-        HRESULT __MEGA_UI_API Element::SetFocusBorderStyle(int32_t _iBorderStyle)
+        HRESULT __MEGA_UI_API Element::SetFocusBorderStyle(BorderStyle _eBorderStyle)
         {
-            auto _NewValue = Value::CreateInt32(_iBorderStyle);
+            auto _NewValue = Value::CreateInt32(int32_t(_eBorderStyle));
             if (_NewValue == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -1020,7 +1020,7 @@ namespace YY
                 fSpecContentAlign);
         }
 
-        void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, int32_t _iBorderStyle, const Rect& _BorderThickness, Color _BorderColor, Rect& _Bounds)
+        void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, BorderStyle _eBorderStyle, const Rect& _BorderThickness, Color _BorderColor, Rect& _Bounds)
         {
             if (_BorderThickness.Left == 0 && _BorderThickness.Top == 0 && _BorderThickness.Right == 0 && _BorderThickness.Bottom == 0)
                 return;
@@ -1030,9 +1030,9 @@ namespace YY
 
             if (_BorderColor.Alpha != 0)
             {
-                switch (_iBorderStyle)
+                switch (_eBorderStyle)
                 {
-                case BDS_Solid:
+                case BorderStyle::Solid:
                 {
                     ComPtr<ID2D1SolidColorBrush> _BorderBrush;
                     auto hr = _pRenderTarget->CreateSolidColorBrush(
@@ -1052,8 +1052,8 @@ namespace YY
                     }
                     break;
                 }
-                case BDS_Raised:
-                case BDS_Sunken:
+                case BorderStyle::Raised:
+                case BorderStyle::Sunken:
                 {
                     Rect _BoundsOutter = _Bounds;
                     _BoundsOutter.DeflateRect({_BorderThickness.Left / 2, _BorderThickness.Top / 2, _BorderThickness.Right / 2, _BorderThickness.Bottom / 2});
@@ -1063,7 +1063,7 @@ namespace YY
                     ComPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner Left Top
                     ComPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner Right and Bottom
 
-                    if (_iBorderStyle == BDS_Raised)
+                    if (_eBorderStyle == BorderStyle::Raised)
                     {
                         _pRenderTarget->CreateSolidColorBrush(
                             _BorderColor,
