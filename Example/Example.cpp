@@ -5,7 +5,6 @@
 #include "Example.h"
 #include <vector>
 
-#include <MegaUI/Host/NativeWindowHost.h>
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Parser/UIParser.h>
 

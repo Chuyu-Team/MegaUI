@@ -184,7 +184,6 @@
     <ClInclude Include="core\StyleSheet.h" />
     <ClInclude Include="core\value.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="Host\NativeWindowHost.h" />
     <ClInclude Include="Parser\UIParser.h" />
     <ClInclude Include="Parser\ValueParser.h" />
     <ClInclude Include="pch.h" />
@@ -204,7 +203,6 @@
     <ClCompile Include="core\Element.cpp" />
     <ClCompile Include="core\StyleSheet.cpp" />
     <ClCompile Include="core\value.cpp" />
-    <ClCompile Include="Host\NativeWindowHost.cpp" />
     <ClCompile Include="MegaUI.cpp" />
     <ClCompile Include="Parser\UIParser.cpp" />
     <ClCompile Include="pch.cpp">
