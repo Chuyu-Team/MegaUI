@@ -112,14 +112,14 @@ namespace YY
             , SpecID(0)
             , bSelfLayout(false)
             , fNeedsLayout(0)
-            , bLocMouseWithin(FALSE)
-            , bDestroy(FALSE)
-            , bSpecVisible(FALSE)
-            , bCmpVisible(FALSE)
-            , bSpecEnabled(TRUE)
-            , bHasLocMouseFocused(FALSE)
-            , bLocMouseFocused(FALSE)
-            , bSpecMouseFocused(FALSE)
+            , bLocMouseFocusWithin(false)
+            , bDestroy(false)
+            , bSpecVisible(false)
+            , bCmpVisible(false)
+            , bSpecEnabled(true)
+            , bHasLocMouseFocused(false)
+            , bLocMouseFocused(false)
+            , bSpecMouseFocused(false)
             , bSpecFocusVisible(false)
             , bNeedsDSUpdate(true)
         {
@@ -251,14 +251,19 @@ namespace YY
             return _pValue;
         }
 
-        HRESULT __MEGA_UI_API Element::SetValue(const PropertyInfo& _Prop, const Value& _pValue)
+        HRESULT __MEGA_UI_API Element::SetValue(const PropertyInfo& _Prop, const Value& _Value)
         {
-            if (_pValue == nullptr)
+            if (_Value == nullptr)
                 return E_INVALIDARG;
 
             if (_Prop.fFlags & PF_ReadOnly)
                 return E_NOTIMPL;
 
+            return SetValueInternal(_Prop, _Value, true);
+        }
+
+        HRESULT __MEGA_UI_API Element::SetValueInternal(const PropertyInfo& _Prop, const Value& _Value, bool _bCanCancel)
+        {
             const auto _iIndex = GetControlInfo()->GetPropertyInfoIndex(_Prop);
             if (_iIndex < 0)
                 return E_NOT_SET;
@@ -269,20 +274,49 @@ namespace YY
             if (_pvOld == nullptr)
                 return E_OUTOFMEMORY;
 
-            if (_pvOld == _pValue)
+            if (_pvOld == _Value)
                 return S_OK;
 
-            if (!OnPropertyChanging(_Prop, PropertyIndicies::PI_Local, _pvOld, _pValue))
+            if (_bCanCancel && OnPropertyChanging(_Prop, PropertyIndicies::PI_Local, _pvOld, _Value) == false)
                 return __HRESULT_FROM_WIN32(ERROR_CANCELLED);
 
-            PreSourceChange(_Prop, PropertyIndicies::PI_Local, _pvOld, _pValue);
+            PreSourceChange(_Prop, PropertyIndicies::PI_Local, _pvOld, _Value);
 
             auto _hr = S_OK;
-            if (LocalPropValue.GetSize() <= _uIndex)
-                _hr = LocalPropValue.Resize(_uIndex + 1);
+            do
+            {
+                if (_Prop.BindCacheInfo.uRaw)
+                {
+                    auto _pFunPropertyCache = _Prop.BindCacheInfo.bValueMapOrCustomPropFun ? &Element::PropertyGeneralCache : _Prop.BindCacheInfo.pFunPropertyCustomCache;
 
-            if (SUCCEEDED(_hr))
-                _hr = LocalPropValue.SetItem(_uIndex, _pValue);
+                    PropertyCustomCacheUpdateValueAction _UpdateValue;
+                    _UpdateValue.pProp = &_Prop;
+                    _UpdateValue.eIndicies = PropertyIndicies::PI_Local;
+                    _UpdateValue.InputNewValue = _Value;
+
+                    auto _Result = (this->*_pFunPropertyCache)(PropertyCustomCacheActionMode::UpdateValue, &_UpdateValue);
+                    if (_Result & PropertyCustomCacheResult::SkipLocalPropValue)
+                        break;
+                }
+
+                const auto _uLocalPropValueCount = LocalPropValue.GetSize();
+
+                if (_Value.GetType() == ValueType::Unset)
+                {
+                    // 将数值取消
+                    if (_uLocalPropValueCount > _uIndex)
+                        _hr = LocalPropValue.SetItem(_uIndex, Value());
+                }
+                else
+                {
+                    if (_uLocalPropValueCount <= _uIndex)
+                        _hr = LocalPropValue.Resize(_uIndex + 1);
+
+                    if (SUCCEEDED(_hr))
+                        _hr = LocalPropValue.SetItem(_uIndex, _Value);
+                }
+
+            } while (false);
 
             PostSourceChange();
 
@@ -517,9 +551,9 @@ namespace YY
             }
         }
 
-        bool __MEGA_UI_API Element::IsMouseWithin()
+        bool __MEGA_UI_API Element::IsMouseFocusWithin()
         {
-            return bLocMouseWithin != FALSE;
+            return bLocMouseFocusWithin;
         }
 
         uString __MEGA_UI_API Element::GetClass()
@@ -2153,10 +2187,10 @@ namespace YY
                 _uOffsetToHasCache = _pProp->BindCacheInfo.OffsetToHasLocalCache;
                 _uHasCacheBit = _pProp->BindCacheInfo.HasLocalValueCacheBit;
 				break;
-			default:
-				return PropertyCustomCacheResult::SkipNone;
-				break;
 			}
+
+            if (_uOffsetToCache == 0)
+                return PropertyCustomCacheResult::SkipNone;
 
 			if (_eMode == PropertyCustomCacheActionMode::GetValue)
 			{
@@ -2254,14 +2288,47 @@ namespace YY
 					if (_pNewValue == nullptr)
 						break;
 
+                    auto _pCache = (uint8_t*)this + _uOffsetToCache;
+
 					if (_pNewValue.GetType() == ValueType::Unset)
 					{
                         if (_uOffsetToHasCache == 0)
-							break;
+                        {
+                            // 不应该设置 Unset
+                            __debugbreak();
+                            break;
+                        }
 
 						auto& _uHasCache = *((uint8_t*)this + _uOffsetToHasCache);
 
 						_uHasCache &= ~(1 << _uHasCacheBit);
+
+                        // 某些资源我们需要进行释放
+                        switch ((ValueType)_pProp->BindCacheInfo.eType)
+                        {
+                        case ValueType::Element:
+                            *(Element**)_pCache = nullptr;
+                            break;
+                        case ValueType::ElementList:
+                            ((ElementList*)_pCache)->Clear();
+                            break;
+                        case ValueType::StyleSheet:
+                        {
+                            auto& _pOldStyleSheet = *(StyleSheet**)_pCache;
+                            if (_pOldStyleSheet)
+                            {
+                                _pOldStyleSheet->Release();
+                                _pOldStyleSheet = nullptr;
+                            }
+                            break;
+                        }
+                        case ValueType::uString:
+                        {
+                            auto& _szOldString = *(uString*)_pCache;
+                            _szOldString.Clear();
+                            break;
+                        }
+                        }
 					}
                     else if (_pNewValue.GetType() == (ValueType)_pProp->BindCacheInfo.eType)
 					{
@@ -2271,8 +2338,6 @@ namespace YY
                             auto& _uHasCache = *((uint8_t*)this + _uOffsetToHasCache);
                             _uHasCache |= (1 << _uHasCacheBit);
                         }
-
-						auto _pCache = (uint8_t*)this + _uOffsetToCache;
 
                         auto _pDataBuffer = _pNewValue.GetRawBuffer();
 
@@ -2396,10 +2461,9 @@ namespace YY
 
         void __MEGA_UI_API Element::OnEnabledPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
         {
-            // 如果被禁用，那么鼠标是不行了。
+            // todo 如果被禁用，那么鼠标是不行了。
             if (_NewValue.GetBool() == false)
             {
-                UpdateMouseWithinToFalse();
             }
         }
 
@@ -2703,8 +2767,13 @@ namespace YY
                 {
                     pExtentValue = Value::CreateSize(LocDesiredSize);
                 }
+                
+                return PropertyCustomCacheResult::SkipAll;
             }
-            return PropertyCustomCacheResult::SkipAll;
+            else
+            {
+                return PropertyCustomCacheResult::SkipNone;
+            }
         }
 
         PropertyCustomCacheResult __MEGA_UI_API Element::GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo)
@@ -2723,8 +2792,13 @@ namespace YY
                 {
                     _Location = Value::CreatePoint(GetX(), GetY());
                 }
+
+                return PropertyCustomCacheResult::SkipAll;
             }
-            return PropertyCustomCacheResult::SkipAll;
+            else
+            {
+                return PropertyCustomCacheResult::SkipNone;
+            }
         }
 
         PropertyCustomCacheResult __MEGA_UI_API Element::GetVisibleProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
@@ -2745,6 +2819,7 @@ namespace YY
                     }
 
                     _pGetValueInfo->RetValue = Value::CreateBool(bSpecVisible);
+                    return PropertyCustomCacheResult::SkipAll;
                 }
                 else if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Computed)
                 {
@@ -2767,6 +2842,8 @@ namespace YY
                     {
                         _pGetValueInfo->RetValue = Value::CreateBool(bCmpVisible);
                     }
+
+                    return PropertyCustomCacheResult::SkipAll;
                 }
             }
             else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
@@ -2777,15 +2854,21 @@ namespace YY
                     if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Specified)
                     {
                         bSpecVisible = _pUpdateValueInfo->InputNewValue.GetBool();
+                        return PropertyCustomCacheResult::SkipAll;
                     }
                     else if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Computed)
                     {
                         bCmpVisible = _pUpdateValueInfo->InputNewValue.GetBool();
+                        return PropertyCustomCacheResult::SkipAll;
+                    }
+                    else
+                    {
+                        return PropertyCustomCacheResult::SkipNone;
                     }
                 }
             }
 
-            return PropertyCustomCacheResult::SkipAll;
+            return PropertyCustomCacheResult::SkipNone;
         }
 
         PropertyCustomCacheResult __MEGA_UI_API Element::GetMouseFocusedProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
@@ -2842,14 +2925,17 @@ namespace YY
                         bHasLocMouseFocused = true;
                         bLocMouseFocused = _InputNewValue.GetBool();
                     }
+
+                    return PropertyCustomCacheResult::SkipAll;
                 }
                 else if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Specified)
                 {
                     bSpecMouseFocused = _InputNewValue.GetBool();
+                    return PropertyCustomCacheResult::SkipAll;
                 }
             }
 
-            return PropertyCustomCacheResult::SkipAll;
+            return PropertyCustomCacheResult::SkipNone;
         }
 
         HRESULT __MEGA_UI_API Element::GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
@@ -3084,24 +3170,5 @@ namespace YY
             return S_OK;
         }
         
-        void __MEGA_UI_API Element::UpdateMouseWithinToFalse()
-        {
-            if (!IsMouseWithin())
-                return;
-
-            intptr_t _Cooike = 0;
-            StartDefer(&_Cooike);
-
-            PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
-            bLocMouseWithin = FALSE;
-            PostSourceChange();
-
-            for (auto _pChild : GetChildren())
-            {
-                _pChild->UpdateMouseWithinToFalse();
-            }
-
-            EndDefer(_Cooike);
-        }
 	}
 }

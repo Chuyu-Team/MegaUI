@@ -33,6 +33,12 @@ namespace YY
             {
             }
 
+            inline constexpr Point(POINTS _Other)
+                : X((float)_Other.x)
+                , Y((float)_Other.y)
+            {
+            }
+
             inline bool operator==(Point _Other) const
             {
                 return X == _Other.X && Y == _Other.Y;

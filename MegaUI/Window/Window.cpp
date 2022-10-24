@@ -16,7 +16,7 @@ namespace YY
             , LastRenderSize {}
             , fTrackMouse(0u)
             , bCapture(false)
-            , pLastFocusedElement(nullptr)
+            , pLastMouseFocusedElement(nullptr)
             , pLastPressedElement(nullptr)
             , iDpi(_DefaultDpi ? _DefaultDpi : 96)
         {
@@ -224,12 +224,15 @@ namespace YY
             
         }
 
-        Element* __MEGA_UI_API Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fActiveMarks)
+        Element* __MEGA_UI_API Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fFindMarks)
         {
             if (!pHost)
                 return nullptr;
-
-            if (!pHost->GetVisible())
+            
+            if ((fFindMarks & FindVisible) && pHost->GetVisible() == false)
+                return nullptr;
+            
+            if ((fFindMarks & FindEnable) && pHost->GetEnabled() == false)
                 return nullptr;
 
             Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
@@ -241,9 +244,10 @@ namespace YY
             Element* _pLastFind = nullptr;
             Element* _pElement = pHost;
 
+            auto _fActiveMarks = fFindMarks & FindActionMarks;
             for (;;)
             {
-                if (fActiveMarks == 0 || (_pElement->GetActive() & fActiveMarks))
+                if (_fActiveMarks == 0 || (_pElement->GetActive() & _fActiveMarks))
                     _pLastFind = _pElement;
 
                 auto _Children = _pElement->GetChildren();
@@ -259,7 +263,7 @@ namespace YY
 
                     auto _pChild = _pData[_uSize];
 
-                    if (!_pChild->GetVisible())
+                    if ((fFindMarks & FindVisible) && _pChild->GetVisible() == false)
                         continue;
 
                     auto _Location = _pChild->GetLocation();
@@ -282,6 +286,9 @@ namespace YY
                     {
                         continue;
                     }
+                    
+                    if ((fFindMarks & FindEnable) && _pChild->GetEnabled() == false)
+                        return nullptr;
 
                     _pElement = _pChild;
                     _Bounds = _ChildBoundsElement;
@@ -399,40 +406,25 @@ namespace YY
                 }
                 break;
             case WM_MOUSEMOVE:
-                if (pHost && _wParam != MK_LBUTTON)
-                {
-                    Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
-                    UpdateMouseWithin(pHost, _Bounds, _Bounds, Point((float)LOWORD(_lParam), (float)HIWORD(_lParam)));
-                }
-
-                if ((fTrackMouse & TME_LEAVE) == 0)
-                {
-                    TRACKMOUSEEVENT tme;
-                    tme.cbSize = sizeof(tme);
-                    tme.dwFlags = TME_LEAVE;
-                    tme.dwHoverTime = HOVER_DEFAULT;
-                    tme.hwndTrack = _hWnd;
-                    if (TrackMouseEvent(&tme))
-                    {
-                        fTrackMouse |= TME_LEAVE;
-                    }
-                }
+                OnMouseMove(MAKEPOINTS(_lParam), (uint32_t)_wParam);              
                 break;
             case WM_MOUSELEAVE:
                 fTrackMouse &= ~TME_LEAVE;
-                if (pHost)
-                    pHost->UpdateMouseWithinToFalse();
+                if (pHost && pLastMouseFocusedElement)
+                {
+                    auto _pLastMouseFocusedElement = pLastMouseFocusedElement;
+                    pLastMouseFocusedElement = nullptr;
+                    OnMouseFocusMoved(_pLastMouseFocusedElement, nullptr);
+                }
                 break;
             case WM_LBUTTONDOWN:
             {
                 auto _pOldPressedElement = pLastPressedElement;
-                auto _pOldFocusedElement = pLastFocusedElement;
 
-                auto _pFind = FindElementFromPoint(Point((float)LOWORD(_lParam), (float)HIWORD(_lParam)), Active::Mouse);
-                if (_pFind && _pFind->GetEnabled())
+                auto _pFind = FindElementFromPoint(MAKEPOINTS(_lParam), FindVisible | FindEnable | FindActionMouse);
+                if (_pFind)
                 {
                     pLastPressedElement = _pFind;
-                    pLastFocusedElement = _pFind;
 
                     // 启用鼠标消息跟踪
                     ::SetCapture(hWnd);
@@ -444,36 +436,6 @@ namespace YY
                 }
                 
                 auto _pNewPressedElement = pLastPressedElement;
-                auto _pNewFocusedElement = pLastFocusedElement;
-
-                if (_pOldFocusedElement || _pNewFocusedElement)
-                {
-                    intptr_t _Cooike = 0;
-
-                    if (pHost)
-                        pHost->StartDefer(&_Cooike);
-
-                    if (_pOldFocusedElement && _pNewFocusedElement != _pOldFocusedElement)
-                    {
-                        _pOldFocusedElement->PreSourceChange(Element::g_ControlInfoData.MouseFocusedProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateUnset());
-                        _pOldFocusedElement->bHasLocMouseFocused = FALSE;
-                        _pOldFocusedElement->PostSourceChange();
-                    }
-
-                    if (_pNewFocusedElement)
-                    {
-                        if (_pNewFocusedElement->bHasLocMouseFocused == FALSE || _pNewFocusedElement->bLocMouseFocused == FALSE)
-                        {
-                            _pNewFocusedElement->PreSourceChange(Element::g_ControlInfoData.MouseFocusedProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
-                            _pNewFocusedElement->bHasLocMouseFocused = TRUE;
-                            _pNewFocusedElement->bLocMouseFocused = TRUE;
-                            _pNewFocusedElement->PostSourceChange();
-                        }
-                    }
-                    
-                    if (pHost)
-                        pHost->EndDefer(_Cooike);
-                }
                 break;
             }
             case WM_LBUTTONUP:
@@ -667,52 +629,6 @@ namespace YY
             }
         }
 
-        void __MEGA_UI_API Window::UpdateMouseWithin(Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentVisibleBounds, const Point& _ptPoint)
-        {
-            // 禁用的控件不分发鼠标消息。
-            if (!_pElement->GetEnabled())
-                return;
-
-            auto _Location = _pElement->GetLocation();
-            auto _Extent = _pElement->GetExtent();
-
-            Rect _BoundsElement;
-            _BoundsElement.Left = _ParentBounds.Left + _Location.X;
-            _BoundsElement.Right = _BoundsElement.Left + _Extent.Width;
-
-            _BoundsElement.Top = _ParentBounds.Top + _Location.Y;
-            _BoundsElement.Bottom = _BoundsElement.Top + _Extent.Height;
-
-            Rect _VisibleBounds = _ParentVisibleBounds & _BoundsElement;
-            if (!_VisibleBounds.IsEmpty())
-            {
-                if (_VisibleBounds.PointInRect(_ptPoint))
-                {
-                    intptr_t _Cooike = 0;
-
-                    if (!_pElement->IsMouseWithin())
-                    {
-                        _pElement->StartDefer(&_Cooike);
-
-                        _pElement->PreSourceChange(Element::g_ControlInfoData.MouseWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
-                        _pElement->bLocMouseWithin = TRUE;
-                        _pElement->PostSourceChange();
-                    }
-
-                    for (auto _pChild : _pElement->GetChildren())
-                    {
-                        UpdateMouseWithin(_pChild, _BoundsElement, _VisibleBounds, _ptPoint);
-                    }
-
-                    if (_Cooike)
-                        _pElement->EndDefer(_Cooike);
-                    return;
-                }
-            }
-
-            _pElement->UpdateMouseWithinToFalse();
-        }
-
         void __MEGA_UI_API Window::ClearDelayedDestroyList()
         {
             auto _TmpList = std::move(DelayedDestroyList);
@@ -813,6 +729,85 @@ namespace YY
             default:
                 break;
             }
+        }
+        
+        void __MEGA_UI_API Window::OnMouseMove(Point _MousePoint, uint32_t _fFlags)
+        {
+            if ((_fFlags & MK_LBUTTON) == 0)
+            {
+                if (pHost)
+                {
+                    auto _pNewMouseElement = FindElementFromPoint(_MousePoint, FindVisible | FindEnable | FindActionMouse);
+
+                    if (_pNewMouseElement != pLastMouseFocusedElement)
+                    {
+                        auto _pLastMouseFocusedElement = pLastMouseFocusedElement;
+                        pLastMouseFocusedElement = _pNewMouseElement;
+
+                        OnMouseFocusMoved(_pLastMouseFocusedElement, _pNewMouseElement);                        
+                    }
+
+                    if ((fTrackMouse & TME_LEAVE) == 0)
+                    {
+                        if (_pNewMouseElement)
+                        {
+                            TRACKMOUSEEVENT tme;
+                            tme.cbSize = sizeof(tme);
+                            tme.dwFlags = TME_LEAVE;
+                            tme.dwHoverTime = HOVER_DEFAULT;
+                            tme.hwndTrack = hWnd;
+                            if (TrackMouseEvent(&tme))
+                            {
+                                fTrackMouse |= TME_LEAVE;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        void __MEGA_UI_API Window::OnMouseFocusMoved(Element* _pFrom, Element* _pTo)
+        {
+            if (_pFrom == _pTo)
+                return;
+
+            intptr_t _Cooike = 0;
+
+            pHost->StartDefer(&_Cooike);
+
+            if (_pFrom)
+            {
+                _pFrom->SetValueInternal(Element::g_ControlInfoData.MouseFocusedProp, Value::CreateUnset());
+
+                // _pFrom->SetValueInternal(Element::g_ControlInfoData.MouseFocusWithinProp, Value::CreateUnset());
+                for (auto _pItem = _pFrom; _pItem; _pItem = _pItem->GetParent())
+                {
+                    if (!_pItem->bLocMouseFocusWithin)
+                        break;
+
+                    _pItem->PreSourceChange(Element::g_ControlInfoData.MouseFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
+                    _pItem->bLocMouseFocusWithin = false;
+                    _pItem->PostSourceChange();
+                }
+            }
+
+            if (_pTo)
+            {
+                _pTo->SetValueInternal(Element::g_ControlInfoData.MouseFocusedProp, Value::CreateBoolTrue());
+
+                // _pTo->SetValueInternal(Element::g_ControlInfoData.MouseFocusWithinProp, Value::CreateBoolTrue());
+                for (auto _pItem = _pTo; _pItem; _pItem = _pItem->GetParent())
+                {
+                    if (_pItem->bLocMouseFocusWithin)
+                        break;
+
+                    _pItem->PreSourceChange(Element::g_ControlInfoData.MouseFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
+                    _pItem->bLocMouseFocusWithin = true;
+                    _pItem->PostSourceChange();
+                }
+            }
+
+            pHost->EndDefer(_Cooike);
         }
     } // namespace MegaUI
 } // namespace YY

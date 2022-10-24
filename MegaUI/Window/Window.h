@@ -30,7 +30,7 @@ namespace YY
             uint32_t bCapture;
             // TODO 需要更换为块式队列更友好。
             DynamicArray<Element*> DelayedDestroyList;
-            Element* pLastFocusedElement;
+            Element* pLastMouseFocusedElement = nullptr;
             Element* pLastPressedElement;
             int32_t iDpi;
             // WM_UPDATEUISTATE的缓存
@@ -76,7 +76,14 @@ namespace YY
 
             void __MEGA_UI_API HandleEnabledPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
 
-            Element* __MEGA_UI_API FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fActiveMarks);
+            constexpr static auto FindActionMouse = 0x00000001;
+            constexpr static auto FindActionKeyboard = 0x00000002;
+            constexpr static auto FindActionMarks = 0x00000003;
+            constexpr static auto FindVisible = 0x00000004;
+            constexpr static auto FindEnable = 0x00000008;
+
+
+            Element* __MEGA_UI_API FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fFindMarks = FindVisible);
 
             int32_t __MEGA_UI_API GetDpi() const;
 
@@ -104,12 +111,6 @@ namespace YY
                 _In_ const Rect& _ParentPaintRect);
 
             void __MEGA_UI_API OnSize(UINT _uWidth, UINT _uHeight);
-            
-            void __MEGA_UI_API UpdateMouseWithin(
-                Element* _pElement,
-                const Rect& _ParentBounds,
-                const Rect& _ParentVisibleBounds,
-                const Point& _ptPoint);
 
             void __MEGA_UI_API ClearDelayedDestroyList();
 
@@ -121,7 +122,9 @@ namespace YY
 
             void __MEGA_UI_API OnUpdateUiState(uint16_t _eType, uint16_t _fState);
 
-            void __MEGA_UI_API UpdateFocusVisible(Element* _pElement, bool _bCanShowFocus);
+            void __MEGA_UI_API OnMouseMove(Point _MousePoint, uint32_t _fFlags);
+            
+            void __MEGA_UI_API OnMouseFocusMoved(Element* _pFrom, Element* _pTo);
         };
     }
 } // namespace YY

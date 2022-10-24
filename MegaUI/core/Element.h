@@ -96,7 +96,7 @@ namespace YY
     _APPLY(FocusColor,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::Color   ) \
     _APPLY(FlowDirection,  PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                           nullptr, nullptr, FlowDirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecFlowDirection), 0), ValueType::int32_t   ) \
     _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_CUSTOM(&Element::GetMouseFocusedProperty), ValueType::boolean   ) \
-    _APPLY(MouseWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseWithin), 0, 0, 0), ValueType::boolean   ) \
+    _APPLY(MouseFocusWithin, PF_LocalOnly | PF_ReadOnly,          0,                                              &Value::CreateBoolFalse,              nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseFocusWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(ID,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0), ValueType::ATOM   ) \
     _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              nullptr,                           &Element::GetSheetDependenciesThunk, nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0), ValueType::StyleSheet   ) \
     _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                           nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString   ) \
@@ -192,7 +192,7 @@ namespace YY
     _APPLY(bNeedsDSUpdate, 1)               \
     /* UINT8 LayoutType : 2;*/              \
     _APPLY(fNeedsLayout, 2)                 \
-    _APPLY(bLocMouseWithin, 1)              \
+    _APPLY(bLocMouseFocusWithin, 1)         \
     _APPLY(bDestroy, 1)                     \
     _APPLY(bSpecVisible, 1)                 \
     _APPLY(bCmpVisible, 1)                  \
@@ -272,6 +272,8 @@ namespace YY
             /// <returns></returns>
             HRESULT __MEGA_UI_API SetValue(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value);
 
+            HRESULT __MEGA_UI_API SetValueInternal(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value, _In_ bool _bCanCancel = false);
+
 			_Ret_maybenull_ Element* __MEGA_UI_API GetParent();
             
             int32_t __MEGA_UI_API GetLayoutPos();
@@ -321,7 +323,7 @@ namespace YY
             
             Rect __MEGA_UI_API ApplyFlowDirection(const Rect& _Src);
 
-            bool __MEGA_UI_API IsMouseWithin();
+            bool __MEGA_UI_API IsMouseFocusWithin();
             
             /// <summary>
             /// 返回控件绑定的 Class，它用于 Sheet 表达式匹配。
@@ -569,11 +571,6 @@ namespace YY
 
             virtual HRESULT __MEGA_UI_API OnUnHosted(Window* _pOldWindow);
 
-            /// <summary>
-            /// 递归将当前控件以及子控件的 MouseWithin 全部清除。
-            /// </summary>
-            /// <returns></returns>
-            void __MEGA_UI_API UpdateMouseWithinToFalse();
 		};
 	}
 }
