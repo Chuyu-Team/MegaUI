@@ -606,7 +606,7 @@ namespace YY
 
             for (auto pItem : _pElement->GetChildren())
             {
-                PaintElement(_pRender, pItem, _BoundsElement, _ParentPaintRect);
+                PaintElement(_pRender, pItem, _BoundsElement, _PaintRect);
             }
 
             return S_OK;
