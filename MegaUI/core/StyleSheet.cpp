@@ -286,7 +286,7 @@ namespace YY
 
             for (auto& CondItem : CondArray)
             {
-                if (CondItem.pProp == &Element::g_ControlInfoData.IDProp)
+                if (CondItem.pProp == &Element::g_ControlInfoData.IdProp)
                 {
                     _uWeight += 0x8000u;
                 }

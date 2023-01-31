@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "WindowElement.h"
-#include "../core/ControlInfoImp.h"
+#include "MegaUI/core/ControlInfoImp.h"
 #include "Window.h"
 
 #pragma warning(disable : 28251)
@@ -11,7 +11,7 @@ namespace YY
     {
         _APPLY_MEGA_UI_STATIC_CONTROL_INFO(WindowElement, _MEGA_UI_WINDOW_ELEMENT_PROPERTY_TABLE);
 
-        HRESULT __MEGA_UI_API WindowElement::SetTitle(uString _szTitle)
+        HRESULT WindowElement::SetTitle(uString _szTitle)
         {
             auto _TitleValue = Value::CreateString(_szTitle);
             if (_TitleValue == nullptr)
@@ -20,28 +20,28 @@ namespace YY
             return SetValue(WindowElement::g_ControlInfoData.TitleProp, _TitleValue);
         }
         
-        uString __MEGA_UI_API WindowElement::GetTitle()
+        uString WindowElement::GetTitle()
         {
             auto _TitleValue = GetValue(WindowElement::g_ControlInfoData.TitleProp);
 
             return _TitleValue.GetString();
         }
-        
-        void __MEGA_UI_API WindowElement::OnVisiblePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+
+        bool WindowElement::OnVisiblePropChanged(OnPropertyChangedHandleData* _pHandle)
         {
             // pWindow 的Host是 自己才会调用 HandleVisiblePropChanged
             if (pWindow && GetParent() == nullptr)
-                pWindow->HandleVisiblePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+                return pWindow->HandleVisiblePropChanged(_pHandle);
             else
-                Element::OnVisiblePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+                return Element::OnVisiblePropChanged(_pHandle);
         }
         
-        void __MEGA_UI_API WindowElement::OnEnabledPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool  WindowElement::OnEnabledPropChanged(OnPropertyChangedHandleData* _pHandle)
         {
             if (pWindow && GetParent() == nullptr)
-                pWindow->HandleEnabledPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+                return pWindow->HandleEnabledPropChanged(_pHandle);
             else
-                Element::OnEnabledPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+                return Element::OnEnabledPropChanged(_pHandle);
         }
     } // namespace MegaUI
 } // namespace YY

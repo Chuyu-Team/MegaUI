@@ -122,6 +122,14 @@ namespace YY
             , bSpecMouseFocused(false)
             , bSpecFocusVisible(false)
             , bNeedsDSUpdate(true)
+            , bLocKeyboardFocusWithin(false)
+            , bHasLocKeyboardFocused(false)
+            , bLocKeyboardFocused(false)
+            , bSpecKeyboardFocused(false)
+            , bLocFocusWithin(false)
+            , bHasLocFocused(false)
+            , bLocFocused(false)
+            , bSpecFocused(false)
         {
             SpecFont.szFace = Element::g_ControlInfoData.FontFamilyProp.pFunDefaultValue().GetString();
             SpecFont.iSize = Element::g_ControlInfoData.FontSizeProp.pFunDefaultValue().GetFloat();
@@ -133,7 +141,7 @@ namespace YY
         {
         }
 
-        HRESULT __MEGA_UI_API Element::Initialize(int32_t _iDPI, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
+        HRESULT Element::Initialize(int32_t _iDPI, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
         {
             pTopLevel = _pTopLevel;
             iLocDpi = _iDPI;
@@ -144,7 +152,7 @@ namespace YY
             return S_OK;
         }
 
-		Value __MEGA_UI_API Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
+		Value Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
         {
             if (_eIndicies >= PropertyIndicies::PI_MAX)
                 return Value::CreateUnavailable();
@@ -162,31 +170,24 @@ namespace YY
 
             Value _pValue = Value::CreateUnset();
 
-            FunTypePropertyCustomCache _pFunPropertyCache = nullptr;
-
             do
             {
-
-                PropertyCustomCacheResult _CacheResult = SkipNone;
-                if (_Prop.BindCacheInfo.uRaw)
+                GetValueHandleData _HandleData;
+                _HandleData.pProp = &_Prop;
+                _HandleData.eIndicies = _eIndicies;
+                _HandleData.bUsingCache = _bUpdateCache == false;
+                if (GeneralHandle(&_HandleData))
                 {
-                    _pFunPropertyCache = _Prop.BindCacheInfo.bValueMapOrCustomPropFun ? &Element::PropertyGeneralCache : _Prop.BindCacheInfo.pFunPropertyCustomCache;
-
-                    PropertyCustomCacheGetValueAction _Info;
-                    _Info.pProp = &_Prop;
-                    _Info.eIndicies = _eIndicies;
-                    _Info.bUsingCache = _bUpdateCache == false;
-
-                    _CacheResult = (this->*_pFunPropertyCache)(PropertyCustomCacheActionMode::GetValue, &_Info);
-
-                    if (_Info.RetValue != nullptr)
+                    if (_HandleData.Output.RetValue != nullptr)
                     {
-                        _pValue = std::move(_Info.RetValue);
+                        _pValue = std::move(_HandleData.Output.RetValue);
 
                         if (_pValue.GetType() != ValueType::Unset)
                             break;
                     }
                 }
+
+                PropertyCustomCacheResult& _CacheResult = _HandleData.Output.CacheResult;
 
                 // 走 _LocalPropValue，这是一种通用逻辑
                 if ((_CacheResult & SkipLocalPropValue) == 0)
@@ -235,14 +236,14 @@ namespace YY
 
             } while (false);
 
-            if (_pFunPropertyCache && _pValue.GetType() >= ValueType::Null && _bUpdateCache)
+            if (_pValue.GetType() >= ValueType::Null && _bUpdateCache)
             {
-                PropertyCustomCacheUpdateValueAction _Info;
+                SetValueHandleData _Info;
                 _Info.pProp = &_Prop;
                 _Info.eIndicies = _eIndicies;
                 _Info.InputNewValue = _pValue;
 
-                (this->*_pFunPropertyCache)(PropertyCustomCacheActionMode::UpdateValue, &_Info);
+                GeneralHandle(&_Info);
             }
 
             if (_pValue == nullptr)
@@ -251,7 +252,7 @@ namespace YY
             return _pValue;
         }
 
-        HRESULT __MEGA_UI_API Element::SetValue(const PropertyInfo& _Prop, const Value& _Value)
+        HRESULT Element::SetValue(const PropertyInfo& _Prop, const Value& _Value)
         {
             if (_Value == nullptr)
                 return E_INVALIDARG;
@@ -262,7 +263,7 @@ namespace YY
             return SetValueInternal(_Prop, _Value, true);
         }
 
-        HRESULT __MEGA_UI_API Element::SetValueInternal(const PropertyInfo& _Prop, const Value& _Value, bool _bCanCancel)
+        HRESULT Element::SetValueInternal(const PropertyInfo& _Prop, const Value& _Value, bool _bCanCancel)
         {
             const auto _iIndex = GetControlInfo()->GetPropertyInfoIndex(_Prop);
             if (_iIndex < 0)
@@ -285,19 +286,13 @@ namespace YY
             auto _hr = S_OK;
             do
             {
-                if (_Prop.BindCacheInfo.uRaw)
-                {
-                    auto _pFunPropertyCache = _Prop.BindCacheInfo.bValueMapOrCustomPropFun ? &Element::PropertyGeneralCache : _Prop.BindCacheInfo.pFunPropertyCustomCache;
+                SetValueHandleData _HandleData;
+                _HandleData.pProp = &_Prop;
+                _HandleData.eIndicies = PropertyIndicies::PI_Local;
+                _HandleData.InputNewValue = _Value;
 
-                    PropertyCustomCacheUpdateValueAction _UpdateValue;
-                    _UpdateValue.pProp = &_Prop;
-                    _UpdateValue.eIndicies = PropertyIndicies::PI_Local;
-                    _UpdateValue.InputNewValue = _Value;
-
-                    auto _Result = (this->*_pFunPropertyCache)(PropertyCustomCacheActionMode::UpdateValue, &_UpdateValue);
-                    if (_Result & PropertyCustomCacheResult::SkipLocalPropValue)
-                        break;
-                }
+                if (GeneralHandle(&_HandleData))
+                    break;
 
                 const auto _uLocalPropValueCount = LocalPropValue.GetSize();
 
@@ -323,17 +318,17 @@ namespace YY
             return _hr;
         }
 
-        Element* __MEGA_UI_API Element::GetParent()
+        Element* Element::GetParent()
         {
             return pLocParent;
         }
 
-        int32_t __MEGA_UI_API Element::GetLayoutPos()
+        int32_t Element::GetLayoutPos()
         {
             return iSpecLayoutPos;
         }
 
-        HRESULT __MEGA_UI_API Element::SetLayoutPos(int32_t _iLayoutPos)
+        HRESULT Element::SetLayoutPos(int32_t _iLayoutPos)
         {
             auto _pValue = Value::CreateInt32(_iLayoutPos);
             if (_pValue == nullptr)
@@ -342,7 +337,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.LayoutPosProp, _pValue);
         }
 
-        float __MEGA_UI_API Element::GetWidth()
+        float Element::GetWidth()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.WidthProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -353,7 +348,7 @@ namespace YY
             return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetWidth(float _iWidth)
+        HRESULT Element::SetWidth(float _iWidth)
         {
             auto _pValue = Value::CreateFloat(_iWidth);
             if (_pValue == nullptr)
@@ -362,7 +357,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.WidthProp, _pValue);
         }
 
-        float __MEGA_UI_API Element::GetHeight()
+        float Element::GetHeight()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.HeightProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -373,7 +368,7 @@ namespace YY
             return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetHeight(float _iHeight)
+        HRESULT Element::SetHeight(float _iHeight)
         {
             auto _pValue = Value::CreateFloat(_iHeight);
             if (_pValue == nullptr)
@@ -382,7 +377,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.HeightProp, _pValue);
         }
 
-        float __MEGA_UI_API Element::GetX()
+        float Element::GetX()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.XProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -394,7 +389,7 @@ namespace YY
             return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetX(float _iX)
+        HRESULT Element::SetX(float _iX)
         {
             auto _pValue = Value::CreateFloat(_iX);
             if (_pValue == nullptr)
@@ -403,7 +398,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.XProp, _pValue);
         }
 
-        float __MEGA_UI_API Element::GetY()
+        float Element::GetY()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.YProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
@@ -415,7 +410,7 @@ namespace YY
             return _pValue.GetFloat();
         }
 
-        HRESULT __MEGA_UI_API Element::SetY(float _iY)
+        HRESULT Element::SetY(float _iY)
         {
             auto _pValue = Value::CreateFloat(_iY);
             if (_pValue == nullptr)
@@ -424,7 +419,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.YProp, _pValue);
         }
 
-        Point __MEGA_UI_API Element::GetLocation()
+        Point Element::GetLocation()
         {
             Point _Location = {};
             auto _pValue = GetValue(Element::g_ControlInfoData.LocationProp, PropertyIndicies::PI_Local, false);
@@ -437,7 +432,7 @@ namespace YY
             return _Location;
         }
 
-        Size __MEGA_UI_API Element::GetExtent()
+        Size Element::GetExtent()
         {
             Size _Extent = {};
 
@@ -449,12 +444,12 @@ namespace YY
             return _Extent;
         }
 
-        ValueIs<ValueType::Layout> __MEGA_UI_API Element::GetLayout()
+        ValueIs<ValueType::Layout> Element::GetLayout()
         {
             return GetValue(Element::g_ControlInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
         }
 
-        BorderStyle __MEGA_UI_API Element::GetBorderStyle()
+        BorderStyle Element::GetBorderStyle()
         {
             int32_t _iValue = 0;
 
@@ -466,7 +461,7 @@ namespace YY
             return BorderStyle(_iValue);
         }
 
-        HRESULT __MEGA_UI_API Element::SetBorderStyle(BorderStyle _eBorderStyle)
+        HRESULT Element::SetBorderStyle(BorderStyle _eBorderStyle)
         {
             auto _NewValue = Value::CreateInt32((int32_t)_eBorderStyle);
             if (_NewValue == nullptr)
@@ -475,13 +470,13 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.BorderStyleProp, _NewValue);
         }
 
-        Color __MEGA_UI_API Element::GetBorderColor()
+        Color Element::GetBorderColor()
         {
             auto _BorderColorValue = GetValue(Element::g_ControlInfoData.BorderColorProp);
             return _BorderColorValue.HasValue() ? _BorderColorValue.GetColor() : Color();
         }
 
-        HRESULT __MEGA_UI_API Element::SetBorderColor(Color _BorderColor)
+        HRESULT Element::SetBorderColor(Color _BorderColor)
         {
             auto _NewValue = Value::CreateColor(_BorderColor);
             if (_NewValue == nullptr)
@@ -490,7 +485,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.BorderColorProp, _NewValue);
         }
 
-        BorderStyle __MEGA_UI_API Element::GetFocusBorderStyle()
+        BorderStyle Element::GetFocusBorderStyle()
         {
             int32_t _iValue = 0;
 
@@ -502,7 +497,7 @@ namespace YY
             return BorderStyle(_iValue);
         }
 
-        HRESULT __MEGA_UI_API Element::SetFocusBorderStyle(BorderStyle _eBorderStyle)
+        HRESULT Element::SetFocusBorderStyle(BorderStyle _eBorderStyle)
         {
             auto _NewValue = Value::CreateInt32(int32_t(_eBorderStyle));
             if (_NewValue == nullptr)
@@ -511,13 +506,13 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FocusStyleProp, _NewValue);
         }
 
-        Color __MEGA_UI_API Element::GetFocusBorderColor()
+        Color Element::GetFocusBorderColor()
         {
             auto _FocusBorderColorValue = GetValue(Element::g_ControlInfoData.FocusColorProp);
             return _FocusBorderColorValue.HasValue() ? _FocusBorderColorValue.GetColor() : Color();
         }
 
-        HRESULT __MEGA_UI_API Element::SetFocusBorderColor(Color _BorderColor)
+        HRESULT Element::SetFocusBorderColor(Color _BorderColor)
         {
             auto _NewValue = Value::CreateColor(_BorderColor);
             if (_NewValue == nullptr)
@@ -526,12 +521,12 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FocusColorProp, _NewValue);
         }
 
-        FlowDirection __MEGA_UI_API Element::GetFlowDirection()
+        FlowDirection Element::GetFlowDirection()
         {
             return iSpecFlowDirection;
         }
 
-        HRESULT __MEGA_UI_API Element::SetFlowDirection(FlowDirection _eFlowDirection)
+        HRESULT Element::SetFlowDirection(FlowDirection _eFlowDirection)
         {
             switch (_eFlowDirection)
             {
@@ -551,12 +546,12 @@ namespace YY
             }
         }
 
-        bool __MEGA_UI_API Element::IsMouseFocusWithin()
+        bool Element::IsMouseFocusWithin()
         {
             return bLocMouseFocusWithin;
         }
 
-        uString __MEGA_UI_API Element::GetClass()
+        uString Element::GetClass()
         {
             auto _Value = GetValue(Element::g_ControlInfoData.ClassProp, PropertyIndicies::PI_Specified, false);
             if (_Value.GetType() == ValueType::uString)
@@ -567,7 +562,7 @@ namespace YY
             return uString();
         }
 
-        HRESULT __MEGA_UI_API Element::SetClass(uString _szClass)
+        HRESULT Element::SetClass(uString _szClass)
         {
             auto _NewValue = Value::CreateString(_szClass);
             if (_NewValue == nullptr)
@@ -576,48 +571,56 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.ClassProp, _NewValue);
         }
 
-        bool __MEGA_UI_API Element::GetEnabled()
+        bool Element::GetEnabled()
         {
             return bSpecEnabled;
         }
 
-        HRESULT __MEGA_UI_API Element::SetEnabled(bool _bEnabled)
+        HRESULT Element::SetEnabled(bool _bEnabled)
         {
             return SetValue(Element::g_ControlInfoData.EnabledProp, Value::CreateBool(_bEnabled));
         }
 
-        uint32_t __MEGA_UI_API Element::GetActive()
+        uint32_t Element::GetActive()
         {
             return uSpecActive;
         }
 
-        HRESULT __MEGA_UI_API Element::SetActive(uint32_t _fActive)
+        HRESULT Element::SetActive(uint32_t _fActive)
         {
             return SetValue(Element::g_ControlInfoData.ActiveProp, Value::CreateInt32(_fActive));
         }
 
-        bool __MEGA_UI_API Element::GetMouseFocused()
+        bool Element::GetMouseFocused()
         {
             return bSpecMouseFocused;
         }
 
-        int32_t __MEGA_UI_API Element::GetDpi()
+        int32_t Element::GetDpi()
         {
             return iLocDpi;
         }
 
-        bool __MEGA_UI_API Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
+        bool Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
         {
             return true;
         }
 
-		void __MEGA_UI_API Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
+		void Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 		{
-            if (_Prop.pFunOnPropertyChanged)
-                (this->*_Prop.pFunOnPropertyChanged)(_Prop, _eIndicies, _OldValue, _NewValue);
+            if (_Prop.pfnCustomPropertyHandle)
+            {
+                OnPropertyChangedHandleData _HandleData;
+                _HandleData.pProp = &_Prop;
+                _HandleData.eIndicies = _eIndicies;
+                _HandleData.OldValue = _OldValue;
+                _HandleData.NewValue = _NewValue;
+
+                (this->*_Prop.pfnCustomPropertyHandle)(CustomPropertyHandleType::OnPropertyChanged, &_HandleData);
+            }
         }
 
-        void __MEGA_UI_API Element::OnGroupChanged(uint32_t _fGroups)
+        void Element::OnGroupChanged(uint32_t _fGroups)
         {
             if (_fGroups == 0)
                 return;
@@ -796,7 +799,7 @@ namespace YY
             return _pTopLevel;
         }
 
-        DeferCycle* __MEGA_UI_API Element::GetDeferObject(bool _bAllowCreate)
+        DeferCycle* Element::GetDeferObject(bool _bAllowCreate)
         {
             if (pDeferObject)
                 return pDeferObject;
@@ -817,7 +820,7 @@ namespace YY
             return _pDeferObject;
         }
 
-        void __MEGA_UI_API Element::StartDefer(intptr_t* _pCooike)
+        void Element::StartDefer(intptr_t* _pCooike)
 		{
             *_pCooike = 0;
             
@@ -831,12 +834,12 @@ namespace YY
 			}
         }
 
-        uString __MEGA_UI_API Element::GetFontFamily()
+        uString Element::GetFontFamily()
         {
             return SpecFont.szFace;
         }
 
-        HRESULT __MEGA_UI_API Element::SetFontFamily(uString _szFontFamily)
+        HRESULT Element::SetFontFamily(uString _szFontFamily)
         {
             auto _FontFamilyValue = Value::CreateString(_szFontFamily);
             if (_FontFamilyValue == nullptr)
@@ -845,12 +848,12 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FontFamilyProp, _FontFamilyValue);
         }
 
-        float __MEGA_UI_API Element::GetFontSize()
+        float Element::GetFontSize()
         {
             return SpecFont.iSize;
         }
 
-        HRESULT __MEGA_UI_API Element::SetFontSize(float _iFontSize)
+        HRESULT Element::SetFontSize(float _iFontSize)
         {
             auto _FontSizeValue = Value::CreateFloat(_iFontSize);
             if (_FontSizeValue == nullptr)
@@ -859,12 +862,12 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FontSizeProp, _FontSizeValue);
         }
 
-        uint32_t __MEGA_UI_API Element::GetFontWeight()
+        uint32_t Element::GetFontWeight()
         {
             return SpecFont.uWeight;
         }
 
-        HRESULT __MEGA_UI_API Element::SetFontWeight(uint32_t _iFontWeight)
+        HRESULT Element::SetFontWeight(uint32_t _iFontWeight)
         {
             auto _FontWeightValue = Value::CreateInt32(_iFontWeight);
             if (_FontWeightValue == nullptr)
@@ -873,12 +876,12 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FontWeightProp, _FontWeightValue);
         }
 
-        uint32_t __MEGA_UI_API Element::GetFontStyle()
+        uint32_t Element::GetFontStyle()
         {
             return SpecFont.fStyle;
         }
 
-        HRESULT __MEGA_UI_API Element::SetFontStyle(uint32_t _fFontStyle)
+        HRESULT Element::SetFontStyle(uint32_t _fFontStyle)
         {
             auto _FontStyleValue = Value::CreateInt32(_fFontStyle);
             if (_FontStyleValue == nullptr)
@@ -887,7 +890,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FontStyleProp, _FontStyleValue);
         }
 
-		void __MEGA_UI_API Element::EndDefer(intptr_t _Cookie)
+		void Element::EndDefer(intptr_t _Cookie)
 		{
             auto _pDeferCycle = GetDeferObject(false);
             if (!_pDeferCycle)
@@ -975,22 +978,22 @@ namespace YY
             --_pDeferCycle->uEnter;
         }
 
-        HRESULT __MEGA_UI_API Element::SetVisible(bool bVisible)
+        HRESULT Element::SetVisible(bool bVisible)
         {
             return SetValue(Element::g_ControlInfoData.VisibleProp, Value::CreateBool(bVisible));
         }
 
-        bool __MEGA_UI_API Element::GetVisible()
+        bool Element::GetVisible()
         {
             return bCmpVisible;
         }
         
-        void __MEGA_UI_API Element::OnDestroy()
+        void Element::OnDestroy()
         {
             // TODO
         }
 
-        HRESULT __MEGA_UI_API Element::Destroy(bool _fDelayed)
+        HRESULT Element::Destroy(bool _fDelayed)
         {
             if (pLocParent)
             {
@@ -1013,7 +1016,7 @@ namespace YY
             }
         }
 
-        HRESULT __MEGA_UI_API Element::DestroyAllChildren(bool _fDelayed)
+        HRESULT Element::DestroyAllChildren(bool _fDelayed)
         {
             auto _Children = GetChildren();
             if (_Children.GetSize() == 0)
@@ -1031,7 +1034,7 @@ namespace YY
             return S_OK;
         }
 
-        void __MEGA_UI_API Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
+        void Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
         {
             Rect _PaintBounds = _Bounds;
             if (SpecBorderThickness.Left != 0 || SpecBorderThickness.Top != 0 || SpecBorderThickness.Right != 0 || SpecBorderThickness.Bottom != 0)
@@ -1073,7 +1076,7 @@ namespace YY
                 fSpecContentAlign);
         }
 
-        void __MEGA_UI_API Element::PaintBorder(Render* _pRenderTarget, BorderStyle _eBorderStyle, const Rect& _BorderThickness, Color _BorderColor, Rect& _Bounds)
+        void Element::PaintBorder(Render* _pRenderTarget, BorderStyle _eBorderStyle, const Rect& _BorderThickness, Color _BorderColor, Rect& _Bounds)
         {
             if (_BorderThickness.Left == 0 && _BorderThickness.Top == 0 && _BorderThickness.Right == 0 && _BorderThickness.Bottom == 0)
                 return;
@@ -1166,7 +1169,7 @@ namespace YY
             _Bounds = _NewBounds;
         }
 
-        void __MEGA_UI_API Element::PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds)
+        void Element::PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds)
         {
             if (_Background.GetType() == ValueType::Color)
             {
@@ -1186,7 +1189,7 @@ namespace YY
             }
         }
 
-        void __MEGA_UI_API Element::PaintContent(
+        void Element::PaintContent(
             Render* _pRenderTarget,
             const Value& _Content,
             const Font& _FontInfo,
@@ -1201,7 +1204,7 @@ namespace YY
             }
         }
 
-        Size __MEGA_UI_API Element::GetContentSize(Size _ConstraintSize)
+        Size Element::GetContentSize(Size _ConstraintSize)
         {
             // todo
             Size _ContentSize;
@@ -1223,18 +1226,18 @@ namespace YY
             return _ContentSize;
         }
 
-        Size __MEGA_UI_API Element::SelfLayoutUpdateDesiredSize(Size _ConstraintSize)
+        Size Element::SelfLayoutUpdateDesiredSize(Size _ConstraintSize)
         {
             // 仅给子类留一个口，什么也不用做
             return SIZE{};
         }
 
-        void __MEGA_UI_API Element::SelfLayoutDoLayout(Size _ConstraintSize)
+        void Element::SelfLayoutDoLayout(Size _ConstraintSize)
         {
             // 仅给子类留一个口，什么也不用做
         }
 
-        void __MEGA_UI_API Element::Detach(DeferCycle* _pDeferCycle)
+        void Element::Detach(DeferCycle* _pDeferCycle)
         {
             _pDeferCycle->UpdateDesiredSizeRootPendingSet.Remove(this);
             _pDeferCycle->LayoutRootPendingSet.Remove(this);
@@ -1276,12 +1279,12 @@ namespace YY
             }
         }
 
-        ElementList __MEGA_UI_API Element::GetChildren()
+        ElementList Element::GetChildren()
         {
             return vecLocChildren;
         }
 
-        HRESULT __MEGA_UI_API Element::Insert(Element* const* _ppChildren, uint_t _cChildren, uint_t _uInsert)
+        HRESULT Element::Insert(Element* const* _ppChildren, uint_t _cChildren, uint_t _uInsert)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -1421,7 +1424,7 @@ namespace YY
             return hr;
         }
         
-        HRESULT __MEGA_UI_API Element::Remove(Element* const* _ppChildren, uint_t _cChildren)
+        HRESULT Element::Remove(Element* const* _ppChildren, uint_t _cChildren)
         {
             if (_cChildren == 0)
                 return S_OK;
@@ -1559,70 +1562,57 @@ namespace YY
             return hr;
         }
 
-        int32_t __MEGA_UI_API Element::SpecCacheIsEqual(Element* _pElement1, Element* _pElement2, const PropertyInfo& _Prop)
+        int32_t Element::SpecCacheIsEqual(Element* _pElement1, Element* _pElement2, const PropertyInfo& _Prop)
         {
-            if (!_Prop.BindCacheInfo.pFunPropertyCustomCache)
+            FastSpecValueCompareHandleData _HandleData;
+            _HandleData.pProp = &_Prop;
+            _HandleData.eIndicies = PropertyIndicies::PI_Specified;
+            _HandleData.pOther = _pElement2;
+
+            if (!_pElement1->GeneralHandle(&_HandleData))
                 return -1;
 
-            if (!_Prop.BindCacheInfo.bValueMapOrCustomPropFun)
-                return -1;
-
-            const auto _uOffsetToCache = _Prop.BindCacheInfo.OffsetToSpecifiedValue;
-            if (!_uOffsetToCache)
-                return -1;
-
-            if (auto _uOffsetToHasCache = _Prop.BindCacheInfo.OffsetToHasSpecifiedValueCache)
-            {
-                auto _uHasCacheBit = _Prop.BindCacheInfo.HasSpecifiedValueCacheBit;
-
-                const auto _bHasValue1 = ((*((uint8_t*)_pElement1 + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
-                if (!_bHasValue1)
-                    return -1;
-
-                const auto _bHasValue2 = ((*((uint8_t*)_pElement2 + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
-                if (!_bHasValue2)
-                    return -1;
-            }
-
-
-            auto _pRawBuffer1 = (uint8_t*)_pElement1 + _uOffsetToCache;
-            auto _pRawBuffer2 = (uint8_t*)_pElement2 + _uOffsetToCache;
-
-            switch (ValueType(_Prop.BindCacheInfo.eType))
-            {
-            case ValueType::int32_t:
-                return *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
-                break;
-            case ValueType::float_t:
-                return *(float*)_pRawBuffer1 == *(float*)_pRawBuffer2;
-                break;
-            case ValueType::boolean:
-            {
-                auto _bValue1 = ((*(uint8_t*)_pRawBuffer1) & (1 << _Prop.BindCacheInfo.SpecifiedValueBit)) != 0;
-                auto _bValue2 = ((*(uint8_t*)_pRawBuffer2) & (1 << _Prop.BindCacheInfo.SpecifiedValueBit)) != 0;
-
-                return _bValue1 == _bValue2;
-                break;
-            }
-            case ValueType::Color:
-                return (*(Color*)_pRawBuffer1) == (*(Color*)_pRawBuffer2);
-                break;
-            case ValueType::Point:
-                return (*(Point*)_pRawBuffer1) == (*(Point*)_pRawBuffer2);
-                break;
-            case ValueType::Size:
-                return (*(Size*)_pRawBuffer1) == (*(Size*)_pRawBuffer2);
-                break;
-            case ValueType::Rect:
-                return *(Rect*)_pRawBuffer1 == *(Rect*)_pRawBuffer2;
-                break;
-            default:
-                return -1;
-                break;
-            }
+            return _HandleData.Output.iResult;
         }
 
-        HRESULT __MEGA_UI_API Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
+        bool Element::SetKeyboardFocus()
+        {
+            if (!pWindow)
+                return false;
+
+            if (GetVisible() == false || GetEnabled() == false || (GetActive() & Active::Keyboard) == 0)
+                return false;
+
+            auto _hr = SetValueInternal(Element::g_ControlInfoData.KeyboardFocusedProp, Value::CreateBoolTrue(), false);
+            return SUCCEEDED(_hr);
+        }
+        
+        bool Element::SetFocus()
+        {
+            if (GetVisible() == false || GetEnabled() == false || (GetActive() & Active::ActiveMarks) == 0)
+                return false;
+
+            auto _hr = SetValueInternal(Element::g_ControlInfoData.FocusedProp, Value::CreateBoolTrue(), false);
+            return SUCCEEDED(_hr);
+        }
+
+        Element* Element::GetImmediateChild(Element* _pFrom)
+        {
+            if (!_pFrom)
+                return nullptr;
+
+            for (Element* _pParent = _pFrom->GetParent(); _pParent != this; _pParent = _pParent->GetParent())
+            {
+                if (!_pParent)
+                    return nullptr;
+
+                _pFrom = _pParent;
+            }
+
+            return _pFrom;
+        }
+
+        HRESULT Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
         {
             if (_pOldValue == nullptr || _pNewValue == nullptr)
                 return E_INVALIDARG;
@@ -1730,7 +1720,7 @@ namespace YY
             return bFaild != 0 ? 0x800403EB : S_OK;
         }
         
-        HRESULT __MEGA_UI_API Element::PostSourceChange()
+        HRESULT Element::PostSourceChange()
         {
             auto pDeferObject = GetDeferObject();
             if (!pDeferObject)
@@ -1831,7 +1821,7 @@ namespace YY
             return bSuccess != 0 ? 0x800403EB : 0;
         }
 
-        HRESULT __MEGA_UI_API Element::GetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        HRESULT Element::GetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
         {
             pdr->iDepPos = -1;
             pdr->cDepCnt = 0;
@@ -1848,14 +1838,24 @@ namespace YY
                 }
             }
 
-
-            if (_Prop.pFunGetDependencies)
+            if (_Prop.pfnCustomPropertyHandle)
             {
-                auto _hr = (this->*_Prop.pFunGetDependencies)(_Prop, _eIndicies, pdr, iPCSrcRoot, _pNewValue, _pDeferCycle);
-                if (FAILED(_hr))
-                    _hrLast = _hr;
+                GetDependenciesHandleData _HandleData;
+                _HandleData.pProp = &_Prop;
+                _HandleData.eIndicies = _eIndicies;
+                _HandleData.pdr = pdr;
+                _HandleData.iPCSrcRoot = iPCSrcRoot;
+                _HandleData.NewValue = _pNewValue;
+                _HandleData.pDeferCycle = _pDeferCycle;
+
+                if ((this->*_Prop.pfnCustomPropertyHandle)(_HandleData.HandleType, &_HandleData))
+                {
+                    if (FAILED(_HandleData.Output.hr))
+                        _hrLast = _HandleData.Output.hr;
+                }
             }
-            else if (_Prop.ppDependencies)
+            
+            if (_Prop.ppDependencies)
             {
                 for (auto _ppDependencies = _Prop.ppDependencies; *_ppDependencies; ++_ppDependencies)
                 {
@@ -1917,7 +1917,7 @@ namespace YY
             return _hrLast;
         }
 
-        HRESULT __MEGA_UI_API Element::AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle)
+        HRESULT Element::AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle)
         {
             uint_t _uIndex;
             PCRecord* pItem = _pDeferCycle->vecPropertyChanged.AddAndGetPtr(&_uIndex);
@@ -1954,7 +1954,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Element::GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle)
+        HRESULT Element::GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle)
         {
             HRESULT _hrLast = S_OK;
 
@@ -1985,7 +1985,7 @@ namespace YY
             return _hrLast;
         }
 
-		void __MEGA_UI_API Element::VoidPCNotifyTree(int p1, DeferCycle* p2)
+		void Element::VoidPCNotifyTree(int p1, DeferCycle* p2)
         {
             auto pr = p2->vecPropertyChanged.GetItemPtr(p1);
             if (!pr)
@@ -2013,7 +2013,7 @@ namespace YY
             }
         }
 
-        bool __MEGA_UI_API Element::MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew)
+        bool Element::MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew)
         {
             if (_pElement && _pElement->SetNeedsLayout(_fNeedsLayoutNew))
             {
@@ -2036,7 +2036,7 @@ namespace YY
             return false;
         }
 
-        bool __MEGA_UI_API Element::MarkElementForDesiredSize(Element* _pElement)
+        bool Element::MarkElementForDesiredSize(Element* _pElement)
         {
             for (; _pElement; _pElement = _pElement->pLocParent)
             {
@@ -2052,7 +2052,7 @@ namespace YY
             return 0;
         }
 
-        bool __MEGA_UI_API Element::SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle)
+        bool Element::SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle)
         {
             if (pElement->fNeedsLayout == LC_Optimize)
             {
@@ -2133,7 +2133,7 @@ namespace YY
             return bResult;
         }
         
-        bool __MEGA_UI_API Element::SetNeedsLayout(uint32_t _fNeedsLayoutNew)
+        bool Element::SetNeedsLayout(uint32_t _fNeedsLayoutNew)
         {
             if (_fNeedsLayoutNew > fNeedsLayout)
             {
@@ -2143,7 +2143,7 @@ namespace YY
             return false;
         }
 
-        void __MEGA_UI_API Element::TransferGroupFlags(Element* pElement, uint32_t _fGroups)
+        void Element::TransferGroupFlags(Element* pElement, uint32_t _fGroups)
         {
             if (_fGroups & PG_AffectsLayout)
                 MarkElementForLayout(pElement, LC_Normal);
@@ -2158,18 +2158,22 @@ namespace YY
                 MarkElementForDesiredSize(pElement->iSpecLayoutPos != LP_Absolute ? pElement->pLocParent : pElement);
         }
 
-        PropertyCustomCacheResult __MEGA_UI_API Element::PropertyGeneralCache(
-            PropertyCustomCacheActionMode _eMode,
-            PropertyCustomCachenBaseAction* _pBaseInfo)
+        bool Element::GeneralHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
 		{
+            auto _pProp = _pHandleData->pProp;
+            if (_pProp->pfnCustomPropertyHandle)
+            {
+                if ((this->*_pProp->pfnCustomPropertyHandle)(_eType, _pHandleData))
+                    return true;
+            }
+
+
             uint16_t _uOffsetToCache = 0;
             uint16_t _uOffsetToHasCache = 0;
             uint8_t _uCacheBit;
             uint8_t _uHasCacheBit;
 
-			auto _pProp = _pBaseInfo->pProp;
-
-			switch (_pBaseInfo->eIndicies)
+			switch (_pHandleData->eIndicies)
 			{
 			case PropertyIndicies::PI_Computed:
 			case PropertyIndicies::PI_Specified:
@@ -2189,19 +2193,16 @@ namespace YY
 				break;
 			}
 
-            if (_uOffsetToCache == 0)
-                return PropertyCustomCacheResult::SkipNone;
-
-			if (_eMode == PropertyCustomCacheActionMode::GetValue)
+			if (_eType == CustomPropertyHandleType::GetValue)
 			{
-                auto _pInfo = (PropertyCustomCacheGetValueAction*)_pBaseInfo;
+                if (_uOffsetToCache == 0)
+                    return false;
+
+                auto _pInfo = (GetValueHandleData*)_pHandleData;
                 Value _pRetValue;
 
 				do
 				{
-                    if (_uOffsetToCache == 0)
-						break;
-
 					// 如果属性是 PF_ReadOnly，那么它必然不会实际走到 _LocalPropValue 里面去，必须走 缓存
 					// 如果 _UsingCache == true，那么我们可以走缓存
                     if ((_pProp->fFlags & PF_ReadOnly) || _pInfo->bUsingCache)
@@ -2265,24 +2266,27 @@ namespace YY
 					}
 				} while (false);
 				
-				_pInfo->RetValue = std::move(_pRetValue);
+				_pInfo->Output.RetValue = std::move(_pRetValue);
 
 				if (_pProp->fFlags & PF_ReadOnly)
 				{
-					return PropertyCustomCacheResult::SkipLocalPropValue;
+                    _pInfo->Output.CacheResult = PropertyCustomCacheResult::SkipLocalPropValue;
 				}
-
-				return PropertyCustomCacheResult::SkipNone;
+                else
+                {
+                    _pInfo->Output.CacheResult = PropertyCustomCacheResult::SkipNone;
+                }
+                return true;
 			}
-            else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
+            else if (_eType == CustomPropertyHandleType::SetValue)
 			{
-                auto _pInfo = (PropertyCustomCacheUpdateValueAction*)_pBaseInfo;
+                if (_uOffsetToCache == 0)
+                    return false;
+
+                auto _pInfo = (SetValueHandleData*)_pHandleData;
 
 				do
 				{
-                    if (_uOffsetToCache == 0)
-						break;
-
 					auto& _pNewValue = _pInfo->InputNewValue;
 
 					if (_pNewValue == nullptr)
@@ -2409,18 +2413,77 @@ namespace YY
 					}
 
 				} while (false);
-			}
 
-			return PropertyCustomCacheResult::SkipNone;
+                return true;
+			}
+            else if (_eType == CustomPropertyHandleType::FastSpecValueCompare)
+            {
+                if (!_pProp->BindCacheInfo.OffsetToSpecifiedValue)
+                    return false;
+                
+                auto _pInfo = (FastSpecValueCompareHandleData*)_pHandleData;
+
+                if (_uOffsetToHasCache)
+                {
+                    auto _uHasCacheBit = _pProp->BindCacheInfo.HasSpecifiedValueCacheBit;
+
+                    const auto _bHasValue1 = ((*((uint8_t*)this + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
+                    if (!_bHasValue1)
+                        return false;
+
+                    const auto _bHasValue2 = ((*((uint8_t*)_pInfo->pOther + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
+                    if (!_bHasValue2)
+                        return false;
+                }
+
+                auto _pRawBuffer1 = (uint8_t*)this + _uOffsetToCache;
+                auto _pRawBuffer2 = (uint8_t*)_pInfo->pOther + _uOffsetToCache;
+
+                switch (ValueType(_pProp->BindCacheInfo.eType))
+                {
+                case ValueType::int32_t:
+                    _pInfo->Output.iResult = *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
+                    break;
+                case ValueType::float_t:
+                    _pInfo->Output.iResult = *(float*)_pRawBuffer1 == *(float*)_pRawBuffer2;
+                    break;
+                case ValueType::boolean:
+                {
+                    auto _bValue1 = ((*(uint8_t*)_pRawBuffer1) & (1 << _pProp->BindCacheInfo.SpecifiedValueBit)) != 0;
+                    auto _bValue2 = ((*(uint8_t*)_pRawBuffer2) & (1 << _pProp->BindCacheInfo.SpecifiedValueBit)) != 0;
+
+                    _pInfo->Output.iResult = _bValue1 == _bValue2;
+                    break;
+                }
+                case ValueType::Color:
+                    _pInfo->Output.iResult = (*(Color*)_pRawBuffer1) == (*(Color*)_pRawBuffer2);
+                    break;
+                case ValueType::Point:
+                    _pInfo->Output.iResult = (*(Point*)_pRawBuffer1) == (*(Point*)_pRawBuffer2);
+                    break;
+                case ValueType::Size:
+                    _pInfo->Output.iResult = (*(Size*)_pRawBuffer1) == (*(Size*)_pRawBuffer2);
+                    break;
+                case ValueType::Rect:
+                    _pInfo->Output.iResult = *(Rect*)_pRawBuffer1 == *(Rect*)_pRawBuffer2;
+                    break;
+                default:
+                    return false;
+                    break;
+                }
+                return true;
+            }
+
+			return false;
 		}
 		
-		void __MEGA_UI_API Element::OnParentPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
+		bool Element::OnParentPropChanged(OnPropertyChangedHandleData* _pHandleData)
 		{
-            if (_eIndicies != PropertyIndicies::PI_Local)
-                return;
+            if (_pHandleData->eIndicies != PropertyIndicies::PI_Local)
+                return false;
 
-            auto _pOldParent = _OldValue.GetElement();
-            auto _pNewParent = _NewValue.GetElement();
+            auto _pOldParent = _pHandleData->OldValue.GetElement();
+            auto _pNewParent = _pHandleData->NewValue.GetElement();
 
             if (_pOldParent && _pOldParent->pSheet)
             {
@@ -2431,58 +2494,198 @@ namespace YY
             auto _pNewWindow = _pNewParent ? _pNewParent->pWindow : nullptr;
 
             if (_pOldWindow == _pNewWindow)
-                return;
+                return true;
 
             if (_pOldWindow)
                 OnUnHosted(_pOldWindow);
 
             if (_pNewWindow)
                 OnHosted(_pNewWindow);
+
+            return true;
         }
 
-        void __MEGA_UI_API Element::OnVisiblePropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Element::VisiblePropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            OnVisiblePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                return OnVisiblePropChanged((OnPropertyChangedHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetDependencies:
+                return GetVisibleDependencies((GetDependenciesHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetValue:
+                return GetVisiblePropertyValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::SetValue:
+                return SetVisiblePropertyValue((SetValueHandleData*)_pHandleData);
+            default:
+                break;
+            }
+            return false;
         }
 
-        void __MEGA_UI_API Element::OnVisiblePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Element::OnVisiblePropChanged(OnPropertyChangedHandleData* _pHandleData)
         {
-            if (_eIndicies == PropertyIndicies::PI_Computed)
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Computed)
             {
                 // 实际计算值改变了才刷新显示
                 Invalidate();
+                return true;
             }
+
+            return false;
         }
 
-        void __MEGA_UI_API Element::OnEnabledPropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Element::GetVisiblePropertyValue(GetValueHandleData* _pHandleData)
         {
-            OnEnabledPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                // 使用通用逻辑
+                return false;
+            }
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+            {
+                if (_pHandleData->bUsingCache)
+                {
+                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecVisible);
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                }
+                else
+                {
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipNone;
+                }
+                return true;
+            }
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Computed)
+            {
+                if (!_pHandleData->bUsingCache)
+                {
+                    auto _bCmpVisibleTmp = true;
+
+                    for (auto _pElement = this; _pElement; _pElement = _pElement->GetParent())
+                    {
+                        if (!_pElement->bSpecVisible)
+                        {
+                            _bCmpVisibleTmp = false;
+                            break;
+                        }
+                    }
+
+                    _pHandleData->Output.RetValue = Value::CreateBool(_bCmpVisibleTmp);
+                }
+                else
+                {
+                    _pHandleData->Output.RetValue = Value::CreateBool(bCmpVisible);
+                }
+
+                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                return true;
+            }
+
+            return false;
         }
 
-        void __MEGA_UI_API Element::OnEnabledPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Element::SetVisiblePropertyValue(SetValueHandleData* _pHandleData)
+        {
+            if (_pHandleData->InputNewValue.GetType() == ValueType::boolean)
+            {
+                if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+                {
+                    bSpecVisible = _pHandleData->InputNewValue.GetBool();
+                    return true;
+                }
+                else if (_pHandleData->eIndicies == PropertyIndicies::PI_Computed)
+                {
+                    bCmpVisible = _pHandleData->InputNewValue.GetBool();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool Element::ParentPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        {
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                return OnParentPropChanged((OnPropertyChangedHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetDependencies:
+                return GetParentDependencies((GetDependenciesHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetValue:
+                break;
+            case CustomPropertyHandleType::SetValue:
+                break;
+            default:
+                break;
+            }
+            return false;
+        }
+
+        bool Element::EnabledPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        {
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                return OnEnabledPropChanged((OnPropertyChangedHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetDependencies:
+            case CustomPropertyHandleType::GetValue:
+            case CustomPropertyHandleType::SetValue:
+                break;
+            default:
+                break;
+            }
+            return false;
+        }
+
+        bool Element::OnEnabledPropChanged(OnPropertyChangedHandleData* _pHandle)
         {
             // todo 如果被禁用，那么鼠标是不行了。
-            if (_NewValue.GetBool() == false)
+            if (_pHandle->NewValue.GetBool() == false)
             {
             }
+
+            return false;
         }
 
-        void __MEGA_UI_API Element::OnActivePropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Element::ActivePropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            OnActivePropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                return OnActivePropChanged((OnPropertyChangedHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetDependencies:
+            case CustomPropertyHandleType::GetValue:
+            case CustomPropertyHandleType::SetValue:
+                break;
+            default:
+                break;
+            }
+            return false;
         }
 
-        void __MEGA_UI_API Element::OnActivePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Element::OnActivePropChanged(OnPropertyChangedHandleData* _pHandleData)
         {
             // todo，
+            return false;
         }
-
-        void __MEGA_UI_API Element::OnDpiPropChangedThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        
+        bool Element::DpiPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            OnDpiPropChanged(_Prop, _eIndicies, _pOldValue, _NewValue);
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                return OnDpiPropChanged((OnPropertyChangedHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetDependencies:
+            case CustomPropertyHandleType::GetValue:
+            case CustomPropertyHandleType::SetValue:
+                break;
+            default:
+                break;
+            }
+            return false;
         }
 
-        void __MEGA_UI_API Element::OnDpiPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Element::OnDpiPropChanged(OnPropertyChangedHandleData* _pHandleData)
         {
             auto _pControlInfo = GetControlInfo();
 
@@ -2508,9 +2711,11 @@ namespace YY
 
                 SetValue(*_pProp, _NewValue);
             }
+
+            return true;
         }
 
-        void __MEGA_UI_API Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
+        void Element::FlushDesiredSize(DeferCycle* _pDeferCycle)
         {
             if ((pLocParent == nullptr || iSpecLayoutPos == LP_Absolute))
             {
@@ -2542,7 +2747,7 @@ namespace YY
             }
         }
 
-        void __MEGA_UI_API Element::FlushLayout(DeferCycle* _pDeferCycle)
+        void Element::FlushLayout(DeferCycle* _pDeferCycle)
         {
             auto _fNeedsLayout = fNeedsLayout;
 
@@ -2592,7 +2797,7 @@ namespace YY
             }
         }
         
-        Size __MEGA_UI_API Element::UpdateDesiredSize(Size _ConstraintSize)
+        Size Element::UpdateDesiredSize(Size _ConstraintSize)
         {
             Size sizeDesired = {};
             if (_ConstraintSize.Width < 0)
@@ -2737,7 +2942,7 @@ namespace YY
             return sizeDesired;
         }
 
-        Rect __MEGA_UI_API Element::ApplyFlowDirection(const Rect& _Src)
+        Rect Element::ApplyFlowDirection(const Rect& _Src)
         {
             if (GetFlowDirection() == FlowDirection::RightToLeft)
                 return Rect(_Src.Right, _Src.Top, _Src.Left, _Src.Bottom);
@@ -2745,220 +2950,346 @@ namespace YY
                 return _Src;
         }
 
-        void __MEGA_UI_API Element::Invalidate()
+        void Element::Invalidate()
         {
             if (pWindow)
                 pWindow->InvalidateRect(nullptr);
         }
         
-        PropertyCustomCacheResult __MEGA_UI_API Element::GetExtentProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
+        bool Element::ExtentPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            if (_eMode == PropertyCustomCacheActionMode::GetValue)
+            switch (_eType)
             {
-                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
+            case CustomPropertyHandleType::GetValue:
+                GetExtentPropertyValue((GetValueHandleData*)_pHandleData);
+                return true;
+            default:
+                break;
+            }
+            return false;
+        }
 
-                auto& pExtentValue = _pGetValueInfo->RetValue;
+        bool Element::GetExtentPropertyValue(GetValueHandleData* _pHandleData)
+        {
+            auto& pExtentValue = _pHandleData->Output.RetValue;
 
-                if (pLocParent && iSpecLayoutPos != LP_Absolute)
-                {
-                    pExtentValue = Value::CreateSize(LocSizeInLayout);
-                }
-                else
-                {
-                    pExtentValue = Value::CreateSize(LocDesiredSize);
-                }
-                
-                return PropertyCustomCacheResult::SkipAll;
+            if (pLocParent && iSpecLayoutPos != LP_Absolute)
+            {
+                pExtentValue = Value::CreateSize(LocSizeInLayout);
             }
             else
             {
-                return PropertyCustomCacheResult::SkipNone;
+                pExtentValue = Value::CreateSize(LocDesiredSize);
             }
+            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+            return true;
         }
 
-        PropertyCustomCacheResult __MEGA_UI_API Element::GetLocationProperty(_In_ PropertyCustomCacheActionMode _eMode, _Inout_ PropertyCustomCachenBaseAction* _pInfo)
+        bool Element::LocationPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            if (_eMode == PropertyCustomCacheActionMode::GetValue)
+            switch (_eType)
             {
-                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
+            case CustomPropertyHandleType::GetValue:
+                return GetLocationPropertyValue((GetValueHandleData*)_pHandleData);
+            default:
+                break;
+            }
+            return false;
+        }
 
-                auto& _Location = _pGetValueInfo->RetValue;
+        bool Element::GetLocationPropertyValue(GetValueHandleData* _pHandleData)
+        {
+            auto& _Location = _pHandleData->Output.RetValue;
 
-                if (pLocParent && iSpecLayoutPos != LP_Absolute)
-                {
-                    _Location = Value::CreatePoint(LocPosInLayout);
-                }
-                else
-                {
-                    _Location = Value::CreatePoint(GetX(), GetY());
-                }
-
-                return PropertyCustomCacheResult::SkipAll;
+            if (pLocParent && iSpecLayoutPos != LP_Absolute)
+            {
+                _Location = Value::CreatePoint(LocPosInLayout);
             }
             else
             {
-                return PropertyCustomCacheResult::SkipNone;
+                _Location = Value::CreatePoint(GetX(), GetY());
             }
+
+            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+            return true;
+        }
+        
+        bool Element::MouseFocusedPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        {
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                break;
+            case CustomPropertyHandleType::GetDependencies:
+                break;
+            case CustomPropertyHandleType::GetValue:
+                return GetMouseFocusedPropertyValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::SetValue:
+                return SetMouseFocusedPropertyValue((SetValueHandleData*)_pHandleData);
+            default:
+                break;
+            }
+            return false;
         }
 
-        PropertyCustomCacheResult __MEGA_UI_API Element::GetVisibleProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
+        bool Element::GetMouseFocusedPropertyValue(GetValueHandleData* _pHandleData)
         {
-            if (_eMode == PropertyCustomCacheActionMode::GetValue)
+            auto& _RetValue = _pHandleData->Output.RetValue;
+
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
-                if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Local)
+                if (bHasLocMouseFocused)
                 {
-                    // 使用通用逻辑
-                    return PropertyCustomCacheResult::SkipNone;
+                    _RetValue = Value::CreateBool(bLocMouseFocused);
                 }
-                else if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Specified)
+                else
                 {
-                    if (!_pGetValueInfo->bUsingCache)
-                    {
-                        return PropertyCustomCacheResult::SkipNone;
-                    }
-
-                    _pGetValueInfo->RetValue = Value::CreateBool(bSpecVisible);
-                    return PropertyCustomCacheResult::SkipAll;
-                }
-                else if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Computed)
-                {
-                    if (!_pGetValueInfo->bUsingCache)
-                    {
-                        auto _bCmpVisibleTmp = true;
-
-                        for (auto _pElement = this; _pElement; _pElement = _pElement->GetParent())
-                        {
-                            if (!_pElement->bSpecVisible)
-                            {
-                                _bCmpVisibleTmp = false;
-                                break;
-                            }
-                        }
-
-                        _pGetValueInfo->RetValue = Value::CreateBool(_bCmpVisibleTmp);
-                    }
-                    else
-                    {
-                        _pGetValueInfo->RetValue = Value::CreateBool(bCmpVisible);
-                    }
-
-                    return PropertyCustomCacheResult::SkipAll;
-                }
-            }
-            else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
-            {
-                auto _pUpdateValueInfo = (PropertyCustomCacheUpdateValueAction*)_pInfo;
-                if (_pUpdateValueInfo->InputNewValue.GetType() == ValueType::boolean)
-                {
-                    if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Specified)
-                    {
-                        bSpecVisible = _pUpdateValueInfo->InputNewValue.GetBool();
-                        return PropertyCustomCacheResult::SkipAll;
-                    }
-                    else if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Computed)
-                    {
-                        bCmpVisible = _pUpdateValueInfo->InputNewValue.GetBool();
-                        return PropertyCustomCacheResult::SkipAll;
-                    }
-                    else
-                    {
-                        return PropertyCustomCacheResult::SkipNone;
-                    }
-                }
-            }
-
-            return PropertyCustomCacheResult::SkipNone;
-        }
-
-        PropertyCustomCacheResult __MEGA_UI_API Element::GetMouseFocusedProperty(PropertyCustomCacheActionMode _eMode, PropertyCustomCachenBaseAction* _pInfo)
-        {
-            if (_eMode == PropertyCustomCacheActionMode::GetValue)
-            {
-                auto _pGetValueInfo = (PropertyCustomCacheGetValueAction*)_pInfo;
-                auto& _RetValue = _pGetValueInfo->RetValue;
-
-                if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Local)
-                {
-                    if (bHasLocMouseFocused)
-                    {
-                        _RetValue = Value::CreateBool(bLocMouseFocused);
-                    }
-                    else
-                    {
-                        _RetValue = Value::CreateUnset();
-                    }
-                    return PropertyCustomCacheResult::SkipAll;
-                }
-                else if (_pGetValueInfo->eIndicies == PropertyIndicies::PI_Specified)
-                {
-                    if (_pGetValueInfo->bUsingCache)
-                    {
-                        _pGetValueInfo->RetValue = Value::CreateBool(bSpecMouseFocused);
-                        return PropertyCustomCacheResult::SkipAll;
-                    }
-
-                    if (bHasLocMouseFocused)
-                    {
-                        _RetValue = Value::CreateBool(bLocMouseFocused);
-                        return PropertyCustomCacheResult::SkipAll;
-                    }
-
                     _RetValue = Value::CreateUnset();
-                    // 如果自己需要处理鼠标焦点，那么阻止 父节点继承
-                    return (GetActive() & Active::Mouse) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
                 }
+                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                return true;
             }
-            else if (_eMode == PropertyCustomCacheActionMode::UpdateValue)
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
-                auto _pUpdateValueInfo = (PropertyCustomCacheUpdateValueAction*)_pInfo;
-                auto& _InputNewValue = _pUpdateValueInfo->InputNewValue;
-
-                if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Local)
+                if (_pHandleData->bUsingCache)
                 {
-                    if (_InputNewValue.GetType() == ValueType::Unset)
-                    {
-                        bHasLocMouseFocused = false;
-                    }
-                    else
-                    {
-                        bHasLocMouseFocused = true;
-                        bLocMouseFocused = _InputNewValue.GetBool();
-                    }
+                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecMouseFocused);
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                    return true;
+                }
 
-                    return PropertyCustomCacheResult::SkipAll;
-                }
-                else if (_pUpdateValueInfo->eIndicies == PropertyIndicies::PI_Specified)
+                if (bHasLocMouseFocused)
                 {
-                    bSpecMouseFocused = _InputNewValue.GetBool();
-                    return PropertyCustomCacheResult::SkipAll;
+                    _RetValue = Value::CreateBool(bLocMouseFocused);
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                    return true;
                 }
+
+                _RetValue = Value::CreateUnset();
+                // 如果自己需要处理鼠标焦点，那么阻止 父节点继承
+                _pHandleData->Output.CacheResult = (GetActive() & Active::Mouse) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
+                return true;
             }
 
-            return PropertyCustomCacheResult::SkipNone;
+            return false;
         }
 
-        HRESULT __MEGA_UI_API Element::GetParentDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        bool Element::SetMouseFocusedPropertyValue(SetValueHandleData* _pHandleData)
         {
-            return GetParentDependencies(_Prop, _eIndicies, pdr, iPCSrcRoot, _pNewValue, _pDeferCycle);
-        }
+            auto& _InputNewValue = _pHandleData->InputNewValue;
 
-        HRESULT __MEGA_UI_API Element::GetParentDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
-        {
-            HRESULT _hrLast = S_OK;
-
-            pdr->iDepPos = -1;
-            pdr->cDepCnt = 0;
-
-            if (_eIndicies == PropertyIndicies::PI_Local)
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                auto pItem = _pDeferCycle->vecPropertyChanged.GetItemPtr(iPCSrcRoot);
+                if (_InputNewValue.GetType() == ValueType::Unset)
+                {
+                    bHasLocMouseFocused = false;
+                }
+                else
+                {
+                    bHasLocMouseFocused = true;
+                    bLocMouseFocused = _InputNewValue.GetBool();
+                }
+                return true;
+            }
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+            {
+                bSpecMouseFocused = _InputNewValue.GetBool();
+                return true;
+            }
+
+            return false;
+        }
+        
+        bool Element::KeyboardFocusedPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        {
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                break;
+            case CustomPropertyHandleType::GetDependencies:
+                break;
+            case CustomPropertyHandleType::GetValue:
+                return GetKeyboardFocusedPropertyValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::SetValue:
+                return SetKeyboardFocusedPropertyValue((SetValueHandleData*)_pHandleData);
+            default:
+                break;
+            }
+            return false;
+        }
+
+        bool Element::GetKeyboardFocusedPropertyValue(GetValueHandleData* _pHandleData)
+        {
+            auto& _RetValue = _pHandleData->Output.RetValue;
+
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                if (bHasLocKeyboardFocused)
+                {
+                    _RetValue = Value::CreateBool(bLocKeyboardFocused);
+                }
+                else
+                {
+                    _RetValue = Value::CreateUnset();
+                }
+                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                return true;
+            }
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+            {
+                if (_pHandleData->bUsingCache)
+                {
+                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecKeyboardFocused);
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                    return true;
+                }
+
+                if (bHasLocKeyboardFocused)
+                {
+                    _RetValue = Value::CreateBool(bLocKeyboardFocused);
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                    return true;
+                }
+
+                _RetValue = Value::CreateUnset();
+                // 如果自己需要处理键盘焦点，那么阻止 父节点继承
+                _pHandleData->Output.CacheResult = (GetActive() & Active::Keyboard) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Element::SetKeyboardFocusedPropertyValue(SetValueHandleData* _pHandleData)
+        {
+            auto& _InputNewValue = _pHandleData->InputNewValue;
+
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                if (_InputNewValue.GetType() == ValueType::Unset)
+                {
+                    bHasLocKeyboardFocused = false;
+                }
+                else
+                {
+                    bHasLocKeyboardFocused = true;
+                    bLocKeyboardFocused = _InputNewValue.GetBool();
+                }
+                return true;
+            }
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+            {
+                bSpecKeyboardFocused = _InputNewValue.GetBool();
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Element::FocusedPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        {
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::GetValue:
+                return GetFocusedPropertyValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::SetValue:
+                return SetFocusedPropertyValue((SetValueHandleData*)_pHandleData);
+            default:
+                break;
+            }
+            return false;
+        }
+
+        bool Element::GetFocusedPropertyValue(GetValueHandleData* _pHandleData)
+        {
+            auto& _RetValue = _pHandleData->Output.RetValue;
+
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                if (bHasLocFocused)
+                {
+                    _RetValue = Value::CreateBool(bLocFocused);
+                }
+                else
+                {
+                    _RetValue = Value::CreateUnset();
+                }
+                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                return true;
+            }
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+            {
+                if (_pHandleData->bUsingCache)
+                {
+                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecFocused);
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                    return true;
+                }
+
+                if (bHasLocFocused)
+                {
+                    _RetValue = Value::CreateBool(bLocFocused);
+                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                    return true;
+                }
+
+                _RetValue = Value::CreateUnset();
+                // 如果自己需要处理键盘焦点，那么阻止 父节点继承
+                _pHandleData->Output.CacheResult = (GetActive() & Active::Keyboard) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Element::SetFocusedPropertyValue(SetValueHandleData* _pHandleData)
+        {
+            auto& _InputNewValue = _pHandleData->InputNewValue;
+
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                if (_InputNewValue.GetType() == ValueType::Unset)
+                {
+                    bHasLocKeyboardFocused = false;
+                }
+                else
+                {
+                    bHasLocKeyboardFocused = true;
+                    bLocKeyboardFocused = _InputNewValue.GetBool();
+                }
+                return true;
+            }
+            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+            {
+                bSpecKeyboardFocused = _InputNewValue.GetBool();
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Element::GetParentDependencies(GetDependenciesHandleData* _pHandleData)
+        {
+            HRESULT& _hrLast = _pHandleData->Output.hr;
+
+            _pHandleData->pdr->iDepPos = -1;
+            _pHandleData->pdr->cDepCnt = 0;
+
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                auto pItem = _pHandleData->pDeferCycle->vecPropertyChanged.GetItemPtr(_pHandleData->iPCSrcRoot);
                 if (!pItem)
-                    return E_UNEXPECTED;
+                {
+                    _hrLast = E_UNEXPECTED;
+                    return true;
+                }
 
                 auto pElement = pItem->pNewValue.GetElement();
                 if (!pElement)
-                    return S_OK;
+                {
+                    _hrLast = S_OK;
+                    return true;
+                }
 
                 auto _pControlInfo = this->GetControlInfo();
                 
@@ -2983,35 +3314,45 @@ namespace YY
                     HRESULT _hr;
                     if (_pProp->fFlags & PF_40)
                     {
-                        _hr = GetBuriedSheetDependencies(_pProp, pElement, pdr, _pDeferCycle);
+                        _hr = GetBuriedSheetDependencies(_pProp, pElement, _pHandleData->pdr, _pHandleData->pDeferCycle);
                     }
                     else
                     {
-                        _hr = AddDependency(this, *_pProp, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
+                        _hr = AddDependency(this, *_pProp, PropertyIndicies::PI_Specified, _pHandleData->pdr, _pHandleData->pDeferCycle);
                     }
 
                     if (FAILED(_hr))
                         _hrLast = _hr;
                 }
-                
             }
-            return _hrLast;
+
+            return true;
         }
 
-        HRESULT __MEGA_UI_API Element::GetSheetDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        bool Element::SheetPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            return GeSheetDependencies(_Prop, _eIndicies, pdr, iPCSrcRoot, _pNewValue, _pDeferCycle);
-        }
-
-        HRESULT __MEGA_UI_API Element::GeSheetDependencies(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
-        {
-            HRESULT _hrLast = S_OK;
-
-            if (_eIndicies == PropertyIndicies::PI_Specified)
+            switch (_eType)
             {
-                auto pItem = _pDeferCycle->vecPropertyChanged.GetItemPtr(iPCSrcRoot);
+            case CustomPropertyHandleType::GetDependencies:
+                return GeSheetDependencies((GetDependenciesHandleData*)_pHandleData);
+            default:
+                break;
+            }
+            return false;
+        }
+
+        bool Element::GeSheetDependencies(GetDependenciesHandleData* _pHandleData)
+        {
+            HRESULT& _hrLast = _pHandleData->Output.hr;
+
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
+            {
+                auto pItem = _pHandleData->pDeferCycle->vecPropertyChanged.GetItemPtr(_pHandleData->iPCSrcRoot);
                 if (!pItem)
-                    return E_UNEXPECTED;
+                {
+                    _hrLast =  E_UNEXPECTED;
+                    return true;
+                }
 
                 if (pItem->pProp == &Element::g_ControlInfoData.SheetProp)
                 {
@@ -3025,27 +3366,27 @@ namespace YY
 
                         if (_pProp->fFlags & PropertyFlag::PF_Cascade)
                         {
-                            auto _hr = AddDependency(this, *_pProp, PropertyIndicies::PI_Specified, pdr, _pDeferCycle);
+                            auto _hr = AddDependency(this, *_pProp, PropertyIndicies::PI_Specified, _pHandleData->pdr, _pHandleData->pDeferCycle);
                             if (FAILED(_hr))
                                 _hrLast = _hr;
                         }
                     }
                     
-                    if (auto _pStyleSheet = _pNewValue.GetStyleSheet())
+                    if (auto _pStyleSheet = _pHandleData->NewValue.GetStyleSheet())
                     {
-                        auto _hr = _pStyleSheet->GetSheetScope(this, pdr, _pDeferCycle);
+                        auto _hr = _pStyleSheet->GetSheetScope(this, _pHandleData->pdr, _pHandleData->pDeferCycle);
                         if (FAILED(_hr))
                             _hrLast = _hr;
                     }
                 }
                 else if (pItem->pProp == &Element::g_ControlInfoData.ParentProp)
                 {
-                    auto _pNewParent = _pNewValue.GetElement();
+                    auto _pNewParent = _pHandleData->NewValue.GetElement();
                     if (_pNewParent)
                     {
                         if(auto _pStyleSheet = _pNewParent->pSheet)
                         {
-                            auto _hr = _pStyleSheet->GetSheetScope(this, pdr, _pDeferCycle);
+                            auto _hr = _pStyleSheet->GetSheetScope(this, _pHandleData->pdr, _pHandleData->pDeferCycle);
                             if (FAILED(_hr))
                                 _hrLast = _hr;
                         }
@@ -3054,34 +3395,33 @@ namespace YY
 
                 if (auto _pStyleSheet = pSheet)
                 {
-                    auto _hr = _pStyleSheet->GetSheetScope(this, pdr, _pDeferCycle);
+                    auto _hr = _pStyleSheet->GetSheetScope(this, _pHandleData->pdr, _pHandleData->pDeferCycle);
                     if (FAILED(_hr))
                         _hrLast = _hr;
                 }
-
             }
 
-            return _hrLast;
+            return true;
         }
 
-        HRESULT __MEGA_UI_API Element::GetVisibleDependenciesThunk(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle)
+        bool Element::GetVisibleDependencies(GetDependenciesHandleData* _pHandleData)
         {
-            HRESULT _hrLast = S_OK;
+            HRESULT& _hrLast = _pHandleData->Output.hr;
 
-            if (_eIndicies == PropertyIndicies::PI_Computed)
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Computed)
             {
                 for (auto _pChildern : GetChildren())
                 {
-                    auto _hr = AddDependency(_pChildern, _Prop, PropertyIndicies::PI_Computed, pdr, _pDeferCycle);
+                    auto _hr = AddDependency(_pChildern, *_pHandleData->pProp, PropertyIndicies::PI_Computed, _pHandleData->pdr, _pHandleData->pDeferCycle);
                     if (FAILED(_hr))
                         _hrLast = _hr;
                 }
             }
 
-            return _hrLast;
+            return true;
         }
 
-        void __MEGA_UI_API Element::UpdateLayoutPosition(Point _LayoutPosition)
+        void Element::UpdateLayoutPosition(Point _LayoutPosition)
         {
             if (LocPosInLayout == _LayoutPosition)
                 return;
@@ -3101,7 +3441,7 @@ namespace YY
             PostSourceChange();
         }
 
-        void __MEGA_UI_API Element::UpdateLayoutSize(Size _LayoutSize)
+        void Element::UpdateLayoutSize(Size _LayoutSize)
         {
             if (LocSizeInLayout == _LayoutSize)
                 return;
@@ -3121,7 +3461,7 @@ namespace YY
             PostSourceChange();
         }
         
-        HRESULT __MEGA_UI_API Element::OnHosted(Window* _pNewWindow)
+        HRESULT Element::OnHosted(Window* _pNewWindow)
         {
             if (pWindow || _pNewWindow == nullptr)
                 return E_INVALIDARG;
@@ -3132,7 +3472,7 @@ namespace YY
             {
                 StartDefer(&_Cooike);
                 PreSourceChange(
-                    Element::g_ControlInfoData.DPIProp,
+                    Element::g_ControlInfoData.DpiProp,
                     PropertyIndicies::PI_Local,
                     Value::CreateInt32(iLocDpi),
                     Value::CreateInt32(_pNewWindow->GetDpi()));
@@ -3153,7 +3493,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API Element::OnUnHosted(Window* _pOldWindow)
+        HRESULT Element::OnUnHosted(Window* _pOldWindow)
         {
             if (!pWindow)
                 return S_FALSE;
@@ -3169,6 +3509,66 @@ namespace YY
             pWindow = nullptr;
             return S_OK;
         }
+
+        Element* Element::GetAdjacent(Element* _pFrom, NavigatingType _eNavDir, NavReference const* _pnr, bool _bKeyableOnly)
+        {
+            // todo
+            return nullptr;
+        }
+
+        bool Element::OnKeyDown(const KeyboardEvent& _KeyEvent)
+        {
+            NavigatingType _NavigateType;
+
+            switch (_KeyEvent.vKey)
+            {
+            case VK_DOWN:
+                _NavigateType = NavigatingType::Down;
+                break;
+            case VK_UP:
+                _NavigateType = NavigatingType::Up;
+                break;
+            case VK_LEFT:
+                _NavigateType = GetFlowDirection() == FlowDirection::LeftToRight ? NavigatingType::Left : NavigatingType::Right;
+                break;
+            case VK_RIGHT:
+                _NavigateType = GetFlowDirection() == FlowDirection::LeftToRight ? NavigatingType::Right : NavigatingType::Left;
+                break;
+            case VK_HOME:
+                _NavigateType = NavigatingType::First;
+                break;
+            case VK_END:
+                _NavigateType = NavigatingType::Last;
+                break;
+            default:
+                return false; 
+                break;
+            }
+            
+            return OnKeyboardNavigate(KeyboardNavigateEvent(_KeyEvent.pTarget, _NavigateType));
+        }
+
+        bool Element::OnChar(const KeyboardEvent& _KeyEvent)
+        {
+            if (_KeyEvent.vKey == VK_TAB)
+            {
+                const auto _NavigateType = _KeyEvent.fModifiers & EventModifier::Shift ? NavigatingType::Previous : NavigatingType::Next;
+                return OnKeyboardNavigate(KeyboardNavigateEvent(_KeyEvent.pTarget, _NavigateType));
+            }
+            return false;
+        }
         
+        bool Element::OnKeyboardNavigate(const KeyboardNavigateEvent& _KeyEvent)
+        {
+            auto _pForm = _KeyEvent.pTarget == this ? this : GetImmediateChild(_KeyEvent.pTarget);
+            auto _pTo = GetAdjacent(_pForm, _KeyEvent.Navigate, nullptr, true);
+            if (_pTo)
+            {
+                _pTo->SetKeyboardFocus();
+                return true;
+            }
+
+            return false;
+        }
 	}
 }

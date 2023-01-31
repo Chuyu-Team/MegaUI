@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "../base/MegaUITypeInt.h"
-#include "../core/Element.h"
-#include "../base/DynamicArray.h"
+#include "MegaUI/base/MegaUITypeInt.h"
+#include "MegaUI/core/Element.h"
+#include "MegaUI/base/DynamicArray.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)
 /*
@@ -15,7 +15,7 @@ namespace YY
     namespace MegaUI
     {
 #define _MEGA_UI_WINDOW_ELEMENT_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Title, PF_Normal, 0, &Value::CreateEmptyString, nullptr, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString)
+    _APPLY(Title, PF_Normal, 0, &Value::CreateEmptyString, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString)
 
         class WindowElement : public Element
         {
@@ -28,11 +28,11 @@ namespace YY
             HRESULT __MEGA_UI_API SetTitle(uString _szTitle);
 
             uString __MEGA_UI_API GetTitle();
-            
-        protected:
-            virtual void __MEGA_UI_API OnVisiblePropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue) override;
 
-            virtual void __MEGA_UI_API OnEnabledPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue) override;
+        protected:
+            virtual bool __MEGA_UI_API OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle) override;
+
+            virtual bool __MEGA_UI_API OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle) override;
         };
     } // namespace MegaUI
 } // namespace YY

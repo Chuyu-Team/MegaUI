@@ -30,7 +30,7 @@ namespace YY
 
         EXTERN_C extern IMAGE_DOS_HEADER __ImageBase;
 
-        HRESULT __MEGA_UI_API Window::Initialize(HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
+        HRESULT Window::Initialize(HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
         {
             WNDCLASSEXW wcex;
 
@@ -106,7 +106,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Window::SetHost(WindowElement* _pHost)
+        HRESULT Window::SetHost(WindowElement* _pHost)
         {
             if (_pHost == nullptr || _pHost->pWindow)
                 return E_INVALIDARG;
@@ -131,7 +131,7 @@ namespace YY
             return S_OK;
         }
 
-        UINT __MEGA_UI_API Window::AsyncDestroyMsg()
+        UINT Window::AsyncDestroyMsg()
         {
             static UINT g_AsyncDestroyMsg = 0;
 
@@ -143,30 +143,30 @@ namespace YY
             return g_AsyncDestroyMsg;
         }
 
-        void __MEGA_UI_API Window::DestroyWindow()
+        void Window::DestroyWindow()
         {
             if (hWnd)
                 ::PostMessageW(hWnd, AsyncDestroyMsg(), 0, 0);
         }
 
-        bool __MEGA_UI_API Window::IsMinimized() const
+        bool Window::IsMinimized() const
         {
             return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
         }
 
-        void __MEGA_UI_API Window::ShowWindow(int _iCmdShow)
+        void Window::ShowWindow(int _iCmdShow)
         {
             if (hWnd)
                 ::ShowWindow(hWnd, _iCmdShow);
         }
 
-        void __MEGA_UI_API Window::InvalidateRect(const Rect* _pRect)
+        void Window::InvalidateRect(const Rect* _pRect)
         {
             if (hWnd)
                 ::InvalidateRect(hWnd, nullptr, FALSE);
         }
 
-        HRESULT __MEGA_UI_API Window::PostDelayedDestroyElement(Element* _pElement)
+        HRESULT Window::PostDelayedDestroyElement(Element* _pElement)
         {
             if (!_pElement)
                 return E_INVALIDARG;
@@ -181,14 +181,14 @@ namespace YY
             return S_OK;
         }
 
-        void __MEGA_UI_API Window::HandleVisiblePropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Window::HandleVisiblePropChanged(OnPropertyChangedHandleData* _pHandle)
         {
-            if (_eIndicies == PropertyIndicies::PI_Computed && hWnd)
+            if (_pHandle->eIndicies == PropertyIndicies::PI_Computed && hWnd)
             {
                 const auto dwOldStyle = GetWindowLongPtrW(hWnd, GWL_STYLE);
                 auto dwNewStyle = dwOldStyle;
 
-                if (_NewValue.GetBool())
+                if (_pHandle->NewValue.GetBool())
                 {
                     dwNewStyle |= WS_VISIBLE;
                 }
@@ -200,17 +200,19 @@ namespace YY
                 if (dwNewStyle != dwOldStyle)
                     SetWindowLongPtrW(hWnd, GWL_STYLE, dwNewStyle);
             }
+
+            return true;
         }
 
-        void __MEGA_UI_API Window::HandleEnabledPropChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _pOldValue, const Value& _NewValue)
+        bool Window::HandleEnabledPropChanged(OnPropertyChangedHandleData* _pHandle)
         {
-            if (_eIndicies != PropertyIndicies::PI_Specified || hWnd == NULL)
-                return;
+            if (_pHandle->eIndicies != PropertyIndicies::PI_Specified || hWnd == NULL)
+                return false;
 
             const auto dwOldStyle = GetWindowLongPtrW(hWnd, GWL_STYLE);
             auto dwNewStyle = dwOldStyle;
 
-            if (_NewValue.GetBool())
+            if (_pHandle->NewValue.GetBool())
             {
                 dwNewStyle &= ~WS_DISABLED;
             }
@@ -222,9 +224,10 @@ namespace YY
             if (dwNewStyle != dwOldStyle)
                 SetWindowLongPtrW(hWnd, GWL_STYLE, dwNewStyle);
             
+            return true;
         }
 
-        Element* __MEGA_UI_API Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fFindMarks)
+        Element* Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fFindMarks)
         {
             if (!pHost)
                 return nullptr;
@@ -300,17 +303,17 @@ namespace YY
             return _pLastFind;
         }
 
-        int32_t __MEGA_UI_API Window::GetDpi() const
+        int32_t Window::GetDpi() const
         {
             return iDpi;
         }
 
-        bool __MEGA_UI_API Window::IsInitialized() const
+        bool Window::IsInitialized() const
         {
             return hWnd != NULL;
         }
 
-        Render* __MEGA_UI_API Window::GetRender()
+        Render* Window::GetRender()
         {
             if (!pRender)
             {
@@ -411,11 +414,7 @@ namespace YY
             case WM_MOUSELEAVE:
                 fTrackMouse &= ~TME_LEAVE;
                 if (pHost && pLastMouseFocusedElement)
-                {
-                    auto _pLastMouseFocusedElement = pLastMouseFocusedElement;
-                    pLastMouseFocusedElement = nullptr;
-                    OnMouseFocusMoved(_pLastMouseFocusedElement, nullptr);
-                }
+                    OnMouseFocusMoved(pLastMouseFocusedElement, nullptr);
                 break;
             case WM_LBUTTONDOWN:
             {
@@ -460,6 +459,12 @@ namespace YY
             case WM_UPDATEUISTATE:
                 OnUpdateUiState(LOWORD(_wParam), HIWORD(_wParam));
                 break;
+            case WM_KEYDOWN:
+                OnKeyDown(KeyboardEvent(pLastFocusedElement, _wParam, _lParam));
+                break;
+            case WM_CHAR:
+                OnChar(KeyboardEvent(pLastFocusedElement, _wParam, _lParam, KeyboardEvent::GetEventModifier()));
+                break;
             default:
                 break;
             }
@@ -467,7 +472,7 @@ namespace YY
             return DefWindowProcW(_hWnd, _uMsg, _wParam, _lParam);
         }
 
-        bool __MEGA_UI_API Window::OnCreate()
+        bool Window::OnCreate()
         {
             //Rect Client2;
             //::GetWindowRect(_hWnd, &Client2);
@@ -505,7 +510,7 @@ namespace YY
             return true;
         }
 
-        HRESULT __MEGA_UI_API Window::OnPaint()
+        HRESULT Window::OnPaint()
         {
             if (!pHost)
                 return S_FALSE;
@@ -531,7 +536,7 @@ namespace YY
             return pRender->EndDraw();
         }
 
-        HRESULT __MEGA_UI_API Window::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
+        HRESULT Window::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
         {
             if (_pRender == nullptr || _pElement == nullptr)
                 return E_INVALIDARG;
@@ -612,7 +617,7 @@ namespace YY
             return S_OK;
         }
 
-        void __MEGA_UI_API Window::OnSize(UINT _uWidth, UINT _uHeight)
+        void Window::OnSize(UINT _uWidth, UINT _uHeight)
         {
             LastRenderSize.width = _uWidth;
             LastRenderSize.height = _uHeight;
@@ -629,7 +634,7 @@ namespace YY
             }
         }
 
-        void __MEGA_UI_API Window::ClearDelayedDestroyList()
+        void Window::ClearDelayedDestroyList()
         {
             auto _TmpList = std::move(DelayedDestroyList);
 
@@ -639,7 +644,7 @@ namespace YY
             }
         }
 
-        void __MEGA_UI_API Window::UpdateStyles(uint32_t _uOld, uint32_t _uNew)
+        void Window::UpdateStyles(uint32_t _uOld, uint32_t _uNew)
         {
             if (!pHost)
                 return;
@@ -649,7 +654,7 @@ namespace YY
                 pHost->SetVisible(_uNew & WS_VISIBLE);
         }
 
-        void __MEGA_UI_API Window::OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect)
+        void Window::OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect)
         {
             if (_iNewDPI == 0 || _iNewDPI == iDpi)
                 return;
@@ -678,7 +683,7 @@ namespace YY
 
             if (pHost->iLocDpi != _iNewDPI)
             {
-                pHost->PreSourceChange(Element::g_ControlInfoData.DPIProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
+                pHost->PreSourceChange(Element::g_ControlInfoData.DpiProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
                 pHost->iLocDpi = _iNewDPI;
                 pHost->PostSourceChange();
             }
@@ -687,7 +692,7 @@ namespace YY
             pHost->EndDefer(_Cooike);
         }
         
-        HRESULT __MEGA_UI_API Window::UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue)
+        HRESULT Window::UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue)
         {
             const auto _iNewDPI = _NewValue.GetInt32();
             for (auto pChild : _pElement->GetChildren())
@@ -701,7 +706,7 @@ namespace YY
                         if (_OldValue == nullptr)
                             return E_OUTOFMEMORY;
                     }
-                    pChild->PreSourceChange(Element::g_ControlInfoData.DPIProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
+                    pChild->PreSourceChange(Element::g_ControlInfoData.DpiProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
                     pChild->iLocDpi = _iNewDPI;
                     pChild->PostSourceChange();
                 }
@@ -714,7 +719,7 @@ namespace YY
             return S_OK;
         }
         
-        void __MEGA_UI_API Window::OnUpdateUiState(uint16_t _eType, uint16_t _fState)
+        void Window::OnUpdateUiState(uint16_t _eType, uint16_t _fState)
         {
             auto _fOldUIState = fUIState;
 
@@ -731,7 +736,7 @@ namespace YY
             }
         }
         
-        void __MEGA_UI_API Window::OnMouseMove(Point _MousePoint, uint32_t _fFlags)
+        void Window::OnMouseMove(Point _MousePoint, uint32_t _fFlags)
         {
             if ((_fFlags & MK_LBUTTON) == 0)
             {
@@ -740,12 +745,7 @@ namespace YY
                     auto _pNewMouseElement = FindElementFromPoint(_MousePoint, FindVisible | FindEnable | FindActionMouse);
 
                     if (_pNewMouseElement != pLastMouseFocusedElement)
-                    {
-                        auto _pLastMouseFocusedElement = pLastMouseFocusedElement;
-                        pLastMouseFocusedElement = _pNewMouseElement;
-
-                        OnMouseFocusMoved(_pLastMouseFocusedElement, _pNewMouseElement);                        
-                    }
+                        OnMouseFocusMoved(pLastMouseFocusedElement, _pNewMouseElement);                        
 
                     if ((fTrackMouse & TME_LEAVE) == 0)
                     {
@@ -766,10 +766,12 @@ namespace YY
             }
         }
         
-        void __MEGA_UI_API Window::OnMouseFocusMoved(Element* _pFrom, Element* _pTo)
+        void Window::OnMouseFocusMoved(Element* _pFrom, Element* _pTo)
         {
             if (_pFrom == _pTo)
                 return;
+
+            pLastMouseFocusedElement = _pTo;
 
             intptr_t _Cooike = 0;
 
@@ -809,5 +811,21 @@ namespace YY
 
             pHost->EndDefer(_Cooike);
         }
+
+        bool Window::OnKeyDown(const KeyboardEvent& _KeyEvent)
+        {
+            switch (_KeyEvent.vKey)
+            {
+            default:
+                break;
+            }
+            return false;
+        }
+
+        bool Window::OnChar(const KeyboardEvent& _KeyEvent)
+        {
+            return false;
+        }
+
     } // namespace MegaUI
 } // namespace YY

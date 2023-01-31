@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "..\base\MegaUITypeInt.h"
+#include "MegaUI/base/MegaUITypeInt.h"
 #include "ControlInfo.h"
-#include "..\base\alloc.h"
+#include "MegaUI/base/alloc.h"
 #include "Element.h"
 
 #pragma pack(push, __MEGA_UI_PACKING)

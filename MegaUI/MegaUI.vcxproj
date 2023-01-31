@@ -182,6 +182,7 @@
     <ClInclude Include="core\Layout.h" />
     <ClInclude Include="core\Property.h" />
     <ClInclude Include="core\StyleSheet.h" />
+    <ClInclude Include="core\UIEvent.h" />
     <ClInclude Include="core\value.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Parser\UIParser.h" />

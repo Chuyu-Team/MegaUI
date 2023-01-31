@@ -6,9 +6,10 @@
 #include <dwrite.h>
 #include <wincodec.h>
 
-#include "../base/MegaUITypeInt.h"
+#include <MegaUI/base/MegaUITypeInt.h>
 #include "WindowElement.h"
-#include "../base/DynamicArray.h"
+#include <MegaUI/base/DynamicArray.h>
+#include <MegaUI/core/UIEvent.h>
 
 #pragma pack(push, __MEGA_UI_PACKING)
 
@@ -30,7 +31,12 @@ namespace YY
             uint32_t bCapture;
             // TODO 需要更换为块式队列更友好。
             DynamicArray<Element*> DelayedDestroyList;
+            // 鼠标焦点
             Element* pLastMouseFocusedElement = nullptr;
+            // 逻辑焦点
+            Element* pLastFocusedElement = nullptr;
+            // 键盘焦点（全局）
+            static Element* g_pLastKeyboardFocusedElement;
             Element* pLastPressedElement;
             int32_t iDpi;
             // WM_UPDATEUISTATE的缓存
@@ -72,9 +78,9 @@ namespace YY
 
             HRESULT __MEGA_UI_API PostDelayedDestroyElement(Element* _pElement);
             
-            void __MEGA_UI_API HandleVisiblePropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+            bool __MEGA_UI_API HandleVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
-            void __MEGA_UI_API HandleEnabledPropChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _NewValue);
+            bool __MEGA_UI_API HandleEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
             constexpr static auto FindActionMouse = 0x00000001;
             constexpr static auto FindActionKeyboard = 0x00000002;
@@ -94,6 +100,20 @@ namespace YY
             bool __MEGA_UI_API IsInitialized() const;
 
             _Ret_notnull_ Render* __MEGA_UI_API GetRender();
+            
+            /// <summary>
+            /// 设置键盘焦点。
+            /// </summary>
+            /// <param name="_pElement">需要设置焦点的控件</param>
+            /// <returns>如果设置成功，则返回 true。</returns>
+            static bool __MEGA_UI_API SetKeyboardFocus(_In_opt_ Element* _pElement);
+
+            /// <summary>
+            /// 设置键盘焦点。
+            /// </summary>
+            /// <param name="_pElement">需要设置焦点的控件</param>
+            /// <returns>如果设置成功，则返回 true。</returns>
+            bool __MEGA_UI_API SetFocus(_In_opt_ Element* _pElement);
 
         protected:
             static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
@@ -125,6 +145,10 @@ namespace YY
             void __MEGA_UI_API OnMouseMove(Point _MousePoint, uint32_t _fFlags);
             
             void __MEGA_UI_API OnMouseFocusMoved(Element* _pFrom, Element* _pTo);
+
+            bool __MEGA_UI_API OnKeyDown(const KeyboardEvent& _KeyEvent);
+            
+            bool __MEGA_UI_API OnChar(const KeyboardEvent& _KeyEvent);
         };
     }
 } // namespace YY

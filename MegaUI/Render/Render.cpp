@@ -12,7 +12,7 @@ namespace YY
     {
         HRESULT __MEGA_UI_API CreateRender(HWND _hWnd, Render** _ppRender)
         {
-            #if 1
+            #if 0
             return GdiPlusRender::CreateRender(_hWnd, _ppRender);
             #else
             return D2D1_1Render::CreateRender(_hWnd, _ppRender);

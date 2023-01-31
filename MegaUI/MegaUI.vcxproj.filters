@@ -162,6 +162,9 @@
     <ClInclude Include="Render\Font.h">
       <Filter>UI\Render</Filter>
     </ClInclude>
+    <ClInclude Include="core\UIEvent.h">
+      <Filter>UI\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
