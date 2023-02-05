@@ -93,9 +93,6 @@
     <ClInclude Include="base\StringTransform.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
-    <ClInclude Include="base\String.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="core\Layout.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
@@ -184,6 +181,9 @@
       <Filter>Base\Containers</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Containers\String.h">
+      <Filter>Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Containers\NString.h">
       <Filter>Base\Containers</Filter>
     </ClInclude>
   </ItemGroup>

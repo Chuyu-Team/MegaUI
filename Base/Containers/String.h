@@ -34,7 +34,6 @@ namespace YY
 {
     namespace MegaUI
     {
-        class String;
         class EndianHelper;
     } // namespace MegaUI
 
@@ -42,6 +41,8 @@ namespace YY
     {
         namespace Containers
         {
+            class NString;
+
             template<class T, typename char_t, Encoding _eEncoding>
             class StringFunctionImp
             {
@@ -156,7 +157,7 @@ namespace YY
             private:
                 constexpr static Encoding eEncoding = _eEncoding;
 
-                friend MegaUI::String;
+                friend NString;
                 friend MegaUI::EndianHelper;
 
                 _Field_z_ char_t* szString;

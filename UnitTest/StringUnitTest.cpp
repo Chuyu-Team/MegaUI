@@ -1,11 +1,13 @@
 ﻿#include "pch.h"
 #include "CppUnitTest.h"
-#include <MegaUI/base/String.h>
+
 #include <atlstr.h>
 #include <Windows.h>
 #include <tchar.h>
 #include <string>
 #include <atltypes.h>
+
+#include <Base/Containers/NString.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace YY;
@@ -27,7 +29,7 @@ namespace UnitTest
 
 
 
-				YY::MegaUI::String Tmp2(_TEST_TEXT);
+				NString Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::ANSI);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
@@ -42,7 +44,7 @@ namespace UnitTest
 				Assert::IsTrue(memcmp(Tmp.GetConstString(), _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 
 
-				YY::MegaUI::String Tmp2(_TEST_TEXT);
+				NString Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::UTF8);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
@@ -57,7 +59,7 @@ namespace UnitTest
 				Assert::IsTrue(memcmp(Tmp.GetConstString(), _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 
 
-				YY::MegaUI::String Tmp2(_TEST_TEXT);
+				NString Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::UTF16);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
@@ -72,7 +74,7 @@ namespace UnitTest
 				Assert::IsTrue(memcmp(Tmp.GetConstString(), _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 
 
-				YY::MegaUI::String Tmp2(_TEST_TEXT);
+				NString Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::UTF32);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
