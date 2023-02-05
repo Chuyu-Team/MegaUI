@@ -4,7 +4,7 @@
 #include "MegaUI/base/alloc.h"
 #include "Element.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -26,12 +26,12 @@ namespace YY
             {
             }
 
-            virtual uint32_t __MEGA_UI_API AddRef() override
+            virtual uint32_t __YYAPI AddRef() override
             {
                 return ++uRef;
             }
 
-            virtual uint32_t __MEGA_UI_API Release() override
+            virtual uint32_t __YYAPI Release() override
             {
                 const auto _uNewRef = --uRef;
 
@@ -45,17 +45,17 @@ namespace YY
                 return _uNewRef;
             }
 
-            virtual raw_const_astring_t __MEGA_UI_API GetName() override
+            virtual raw_const_astring_t __YYAPI GetName() override
             {
                 return _Class::g_ControlInfoData.szControlName;
             }
 
-            virtual IControlInfo* __MEGA_UI_API GetBaseControlInfo() override
+            virtual IControlInfo* __YYAPI GetBaseControlInfo() override
             {
                 return _Class::StaticControlInfo::BaseControl::GetStaticControlInfo();
             }
 
-            virtual HRESULT __MEGA_UI_API CreateInstance(int32_t _iDPI, Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
+            virtual HRESULT __YYAPI CreateInstance(int32_t _iDPI, Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
                 if (!_ppOutElem)
                     return E_INVALIDARG;
@@ -73,7 +73,7 @@ namespace YY
                 return _Class::StaticControlInfo::uPropsCount + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
             }
 
-            static const PropertyInfo* __MEGA_UI_API EnumPropertyInfoImp(uint32_t _uIndex)
+            static const PropertyInfo* __YYAPI EnumPropertyInfoImp(uint32_t _uIndex)
             {
                 constexpr auto _uBasePropCount = ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
 
@@ -85,7 +85,7 @@ namespace YY
                 return ControlInfoImp<_Class::StaticControlInfo::BaseControl>::EnumPropertyInfoImp(_uIndex);
             }
 
-            virtual const PropertyInfo* __MEGA_UI_API EnumPropertyInfo(uint32_t _uIndex) override
+            virtual const PropertyInfo* __YYAPI EnumPropertyInfo(uint32_t _uIndex) override
             {
                 if (_uIndex >= GetPropertyInfoCount())
                     return nullptr;
@@ -94,12 +94,12 @@ namespace YY
                 return EnumPropertyInfoImp(_uIndex);
             }
 
-            virtual bool __MEGA_UI_API IsValidProperty(const PropertyInfo& _Prop) override
+            virtual bool __YYAPI IsValidProperty(const PropertyInfo& _Prop) override
             {
                 return GetPropertyInfoIndex(_Prop) >= 0;
             }
 
-            virtual bool __MEGA_UI_API IsSubclassOf(IControlInfo* _pControlInfo) override
+            virtual bool __YYAPI IsSubclassOf(IControlInfo* _pControlInfo) override
             {
                 if (!_pControlInfo)
                     return false;
@@ -117,7 +117,7 @@ namespace YY
                 return false;
             }
 
-            static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
+            static int32_t __YYAPI GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
                 const uint_t _uIndex = &_Prop - &_Class::g_ControlInfoData.Props[0];
 
@@ -130,7 +130,7 @@ namespace YY
                 return int32_t(_uIndex + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount());
             }
 
-            virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
+            virtual int32_t __YYAPI GetPropertyInfoIndex(const PropertyInfo& _Prop) override
             {
                 return GetPropertyInfoIndexImp(_Prop);
             }
@@ -140,7 +140,7 @@ namespace YY
             /// </summary>
             /// <param name="bExplicitRegister">如果为 true，那么表示它被用户所注册。如果为false，说明它被子控件继承注册。</param>
             /// <returns>HRESULT</returns>
-            static HRESULT __MEGA_UI_API Register(bool _bExplicitRegister = true)
+            static HRESULT __YYAPI Register(bool _bExplicitRegister = true)
             {
                 auto _hr = _Class::StaticControlInfo::BaseControl::StaticControlInfo::ControlInfoType::Register(false);
 
@@ -182,7 +182,7 @@ namespace YY
                 return _hr;
             }
 
-            HRESULT __MEGA_UI_API UnRegister()
+            HRESULT __YYAPI UnRegister()
             {
                 auto _pControlInfo = _Class::g_ControlInfoData.pControlInfoPtr;
                 if (!_pControlInfo)
@@ -222,12 +222,12 @@ namespace YY
             {
             }
 
-            virtual uint32_t __MEGA_UI_API AddRef() override
+            virtual uint32_t __YYAPI AddRef() override
             {
                 return ++uRef;
             }
 
-            virtual uint32_t __MEGA_UI_API Release() override
+            virtual uint32_t __YYAPI Release() override
             {
                 const auto _uNewRef = --uRef;
 
@@ -241,17 +241,17 @@ namespace YY
                 return _uNewRef;
             }
 
-            virtual raw_const_astring_t __MEGA_UI_API GetName() override
+            virtual raw_const_astring_t __YYAPI GetName() override
             {
                 return Element::StaticControlInfo::szControlName;
             }
 
-            virtual IControlInfo* __MEGA_UI_API GetBaseControlInfo() override
+            virtual IControlInfo* __YYAPI GetBaseControlInfo() override
             {
                 return nullptr;
             }
 
-            virtual HRESULT __MEGA_UI_API CreateInstance(int32_t _iDPI, Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
+            virtual HRESULT __YYAPI CreateInstance(int32_t _iDPI, Element* _pTopLevelElem, intptr_t* _pCookies, Element** _ppOutElem) override
             {
                 return Element::Create(_iDPI, Element::StaticControlInfo::fDefaultCreate, _pTopLevelElem, _pCookies, _ppOutElem);
             }
@@ -261,12 +261,12 @@ namespace YY
                 return Element::StaticControlInfo::uPropsCount;
             }
 
-            static const PropertyInfo* __MEGA_UI_API EnumPropertyInfoImp(unsigned int _uIndex)
+            static const PropertyInfo* __YYAPI EnumPropertyInfoImp(unsigned int _uIndex)
             {
                 return &Element::g_ControlInfoData.Props[_uIndex];
             }
 
-            virtual const PropertyInfo* __MEGA_UI_API EnumPropertyInfo(unsigned int _uIndex) override
+            virtual const PropertyInfo* __YYAPI EnumPropertyInfo(unsigned int _uIndex) override
             {
                 if (_uIndex >= GetPropertyInfoCount())
                     return nullptr;
@@ -275,12 +275,12 @@ namespace YY
                 return EnumPropertyInfoImp(_uIndex);
             }
 
-            virtual bool __MEGA_UI_API IsValidProperty(const PropertyInfo& _Prop) override
+            virtual bool __YYAPI IsValidProperty(const PropertyInfo& _Prop) override
             {
                 return GetPropertyInfoIndex(_Prop) >= 0;
             }
 
-            virtual bool __MEGA_UI_API IsSubclassOf(IControlInfo* _pControlInfo) override
+            virtual bool __YYAPI IsSubclassOf(IControlInfo* _pControlInfo) override
             {
                 if (!_pControlInfo)
                     return false;
@@ -298,7 +298,7 @@ namespace YY
                 return false;
             }
 
-            static int32_t __MEGA_UI_API GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
+            static int32_t __YYAPI GetPropertyInfoIndexImp(const PropertyInfo& _Prop)
             {
                 const uint_t _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
                 if (_uIndex >= (uint_t)Element::StaticControlInfo::uPropsCount)
@@ -308,7 +308,7 @@ namespace YY
                 return (int32_t)_uIndex;
             }
 
-            virtual int32_t __MEGA_UI_API GetPropertyInfoIndex(const PropertyInfo& _Prop) override
+            virtual int32_t __YYAPI GetPropertyInfoIndex(const PropertyInfo& _Prop) override
             {
                 const uint_t _uIndex = &_Prop - &Element::g_ControlInfoData.Props[0];
                 if (_uIndex >= (uint_t)Element::StaticControlInfo::uPropsCount)
@@ -323,7 +323,7 @@ namespace YY
             /// </summary>
             /// <param name="bExplicitRegister">如果为 true，那么表示它被用户所注册。如果为false，说明它被子控件继承注册。</param>
             /// <returns>HRESULT</returns>
-            static HRESULT __MEGA_UI_API Register(bool _bExplicitRegister = true)
+            static HRESULT __YYAPI Register(bool _bExplicitRegister = true)
             {
                 HRESULT _hr = S_OK;
                 auto& _pControlInfo = Element::g_ControlInfoData.pControlInfoPtr;
@@ -362,7 +362,7 @@ namespace YY
                 return _hr;
             }
 
-            HRESULT __MEGA_UI_API UnRegister()
+            HRESULT __YYAPI UnRegister()
             {
                 auto _pControlInfo = Element::g_ControlInfoData.pControlInfoPtr;
                 if (!_pControlInfo)

@@ -4,7 +4,7 @@
 #include <MegaUI/base/StringBase.h>
 #include <MegaUI/base/Color.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -65,10 +65,10 @@ namespace YY
             SystemFontCount,
         };
 
-        HRESULT __MEGA_UI_API GetSystemFont(_In_ SystemFont _eSystemFont, _Out_ Font* _pFont);
+        HRESULT __YYAPI GetSystemFont(_In_ SystemFont _eSystemFont, _Out_ Font* _pFont);
 
 
-        _Ret_notnull_ const EnumMap* __MEGA_UI_API GetSystemFontEnumMap();
+        _Ret_notnull_ const EnumMap* __YYAPI GetSystemFontEnumMap();
     }
 } // namespace YY
 

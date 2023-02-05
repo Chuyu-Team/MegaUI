@@ -3,7 +3,7 @@
 #include "MegaUITypeInt.h"
 #include "alloc.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -59,7 +59,7 @@ namespace YY
                 return nullptr;
             }
 
-            HRESULT __MEGA_UI_API Insert(_Key _pKey)
+            HRESULT __YYAPI Insert(_Key _pKey)
             {
                 const auto _uIndex = reinterpret_cast<uint_t>(_pKey) % _uBuckets;
 
@@ -82,7 +82,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __MEGA_UI_API Remove(_Key _pKey)
+            HRESULT __YYAPI Remove(_Key _pKey)
             {
                 const auto _uIndex = reinterpret_cast<uint_t>(_pKey) % _uBuckets;
                 HashSetEntry* _pLastEntry = nullptr;

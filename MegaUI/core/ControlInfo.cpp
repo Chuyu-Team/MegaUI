@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 
 #include "ControlInfo.h"
+#include <Base/Containers/Array.h>
 
 #include <unordered_map>
 
@@ -39,7 +40,7 @@ namespace YY
 
 
 
-        HRESULT __MEGA_UI_API IControlInfo::RegisterControlInternal(bool _bExplicitRegister)
+        HRESULT __YYAPI IControlInfo::RegisterControlInternal(bool _bExplicitRegister)
         {
             std::pair<RegisterClassInfoHashMap::iterator, bool> _itInsert;
 
@@ -69,7 +70,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API IControlInfo::UnregisterControlInternal(bool _bExplicitRegister)
+        HRESULT __YYAPI IControlInfo::UnregisterControlInternal(bool _bExplicitRegister)
         {
             auto _it = g_ControlInfoMap.find(GetName());
 
@@ -93,7 +94,7 @@ namespace YY
             return S_OK;
         }
         
-        IControlInfo* __MEGA_UI_API GetRegisterControlInfo(raw_const_astring_t _szControlName)
+        IControlInfo* __YYAPI GetRegisterControlInfo(raw_const_astring_t _szControlName)
         {
             if (!_szControlName)
                 return nullptr;
@@ -105,9 +106,9 @@ namespace YY
             return _it->second.pControlInfo;
         }
 
-        HRESULT __MEGA_UI_API UnRegisterAllControls()
+        HRESULT __YYAPI UnRegisterAllControls()
         {
-            DynamicArray<RegisterControlInfo, false, false> _vecTopRegisterControlInfo;
+            Array<RegisterControlInfo, AllocPolicy::SOO> _vecTopRegisterControlInfo;
             auto _hr = _vecTopRegisterControlInfo.Reserve(g_ControlInfoMap.size());
             if (FAILED(_hr))
                 return _hr;

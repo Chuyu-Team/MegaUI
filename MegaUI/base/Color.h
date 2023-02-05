@@ -5,7 +5,7 @@
 
 #include "MegaUITypeInt.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -25,19 +25,19 @@ namespace YY
 
             COLORREF ColorRGB : 24;
 
-            constexpr static Color __MEGA_UI_API MakeARGB(_In_ uint8_t _Alpha, _In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
+            constexpr static Color __YYAPI MakeARGB(_In_ uint8_t _Alpha, _In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
             {
                 Color _Tmp(_Alpha, _Red, _Green, _Blue);
                 return _Tmp;
             }
 
-            constexpr static Color __MEGA_UI_API MakeRGB(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
+            constexpr static Color __YYAPI MakeRGB(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
             {
                 Color _Tmp(0xFFu, _Red, _Green, _Blue);
                 return _Tmp;
             }
 
-            constexpr static Color __MEGA_UI_API MakeRGBA(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue, _In_ float _AlphaF)
+            constexpr static Color __YYAPI MakeRGBA(_In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue, _In_ float _AlphaF)
             {
                 Color _Tmp(uint8_t(_AlphaF * 0xFFu), _Red, _Green, _Blue);
                 return _Tmp;
@@ -56,7 +56,7 @@ namespace YY
             {
             }
 
-            __MEGA_UI_API operator DXGI_RGBA() const
+            __YYAPI operator DXGI_RGBA() const
             {
                 DXGI_RGBA _Color;
                 _Color.r = float(Red) / 255.0f;
@@ -66,12 +66,12 @@ namespace YY
                 return _Color;
             }
 
-            __MEGA_UI_API operator Gdiplus::Color() const
+            __YYAPI operator Gdiplus::Color() const
             {
                 return Gdiplus::Color(Alpha, Red, Green, Blue);
             }
 
-            bool __MEGA_UI_API operator==(Color _Other) const
+            bool __YYAPI operator==(Color _Other) const
             {
                 return ColorRGBA == _Other.ColorRGBA;
             }

@@ -185,7 +185,7 @@ namespace YY
                 }
             }
 
-            ValueSuffix __MEGA_UI_API GetSuffix() const
+            ValueSuffix __YYAPI GetSuffix() const
             {
                 ValueSuffix _Suffix;
                 _Suffix.RawView = uRawView;
@@ -204,13 +204,13 @@ namespace YY
             HFree(_pAddress);
         }
 
-        void __MEGA_UI_API UIParser::Clear()
+        void __YYAPI UIParser::Clear()
         {
             LocalValueCache.Clear();
             RecorderArray.Clear();
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserByXmlString(u8String&& _szXmlString)
+        HRESULT __YYAPI UIParser::ParserByXmlString(u8String&& _szXmlString)
         {
             Clear();
             if (_szXmlString.GetSize() == 0)
@@ -268,7 +268,7 @@ namespace YY
 
                         if (SUCCEEDED(_hr))
                         {
-                            DynamicArray<StyleSheetXmlOption, false, false> _XmlOption;
+                            Array<StyleSheetXmlOption, AllocPolicy::SOO> _XmlOption;
                             _XmlOption.Reserve(128);
 
                             _hr = ParserStyleSheetNode(_pStyleSheetNote, _XmlOption, _pStyleSheet);
@@ -341,7 +341,7 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __MEGA_UI_API UIParser::Play(u8StringView _szResID, UIParserPlayContext* _pContext, intptr_t* _pCooike, WindowElement** _ppElement)
+        HRESULT __YYAPI UIParser::Play(u8StringView _szResID, UIParserPlayContext* _pContext, intptr_t* _pCooike, WindowElement** _ppElement)
         {
             if (!_ppElement)
                 return E_INVALIDARG;
@@ -352,7 +352,7 @@ namespace YY
             {
                 if (Recorder.szResourceID.GetSize() != _szResID.GetSize() || _szResID.CompareI(Recorder.szResourceID.GetConstString()) != 0)
                     continue;
-                ArrayView<uint8_t> _ByteCode(Recorder.ByteCode.GetData(), Recorder.ByteCode.GetSize());
+                ArrayView<const uint8_t> _ByteCode(Recorder.ByteCode.GetData(), Recorder.ByteCode.GetSize());
 
                 if (_ByteCode.GetSize() <= sizeof(ByteCodeBegin) + sizeof(ByteCodeEnd))
                 {
@@ -368,7 +368,7 @@ namespace YY
 
                 UIParserPlayContext _Context;
 
-                DynamicArray<Element*, false, false> _ElementList;
+                Array<Element*, AllocPolicy::SOO> _ElementList;
                 auto _hr = Play(_ByteCode, _pContext ? _pContext : &_Context, _pCooike, &_ElementList);
                 if (SUCCEEDED(_hr))
                 {
@@ -399,7 +399,7 @@ namespace YY
             return E_NOT_SET;
         }
         
-        IControlInfo* __MEGA_UI_API UIParser::FindControlInfo(raw_const_astring_t _szControlName, uint32_t* _pIndex)
+        IControlInfo* __YYAPI UIParser::FindControlInfo(raw_const_astring_t _szControlName, uint32_t* _pIndex)
         {
             if (_pIndex)
                 *_pIndex = uint32_max;
@@ -429,11 +429,11 @@ namespace YY
             if (!_pControlInfo)
                 return nullptr;
 
-            uint_t _uIndex;
-            auto _ppBuffer = ControlInfoArray.AddAndGetPtr(&_uIndex);
+            auto _ppBuffer = ControlInfoArray.EmplacePtr();
             if (!_ppBuffer)
                 return nullptr;
 
+            uint_t _uIndex = ControlInfoArray.GetItemIndex(_ppBuffer);
             if (_uIndex > uint32_max)
                 throw Exception();
 
@@ -443,7 +443,7 @@ namespace YY
             return _pControlInfo;
         }
 
-        const PropertyInfo* __MEGA_UI_API UIParser::GetPropertyByName(IControlInfo* _pControlInfo, raw_const_astring_t _szPropName)
+        const PropertyInfo* __YYAPI UIParser::GetPropertyByName(IControlInfo* _pControlInfo, raw_const_astring_t _szPropName)
         {
             const PropertyInfo* _pProp = nullptr;
             // 搜索 PropertyInfo
@@ -458,7 +458,7 @@ namespace YY
             return _pProp;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserElementNode(rapidxml::xml_node<char>* _pNote, UIParserRecorder* _pRecorder)
+        HRESULT __YYAPI UIParser::ParserElementNode(rapidxml::xml_node<char>* _pNote, UIParserRecorder* _pRecorder)
         {
             CreateElement _CreateElement;
             uint32_t _uIndex;
@@ -521,7 +521,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserElementProperty(rapidxml::xml_attribute<char>* _pAttribute, IControlInfo* _pControlInfo, UIParserRecorder* _pRecorder)
+        HRESULT __YYAPI UIParser::ParserElementProperty(rapidxml::xml_attribute<char>* _pAttribute, IControlInfo* _pControlInfo, UIParserRecorder* _pRecorder)
         {
             auto _pProp = GetPropertyByName(_pControlInfo, _pAttribute->name());
 
@@ -546,10 +546,11 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
             
-            uint_t _uIndex;
-            auto _ppBufer = LocalValueCache.AddAndGetPtr(&_uIndex);
+            auto _ppBufer = LocalValueCache.EmplacePtr();
             if (!_ppBufer)
                 return E_OUTOFMEMORY;
+
+            uint_t _uIndex = LocalValueCache.GetItemIndex(_ppBufer);
             if (_uIndex > uint16_max)
                 throw Exception();
 
@@ -565,7 +566,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserValue(IControlInfo* _pControlInfo, const PropertyInfo* _pProp, u8StringView _szExpr, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserValue(IControlInfo* _pControlInfo, const PropertyInfo* _pProp, u8StringView _szExpr, Value* _pValue)
         {
             *_pValue = nullptr;
 
@@ -638,23 +639,23 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserInt32Value(const u8StringView& _szValue, ParsedArg* _pValue)
+        HRESULT __YYAPI UIParser::ParserInt32Value(const u8StringView& _szValue, ParsedArg* _pValue)
         {
             auto _cchValue = _szValue.GetSize();
             _pValue->uRawView = 0;
             if (_cchValue > 2)
             {
-                if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'X')
+                if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'X')
                 {
                     _cchValue -= 2;
                     _pValue->Type1 = ValueSuffixType::Pixel;
                 }
-                else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'D' && CharUpperASCII(_szValue[_cchValue - 1]) == 'P')
+                else if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'D' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'P')
                 {
                     _cchValue -= 2;
                     _pValue->Type1 = ValueSuffixType::DevicePixel;
                 }
-                else if (CharUpperASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperASCII(_szValue[_cchValue - 1]) == 'T')
+                else if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'T')
                 {
                     _cchValue -= 2;
                     _pValue->Type1 = ValueSuffixType::FontPoint;
@@ -722,14 +723,14 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserInt32Value(ExprNode* _pExprNode, ParsedArg* _pValue)
+        HRESULT __YYAPI UIParser::ParserInt32Value(ExprNode* _pExprNode, ParsedArg* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                _pExprNode = &_pExprNode->ChildExprNode[0];
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             _pValue->uRawView = 0;
@@ -833,13 +834,13 @@ namespace YY
             return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserStringValue(ExprNode* _pExprNode, uString* _pValue)
+        HRESULT __YYAPI UIParser::ParserStringValue(ExprNode* _pExprNode, uString* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() != 0)
                 {
-                    auto _hr = ParserStringValue(&_pExprNode->ChildExprNode[0], _pValue);
+                    auto _hr = ParserStringValue(_pExprNode->ChildExprNode.GetData(), _pValue);
                     if (SUCCEEDED(_hr) || _hr != __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
                         return _hr;
                 }
@@ -873,7 +874,7 @@ namespace YY
             return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
         {
             ParsedArg _iValue(ParsedArgType::int32_t, pEnumMaps);
             auto _hr = ParserInt32Value(_pExprNode, &_iValue);
@@ -891,7 +892,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserFloatValue(ExprNode* _pExprNode, ParsedArg* _pValue)
+        HRESULT __YYAPI UIParser::ParserFloatValue(ExprNode* _pExprNode, ParsedArg* _pValue)
         {
             _pValue->uRawView = 0;
 
@@ -915,7 +916,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserFloatValue(const EnumMap* _pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserFloatValue(const EnumMap* _pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
         {
             ParsedArg _fValue(ParsedArgType::float_t, _pEnumMaps);
             auto _hr = ParserFloatValue(_pExprNode, &_fValue);
@@ -929,14 +930,14 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserBoolValue(ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserBoolValue(ExprNode* _pExprNode, Value* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                _pExprNode = &_pExprNode->ChildExprNode[0];
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             if (_pExprNode->Type == ExprNodeType::BaseIdentifier)
@@ -956,7 +957,7 @@ namespace YY
             return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserStringValue(ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserStringValue(ExprNode* _pExprNode, Value* _pValue)
         {
             uString _ValueView;
             auto _hr = ParserStringValue(_pExprNode, &_ValueView);
@@ -970,7 +971,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserFunction(aStringView _szFunctionName, ExprNode* _pExprNode, ParsedArg* _pArgs, uint_t _uArgsCount)
+        HRESULT __YYAPI UIParser::ParserFunction(aStringView _szFunctionName, ExprNode* _pExprNode, ParsedArg* _pArgs, uint_t _uArgsCount)
         {
             if (_pExprNode->Type != ExprNodeType::Funcall)
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
@@ -1022,14 +1023,14 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserPointValue(ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserPointValue(ExprNode* _pExprNode, Value* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                _pExprNode = &_pExprNode->ChildExprNode[0];
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             ParsedArg _Arg[2] = {ParsedArgType::int32_t, ParsedArgType::int32_t};
@@ -1046,14 +1047,14 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserSizeValue(ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserSizeValue(ExprNode* _pExprNode, Value* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                _pExprNode = &_pExprNode->ChildExprNode[0];
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             ParsedArg _Args[] = {ParsedArgType::float_t, ParsedArgType::float_t};
@@ -1073,7 +1074,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserRectValue(ExprNode* _pExprNode, ParsedArg* _pValue)
+        HRESULT __YYAPI UIParser::ParserRectValue(ExprNode* _pExprNode, ParsedArg* _pValue)
         {
             _pValue->uRawView = 0;
 
@@ -1082,7 +1083,7 @@ namespace YY
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                _pExprNode = &_pExprNode->ChildExprNode[0];
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             ParsedArg _Args[] =
@@ -1110,7 +1111,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserRectValue(ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserRectValue(ExprNode* _pExprNode, Value* _pValue)
         {
             ParsedArg _rcValue(ParsedArgType::Rect);
             auto _hr = ParserRectValue(_pExprNode, &_rcValue);
@@ -1125,7 +1126,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserColorValue(ExprNode* _pExprNode, Color* _pValue)
+        HRESULT __YYAPI UIParser::ParserColorValue(ExprNode* _pExprNode, Color* _pValue)
         {
             Color _Color;
 
@@ -1149,14 +1150,14 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserColorValue(ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserColorValue(ExprNode* _pExprNode, Value* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                _pExprNode = &_pExprNode->ChildExprNode[0];
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             Color _Color;
@@ -1171,14 +1172,14 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserStyleSheetValue(ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserStyleSheetValue(ExprNode* _pExprNode, Value* _pValue)
         {
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
                     return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                _pExprNode = &_pExprNode->ChildExprNode[0];
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             if (_pExprNode->Type != ExprNodeType::BaseIdentifier)
@@ -1203,7 +1204,7 @@ namespace YY
             return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
         }
         
-        HRESULT __MEGA_UI_API UIParser::Play(ArrayView<uint8_t>& _ByteCode, UIParserPlayContext* _pContext, intptr_t* _pCooike, DynamicArray<Element*, false, false>* _pElementArray)
+        HRESULT __YYAPI UIParser::Play(ArrayView<const uint8_t>& _ByteCode, UIParserPlayContext* _pContext, intptr_t* _pCooike, Array<Element*, AllocPolicy::SOO>* _pElementArray)
         {
             if (_pCooike)
                 *_pCooike = 0;
@@ -1236,7 +1237,7 @@ namespace YY
                     }
                     _ByteCode.Slice(_pByteCodeBase->cbData);
 
-                    DynamicArray<Element*, false, false> _Child;
+                    Array<Element*, AllocPolicy::SOO> _Child;
 
                     _hr = Play(_ByteCode, _pContext, _pCooike, &_Child);
                     if (FAILED(_hr))
@@ -1349,7 +1350,7 @@ namespace YY
             return _hr;
         }
         
-        static ValueCmpOperation __MEGA_UI_API TryParserStyleSheetOptionXmlType(
+        static ValueCmpOperation __YYAPI TryParserStyleSheetOptionXmlType(
             _In_ rapidxml::xml_node<char>* _OptionNode,
             _Out_ u8StringView* _pszValue
             )
@@ -1397,7 +1398,7 @@ namespace YY
             return _Operation;
         }
 
-        HRESULT __MEGA_UI_API UIParser::ParserStyleSheetNode(rapidxml::xml_node<char>* _StyleSheetNode, DynamicArray<StyleSheetXmlOption, false, false>& _XmlOption, StyleSheet* _pStyleSheet)
+        HRESULT __YYAPI UIParser::ParserStyleSheetNode(rapidxml::xml_node<char>* _StyleSheetNode, Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, StyleSheet* _pStyleSheet)
         {
             auto _uOldlOptionSize = _XmlOption.GetSize();
 
@@ -1451,7 +1452,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __MEGA_UI_API UIParser::ParserStyleSheetElementNode(rapidxml::xml_node<char>* _pElementValueNode, const DynamicArray<StyleSheetXmlOption, false, false>& _XmlOption, StyleSheet* _pStyleSheet)
+        HRESULT __YYAPI UIParser::ParserStyleSheetElementNode(rapidxml::xml_node<char>* _pElementValueNode, const Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, StyleSheet* _pStyleSheet)
         {
             uint32_t _uIndex;
 
@@ -1462,7 +1463,7 @@ namespace YY
             }
 
             // 首先将匹配条件 _XmlOption 转换 到 StyleSheet::Cond
-            DynamicArray<Cond, true> CondArray;
+            Array<Cond> CondArray;
             if (auto _uSize = _XmlOption.GetSize())
             {
                 auto _hr = CondArray.Reserve(_uSize);
@@ -1491,7 +1492,7 @@ namespace YY
             }
 
             // 属性转换到 _DeclArray，作为样式表的值
-            DynamicArray<Decl, false> _DeclArray;
+            Array<Decl, AllocPolicy::SOO> _DeclArray;
             for (auto _pPropXml = _pElementValueNode->first_attribute(); _pPropXml; _pPropXml = _pPropXml->next_attribute())
             {
                 auto _pProp = GetPropertyByName(_pControlInfo, _pPropXml->name());

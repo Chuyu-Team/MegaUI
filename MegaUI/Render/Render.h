@@ -7,7 +7,7 @@
 #include <MegaUI/base/StringView.h>
 #include <MegaUI/Render/Font.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -57,55 +57,55 @@ namespace YY
             virtual ~Render() = default;
 
             Render(const Render&) = delete;
-            Render& __MEGA_UI_API operator=(const Render&) = delete;
+            Render& __YYAPI operator=(const Render&) = delete;
 
             virtual
             HRESULT
-            __MEGA_UI_API
+            __YYAPI
             BeginDraw(Rect* _pNeedPaintRect) =0;
 
             virtual
             HRESULT
-            __MEGA_UI_API
+            __YYAPI
             EndDraw() = 0;
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             PushAxisAlignedClip(
                 _In_ const Rect& _ClipRect) = 0;
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             PopAxisAlignedClip() = 0;
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             FillRectangle(
                 _In_ const Rect& _Rect,
                 _In_ ID2D1Brush* _pBrush) = 0;
                 
             virtual
             HRESULT
-            __MEGA_UI_API
+            __YYAPI
             CreateSolidColorBrush(
                 Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) = 0;
 
             virtual
             HRESULT
-            __MEGA_UI_API
+            __YYAPI
             SetPixelSize(
                 _In_ const D2D1_SIZE_U& _PixelSize) = 0;
 
             virtual
-            D2D1_SIZE_U __MEGA_UI_API GetPixelSize() = 0;
+            D2D1_SIZE_U __YYAPI GetPixelSize() = 0;
             
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             DrawString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
@@ -116,7 +116,7 @@ namespace YY
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             MeasureString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
@@ -125,7 +125,7 @@ namespace YY
                 _Out_ Size* _pExtent) = 0;
         };
 
-        HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender);
+        HRESULT __YYAPI CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender);
         
 #define LIGHT 0.5
 #define VERYLIGHT 0.8
@@ -138,7 +138,7 @@ namespace YY
         /// <param name="cr"></param>
         /// <param name="fIllum">1 >= fIllum >= -1</param>
         /// <returns></returns>
-        inline Color __MEGA_UI_API AdjustBrightness(Color cr, double fIllum)
+        inline Color __YYAPI AdjustBrightness(Color cr, double fIllum)
         {
             double r = cr.Red, g = cr.Green, b = cr.Blue;
 
@@ -158,15 +158,15 @@ namespace YY
             return Color(cr.Alpha, (uint8_t)r, (uint8_t)g, (uint8_t)b);
         }
         
-        float __MEGA_UI_API DevicePixelToPixel(float _iRelativePixel, int32_t _DPI);
+        float __YYAPI DevicePixelToPixel(float _iRelativePixel, int32_t _DPI);
 
-        float __MEGA_UI_API PointToPixel(float _iFontPoint, int32_t _DPI);
+        float __YYAPI PointToPixel(float _iFontPoint, int32_t _DPI);
 
-        Rect __MEGA_UI_API DevicePixelToPixel(Rect _iRelativePixelRect, int32_t _DPI);
+        Rect __YYAPI DevicePixelToPixel(Rect _iRelativePixelRect, int32_t _DPI);
 
-        Size __MEGA_UI_API DevicePixelToPixel(Size _iRelativePixelSize, int32_t _DPI);
+        Size __YYAPI DevicePixelToPixel(Size _iRelativePixelSize, int32_t _DPI);
 
-        float __MEGA_UI_API UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI);
+        float __YYAPI UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI);
 
     } // namespace MegaUI
 } // namespace YY

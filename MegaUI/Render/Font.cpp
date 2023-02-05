@@ -9,7 +9,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        HRESULT __MEGA_UI_API GetSystemFont(SystemFont _eSystemFont, Font* _pFont)
+        HRESULT __YYAPI GetSystemFont(SystemFont _eSystemFont, Font* _pFont)
         {
             _pFont->szFace.Clear();
             _pFont->iSize = 0;
@@ -68,7 +68,7 @@ namespace YY
             return S_OK;
         }
         
-        const EnumMap* __MEGA_UI_API GetSystemFontEnumMap()
+        const EnumMap* __YYAPI GetSystemFontEnumMap()
         {
             static const EnumMap SystemFontEnumMap[] =
             {

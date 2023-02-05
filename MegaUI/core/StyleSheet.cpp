@@ -11,7 +11,7 @@ namespace YY
     namespace MegaUI
     {
         template<typename ArrayType>
-        bool __MEGA_UI_API IsPIInList(const PropertyInfo* pProp, const ArrayType& Array)
+        bool __YYAPI IsPIInList(const PropertyInfo* pProp, const ArrayType& Array)
         {
             for (auto pItem : Array)
             {
@@ -23,7 +23,7 @@ namespace YY
         }
 
         template<typename ArrayType>
-        HRESULT __MEGA_UI_API AddDeps(ArrayType& Array, const ArrayView<Decl>& DeclArray)
+        HRESULT __YYAPI AddDeps(ArrayType& Array, const ArrayView<Decl>& DeclArray)
         {
             for (auto& DeclItem : DeclArray)
             {
@@ -45,12 +45,12 @@ namespace YY
         {
         }
         
-        uint32_t __MEGA_UI_API StyleSheet::AddRef()
+        uint32_t __YYAPI StyleSheet::AddRef()
         {
             return Interlocked::Increment(&uRef);
         }
         
-        uint32_t __MEGA_UI_API StyleSheet::Release()
+        uint32_t __YYAPI StyleSheet::Release()
         {
             auto _uNewRef = Interlocked::Decrement(&uRef);
             if (_uNewRef == 0)
@@ -60,7 +60,7 @@ namespace YY
             return _uNewRef;
         }
 
-        HRESULT __MEGA_UI_API StyleSheet::AddRule(uString _szRule, IControlInfo* _pControlInfo, DynamicArray<Cond, true> _CondArray, const ArrayView<Decl>& _DeclArray)
+        HRESULT __YYAPI StyleSheet::AddRule(uString _szRule, IControlInfo* _pControlInfo, Array<Cond> _CondArray, const ArrayView<Decl>& _DeclArray)
         {
             // 添加规则必须要有匹配条件
             if (_pControlInfo == nullptr || _DeclArray.GetSize() == 0)
@@ -120,7 +120,7 @@ namespace YY
             return bFaild ? 0x800403EB : S_OK;
         }
         
-        void __MEGA_UI_API StyleSheet::MakeImmutable()
+        void __YYAPI StyleSheet::MakeImmutable()
         {
             if (!bMakeImmutable)
                 return;
@@ -140,7 +140,7 @@ namespace YY
             }
         }
 
-        Value __MEGA_UI_API StyleSheet::GetSheetValue(Element* _pElement, const PropertyInfo* _pProp)
+        Value __YYAPI StyleSheet::GetSheetValue(Element* _pElement, const PropertyInfo* _pProp)
         {
             if (_pElement == nullptr || _pProp == nullptr)
                 return Value::CreateNull();
@@ -193,7 +193,7 @@ namespace YY
             return Value::CreateUnset();
         }
 
-        HRESULT __MEGA_UI_API StyleSheet::GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle)
+        HRESULT __YYAPI StyleSheet::GetSheetDependencies(Element* _pElement, const PropertyInfo* _pProp, DepRecs* _pdr, DeferCycle* _pDeferCycle)
         {
             if (_pElement == nullptr || _pProp == nullptr || _pdr == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
@@ -217,7 +217,7 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __MEGA_UI_API StyleSheet::GetSheetScope(Element* _pElement, DepRecs* _pDepRecs, DeferCycle* _pDeferCycle)
+        HRESULT __YYAPI StyleSheet::GetSheetScope(Element* _pElement, DepRecs* _pDepRecs, DeferCycle* _pDeferCycle)
         {
             if (_pElement == nullptr || _pDepRecs == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
@@ -238,17 +238,17 @@ namespace YY
             return _hr;
         }
 
-        u8String __MEGA_UI_API StyleSheet::GetSheetResourceID()
+        u8String __YYAPI StyleSheet::GetSheetResourceID()
         {
             return szSheetResourceID;
         }
 
-        HRESULT __MEGA_UI_API StyleSheet::SetSheetResourceID(u8String _szSheetResourceID)
+        HRESULT __YYAPI StyleSheet::SetSheetResourceID(u8String _szSheetResourceID)
         {
             return szSheetResourceID.SetString(_szSheetResourceID);
         }
         
-        ControlStyleData* __MEGA_UI_API StyleSheet::GetControlStyleData(IControlInfo* _pControlInfo)
+        ControlStyleData* __YYAPI StyleSheet::GetControlStyleData(IControlInfo* _pControlInfo)
         {
             if (!_pControlInfo)
                 return nullptr;
@@ -262,7 +262,7 @@ namespace YY
             return nullptr;
         }
         
-        HRESULT __MEGA_UI_API StyleSheet::AddControlStyleData(ControlStyleData** ppData, IControlInfo* _pControlInfo)
+        HRESULT __YYAPI StyleSheet::AddControlStyleData(ControlStyleData** ppData, IControlInfo* _pControlInfo)
         {
             if (!ppData)
                 return E_INVALIDARG;
@@ -280,7 +280,7 @@ namespace YY
             return S_OK;
         }
         
-        uint32_t __MEGA_UI_API StyleSheet::ComputeSpecif(const DynamicArray<Cond, true>& CondArray, IControlInfo* _pControlInfo, uint16_t _uRuleId)
+        uint32_t __YYAPI StyleSheet::ComputeSpecif(const Array<Cond>& CondArray, IControlInfo* _pControlInfo, uint16_t _uRuleId)
         {
             uint32_t _uWeight = 0u;
 

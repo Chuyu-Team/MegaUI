@@ -3,7 +3,7 @@
 #include "StringBase.h"
 #include "StringTransform.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -25,6 +25,8 @@ namespace YY
                 u32StringBE szUTF32BE;
                 wString szUTFW;
             };
+
+            using StringData = aString::StringData;
 
         public:
             String()
@@ -150,12 +152,12 @@ namespace YY
                 szANSI.Detach()->Release();
             }
 
-            Encoding __MEGA_UI_API GetEncoding()
+            Encoding __YYAPI GetEncoding()
             {
                 return Encoding(GetInternalStringData()->eEncoding);
             }
 
-            HRESULT __MEGA_UI_API SetEncoding(Encoding _eEncoding)
+            HRESULT __YYAPI SetEncoding(Encoding _eEncoding)
             {
                 auto _pStringData = GetInternalStringData();
                 const auto _eOldEncoding = Encoding(_pStringData->eEncoding);
@@ -186,19 +188,19 @@ namespace YY
                         // 尝试重置到默认值
                         switch (_eEncoding)
                         {
-                        case YY::MegaUI::Encoding::UTF16LE:
+                        case Encoding::UTF16LE:
                             szUTF16LE.Detach()->Release();
                             return S_OK;
-                        case YY::MegaUI::Encoding::UTF16BE:
+                        case Encoding::UTF16BE:
                             szUTF16BE.Detach()->Release();
                             return S_OK;
-                        case YY::MegaUI::Encoding::UTF32LE:
+                        case Encoding::UTF32LE:
                             szUTF32LE.Detach()->Release();
                             return S_OK;
-                        case YY::MegaUI::Encoding::UTF32BE:
+                        case Encoding::UTF32BE:
                             szUTF32BE.Detach()->Release();
                             return S_OK;
-                        case YY::MegaUI::Encoding::UTF8:
+                        case Encoding::UTF8:
                             szUTF8.Detach()->Release();
                             return S_OK;
                         default:
@@ -210,7 +212,7 @@ namespace YY
 
                 switch (_eOldEncoding)
                 {
-                case YY::MegaUI::Encoding::UTF8:
+                case Encoding::UTF8:
                 {
                     auto _szSrc(std::move(szUTF8));
 
@@ -242,7 +244,7 @@ namespace YY
                         return Transform(std::move(_szSrc), &szANSI);
                     }
                 }
-                case YY::MegaUI::Encoding::UTF16LE:
+                case Encoding::UTF16LE:
                 {
                     auto _szSrc(std::move(szUTF16LE));
 
@@ -274,7 +276,7 @@ namespace YY
                         return Transform(std::move(_szSrc), &szANSI);
                     }
                 }
-                case YY::MegaUI::Encoding::UTF16BE:
+                case Encoding::UTF16BE:
                 {
                     auto _szSrc(std::move(szUTF16BE));
 
@@ -305,7 +307,7 @@ namespace YY
                         return Transform(std::move(_szSrc), &szANSI);
                     }
                 }
-                case YY::MegaUI::Encoding::UTF32LE:
+                case Encoding::UTF32LE:
                 {
                     auto _szSrc(std::move(szUTF32LE));
 
@@ -336,7 +338,7 @@ namespace YY
                         return Transform(std::move(_szSrc), &szANSI);
                     }
                 }
-                case YY::MegaUI::Encoding::UTF32BE:
+                case Encoding::UTF32BE:
                 {
                     auto _szSrc(std::move(szUTF32BE));
 
@@ -405,7 +407,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API SetString(const aStringView& _szSrc)
+            HRESULT __YYAPI SetString(const aStringView& _szSrc)
             {
                 if (!IsANSI())
                     ClearAndUpdateEncoding(Encoding::ANSI);
@@ -416,7 +418,7 @@ namespace YY
 
                 return szANSI.SetANSIEncoding(_szSrc.GetEncoding());
             }
-            HRESULT __MEGA_UI_API SetString(const aString& _szSrc)
+            HRESULT __YYAPI SetString(const aString& _szSrc)
             {
                 if (!IsANSI())
                     ClearAndUpdateEncoding(Encoding::ANSI);
@@ -424,179 +426,179 @@ namespace YY
                 return szANSI.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(aString&& _szSrc)
+            HRESULT __YYAPI SetString(aString&& _szSrc)
             {
                 return szANSI.SetString(std::move(_szSrc));
             }
 
-            HRESULT __MEGA_UI_API SetString(const u8StringView& _szSrc)
+            HRESULT __YYAPI SetString(const u8StringView& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF8);
 
                 return szUTF8.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(const u8String& _szSrc)
+            HRESULT __YYAPI SetString(const u8String& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF8);
 
                 return szUTF8.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(u8String&& _szSrc)
+            HRESULT __YYAPI SetString(u8String&& _szSrc)
             {
                 return szUTF8.SetString(std::move(_szSrc));
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_reads_opt_(_cchSrc) const char16_t* _szSrc, _In_ uint_t _cchSrc)
+            HRESULT __YYAPI SetString(_In_reads_opt_(_cchSrc) const char16_t* _szSrc, _In_ uint_t _cchSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16.SetString((u16char_t*)_szSrc, _cchSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_opt_z_ const char16_t* _szSrc)
+            HRESULT __YYAPI SetString(_In_opt_z_ const char16_t* _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16.SetString((u16char_t*)_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(const u16StringLEView& _szSrc)
+            HRESULT __YYAPI SetString(const u16StringLEView& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16LE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(const u16StringBEView& _szSrc)
+            HRESULT __YYAPI SetString(const u16StringBEView& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF16BE);
 
                 return szUTF16BE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(const u16StringLE& _szSrc)
+            HRESULT __YYAPI SetString(const u16StringLE& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF16LE);
 
                 return szUTF16LE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(u16StringLE&& _szSrc)
+            HRESULT __YYAPI SetString(u16StringLE&& _szSrc)
             {
                 return szUTF16LE.SetString(std::move(_szSrc));
             }
 
-            HRESULT __MEGA_UI_API SetString(const u16StringBE& _szSrc)
+            HRESULT __YYAPI SetString(const u16StringBE& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF16BE);
 
                 return szUTF16BE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(u16StringBE&& _szSrc)
+            HRESULT __YYAPI SetString(u16StringBE&& _szSrc)
             {
                 return szUTF16BE.SetString(std::move(_szSrc));
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_reads_opt_(_cchSrc) const char32_t* _szSrc, _In_ uint_t _cchSrc)
+            HRESULT __YYAPI SetString(_In_reads_opt_(_cchSrc) const char32_t* _szSrc, _In_ uint_t _cchSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32.SetString(_szSrc, _cchSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_opt_z_ const char32_t* _szSrc)
+            HRESULT __YYAPI SetString(_In_opt_z_ const char32_t* _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(const u32StringLEView& _szSrc)
+            HRESULT __YYAPI SetString(const u32StringLEView& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32LE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(const u32StringBEView& _szSrc)
+            HRESULT __YYAPI SetString(const u32StringBEView& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF32BE);
 
                 return szUTF32BE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(const u32StringLE& _szSrc)
+            HRESULT __YYAPI SetString(const u32StringLE& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF32LE);
 
                 return szUTF32LE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(u32StringLE&& _szSrc)
+            HRESULT __YYAPI SetString(u32StringLE&& _szSrc)
             {
                 return szUTF32LE.SetString(std::move(_szSrc));
             }
 
-            HRESULT __MEGA_UI_API SetString(const u32StringBE& _szSrc)
+            HRESULT __YYAPI SetString(const u32StringBE& _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTF32BE);
 
                 return szUTF32BE.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(u32StringBE&& _szSrc)
+            HRESULT __YYAPI SetString(u32StringBE&& _szSrc)
             {
                 return szUTF32BE.SetString(std::move(_szSrc));
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_reads_opt_(_cchSrc) const wchar_t* _szSrc, _In_ uint_t _cchSrc)
+            HRESULT __YYAPI SetString(_In_reads_opt_(_cchSrc) const wchar_t* _szSrc, _In_ uint_t _cchSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTFW);
 
                 return szUTFW.SetString(_szSrc, _cchSrc);
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_opt_z_ const wchar_t* _szSrc)
+            HRESULT __YYAPI SetString(_In_opt_z_ const wchar_t* _szSrc)
             {
                 ClearAndUpdateEncoding(Encoding::UTFW);
 
                 return szUTFW.SetString(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API AppendString(const aStringView& _szSrc)
+            HRESULT __YYAPI AppendString(const aStringView& _szSrc)
             {
                 return AppendStringT(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API AppendString(const u8StringView& _szSrc)
+            HRESULT __YYAPI AppendString(const u8StringView& _szSrc)
             {
                 return AppendStringT(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API AppendString(const u16StringLEView& _szSrc)
+            HRESULT __YYAPI AppendString(const u16StringLEView& _szSrc)
             {
                 return AppendStringT(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API AppendString(const u16StringBEView& _szSrc)
+            HRESULT __YYAPI AppendString(const u16StringBEView& _szSrc)
             {
                 return AppendStringT(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API AppendString(const u32StringLEView& _szSrc)
+            HRESULT __YYAPI AppendString(const u32StringLEView& _szSrc)
             {
                 return AppendStringT(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API AppendString(const u32StringBEView& _szSrc)
+            HRESULT __YYAPI AppendString(const u32StringBEView& _szSrc)
             {
                 return AppendStringT(_szSrc);
             }
 
-            HRESULT __MEGA_UI_API GetString(_Out_ aString* _pszDst)
+            HRESULT __YYAPI GetString(_Out_ aString* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -627,7 +629,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API GetString(_Out_ u8String* _pszDst)
+            HRESULT __YYAPI GetString(_Out_ u8String* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -651,7 +653,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API GetString(_Out_ u16StringLE* _pszDst)
+            HRESULT __YYAPI GetString(_Out_ u16StringLE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -675,7 +677,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API GetString(_Out_ u16StringBE* _pszDst)
+            HRESULT __YYAPI GetString(_Out_ u16StringBE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -699,7 +701,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API GetString(_Out_ u32StringLE* _pszDst)
+            HRESULT __YYAPI GetString(_Out_ u32StringLE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -723,7 +725,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API GetString(_Out_ u32StringBE* _pszDst)
+            HRESULT __YYAPI GetString(_Out_ u32StringBE* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -747,12 +749,12 @@ namespace YY
                 }
             }
 
-            uint_t __MEGA_UI_API GetSize()
+            uint_t __YYAPI GetSize()
             {
                 return GetInternalStringData()->uSize;
             }
 
-            void __MEGA_UI_API Clear()
+            void __YYAPI Clear()
             {
                 auto _pStringData = GetInternalStringData();
                 if (_pStringData->uSize == 0)
@@ -788,14 +790,14 @@ namespace YY
             }
 
         private:
-            aString::StringData* __MEGA_UI_API GetInternalStringData()
+            aString::StringData* __YYAPI GetInternalStringData()
             {
                 // 因为所有编码的字符串长度 以及 缓冲区大小格式都是一样的，
                 // 所以随便取一个 GetInternalStringData 就可以了。
                 return szANSI.GetInternalStringData();
             }
 
-            static constexpr uint32_t __MEGA_UI_API GetCharSize(Encoding eEncoding)
+            static constexpr uint32_t __YYAPI GetCharSize(Encoding eEncoding)
             {
                 // 因为独占缓冲区，所以直接切换 Encoding 类型
                 switch (eEncoding)
@@ -811,12 +813,12 @@ namespace YY
                 }
             }
 
-            bool __MEGA_UI_API IsANSI()
+            bool __YYAPI IsANSI()
             {
-                return YY::MegaUI::IsANSI(GetEncoding());
+                return YY::Base::IsANSI(GetEncoding());
             }
 
-            HRESULT __MEGA_UI_API ClearAndUpdateEncoding(Encoding _eEncoding)
+            HRESULT __YYAPI ClearAndUpdateEncoding(Encoding _eEncoding)
             {
                 auto _pStringData = GetInternalStringData();
                 auto _eOldEncoding = Encoding(_pStringData->eEncoding);
@@ -827,19 +829,19 @@ namespace YY
                 {
                     switch (_eEncoding)
                     {
-                    case YY::MegaUI::Encoding::UTF16LE:
+                    case Encoding::UTF16LE:
                         szUTF16LE.Detach()->Release();
                         return S_OK;
-                    case YY::MegaUI::Encoding::UTF16BE:
+                    case Encoding::UTF16BE:
                         szUTF16BE.Detach()->Release();
                         return S_OK;
-                    case YY::MegaUI::Encoding::UTF32LE:
+                    case Encoding::UTF32LE:
                         szUTF32LE.Detach()->Release();
                         return S_OK;
-                    case YY::MegaUI::Encoding::UTF32BE:
+                    case Encoding::UTF32BE:
                         szUTF16BE.Detach()->Release();
                         return S_OK;
-                    case YY::MegaUI::Encoding::UTF8:
+                    case Encoding::UTF8:
                         szUTF8.Detach()->Release();
                         return S_OK;
                     default:
@@ -865,7 +867,7 @@ namespace YY
             }
 
             template<class string_t>
-            __forceinline HRESULT __MEGA_UI_API AppendStringT(const string_t& _szSrc)
+            __forceinline HRESULT __YYAPI AppendStringT(const string_t& _szSrc)
             {
                 if (_szSrc.GetSize() == 0)
                     return S_OK;

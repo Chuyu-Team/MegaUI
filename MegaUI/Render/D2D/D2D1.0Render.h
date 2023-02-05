@@ -12,7 +12,7 @@
 
 #pragma comment(lib, "d2d1.lib")
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -53,9 +53,9 @@ namespace YY
                     pDWriteFactory->Release();
             }
 
-            void __MEGA_UI_API operator=(const D2D1_0Render&) = delete;
+            void __YYAPI operator=(const D2D1_0Render&) = delete;
 
-            HRESULT __MEGA_UI_API InitializeRenderTarget()
+            HRESULT __YYAPI InitializeRenderTarget()
             {
                 if (!pRenderTarget)
                 {
@@ -77,7 +77,7 @@ namespace YY
                 return S_OK;
             }
 
-            static HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
+            static HRESULT __YYAPI CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
             {
                 if (_ppRender == nullptr)
                     return E_INVALIDARG;
@@ -146,7 +146,7 @@ namespace YY
                 return _hr;
             }
 
-            virtual HRESULT __MEGA_UI_API BeginDraw(Rect* _pNeedPaintRect) override
+            virtual HRESULT __YYAPI BeginDraw(Rect* _pNeedPaintRect) override
             {
                 if (_pNeedPaintRect)
                 {
@@ -163,7 +163,7 @@ namespace YY
                 return S_OK;
             }
 
-            virtual HRESULT __MEGA_UI_API EndDraw() override
+            virtual HRESULT __YYAPI EndDraw() override
             {
                 if (!pRenderTarget)
                     return E_UNEXPECTED;
@@ -181,25 +181,25 @@ namespace YY
                 return _hr;
             }
 
-            virtual void __MEGA_UI_API PushAxisAlignedClip(
+            virtual void __YYAPI PushAxisAlignedClip(
                 _In_ const Rect& _ClipRect) override
             {
                 pRenderTarget->PushAxisAlignedClip(_ClipRect, D2D1_ANTIALIAS_MODE_ALIASED);
             }
 
-            virtual void __MEGA_UI_API PopAxisAlignedClip() override
+            virtual void __YYAPI PopAxisAlignedClip() override
             {
                 pRenderTarget->PopAxisAlignedClip();
             }
 
-            virtual void __MEGA_UI_API FillRectangle(
+            virtual void __YYAPI FillRectangle(
                 _In_ const Rect& _Rect,
                 _In_ ID2D1Brush* _pBrush) override
             {
                 pRenderTarget->FillRectangle(_Rect, _pBrush);
             }
 
-            virtual HRESULT __MEGA_UI_API SetPixelSize(
+            virtual HRESULT __YYAPI SetPixelSize(
                 _In_ const D2D1_SIZE_U& _PixelSize) override
             {
                 if (_PixelSize.width == PixelSize.width && _PixelSize.height == PixelSize.height)
@@ -213,14 +213,14 @@ namespace YY
                 return S_OK;
             }
 
-            D2D1_SIZE_U __MEGA_UI_API GetPixelSize()
+            D2D1_SIZE_U __YYAPI GetPixelSize()
             {
                 return PixelSize;
             }
 
             virtual
             HRESULT
-            __MEGA_UI_API
+            __YYAPI
             CreateSolidColorBrush(
                 Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) override
@@ -230,7 +230,7 @@ namespace YY
             
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             DrawString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
@@ -244,7 +244,7 @@ namespace YY
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             MeasureString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,

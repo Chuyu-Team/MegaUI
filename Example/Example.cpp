@@ -9,6 +9,7 @@
 #include <MegaUI/Parser/UIParser.h>
 
 
+using namespace YY;
 using namespace YY::MegaUI;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,

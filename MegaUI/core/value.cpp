@@ -11,7 +11,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        float __MEGA_UI_API UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type)
+        float __YYAPI UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type)
         {
             switch (_Type)
             {
@@ -29,7 +29,7 @@ namespace YY
             }
         }
 
-        Rect __MEGA_UI_API UpdateDpi(Rect _Rect, int32_t _iNewDpi, ValueSuffix _Suffix)
+        Rect __YYAPI UpdateDpi(Rect _Rect, int32_t _iNewDpi, ValueSuffix _Suffix)
         {
             if (_Suffix.RawView == 0)
             {
@@ -45,7 +45,7 @@ namespace YY
             return _Rect;
         }
 
-        void __MEGA_UI_API Value::SharedData::AddRef()
+        void __YYAPI Value::SharedData::AddRef()
         {
             if (IsReadOnly())
                 return;
@@ -54,7 +54,7 @@ namespace YY
             _InterlockedExchangeAdd(&uRawType, uint_t(0x80u));
         }
 
-        void __MEGA_UI_API Value::SharedData::Release()
+        void __YYAPI Value::SharedData::Release()
         {
             if (IsReadOnly())
                 return;
@@ -91,85 +91,85 @@ namespace YY
             HFree(this);
         }
 
-        bool __MEGA_UI_API Value::SharedData::IsReadOnly()
+        bool __YYAPI Value::SharedData::IsReadOnly()
         {
             return uRawType >= ~uint_t(0x7Fu);
         }
 
-        bool __MEGA_UI_API Value::SharedData::NeedCalculate()
+        bool __YYAPI Value::SharedData::NeedCalculate()
         {
             return IsReadOnly() == false && SuffixType.RawView != 0;
         }
 
-        int32_t __MEGA_UI_API Value::SharedData::GetDpi()
+        int32_t __YYAPI Value::SharedData::GetDpi()
         {
             return (IsReadOnly() == false && SuffixType.RawView) ? SuffixType.Dpi : 96;
         }
 
-        Value __MEGA_UI_API Value::CreateAtomZero()
+        Value __YYAPI Value::CreateAtomZero()
         {
             _RETUNR_CONST_VALUE(ValueType::ATOM, 0);
         }
 
-        Value __MEGA_UI_API Value::CreateInt32Zero()
+        Value __YYAPI Value::CreateInt32Zero()
         {
             return CreateInt32<0>();
         }
 
-        Value __MEGA_UI_API Value::CreateBoolFalse()
+        Value __YYAPI Value::CreateBoolFalse()
         {
             _RETUNR_CONST_VALUE(ValueType::boolean, false);
         }
 
-        Value __MEGA_UI_API Value::CreateBoolTrue()
+        Value __YYAPI Value::CreateBoolTrue()
         {
             _RETUNR_CONST_VALUE(ValueType::boolean, true);
         }
 
-        Value __MEGA_UI_API Value::CreateCursorNull()
+        Value __YYAPI Value::CreateCursorNull()
         {
             _RETUNR_CONST_VALUE(ValueType::HCURSOR, NULL);
         }
 
-        Value __MEGA_UI_API Value::CreateEmptyElementList()
+        Value __YYAPI Value::CreateEmptyElementList()
         {            
             static const ConstValueSharedData<const uchar_t*> g_ListNull =
             {
                 (uint_t)ValueType::ElementList,
                 1,
                 uint_max,
-                nullptr,
+                (uchar_t*)ElementList::SharedData::GetEmptySharedData()->GetData(),
             };
 
             return Value((Value::SharedData*)&g_ListNull);
         }
 
-        Value __MEGA_UI_API Value::CreateElementNull()
+        Value __YYAPI Value::CreateElementNull()
         {
             _RETUNR_CONST_VALUE(ValueType::Element, nullptr);
         }
 
-        Value __MEGA_UI_API Value::CreateNull()
+        Value __YYAPI Value::CreateNull()
         {
             return Value();
         }
 
-        Value __MEGA_UI_API Value::CreatePointZero()
+        Value __YYAPI Value::CreatePointZero()
         {
             _RETUNR_CONST_VALUE(ValueType::Point, { 0, 0 });
         }
 
-        Value __MEGA_UI_API Value::CreateRectZero()
+        Value __YYAPI Value::CreateRectZero()
         {
             _RETUNR_CONST_VALUE(ValueType::Rect, {0, 0, 0, 0});
         }
 
-        Value __MEGA_UI_API Value::CreateSizeZero()
+        Value __YYAPI Value::CreateSizeZero()
         {
             _RETUNR_CONST_VALUE(ValueType::Size, { 0, 0 });
         }
 
-        Value __MEGA_UI_API Value::CreateEmptyString()
+        Value __YYAPI Value::CreateEmptyString()
         {
             static const ConstValueSharedData<const uchar_t*> g_StringNull =
             {
@@ -182,37 +182,37 @@ namespace YY
             return Value((Value::SharedData*)&g_StringNull);
         }
 
-        Value __MEGA_UI_API Value::CreateUnavailable()
+        Value __YYAPI Value::CreateUnavailable()
         {
             _RETUNR_CONST_VALUE(ValueType::Unavailable);
         }
 
-        Value __MEGA_UI_API Value::CreateUnset()
+        Value __YYAPI Value::CreateUnset()
         {
             _RETUNR_CONST_VALUE(ValueType::Unset);
         }
 
-        Value __MEGA_UI_API Value::CreateLayoutNull()
+        Value __YYAPI Value::CreateLayoutNull()
         {
             _RETUNR_CONST_VALUE(ValueType::Layout, nullptr);
         }
 
-        Value __MEGA_UI_API Value::CreateDefaultFontFamily()
+        Value __YYAPI Value::CreateDefaultFontFamily()
         {
             return Value::CreateString(L"Arial");
         }
 
-        Value __MEGA_UI_API Value::CreateColorTransparant()
+        Value __YYAPI Value::CreateColorTransparant()
         {
             _RETUNR_CONST_VALUE(ValueType::Color, {});
         }
 
-        Value __MEGA_UI_API Value::CreateSheetNull()
+        Value __YYAPI Value::CreateSheetNull()
         {
             _RETUNR_CONST_VALUE(ValueType::StyleSheet, nullptr);
         }
         
-        Value& __MEGA_UI_API Value::operator=(const Value& _Other)
+        Value& __YYAPI Value::operator=(const Value& _Other)
         {
             if (pSharedData != _Other.pSharedData)
             {
@@ -228,7 +228,7 @@ namespace YY
             return *this;
         }
 
-        Value& __MEGA_UI_API Value::operator=(Value&& _Other) noexcept
+        Value& __YYAPI Value::operator=(Value&& _Other) noexcept
         {
             if (this != &_Other)
             {
@@ -242,7 +242,7 @@ namespace YY
             return *this;
         }
 
-        Value& __MEGA_UI_API Value::operator=(std::nullptr_t)
+        Value& __YYAPI Value::operator=(std::nullptr_t)
         {
             if (pSharedData)
                 pSharedData->Release();
@@ -250,39 +250,39 @@ namespace YY
             return *this;
         }
 
-        bool __MEGA_UI_API Value::operator==(const Value& _Other) const
+        bool __YYAPI Value::operator==(const Value& _Other) const
         {
             return CmpValue(_Other, ValueCmpOperation::Equal);
         }
 
-        bool __MEGA_UI_API Value::operator!=(const Value& _Other) const
+        bool __YYAPI Value::operator!=(const Value& _Other) const
         {
             return operator==(_Other) == false;
         }
 
-        bool __MEGA_UI_API Value::operator==(std::nullptr_t) const
+        bool __YYAPI Value::operator==(std::nullptr_t) const
         {
             return pSharedData == nullptr;
         }
 
-        bool __MEGA_UI_API Value::operator!=(std::nullptr_t) const
+        bool __YYAPI Value::operator!=(std::nullptr_t) const
         {
             return pSharedData != nullptr;
         }
 
-        ValueType __MEGA_UI_API Value::GetType() const
+        ValueType __YYAPI Value::GetType() const
         {
             if (!pSharedData)
                 return ValueType::Null;
             return ValueType(pSharedData->eType);
         }
 
-        bool __MEGA_UI_API Value::HasValue() const
+        bool __YYAPI Value::HasValue() const
         {
             return pSharedData && pSharedData->eType > int_t(ValueType::Null);
         }
 
-        Value __MEGA_UI_API Value::CreateInt32(int32_t _iValue)
+        Value __YYAPI Value::CreateInt32(int32_t _iValue)
         {
             if (_iValue == 0)
                 return CreateInt32Zero();
@@ -298,7 +298,7 @@ namespace YY
             return Value(pValue);
         }
 
-        Value __MEGA_UI_API Value::CreateFloat(float _iValue, ValueSuffix _Suffix)
+        Value __YYAPI Value::CreateFloat(float _iValue, ValueSuffix _Suffix)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -312,12 +312,12 @@ namespace YY
             return Value(pValue);
         }
 
-        Value __MEGA_UI_API Value::CreateBool(bool _bValue)
+        Value __YYAPI Value::CreateBool(bool _bValue)
         {
             return _bValue ? CreateBoolTrue() : CreateBoolFalse();
         }
         
-        Value __MEGA_UI_API Value::CreateElementRef(Element* _pValue)
+        Value __YYAPI Value::CreateElementRef(Element* _pValue)
         {
             if (_pValue == nullptr)
                 return CreateElementNull();
@@ -333,7 +333,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateElementList(const ElementList& _pListValue)
+        Value __YYAPI Value::CreateElementList(const ElementList& _pListValue)
         {
             if (_pListValue.GetSize() == 0)
                 return CreateEmptyElementList();
@@ -349,7 +349,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateString(const uString& _szValue)
+        Value __YYAPI Value::CreateString(const uString& _szValue)
         {
             if (_szValue.GetSize() == 0)
                 return CreateEmptyString();
@@ -365,7 +365,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreatePoint(float _iX, float _iY)
+        Value __YYAPI Value::CreatePoint(float _iX, float _iY)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -380,7 +380,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateSize(float _iCX, float _iCY, ValueSuffix _Suffix)
+        Value __YYAPI Value::CreateSize(float _iCX, float _iCY, ValueSuffix _Suffix)
         {
             auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
             if (pValue)
@@ -396,7 +396,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateRect(float _iLeft, float _iTop, float _iRight, float _iBottom, ValueSuffix _Suffix)
+        Value __YYAPI Value::CreateRect(float _iLeft, float _iTop, float _iRight, float _iBottom, ValueSuffix _Suffix)
         {
             auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
             if (pValue)
@@ -414,12 +414,12 @@ namespace YY
             return Value(pValue);
         }
 
-        Value __MEGA_UI_API Value::CreateAtom(raw_const_ustring_t _szValue)
+        Value __YYAPI Value::CreateAtom(raw_const_ustring_t _szValue)
         {
             return Value::CreateAtom(AddAtomW(_szValue));
         }
         
-        Value __MEGA_UI_API Value::CreateAtom(ATOM _uAtomValue)
+        Value __YYAPI Value::CreateAtom(ATOM _uAtomValue)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -432,7 +432,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateCursor(raw_const_ustring_t _szValue)
+        Value __YYAPI Value::CreateCursor(raw_const_ustring_t _szValue)
         {
             if (_szValue == nullptr || _szValue[0] == 0)
                 return nullptr;
@@ -447,7 +447,7 @@ namespace YY
             return _pValue;
         }
         
-        Value __MEGA_UI_API Value::CreateCursor(HCURSOR _hCursorValue)
+        Value __YYAPI Value::CreateCursor(HCURSOR _hCursorValue)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -460,7 +460,7 @@ namespace YY
             return Value(pValue);
         }
         
-        Value __MEGA_UI_API Value::CreateColor(Color _Color)
+        Value __YYAPI Value::CreateColor(Color _Color)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
             if (pValue)
@@ -473,7 +473,7 @@ namespace YY
             return Value(pValue);
         }
 
-        Value __MEGA_UI_API Value::CreateStyleSheet(_In_ StyleSheet* _pStyleSheet)
+        Value __YYAPI Value::CreateStyleSheet(_In_ StyleSheet* _pStyleSheet)
         {
             if (!_pStyleSheet)
                 return Value::CreateSheetNull();
@@ -492,7 +492,7 @@ namespace YY
             return Value(pValue);
         }
 
-        int32_t __MEGA_UI_API Value::GetInt32() const
+        int32_t __YYAPI Value::GetInt32() const
         {
             if (GetType() != ValueType::int32_t)
                 throw Exception();
@@ -500,7 +500,7 @@ namespace YY
             return pSharedData->int32Value;
         }
 
-        float __MEGA_UI_API Value::GetFloat() const
+        float __YYAPI Value::GetFloat() const
         {
             if (GetType() != ValueType::float_t)
                 throw Exception();
@@ -508,7 +508,7 @@ namespace YY
             return pSharedData->floatValue;
         }
         
-        bool __MEGA_UI_API Value::GetBool() const
+        bool __YYAPI Value::GetBool() const
         {
             if (GetType() != ValueType::boolean)
                 throw Exception();
@@ -516,7 +516,7 @@ namespace YY
             return pSharedData->boolValue;
         }
         
-        Size __MEGA_UI_API Value::GetSize() const
+        Size __YYAPI Value::GetSize() const
         {
             if (GetType() != ValueType::Size)
                 throw Exception();
@@ -524,7 +524,7 @@ namespace YY
             return pSharedData->sizeVal;
         }
         
-        Point __MEGA_UI_API Value::GetPoint() const
+        Point __YYAPI Value::GetPoint() const
         {
             if (GetType() != ValueType::Point)
                 throw Exception();
@@ -532,12 +532,12 @@ namespace YY
             return pSharedData->ptVal;
         }
         
-        uint8_t* __MEGA_UI_API Value::GetRawBuffer()
+        uint8_t* __YYAPI Value::GetRawBuffer()
         {
             return pSharedData ? pSharedData->RawBuffer : nullptr;
         }
         
-        Color __MEGA_UI_API Value::GetColor() const
+        Color __YYAPI Value::GetColor() const
         {
             if (GetType() != ValueType::Color)
                 throw Exception();
@@ -545,7 +545,7 @@ namespace YY
             return pSharedData->ColorValue;
         }
 
-        Element* __MEGA_UI_API Value::GetElement() const
+        Element* __YYAPI Value::GetElement() const
         {
             if (GetType() != ValueType::Element)
                 throw Exception();
@@ -553,28 +553,28 @@ namespace YY
             return pSharedData->pEleValue;
         }
 
-        uString __MEGA_UI_API Value::GetString() const
+        uString __YYAPI Value::GetString() const
         {
             if (GetType() != ValueType::uString)
                 throw Exception();
             return pSharedData->szValue;
         }
 
-        StyleSheet* __MEGA_UI_API Value::GetStyleSheet() const
+        StyleSheet* __YYAPI Value::GetStyleSheet() const
         {
             if (GetType() != ValueType::StyleSheet)
                 throw Exception();
             return pSharedData->pStyleSheet;
         }
 
-        Rect& __MEGA_UI_API Value::GetRect() const
+        Rect& __YYAPI Value::GetRect() const
         {
             if (GetType() != ValueType::Rect)
                 throw Exception();
             return pSharedData->rectVal;
         }
 
-        bool __MEGA_UI_API Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi) const
+        bool __YYAPI Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi) const
         {
             if (pSharedData == _Other.pSharedData)
             {
@@ -815,12 +815,12 @@ namespace YY
             return false;
         }
 
-        bool __MEGA_UI_API Value::IsSame(const Value& _Other) const
+        bool __YYAPI Value::IsSame(const Value& _Other) const
         {
             return pSharedData == _Other.pSharedData;
         }
         
-        Value __MEGA_UI_API Value::UpdateDpi(_In_ int32_t _iNewDpi) const
+        Value __YYAPI Value::UpdateDpi(_In_ int32_t _iNewDpi) const
         {
             if (pSharedData && pSharedData->NeedCalculate())
             {

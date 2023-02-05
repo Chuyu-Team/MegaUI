@@ -157,14 +157,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\base\Containers\ArrayView.h" />
+    <ClInclude Include="..\Base\Containers\ConstructorPolicy.h" />
+    <ClInclude Include="..\base\Containers\Array.h" />
+    <ClInclude Include="..\base\Encoding.h" />
+    <ClInclude Include="..\Base\Exception.h" />
+    <ClInclude Include="..\base\tchar.h" />
+    <ClInclude Include="..\base\YY.h" />
     <ClInclude Include="base\alloc.h" />
-    <ClInclude Include="base\ArrayView.h" />
     <ClInclude Include="base\Color.h" />
     <ClInclude Include="base\ComPtr.h" />
-    <ClInclude Include="base\Encoding.h" />
-    <ClInclude Include="base\DynamicArray.h" />
     <ClInclude Include="base\ErrorCode.h" />
-    <ClInclude Include="base\Exception.h" />
     <ClInclude Include="base\HashSet.h" />
     <ClInclude Include="base\Interlocked.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />

@@ -10,7 +10,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        HRESULT __MEGA_UI_API CreateRender(HWND _hWnd, Render** _ppRender)
+        HRESULT __YYAPI CreateRender(HWND _hWnd, Render** _ppRender)
         {
             #if 0
             return GdiPlusRender::CreateRender(_hWnd, _ppRender);
@@ -19,17 +19,17 @@ namespace YY
             #endif
         }
         
-        float __MEGA_UI_API DevicePixelToPixel(float _iDevicePixel, int32_t _DPI)
+        float __YYAPI DevicePixelToPixel(float _iDevicePixel, int32_t _DPI)
         {
             return _iDevicePixel * float(_DPI) / 96.0f;
         }
 
-        float __MEGA_UI_API PointToPixel(float _iFontPoint, int32_t _DPI)
+        float __YYAPI PointToPixel(float _iFontPoint, int32_t _DPI)
         {
             return _iFontPoint * float(_DPI) / 72.0f;
         }
 
-        Rect __MEGA_UI_API DevicePixelToPixel(Rect _iDevicePixelRect, int32_t _DPI)
+        Rect __YYAPI DevicePixelToPixel(Rect _iDevicePixelRect, int32_t _DPI)
         {
             _iDevicePixelRect.Left = DevicePixelToPixel(_iDevicePixelRect.Left, _DPI);
             _iDevicePixelRect.Top = DevicePixelToPixel(_iDevicePixelRect.Top, _DPI);
@@ -39,7 +39,7 @@ namespace YY
             return _iDevicePixelRect;
         }
 
-        Size __MEGA_UI_API DevicePixelToPixel(Size _iDevicePixelSize, int32_t _DPI)
+        Size __YYAPI DevicePixelToPixel(Size _iDevicePixelSize, int32_t _DPI)
         {
             _iDevicePixelSize.Width = DevicePixelToPixel(_iDevicePixelSize.Width, _DPI);
             _iDevicePixelSize.Height = DevicePixelToPixel(_iDevicePixelSize.Height, _DPI);
@@ -47,7 +47,7 @@ namespace YY
             return _iDevicePixelSize;
         }
 
-        float __MEGA_UI_API UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI)
+        float __YYAPI UpdatePixel(float _iOldPixel, int32_t _OldDPI, int32_t _NewDPI)
         {
             if (_OldDPI == 0)
                 _OldDPI = 96;

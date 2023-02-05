@@ -10,12 +10,16 @@ namespace YY
 {
     namespace MegaUI
     {
-        __forceinline u16char_t __MEGA_UI_API byteswap(u16char_t _ch)
+        using YY::Base::u16char_t;
+        using YY::Base::u32char_t;
+        using YY::Base::u32char_t;
+
+        __forceinline u16char_t __YYAPI byteswap(u16char_t _ch)
         {
             return _byteswap_ushort(_ch);
         }
 
-        __forceinline u32char_t __MEGA_UI_API byteswap(u32char_t _ch)
+        __forceinline u32char_t __YYAPI byteswap(u32char_t _ch)
         {
             return _byteswap_ulong(_ch);
         }
@@ -24,7 +28,7 @@ namespace YY
         {
         public:
             template<typename StringA, typename StringB>
-            static HRESULT __MEGA_UI_API TransformEndian(_In_ const StringA& _szSrc, _Inout_ StringB* _pszDst)
+            static HRESULT __YYAPI TransformEndian(_In_ const StringA& _szSrc, _Inout_ StringB* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -55,7 +59,7 @@ namespace YY
             }
 
             template<typename StringA, typename StringB>
-            static HRESULT __MEGA_UI_API TransformEndian(_In_ StringA&& _szSrc, _Inout_ StringB* _pszDst)
+            static HRESULT __YYAPI TransformEndian(_In_ StringA&& _szSrc, _Inout_ StringB* _pszDst)
             {
                 if (!_pszDst)
                     return E_POINTER;
@@ -74,7 +78,7 @@ namespace YY
                     if (!_szSrcBuffer)
                         return E_OUTOFMEMORY;
 
-                    for (uint_t i = 0; i != _cchSrc; ++i)
+                    for (size_t i = 0; i != _cchSrc; ++i)
                     {
                         _szSrcBuffer[i] = byteswap(_szSrcBuffer[i]);
                     }
@@ -95,7 +99,7 @@ namespace YY
 
                     _szDstBuffer += _cchOldDst;
 
-                    for (uint_t i = 0; i != _cchSrc; ++i)
+                    for (size_t i = 0; i != _cchSrc; ++i)
                     {
                         _szDstBuffer[i] = byteswap(_szSrcBuffer[i]);
                     }
@@ -107,14 +111,14 @@ namespace YY
         };
 
 
-        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, aString* _pszDst)
+        HRESULT __YYAPI Transform(const aStringView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __MEGA_UI_API Transform(const aString& _szSrc, aString* _pszDst)
+        HRESULT __YYAPI Transform(const aString& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -122,7 +126,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, aString* _pszDst)
+        HRESULT __YYAPI Transform(const u8StringView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -138,7 +142,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, aString* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringLEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -148,7 +152,7 @@ namespace YY
                 return S_OK;
 
             // WinAPI限制，无法处理大于 int32_max。
-            if (_cchSrc > int32_max)
+            if (_cchSrc > YY::Base::int32_max)
                 return E_UNEXPECTED;
 
             const auto _eEncoding = _pszDst->GetEncoding();
@@ -169,8 +173,8 @@ namespace YY
                 _cchDstBuffer = _pszDst->GetCapacity();
 
                 auto _cchOutBufferSize = _cchDstBuffer - _cchOldDst;
-                if (_cchOutBufferSize > int32_max)
-                    _cchOutBufferSize = int32_max;
+                if (_cchOutBufferSize > YY::Base::int32_max)
+                    _cchOutBufferSize = YY::Base::int32_max;
 
                 auto _cchAppendDst = WideCharToMultiByte(UINT(_eEncoding), 0, _szSrc.GetConstString(), (int)_cchSrc, _szDstBuffer + _cchOldDst, (int)_cchOutBufferSize, nullptr, nullptr);
                 _pszDst->UnlockBuffer(_cchOldDst + _cchAppendDst);
@@ -193,7 +197,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, aString* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringBEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;         
@@ -206,7 +210,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, aString* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringLEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -219,7 +223,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, aString* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringBEView& _szSrc, aString* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -233,7 +237,7 @@ namespace YY
         }
 
 
-        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u8String* _pszDst)
+        HRESULT __YYAPI Transform(const aStringView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -248,7 +252,7 @@ namespace YY
             return Transform(_szTmp, _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u8String* _pszDst)
+        HRESULT __YYAPI Transform(const u8StringView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -256,7 +260,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __MEGA_UI_API Transform(const u8String& _szSrc, u8String* _pszDst)
+        HRESULT __YYAPI Transform(const u8String& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -264,7 +268,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
         
-        HRESULT __MEGA_UI_API Transform(const aStringView& _szStr, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const aStringView& _szStr, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -274,7 +278,7 @@ namespace YY
                 return S_OK;
 
             // WinAPI 限制，无法处理超过 int32_max
-            if (_cchSrc > int32_max)
+            if (_cchSrc > YY::Base::int32_max)
                 return E_UNEXPECTED;
 
             const auto _cchOldDst = _pszDst->GetSize();
@@ -291,7 +295,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const aStringView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -307,7 +311,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
         
-        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const aStringView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -323,7 +327,7 @@ namespace YY
             return Transform(_szTmp, _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const aStringView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const aStringView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -339,7 +343,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
         
-        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u8StringView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -447,7 +451,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u8StringView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -555,7 +559,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u8StringView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -694,7 +698,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u8StringView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u8StringView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -833,7 +837,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u8String* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringLEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -932,7 +936,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringLEView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -990,7 +994,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringLEView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1006,7 +1010,7 @@ namespace YY
             return Transform(std::move(_szTmp), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u8String* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringBEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1106,7 +1110,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringLEView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1114,17 +1118,17 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringLEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringLEView& _szSrc, u16StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(u16StringLE&& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(u16StringLE&& _szSrc, u16StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringBE& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringBE& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1132,7 +1136,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringBEView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1140,7 +1144,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringBEView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1200,7 +1204,7 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringBEView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1260,24 +1264,24 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringBEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringBEView& _szSrc, u16StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u16StringLE& _szSrc, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u16StringLE& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __MEGA_UI_API Transform(u16StringBE&& _szSrc, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(u16StringBE&& _szSrc, u16StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u8String* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringLEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1290,7 +1294,7 @@ namespace YY
 
             // u32String -> u8String，普遍上，3倍的数量的缓冲区。
             // 所以我们这里使用一段经验值， 减少内存的重复开辟次数。
-            uint_t _cchDst = _cchOldDst;
+            size_t _cchDst = _cchOldDst;
             auto _szDstBuffer = _pszDst->LockBuffer(_cchOldDst + _cchSrc * 3);
             if (!_szDstBuffer)
                 return E_OUTOFMEMORY;
@@ -1366,7 +1370,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringLEView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1377,7 +1381,7 @@ namespace YY
 
             const auto _cchOldDst = _pszDst->GetSize();
 
-            uint_t _cchDst = _cchOldDst;
+            size_t _cchDst = _cchOldDst;
             auto _szDstBuffer = _pszDst->LockBuffer(_cchOldDst + _cchSrc);
             if (!_szDstBuffer)
                 return E_OUTOFMEMORY;
@@ -1425,7 +1429,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringLEView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1436,7 +1440,7 @@ namespace YY
 
             const auto _cchOldDst = _pszDst->GetSize();
 
-            uint_t _cchDst = _cchOldDst;
+            size_t _cchDst = _cchOldDst;
             auto _szDstBuffer = _pszDst->LockBuffer(_cchOldDst + _cchSrc);
             if (!_szDstBuffer)
                 return E_OUTOFMEMORY;
@@ -1484,17 +1488,17 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringLEView& _szSrc, u32StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(u32StringLE&& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(u32StringLE&& _szSrc, u32StringBE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringBE& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringBE& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1502,7 +1506,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringLEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringLEView& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1510,7 +1514,7 @@ namespace YY
             return _pszDst->AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u8String* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringBEView& _szSrc, u8String* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1523,7 +1527,7 @@ namespace YY
 
             // u32String -> u8String，普遍上，3倍的数量的缓冲区。
             // 所以我们这里使用一段经验值， 减少内存的重复开辟次数。
-            uint_t _cchDst = _cchOldDst;
+            size_t _cchDst = _cchOldDst;
             auto _szDstBuffer = _pszDst->LockBuffer(_cchOldDst + _cchSrc * 3);
             if (!_szDstBuffer)
                 return E_OUTOFMEMORY;
@@ -1601,7 +1605,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u16StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringBEView& _szSrc, u16StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1612,7 +1616,7 @@ namespace YY
 
             const auto _cchOldDst = _pszDst->GetSize();
 
-            uint_t _cchDst = _cchOldDst;
+            size_t _cchDst = _cchOldDst;
             auto _szDstBuffer = _pszDst->LockBuffer(_cchOldDst + _cchSrc);
             if (!_szDstBuffer)
                 return E_OUTOFMEMORY;
@@ -1662,7 +1666,7 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u16StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringBEView& _szSrc, u16StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1673,7 +1677,7 @@ namespace YY
 
             const auto _cchOldDst = _pszDst->GetSize();
 
-            uint_t _cchDst = _cchOldDst;
+            size_t _cchDst = _cchOldDst;
             auto _szDstBuffer = _pszDst->LockBuffer(_cchOldDst + _cchSrc);
             if (!_szDstBuffer)
                 return E_OUTOFMEMORY;
@@ -1723,12 +1727,12 @@ namespace YY
             return E_OUTOFMEMORY;
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringBEView& _szSrc, u32StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(_szSrc, _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringLE& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringLE& _szSrc, u32StringLE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;
@@ -1736,12 +1740,12 @@ namespace YY
             return _pszDst->AppendString(_szSrc);
         }
 
-        HRESULT __MEGA_UI_API Transform(u32StringBE&& _szSrc, u32StringLE* _pszDst)
+        HRESULT __YYAPI Transform(u32StringBE&& _szSrc, u32StringLE* _pszDst)
         {
             return EndianHelper::TransformEndian(std::move(_szSrc), _pszDst);
         }
 
-        HRESULT __MEGA_UI_API Transform(const u32StringBEView& _szSrc, u32StringBE* _pszDst)
+        HRESULT __YYAPI Transform(const u32StringBEView& _szSrc, u32StringBE* _pszDst)
         {
             if (!_pszDst)
                 return E_POINTER;

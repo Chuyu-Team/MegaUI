@@ -7,7 +7,7 @@
 #include "../../../base/alloc.h"
 #include "../../../base/Color.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -25,7 +25,7 @@ namespace YY
             {
             }
 
-            Gdiplus::SolidBrush* __MEGA_UI_API GetBrush()
+            Gdiplus::SolidBrush* __YYAPI GetBrush()
             {
                 return &Brush;
             }

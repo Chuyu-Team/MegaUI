@@ -27,7 +27,7 @@ namespace YY
                     pDWriteFactory->Release();
             }
 
-            _Ret_maybenull_ IDWriteFactory* __MEGA_UI_API TryGetDWriteFactory()
+            _Ret_maybenull_ IDWriteFactory* __YYAPI TryGetDWriteFactory()
             {
                 if (pDWriteFactory)
                     return pDWriteFactory;
@@ -41,7 +41,7 @@ namespace YY
             }
 
             HRESULT
-            __MEGA_UI_API CreateTextFormat(
+            __YYAPI CreateTextFormat(
                 _In_ const Font& _FontInfo,
                 _In_ int32_t _fTextAlign,
                 _In_z_ uchar_t const* _szLocaleName,
@@ -124,7 +124,7 @@ namespace YY
             }
 
             HRESULT
-            __MEGA_UI_API CreateTextLayout(
+            __YYAPI CreateTextLayout(
                 _In_ uStringView _szText,
                 _In_ IDWriteTextFormat* _pTextFormat,
                 _In_ int32_t _fTextStyle,
@@ -173,7 +173,7 @@ namespace YY
             }
 
             void
-            __MEGA_UI_API
+            __YYAPI
             DrawString(
                 _In_ ID2D1RenderTarget* pRenderTarget,
                 _In_ uStringView _szText,
@@ -215,7 +215,7 @@ namespace YY
             }
              
             void
-            __MEGA_UI_API
+            __YYAPI
             MeasureString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,

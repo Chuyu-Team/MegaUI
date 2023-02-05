@@ -1,7 +1,7 @@
 #pragma once
 #include "MegaUITypeInt.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -33,23 +33,23 @@ namespace YY
                     p->Release();
             }
 
-            _Type** __MEGA_UI_API operator&()
+            _Type** __YYAPI operator&()
             {
                 return &p;
             }
 
-            __MEGA_UI_API operator _Type*() const
+            __YYAPI operator _Type*() const
             {
                 return p;
             }
 
-            _Type * __MEGA_UI_API operator->() const
+            _Type * __YYAPI operator->() const
             {
                 return p;
             }
 
 
-            inline _Type* __MEGA_UI_API Detach()
+            inline _Type* __YYAPI Detach()
             {
                 auto _p = p;
                 p = nullptr;

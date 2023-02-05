@@ -1,8 +1,9 @@
 ﻿#pragma once
-#include "MegaUITypeInt.h"
+#include <Base/YY.h>
+
 namespace YY
 {
-    namespace MegaUI
+    namespace Base
     {
         enum class Encoding
         {
@@ -59,8 +60,7 @@ namespace YY
             static constexpr Encoding eEncoding = Encoding::UTF32;
         };
 
-
-        __inline bool __MEGA_UI_API IsANSI(Encoding _eEncoding)
+        __inline bool __YYAPI IsANSI(Encoding _eEncoding)
         {
             switch (_eEncoding)
             {

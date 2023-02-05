@@ -43,6 +43,12 @@
     <Filter Include="UI\Render\D2D\DWrite">
       <UniqueIdentifier>{c2520be1-66f0-4d70-9d7f-43f5785cd918}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base">
+      <UniqueIdentifier>{b2d76587-f02c-4e66-a9b6-103ca4da3552}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Containers">
+      <UniqueIdentifier>{89a3bf71-18a5-4c34-9e8c-07dba97668f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -66,9 +72,6 @@
     <ClInclude Include="base\alloc.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
-    <ClInclude Include="base\DynamicArray.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="base\MegaUITypeInt.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
@@ -84,9 +87,6 @@
     <ClInclude Include="base\ErrorCode.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
-    <ClInclude Include="base\Encoding.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="base\StringView.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
@@ -94,9 +94,6 @@
       <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\String.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Exception.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\HashSet.h">
@@ -132,9 +129,6 @@
     <ClInclude Include="core\StyleSheet.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
-    <ClInclude Include="base\ArrayView.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="core\ControlInfoImp.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
@@ -164,6 +158,27 @@
     </ClInclude>
     <ClInclude Include="core\UIEvent.h">
       <Filter>UI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\Encoding.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\tchar.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\YY.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\Containers\ArrayView.h">
+      <Filter>Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\base\Containers\Array.h">
+      <Filter>Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Exception.h">
+      <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Containers\ConstructorPolicy.h">
+      <Filter>Base\Containers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

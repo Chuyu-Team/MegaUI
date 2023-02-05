@@ -2,10 +2,10 @@
 #include "..\base\MegaUITypeInt.h"
 #include "../base/StringBase.h"
 #include "value.h"
-#include "../base/DynamicArray.h"
-#include "../base/ArrayView.h"
+#include <Base/Containers/Array.h>
+#include <Base/Containers/ArrayView.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -50,10 +50,10 @@ namespace YY
             // 8
             // WORD m8; 
             // 与微软原版不同，因为 我们的DynamicArray支持引用计数，额外一次寻址很显然是没必要的。
-            DynamicArray<Cond, true> CondArray;
+            Array<Cond> CondArray;
             // A
 
-            CondMap(const Value& _CondValue, uint32_t _uSpecif, const DynamicArray<Cond, true>& _CondArray)
+            CondMap(const Value& _CondValue, uint32_t _uSpecif, const Array<Cond>& _CondArray)
                 : CondValue(_CondValue)
                 , uSpecif(_uSpecif)
                 , CondArray(_CondArray)
@@ -75,7 +75,7 @@ namespace YY
                 _Other.uSpecif = 0;
             }
 
-            CondMap& __MEGA_UI_API operator=(const CondMap& _Other)
+            CondMap& __YYAPI operator=(const CondMap& _Other)
             {
                 if (this != &_Other)
                 {
@@ -87,7 +87,7 @@ namespace YY
                 return *this;
             }
             
-            CondMap& __MEGA_UI_API operator=(CondMap&& _Other) noexcept
+            CondMap& __YYAPI operator=(CondMap&& _Other) noexcept
             {
                 if (this != &_Other)
                 {
@@ -109,9 +109,9 @@ namespace YY
             const PropertyInfo* pRefProp;
 
             // 4
-            DynamicArray<CondMap> CondMapList;
+            Array<CondMap> CondMapList;
             // 0x12
-            DynamicArray<const PropertyInfo*> DependencyPropList;
+            Array<const PropertyInfo*, AllocPolicy::SOO> DependencyPropList;
 
             PropertyData(const PropertyInfo* _pRefProp)
                 : pRefProp(_pRefProp)
@@ -128,7 +128,7 @@ namespace YY
                 _Other.pRefProp = nullptr;
             }
 
-            PropertyData& __MEGA_UI_API operator=(const PropertyData& _Other)
+            PropertyData& __YYAPI operator=(const PropertyData& _Other)
             {
                 if (this != &_Other)
                 {
@@ -139,7 +139,7 @@ namespace YY
                 return *this;
             }
             
-            PropertyData& __MEGA_UI_API operator=(PropertyData&& _Other) noexcept
+            PropertyData& __YYAPI operator=(PropertyData&& _Other) noexcept
             {
                 if (this != &_Other)
                 {
@@ -152,7 +152,7 @@ namespace YY
                 return *this;
             }
 
-            __inline HRESULT __MEGA_UI_API AddCondMapping(const DynamicArray<Cond, true>& _CondArray, uint32_t _uSpecifId, const Value& _Value)
+            __inline HRESULT __YYAPI AddCondMapping(const Array<Cond>& _CondArray, uint32_t _uSpecifId, const Value& _Value)
             {
                 auto _pCondMap = CondMapList.EmplacePtr(_Value, _uSpecifId, _CondArray);
                 if (!_pCondMap)
@@ -169,9 +169,9 @@ namespace YY
             IControlInfo* pControlInfo;
 
             // 4
-            DynamicArray<const PropertyInfo*> DependencyPropList;
+            Array<const PropertyInfo*> DependencyPropList;
             // 0xC
-            DynamicArray<PropertyData> PropertyDataRef;
+            Array<PropertyData, AllocPolicy::SOO> PropertyDataRef;
             // 0x44
 
         public:
@@ -180,7 +180,7 @@ namespace YY
             {
             }
 
-            PropertyData* __MEGA_UI_API GetPropertyData(_In_ const PropertyInfo* _pRefProp)
+            PropertyData* __YYAPI GetPropertyData(_In_ const PropertyInfo* _pRefProp)
             {
                 if (!_pRefProp)
                     return nullptr;
@@ -221,9 +221,9 @@ namespace YY
             // 0
             uint32_t uRuleId;
             // 8
-            DynamicArray<ControlStyleData> ControlStyleDataArray;
+            Array<ControlStyleData, AllocPolicy::SOO> ControlStyleDataArray;
             // 0x50
-            // DynamicArray<DynamicArray<Cond>> CondData;
+            // Array<Array<Cond>> CondData;
             // 0x5C
             //BYTE m5C;
             //BYTE m5D;
@@ -240,30 +240,30 @@ namespace YY
             StyleSheet(StyleSheet const&) = delete;
             StyleSheet& operator=(StyleSheet const&) = delete;
 
-            uint32_t __MEGA_UI_API AddRef();
+            uint32_t __YYAPI AddRef();
 
-            uint32_t __MEGA_UI_API Release();
+            uint32_t __YYAPI Release();
 
             // 1
-            HRESULT __MEGA_UI_API AddRule(uString szRule, IControlInfo* _pControlInfo, DynamicArray<Cond, true> CondArray, const ArrayView<Decl>& DeclArray);
+            HRESULT __YYAPI AddRule(uString szRule, IControlInfo* _pControlInfo, Array<Cond> CondArray, const ArrayView<Decl>& DeclArray);
             // 2
-            void __MEGA_UI_API MakeImmutable();
+            void __YYAPI MakeImmutable();
             // 3
-            Value __MEGA_UI_API GetSheetValue(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp);
+            Value __YYAPI GetSheetValue(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp);
             // 4
-            HRESULT __MEGA_UI_API GetSheetDependencies(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp, _Inout_ DepRecs* _pdr, _In_ DeferCycle* _pDeferCycle);
+            HRESULT __YYAPI GetSheetDependencies(_In_ Element* _pElement, _In_ const PropertyInfo* _pProp, _Inout_ DepRecs* _pdr, _In_ DeferCycle* _pDeferCycle);
             // 5
-            HRESULT __MEGA_UI_API GetSheetScope(_In_ Element* _pElement, _Inout_ DepRecs* pdr, _In_ DeferCycle* _pDeferCycle);
+            HRESULT __YYAPI GetSheetScope(_In_ Element* _pElement, _Inout_ DepRecs* pdr, _In_ DeferCycle* _pDeferCycle);
             // 6
-            u8String __MEGA_UI_API GetSheetResourceID();
+            u8String __YYAPI GetSheetResourceID();
 
             // 7
-            HRESULT __MEGA_UI_API SetSheetResourceID(u8String _szSheetResourceID);
+            HRESULT __YYAPI SetSheetResourceID(u8String _szSheetResourceID);
             
         private:
-            _Ret_maybenull_ ControlStyleData* __MEGA_UI_API GetControlStyleData(_In_ IControlInfo* _pControlInfo);
+            _Ret_maybenull_ ControlStyleData* __YYAPI GetControlStyleData(_In_ IControlInfo* _pControlInfo);
 
-            HRESULT __MEGA_UI_API AddControlStyleData(_Outptr_ ControlStyleData** _ppData, _In_ IControlInfo* _pControlInfo);
+            HRESULT __YYAPI AddControlStyleData(_Outptr_ ControlStyleData** _ppData, _In_ IControlInfo* _pControlInfo);
             
             /// <summary>
             /// 计算某条规则的总体权重值。
@@ -274,7 +274,7 @@ namespace YY
             /// <param name="_pControlInfo"></param>
             /// <param name="_uRuleId">规则序号，数值越大，优先级越高。</param>
             /// <returns>权重</returns>
-            static uint32_t __MEGA_UI_API ComputeSpecif(_In_ const DynamicArray<Cond, true>& CondArray, _In_ IControlInfo* _pControlInfo, _In_ uint16_t _uRuleId);
+            static uint32_t __YYAPI ComputeSpecif(_In_ const Array<Cond>& CondArray, _In_ IControlInfo* _pControlInfo, _In_ uint16_t _uRuleId);
         };
     }
 } // namespace YY

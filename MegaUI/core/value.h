@@ -5,7 +5,7 @@
 #include <Windows.h>
 
 #include <MegaUI/base/MegaUITypeInt.h>
-#include <MegaUI/base/DynamicArray.h>
+#include <Base/Containers/Array.h>
 #include <MegaUI/base/StringBase.h>
 #include <MegaUI/base/Color.h>
 #include <MegaUI/base/Rect.h>
@@ -13,14 +13,14 @@
 #include <MegaUI/base/Size.h>
 #include <MegaUI/base/Point.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
     namespace MegaUI
     {
         class Element;
-        typedef DynamicArray<Element*, true, false> ElementList;
+        typedef Array<Element*> ElementList;
 
         class Layout;
         class StyleSheet;
@@ -185,18 +185,18 @@ namespace YY
                 SharedData& operator=(const SharedData&) = delete;
 
 
-                void __MEGA_UI_API AddRef();
-                void __MEGA_UI_API Release();
+                void __YYAPI AddRef();
+                void __YYAPI Release();
 
-                bool __MEGA_UI_API IsReadOnly();
+                bool __YYAPI IsReadOnly();
 
                 /// <summary>
                 /// 判断内容是否是相对大小，而需要计算
                 /// </summary>
                 /// <returns></returns>
-                bool __MEGA_UI_API NeedCalculate();
+                bool __YYAPI NeedCalculate();
 
-                int32_t __MEGA_UI_API GetDpi();
+                int32_t __YYAPI GetDpi();
             };
 
         private:
@@ -227,145 +227,145 @@ namespace YY
                     pSharedData->Release();
             }
             
-            Value& __MEGA_UI_API operator=(const Value& _Other);
+            Value& __YYAPI operator=(const Value& _Other);
             
-            Value& __MEGA_UI_API operator=(Value&& _Other) noexcept;
+            Value& __YYAPI operator=(Value&& _Other) noexcept;
             
-            Value& __MEGA_UI_API operator=(std::nullptr_t);
+            Value& __YYAPI operator=(std::nullptr_t);
 
-            bool __MEGA_UI_API operator==(_In_ const Value& _Other) const;
+            bool __YYAPI operator==(_In_ const Value& _Other) const;
 
-            bool __MEGA_UI_API operator!=(_In_ const Value& _Other) const;
+            bool __YYAPI operator!=(_In_ const Value& _Other) const;
 
-            bool __MEGA_UI_API operator==(std::nullptr_t) const;
+            bool __YYAPI operator==(std::nullptr_t) const;
             
-            bool __MEGA_UI_API operator!=(std::nullptr_t) const;
+            bool __YYAPI operator!=(std::nullptr_t) const;
 
             template<int32_t iValue>
-            static Value __MEGA_UI_API CreateInt32()
+            static Value __YYAPI CreateInt32()
             {
                 _RETUNR_CONST_VALUE(ValueType::int32_t, iValue);
             }
             
             template<int32_t iValue>
-            static Value __MEGA_UI_API CreateFloat()
+            static Value __YYAPI CreateFloat()
             {
                 _RETUNR_CONST_VALUE(ValueType::float_t, (float)iValue);
             }
 
-            static Value __MEGA_UI_API CreateAtomZero();
-            static Value __MEGA_UI_API CreateBoolFalse();
-            static Value __MEGA_UI_API CreateBoolTrue();
-            //static _Ret_notnull_ Value* __MEGA_UI_API GetColorTrans();
-            static Value __MEGA_UI_API CreateCursorNull();
-            static Value __MEGA_UI_API CreateEmptyElementList();
-            static Value __MEGA_UI_API CreateElementNull();
-            static Value __MEGA_UI_API CreateInt32Zero();
-            static Value __MEGA_UI_API CreateNull();
-            static Value __MEGA_UI_API CreatePointZero();
-            static Value __MEGA_UI_API CreateRectZero();
-            static Value __MEGA_UI_API CreateSizeZero();
-            static Value __MEGA_UI_API CreateEmptyString();
-            static Value __MEGA_UI_API CreateUnavailable();
-            static Value __MEGA_UI_API CreateUnset();
-            static Value __MEGA_UI_API CreateLayoutNull();
+            static Value __YYAPI CreateAtomZero();
+            static Value __YYAPI CreateBoolFalse();
+            static Value __YYAPI CreateBoolTrue();
+            //static _Ret_notnull_ Value* __YYAPI GetColorTrans();
+            static Value __YYAPI CreateCursorNull();
+            static Value __YYAPI CreateEmptyElementList();
+            static Value __YYAPI CreateElementNull();
+            static Value __YYAPI CreateInt32Zero();
+            static Value __YYAPI CreateNull();
+            static Value __YYAPI CreatePointZero();
+            static Value __YYAPI CreateRectZero();
+            static Value __YYAPI CreateSizeZero();
+            static Value __YYAPI CreateEmptyString();
+            static Value __YYAPI CreateUnavailable();
+            static Value __YYAPI CreateUnset();
+            static Value __YYAPI CreateLayoutNull();
 
             /// <summary>
             /// 获取默认字体信息。
             /// </summary>
             /// <returns></returns>
-            static Value __MEGA_UI_API CreateDefaultFontFamily();
+            static Value __YYAPI CreateDefaultFontFamily();
 
             /// <summary>
             /// 创建一个全透明的颜色。
             /// </summary>
             /// <returns></returns>
-            static Value __MEGA_UI_API CreateColorTransparant();
-            static Value __MEGA_UI_API CreateSheetNull();
+            static Value __YYAPI CreateColorTransparant();
+            static Value __YYAPI CreateSheetNull();
 
 
-            ValueType __MEGA_UI_API GetType() const;
+            ValueType __YYAPI GetType() const;
 
             /// <summary>
             /// 判断是否包含有效的内容，除Unavailable、Unset以及Null外均认为有效。
             /// </summary>
             /// <returns></returns>
-            bool __MEGA_UI_API HasValue() const;
+            bool __YYAPI HasValue() const;
 
-            static Value __MEGA_UI_API CreateInt32(_In_ int32_t _iValue);
+            static Value __YYAPI CreateInt32(_In_ int32_t _iValue);
             
-            static Value __MEGA_UI_API CreateFloat(_In_ float _iValue, _In_ ValueSuffix _Suffix = {});
+            static Value __YYAPI CreateFloat(_In_ float _iValue, _In_ ValueSuffix _Suffix = {});
          
-            static Value __MEGA_UI_API CreateBool(_In_ bool _bValue);
-            static Value __MEGA_UI_API CreateElementRef(_In_opt_ Element* _pValue);
-            static Value __MEGA_UI_API CreateElementList(_In_ const ElementList& _pListValue);
-            static Value __MEGA_UI_API CreateString(_In_ const uString& _szValue);
-            //static _Ret_maybenull_ Value* __MEGA_UI_API CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
-            static Value __MEGA_UI_API CreatePoint(_In_ float _iX, _In_ float _iY);
+            static Value __YYAPI CreateBool(_In_ bool _bValue);
+            static Value __YYAPI CreateElementRef(_In_opt_ Element* _pValue);
+            static Value __YYAPI CreateElementList(_In_ const ElementList& _pListValue);
+            static Value __YYAPI CreateString(_In_ const uString& _szValue);
+            //static _Ret_maybenull_ Value* __YYAPI CreateString(_In_ uint16_t _uId, _In_opt_ HINSTANCE _hResLoad = NULL);
+            static Value __YYAPI CreatePoint(_In_ float _iX, _In_ float _iY);
             
-            __inline static Value __MEGA_UI_API CreatePoint(_In_ Point _Point)
+            __inline static Value __YYAPI CreatePoint(_In_ Point _Point)
             {
                 return CreatePoint(_Point.X, _Point.Y);
             }
 
-            static Value __MEGA_UI_API CreateSize(_In_ float _iCX, _In_ float _iCY, _In_ ValueSuffix _Suffix = {});
+            static Value __YYAPI CreateSize(_In_ float _iCX, _In_ float _iCY, _In_ ValueSuffix _Suffix = {});
 
-            __inline static Value __MEGA_UI_API CreateSize(_In_ Size _Size, _In_ ValueSuffix _Suffix = {})
+            __inline static Value __YYAPI CreateSize(_In_ Size _Size, _In_ ValueSuffix _Suffix = {})
             {
                 return CreateSize(_Size.Width, _Size.Height, _Suffix);
             }
 
-            static Value __MEGA_UI_API CreateRect(
+            static Value __YYAPI CreateRect(
                 _In_ float _iLeft,
                 _In_ float _iTop,
                 _In_ float _iRight,
                 _In_ float _iBottom,
                 _In_ ValueSuffix _Suffix = {});
             
-            __inline static Value __MEGA_UI_API CreateRect(_In_ const Rect& _Rect, _In_ ValueSuffix _Suffix = {})
+            __inline static Value __YYAPI CreateRect(_In_ const Rect& _Rect, _In_ ValueSuffix _Suffix = {})
             {
                 return CreateRect(_Rect.Left, _Rect.Top, _Rect.Right, _Rect.Bottom, _Suffix);
             }
             
-            //static _Ret_maybenull_ Value* __MEGA_UI_API CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
-            static Value __MEGA_UI_API CreateAtom(_In_z_ raw_const_ustring_t _szValue);
-            static Value __MEGA_UI_API CreateAtom(_In_ ATOM _uAtomValue);
-            static Value __MEGA_UI_API CreateCursor(_In_z_ raw_const_ustring_t _szValue);
-            static Value __MEGA_UI_API CreateCursor(_In_ HCURSOR _hCursorValue);
+            //static _Ret_maybenull_ Value* __YYAPI CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
+            static Value __YYAPI CreateAtom(_In_z_ raw_const_ustring_t _szValue);
+            static Value __YYAPI CreateAtom(_In_ ATOM _uAtomValue);
+            static Value __YYAPI CreateCursor(_In_z_ raw_const_ustring_t _szValue);
+            static Value __YYAPI CreateCursor(_In_ HCURSOR _hCursorValue);
             
-            static Value __MEGA_UI_API CreateColor(_In_ Color _Color);
+            static Value __YYAPI CreateColor(_In_ Color _Color);
             
-            static Value __MEGA_UI_API CreateStyleSheet(_In_ StyleSheet* _pStyleSheet);
+            static Value __YYAPI CreateStyleSheet(_In_ StyleSheet* _pStyleSheet);
 
-            int32_t __MEGA_UI_API GetInt32() const;
+            int32_t __YYAPI GetInt32() const;
 
-            float __MEGA_UI_API GetFloat() const;
+            float __YYAPI GetFloat() const;
 
-            bool __MEGA_UI_API GetBool() const;
-            Size __MEGA_UI_API GetSize() const;
-            Point __MEGA_UI_API GetPoint() const;
-            uint8_t* __MEGA_UI_API GetRawBuffer();
-            Color __MEGA_UI_API GetColor() const;
-            Element* __MEGA_UI_API GetElement() const;
-            uString __MEGA_UI_API GetString() const;
+            bool __YYAPI GetBool() const;
+            Size __YYAPI GetSize() const;
+            Point __YYAPI GetPoint() const;
+            uint8_t* __YYAPI GetRawBuffer();
+            Color __YYAPI GetColor() const;
+            Element* __YYAPI GetElement() const;
+            uString __YYAPI GetString() const;
 
-            StyleSheet* __MEGA_UI_API GetStyleSheet() const;
+            StyleSheet* __YYAPI GetStyleSheet() const;
 
-            Rect& __MEGA_UI_API GetRect() const;
+            Rect& __YYAPI GetRect() const;
 
-            bool __MEGA_UI_API CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi = true) const;
+            bool __YYAPI CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi = true) const;
 
-            Value __MEGA_UI_API UpdateDpi(_In_ int32_t _iNewDpi) const;
+            Value __YYAPI UpdateDpi(_In_ int32_t _iNewDpi) const;
 
             /// <summary>
             /// 判断二个Value是否是同一个变量。
             /// </summary>
-            bool __MEGA_UI_API IsSame(const Value& _Other) const;
+            bool __YYAPI IsSame(const Value& _Other) const;
         };
 
-        float __MEGA_UI_API UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type);
+        float __YYAPI UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type);
         
-        Rect __MEGA_UI_API UpdateDpi(_In_ Rect _Rect, _In_ int32_t _iNewDpi, _In_ ValueSuffix _Suffix);
+        Rect __YYAPI UpdateDpi(_In_ Rect _Rect, _In_ int32_t _iNewDpi, _In_ ValueSuffix _Suffix);
 
         template<ValueType _eType>
         class ValueIs : public Value
@@ -385,12 +385,12 @@ namespace YY
             {
             }
 
-            bool __MEGA_UI_API HasValue()
+            bool __YYAPI HasValue()
             {
                 return GetType() == eType;
             }
 
-            _Type& __MEGA_UI_API GetValue()
+            _Type& __YYAPI GetValue()
             {
                 if (!HasValue())
                 {

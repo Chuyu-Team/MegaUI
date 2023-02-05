@@ -2,9 +2,9 @@
 
 #include "../base/MegaUITypeInt.h"
 #include "../core/Element.h"
-#include "../base/DynamicArray.h"
+#include <Base/Containers/Array.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -36,7 +36,7 @@ namespace YY
             u8StringView szValue;
 
             // 子节点
-            DynamicArray<ExprNode> ChildExprNode;
+            Array<ExprNode, AllocPolicy::SOO> ChildExprNode;
             
             ExprNode()
                 : Type(ExprNodeType::Root)
@@ -108,7 +108,7 @@ namespace YY
             const u8char_t* szCurrent = nullptr;
             aStringView TerminateChars;
 
-            const u8char_t* __MEGA_UI_API SkipWhiteSpace()
+            const u8char_t* __YYAPI SkipWhiteSpace()
             {
                 for (; IsTerminate() == false; ++szCurrent)
                 {
@@ -125,14 +125,14 @@ namespace YY
             /// 设置新的结束符。只支持纯ASCII字符。
             /// </summary>
             /// <returns>返回上一次的结果。</returns>
-            aStringView __MEGA_UI_API SetTerminateChars(aStringView _NewTerminateChars)
+            aStringView __YYAPI SetTerminateChars(aStringView _NewTerminateChars)
             {
                 auto _Tmp = TerminateChars;
                 TerminateChars = _NewTerminateChars;
                 return _Tmp;
             }
 
-            bool __MEGA_UI_API IsTerminate()
+            bool __YYAPI IsTerminate()
             {
                 if (szCurrent == szEnd)
                     return true;
@@ -148,19 +148,19 @@ namespace YY
             }
             
             // 已经到达末尾，但是 chTerminateChar 没有终止 认为是失败。
-            bool __MEGA_UI_API HasError()
+            bool __YYAPI HasError()
             {
                 return szCurrent == szEnd && TerminateChars.GetSize();
             }
 
-            u8char_t __MEGA_UI_API Next()
+            u8char_t __YYAPI Next()
             {
                 auto _ch = *szCurrent;
                 ++szCurrent;
                 return _ch;
             }
 
-            u8char_t __MEGA_UI_API Current()
+            u8char_t __YYAPI Current()
             {
                 return szCurrent == szEnd ? '\0' : *szCurrent;
             }
@@ -171,11 +171,11 @@ namespace YY
         private:
 
         public:
-            void __MEGA_UI_API Clear()
+            void __YYAPI Clear()
             {
             }
 
-            HRESULT __MEGA_UI_API Parse(const u8StringView& _szString, ExprNode* _pExprNode)
+            HRESULT __YYAPI Parse(const u8StringView& _szString, ExprNode* _pExprNode)
             {
                 if (!_pExprNode)
                     return E_INVALIDARG;
@@ -197,7 +197,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __MEGA_UI_API ParseWorker(ValueParserContext* _pContext, ExprNode* _pExprNode)
+            HRESULT __YYAPI ParseWorker(ValueParserContext* _pContext, ExprNode* _pExprNode)
             {
                 // 难以预测此节点是否包含 | 逻辑，所以我们首先假设这是 | 逻辑内。
                 // 执行完毕后再根据实际情况合并。
@@ -223,7 +223,7 @@ namespace YY
             }
 
 
-            ValueParserType __MEGA_UI_API ParseIdentifier(ValueParserContext* _pContext, u8StringView* _pszIdentifier)
+            ValueParserType __YYAPI ParseIdentifier(ValueParserContext* _pContext, u8StringView* _pszIdentifier)
             {
                 if (_pContext->IsTerminate())
                     return ValueParserType::ParserEnd;
@@ -285,32 +285,34 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API ParseFuncall(ValueParserContext* _pContext, ExprNode* _pExprNode)
+            HRESULT __YYAPI ParseFuncall(ValueParserContext* _pContext, ExprNode* _pExprNode)
             {
                 auto _OldTerminateChars = _pContext->SetTerminateChars(")");
 
                 _pContext->SkipWhiteSpace();
-
-                for (;;)
+                if (!_pContext->IsTerminate())
                 {
-                    auto _OldTerminateChars = _pContext->SetTerminateChars(",)");
-                    auto _hr = ParseWorker(_pContext, _pExprNode);
-                    _pContext->SetTerminateChars(_OldTerminateChars);
-                    if (FAILED(_hr))
-                        return _hr;
-                    
-                    _pContext->SkipWhiteSpace();
+                    for (;;)
+                    {
+                        auto _OldTerminateChars = _pContext->SetTerminateChars(",)");
+                        auto _hr = ParseWorker(_pContext, _pExprNode);
+                        _pContext->SetTerminateChars(_OldTerminateChars);
+                        if (FAILED(_hr))
+                            return _hr;
 
-                    if (_pContext->HasError())
-                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _pContext->SkipWhiteSpace();
 
-                    if (_pContext->IsTerminate())
-                        break;
+                        if (_pContext->HasError())
+                            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-                    if (_pContext->Current() != ',')
-                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        if (_pContext->IsTerminate())
+                            break;
 
-                    _pContext->Next();
+                        if (_pContext->Current() != ',')
+                            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+
+                        _pContext->Next();
+                    }
                 }
                 _pContext->SetTerminateChars(_OldTerminateChars);
 
@@ -318,7 +320,7 @@ namespace YY
             }
 
             // Or 逻辑中
-            HRESULT __MEGA_UI_API ParseOr(ValueParserContext* _pContext, ExprNode* _pExprNode)
+            HRESULT __YYAPI ParseOr(ValueParserContext* _pContext, ExprNode* _pExprNode)
             {
                 _pContext->SkipWhiteSpace();
 

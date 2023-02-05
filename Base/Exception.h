@@ -1,19 +1,20 @@
 ﻿#pragma once
 #include <exception>
 
-#include "MegaUITypeInt.h"
+#include <Base/YY.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
-    namespace MegaUI
+    namespace Base
     {
         class Exception : public std::exception
         {
         private:
             const uchar_t* szErrorMessage;
             HRESULT hr;
+
         public:
             /// <summary>
             /// 构造一个 Exception
@@ -32,17 +33,17 @@ namespace YY
             {
             }
 
-            HRESULT __MEGA_UI_API GetErrorCode()
+            HRESULT __YYAPI GetErrorCode()
             {
                 return hr;
             }
 
-            const uchar_t* __MEGA_UI_API GetErrorMessage()
+            const uchar_t* __YYAPI GetErrorMessage()
             {
                 return szErrorMessage ? szErrorMessage : _S("");
             }
         };
-    }
+    } // namespace Base
 } // namespace YY
 
 #pragma pack(pop)

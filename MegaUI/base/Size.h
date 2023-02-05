@@ -4,7 +4,7 @@
 
 #include "MegaUITypeInt.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -34,17 +34,17 @@ namespace YY
             {
             }
 
-            inline bool __MEGA_UI_API operator == (Size _Other)
+            inline bool __YYAPI operator == (Size _Other)
             {
                 return Width == _Other.Width && Height == _Other.Height;
             }
             
-            inline bool __MEGA_UI_API operator != (Size _Other)
+            inline bool __YYAPI operator != (Size _Other)
             {
                 return Width != _Other.Width || Height != _Other.Height;
             }
 
-            __MEGA_UI_API operator Gdiplus::SizeF&() const
+            __YYAPI operator Gdiplus::SizeF&() const
             {
                 return *(Gdiplus::SizeF*)this;
             }

@@ -8,10 +8,10 @@
 
 #include <MegaUI/base/MegaUITypeInt.h>
 #include "WindowElement.h"
-#include <MegaUI/base/DynamicArray.h>
+#include <Base/Containers/Array.h>
 #include <MegaUI/core/UIEvent.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -30,7 +30,7 @@ namespace YY
             uint32_t fTrackMouse;
             uint32_t bCapture;
             // TODO 需要更换为块式队列更友好。
-            DynamicArray<Element*> DelayedDestroyList;
+            Array<Element*> DelayedDestroyList;
             // 鼠标焦点
             Element* pLastMouseFocusedElement = nullptr;
             // 逻辑焦点
@@ -49,7 +49,7 @@ namespace YY
 
             virtual ~Window();
             
-            HRESULT __MEGA_UI_API Initialize(
+            HRESULT __YYAPI Initialize(
                 _In_opt_ HWND _hWndParent,
                 _In_opt_ HICON _hIcon,
                 _In_ int _dX,
@@ -59,28 +59,28 @@ namespace YY
                 _In_ UINT _nOptions
                 );
 
-            HRESULT __MEGA_UI_API SetHost(_In_ WindowElement* _pHost);
+            HRESULT __YYAPI SetHost(_In_ WindowElement* _pHost);
 
-            static UINT __MEGA_UI_API AsyncDestroyMsg();
+            static UINT __YYAPI AsyncDestroyMsg();
 
-            void __MEGA_UI_API DestroyWindow();
+            void __YYAPI DestroyWindow();
             
-            bool __MEGA_UI_API IsMinimized() const;
+            bool __YYAPI IsMinimized() const;
 
-            void __MEGA_UI_API ShowWindow(int _iCmdShow);
+            void __YYAPI ShowWindow(int _iCmdShow);
 
-            void __MEGA_UI_API InvalidateRect(_In_opt_ const Rect* _pRect);
+            void __YYAPI InvalidateRect(_In_opt_ const Rect* _pRect);
 
-            __inline void __MEGA_UI_API InvalidateRect(const Rect& _Rect)
+            __inline void __YYAPI InvalidateRect(const Rect& _Rect)
             {
                 InvalidateRect(&_Rect);
             }
 
-            HRESULT __MEGA_UI_API PostDelayedDestroyElement(Element* _pElement);
+            HRESULT __YYAPI PostDelayedDestroyElement(Element* _pElement);
             
-            bool __MEGA_UI_API HandleVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
+            bool __YYAPI HandleVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
-            bool __MEGA_UI_API HandleEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
+            bool __YYAPI HandleEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
             constexpr static auto FindActionMouse = 0x00000001;
             constexpr static auto FindActionKeyboard = 0x00000002;
@@ -89,66 +89,66 @@ namespace YY
             constexpr static auto FindEnable = 0x00000008;
 
 
-            Element* __MEGA_UI_API FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fFindMarks = FindVisible);
+            Element* __YYAPI FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fFindMarks = FindVisible);
 
-            int32_t __MEGA_UI_API GetDpi() const;
+            int32_t __YYAPI GetDpi() const;
 
             /// <summary>
             /// 原生窗口是否已经创建？
             /// </summary>
             /// <returns></returns>
-            bool __MEGA_UI_API IsInitialized() const;
+            bool __YYAPI IsInitialized() const;
 
-            _Ret_notnull_ Render* __MEGA_UI_API GetRender();
+            _Ret_notnull_ Render* __YYAPI GetRender();
             
             /// <summary>
             /// 设置键盘焦点。
             /// </summary>
             /// <param name="_pElement">需要设置焦点的控件</param>
             /// <returns>如果设置成功，则返回 true。</returns>
-            static bool __MEGA_UI_API SetKeyboardFocus(_In_opt_ Element* _pElement);
+            static bool __YYAPI SetKeyboardFocus(_In_opt_ Element* _pElement);
 
             /// <summary>
             /// 设置键盘焦点。
             /// </summary>
             /// <param name="_pElement">需要设置焦点的控件</param>
             /// <returns>如果设置成功，则返回 true。</returns>
-            bool __MEGA_UI_API SetFocus(_In_opt_ Element* _pElement);
+            bool __YYAPI SetFocus(_In_opt_ Element* _pElement);
 
         protected:
             static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
             virtual LRESULT __thiscall WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
-            bool __MEGA_UI_API OnCreate();
+            bool __YYAPI OnCreate();
 
-            HRESULT __MEGA_UI_API OnPaint();
+            HRESULT __YYAPI OnPaint();
 
-            HRESULT __MEGA_UI_API PaintElement(
+            HRESULT __YYAPI PaintElement(
                 _In_ Render* _pRender,
                 _In_ Element* _pElement,
                 _In_ const Rect& _ParentBounds,
                 _In_ const Rect& _ParentPaintRect);
 
-            void __MEGA_UI_API OnSize(UINT _uWidth, UINT _uHeight);
+            void __YYAPI OnSize(UINT _uWidth, UINT _uHeight);
 
-            void __MEGA_UI_API ClearDelayedDestroyList();
+            void __YYAPI ClearDelayedDestroyList();
 
-            void __MEGA_UI_API UpdateStyles(_In_opt_ uint32_t _uOld, _In_ uint32_t _uNew);
+            void __YYAPI UpdateStyles(_In_opt_ uint32_t _uOld, _In_ uint32_t _uNew);
 
-            void __MEGA_UI_API OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect);
+            void __YYAPI OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect);
 
-            HRESULT __MEGA_UI_API UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue);
+            HRESULT __YYAPI UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue);
 
-            void __MEGA_UI_API OnUpdateUiState(uint16_t _eType, uint16_t _fState);
+            void __YYAPI OnUpdateUiState(uint16_t _eType, uint16_t _fState);
 
-            void __MEGA_UI_API OnMouseMove(Point _MousePoint, uint32_t _fFlags);
+            void __YYAPI OnMouseMove(Point _MousePoint, uint32_t _fFlags);
             
-            void __MEGA_UI_API OnMouseFocusMoved(Element* _pFrom, Element* _pTo);
+            void __YYAPI OnMouseFocusMoved(Element* _pFrom, Element* _pTo);
 
-            bool __MEGA_UI_API OnKeyDown(const KeyboardEvent& _KeyEvent);
+            bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
             
-            bool __MEGA_UI_API OnChar(const KeyboardEvent& _KeyEvent);
+            bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
         };
     }
 } // namespace YY

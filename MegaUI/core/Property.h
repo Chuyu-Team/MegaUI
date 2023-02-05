@@ -5,7 +5,7 @@
 #include <MegaUI/base/MegaUITypeInt.h>
 #include <MegaUI/core/value.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -69,7 +69,7 @@ namespace YY
             PF_UpdateDpi = 0x80,
 		};
 
-		inline PropertyFlag __MEGA_UI_API PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
+		inline PropertyFlag __YYAPI PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
         {
             switch (_eIndicies)
             {
@@ -86,7 +86,7 @@ namespace YY
             }
         }
 
-        inline PropertyIndicies __MEGA_UI_API PropertyFlagMapToMaxPropertyIndicies(PropertyFlag _fFlags)
+        inline PropertyIndicies __YYAPI PropertyFlagMapToMaxPropertyIndicies(PropertyFlag _fFlags)
         {
             if (_fFlags & PF_HasComputed)
                 return PropertyIndicies::PI_Computed;
@@ -198,14 +198,14 @@ namespace YY
             } Output;
         };
         
-        typedef bool (__MEGA_UI_API Element::*FunTypeCustomPropertyHandle)(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+        typedef bool (__YYAPI Element::*FunTypeCustomPropertyHandle)(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        typedef void (__MEGA_UI_API Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+        typedef void (__YYAPI Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
         struct DepRecs;
         class DeferCycle;
 
-        typedef HRESULT (__MEGA_UI_API Element::*FunTypeGetDependencies)(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
+        typedef HRESULT (__YYAPI Element::*FunTypeGetDependencies)(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _pNewValue, DeferCycle* _pDeferCycle);
 
         struct PropertyInfo
         {
@@ -220,7 +220,7 @@ namespace YY
             // 一串枚举值，以 { nullptr, 0 } 结束
             const EnumMap* pEnumMaps;
             // 默认值的初始化函数
-            Value (__MEGA_UI_API* pFunDefaultValue)();
+            Value (__YYAPI* pFunDefaultValue)();
             // 自定义属性处理器，比如接受事件更改、读取值等功能
             FunTypeCustomPropertyHandle pfnCustomPropertyHandle;
             // 此属性依赖的属性，以 nullptr 结束

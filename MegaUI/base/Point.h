@@ -3,7 +3,7 @@
 
 #include "MegaUITypeInt.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -49,7 +49,7 @@ namespace YY
                 return X != _Other.X || Y != _Other.Y;
             }
 
-            __MEGA_UI_API operator D2D1_POINT_2F&() const
+            __YYAPI operator D2D1_POINT_2F&() const
             {
                 return *(D2D1_POINT_2F*)this;
             }

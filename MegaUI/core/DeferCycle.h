@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include "..\base\DynamicArray.h"
+#include <Base/Containers/Array.h>
 #include "..\base\HashSet.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -50,11 +50,11 @@ namespace YY
         {
         public:
             // pdaGC
-            DynamicArray<GCRecord, false, false> vecGroupChangeNormalPriority;
+            Array<GCRecord, AllocPolicy::SOO> vecGroupChangeNormalPriority;
             // pdaGCLP
-            DynamicArray<GCRecord, false, false> vecGroupChangeLowPriority;
+            Array<GCRecord, AllocPolicy::SOO> vecGroupChangeLowPriority;
             // pdaPC
-            DynamicArray<PCRecord, false, true> vecPropertyChanged;
+            Array<PCRecord, AllocPolicy::SOO> vecPropertyChanged;
 
             HashSet<Element*, 12> LayoutRootPendingSet;
             HashSet<Element*, 12> UpdateDesiredSizeRootPendingSet;
@@ -89,12 +89,12 @@ namespace YY
             }
 
 
-            uint32_t __MEGA_UI_API AddRef()
+            uint32_t __YYAPI AddRef()
             {
                 return ++uRef;
             }
 
-            uint32_t __MEGA_UI_API Release()
+            uint32_t __YYAPI Release()
             {
                 const auto _uRefNew = --uRef;
 

@@ -1624,7 +1624,7 @@ namespace YY
 
             ++_pDeferObject->uPropertyChangeEnter;
 
-            PCRecord* _pPCRecord = _pDeferObject->vecPropertyChanged.AddAndGetPtr();
+            PCRecord* _pPCRecord = _pDeferObject->vecPropertyChanged.EmplacePtr();
             if (!_pPCRecord)
                 return E_OUTOFMEMORY;
 
@@ -1919,14 +1919,12 @@ namespace YY
 
         HRESULT Element::AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle)
         {
-            uint_t _uIndex;
-            PCRecord* pItem = _pDeferCycle->vecPropertyChanged.AddAndGetPtr(&_uIndex);
-
+            PCRecord* pItem = _pDeferCycle->vecPropertyChanged.EmplacePtr();
             if (!pItem)
             {
                 return E_OUTOFMEMORY;
             }
-
+            auto _uIndex = _pDeferCycle->vecPropertyChanged.GetItemIndex(pItem);
             if (_uIndex > int32_max)
                 throw Exception();
 
@@ -2069,14 +2067,14 @@ namespace YY
 
                 if (pElement->_iGCSlot == -1)
                 {
-                    uint_t uAddIndex;
-                    pItem = pDeferCycle->vecGroupChangeNormalPriority.AddAndGetPtr(&uAddIndex);
+                    pItem = pDeferCycle->vecGroupChangeNormalPriority.EmplacePtr();
                     if (!pItem)
                     {
                         bResult = false;
                     }
                     else
                     {
+                        uint_t uAddIndex = pDeferCycle->vecGroupChangeNormalPriority.GetItemIndex(pItem);
                         if (uAddIndex > int32_max)
                             throw Exception();
 
@@ -2102,8 +2100,7 @@ namespace YY
 
                 if (pElement->_iGCLPSlot == -1)
                 {
-                    uint_t uAddIndex;
-                    pItem = pDeferCycle->vecGroupChangeLowPriority.AddAndGetPtr(&uAddIndex);
+                    pItem = pDeferCycle->vecGroupChangeLowPriority.EmplacePtr();
 
                     if (!pItem)
                     {
@@ -2111,6 +2108,7 @@ namespace YY
                     }
                     else
                     {
+                        auto uAddIndex = pDeferCycle->vecGroupChangeLowPriority.GetItemIndex(pItem);
                         if (uAddIndex > int32_max)
                             throw Exception();
 

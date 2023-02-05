@@ -2,11 +2,11 @@
 
 #include <MegaUI/base/MegaUITypeInt.h>
 #include <MegaUI/Window/WindowElement.h>
-#include <MegaUI/base/DynamicArray.h>
-#include <MegaUI/base/ArrayView.h>
+#include <Base/Containers/Array.h>
+#include <Base/Containers/ArrayView.h>
 #include <MegaUI/core/Property.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace rapidxml
 {
@@ -44,22 +44,22 @@ namespace YY
                 u8String szResourceID;
                 // 中间字节码，UIParser 会将 Xml中的内容转换为字节码，加速 Xml -> Element。
                 // 使用者不需要关心字节码的实现。
-                DynamicArray<uint8_t, false, false> ByteCode;
+                Array<uint8_t, AllocPolicy::SOO> ByteCode;
             };
 
-            DynamicArray<Value> LocalValueCache;
+            Array<Value> LocalValueCache;
 
-            DynamicArray<UIParserRecorder> RecorderArray;
+            Array<UIParserRecorder, AllocPolicy::SOO> RecorderArray;
             
-            DynamicArray<IControlInfo*> ControlInfoArray;
-            DynamicArray<StyleSheet*> StyleSheets;
+            Array<IControlInfo*> ControlInfoArray;
+            Array<StyleSheet*> StyleSheets;
         public:
-            void __MEGA_UI_API Clear();
+            void __YYAPI Clear();
 
 
-            HRESULT __MEGA_UI_API ParserByXmlString(u8String&& _szXmlString);
+            HRESULT __YYAPI ParserByXmlString(u8String&& _szXmlString);
 
-            //HRESULT __MEGA_UI_API ParserByXmlString(u8StringView _szXmlString)
+            //HRESULT __YYAPI ParserByXmlString(u8StringView _szXmlString)
             //{
             //    u8String _szXmlStringBuffer;
             //    auto _hr = _szXmlStringBuffer.SetString(_szXmlString.GetConstString(), _szXmlString.GetSize());
@@ -69,7 +69,7 @@ namespace YY
             //    return ParserByXmlString(std::move(_szXmlStringBuffer));
             //}
 
-            HRESULT __MEGA_UI_API Play(
+            HRESULT __YYAPI Play(
                 _In_ u8StringView _szResID,
                 _In_opt_ UIParserPlayContext* _pContext,
                 _Out_opt_ intptr_t* _pCooike,
@@ -79,33 +79,33 @@ namespace YY
             
         protected:
 
-            IControlInfo* __MEGA_UI_API FindControlInfo(_In_ raw_const_astring_t _szControlName, _Out_opt_ uint32_t* _pIndex = nullptr);
+            IControlInfo* __YYAPI FindControlInfo(_In_ raw_const_astring_t _szControlName, _Out_opt_ uint32_t* _pIndex = nullptr);
 
-            const PropertyInfo* __MEGA_UI_API GetPropertyByName(_In_ IControlInfo* _pControlInfo, _In_ raw_const_astring_t _szPropName);
+            const PropertyInfo* __YYAPI GetPropertyByName(_In_ IControlInfo* _pControlInfo, _In_ raw_const_astring_t _szPropName);
 
-            HRESULT __MEGA_UI_API ParserElementNode(_In_ rapidxml::xml_node<char>* _pNote, _Inout_ UIParserRecorder* _pRecorder);
+            HRESULT __YYAPI ParserElementNode(_In_ rapidxml::xml_node<char>* _pNote, _Inout_ UIParserRecorder* _pRecorder);
 
-            HRESULT __MEGA_UI_API ParserElementProperty(_In_ rapidxml::xml_attribute<char>* _pAttribute, _In_ IControlInfo* _pControlInfo, _Inout_ UIParserRecorder* _pRecorder);
+            HRESULT __YYAPI ParserElementProperty(_In_ rapidxml::xml_attribute<char>* _pAttribute, _In_ IControlInfo* _pControlInfo, _Inout_ UIParserRecorder* _pRecorder);
 
-            HRESULT __MEGA_UI_API ParserValue(_In_ IControlInfo* _pControlInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
+            HRESULT __YYAPI ParserValue(_In_ IControlInfo* _pControlInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(_In_ const u8StringView& _szValue, _Out_ ParsedArg* _pValue);
+            static HRESULT __YYAPI ParserInt32Value(_In_ const u8StringView& _szValue, _Out_ ParsedArg* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
+            static HRESULT __YYAPI ParserInt32Value(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
+            static HRESULT __YYAPI ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
             
-            static HRESULT __MEGA_UI_API ParserFloatValue(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
+            static HRESULT __YYAPI ParserFloatValue(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
+            static HRESULT __YYAPI ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserBoolValue(ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __YYAPI ParserBoolValue(ExprNode* _pExprNode, Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserStringValue(ExprNode* _pExprNode, uString* _pValue);
+            static HRESULT __YYAPI ParserStringValue(ExprNode* _pExprNode, uString* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserStringValue(ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __YYAPI ParserStringValue(ExprNode* _pExprNode, Value* _pValue);
             
-            static HRESULT __MEGA_UI_API ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
+            static HRESULT __YYAPI ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
             
             template<uint_t _uArgCount>
             __inline static HRESULT ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_ ParsedArg (&_Arg)[_uArgCount])
@@ -113,27 +113,27 @@ namespace YY
                 return ParserFunction(_szFunctionName, _pExprNode, _Arg, _uArgCount);
             }
 
-            static HRESULT __MEGA_UI_API ParserPointValue(ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __YYAPI ParserPointValue(ExprNode* _pExprNode, Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserSizeValue(ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __YYAPI ParserSizeValue(ExprNode* _pExprNode, Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserRectValue(ExprNode* _pExprNode, ParsedArg* _pValue);
+            static HRESULT __YYAPI ParserRectValue(ExprNode* _pExprNode, ParsedArg* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserRectValue(ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __YYAPI ParserRectValue(ExprNode* _pExprNode, Value* _pValue);
             
-            static HRESULT __MEGA_UI_API ParserColorValue(ExprNode* _pExprNode, Color* _pValue);
+            static HRESULT __YYAPI ParserColorValue(ExprNode* _pExprNode, Color* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserColorValue(ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __YYAPI ParserColorValue(ExprNode* _pExprNode, Value* _pValue);
 
-            HRESULT __MEGA_UI_API ParserStyleSheetValue(ExprNode* _pExprNode, Value* _pValue);
+            HRESULT __YYAPI ParserStyleSheetValue(ExprNode* _pExprNode, Value* _pValue);
 
-            static HRESULT __MEGA_UI_API ParserFontValue(ExprNode* _pExprNode, Value* _pValue);
+            static HRESULT __YYAPI ParserFontValue(ExprNode* _pExprNode, Value* _pValue);
 
-            HRESULT __MEGA_UI_API Play(
-                _In_ ArrayView<uint8_t>& _ByteCode,
+            HRESULT __YYAPI Play(
+                _In_ ArrayView<const uint8_t>& _ByteCode,
                 _In_ UIParserPlayContext* _pContext,
                 _Out_opt_ intptr_t* _pCooike,
-                _Inout_ DynamicArray<Element*, false, false>* _ppElement
+                _Inout_ Array<Element*, AllocPolicy::SOO>* _ppElement
                 );
             
             struct StyleSheetXmlOption
@@ -150,9 +150,9 @@ namespace YY
             /// <param name="_XmlOption"></param>
             /// <param name="_pStyleSheet"></param>
             /// <returns>如果样式表是空的，那么返回 S_False。如果</returns>
-            HRESULT __MEGA_UI_API ParserStyleSheetNode(_In_ rapidxml::xml_node<char>* _StyleSheetNode, DynamicArray<StyleSheetXmlOption, false, false>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
+            HRESULT __YYAPI ParserStyleSheetNode(_In_ rapidxml::xml_node<char>* _StyleSheetNode, Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
             
-            HRESULT __MEGA_UI_API ParserStyleSheetElementNode(_In_ rapidxml::xml_node<char>* _pElementValueNode, const DynamicArray<StyleSheetXmlOption, false, false>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
+            HRESULT __YYAPI ParserStyleSheetElementNode(_In_ rapidxml::xml_node<char>* _pElementValueNode, const Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
 
         };
     }

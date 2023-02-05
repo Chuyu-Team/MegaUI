@@ -2,7 +2,7 @@
 #include "..\base\MegaUITypeInt.h"
 #include "Element.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -26,37 +26,37 @@ namespace YY
             Layout(const Layout&) = delete;
             Layout& operator=(const Layout&) = delete;
 
-            static HRESULT __MEGA_UI_API Create(Layout** ppLayout);
-            static void __MEGA_UI_API UpdateLayoutRect(Element*, int, int, Element*, int, int, int, int);
+            static HRESULT __YYAPI Create(Layout** ppLayout);
+            static void __YYAPI UpdateLayoutRect(Element*, int, int, Element*, int, int, int, int);
 
-            void __MEGA_UI_API Destroy();
-            Element* __MEGA_UI_API GetChildFromLayoutIndex(Element* pElem, int nIndex, DynamicArray<Element*, 0>* pArray);
-            unsigned int __MEGA_UI_API GetLayoutChildCount(Element*);
-            int __MEGA_UI_API GetLayoutIndexFromChild(Element*, Element*);
-            void __MEGA_UI_API Initialize();
+            void __YYAPI Destroy();
+            Element* __YYAPI GetChildFromLayoutIndex(Element* pElem, int nIndex, Array<Element*>* pArray);
+            unsigned int __YYAPI GetLayoutChildCount(Element*);
+            int __YYAPI GetLayoutIndexFromChild(Element*, Element*);
+            void __YYAPI Initialize();
             // 0
-            virtual void __MEGA_UI_API DoLayout(Element*, Size);
+            virtual void __YYAPI DoLayout(Element*, Size);
 
             // 1
-            virtual SIZE __MEGA_UI_API UpdateDesiredSize(Element*, int, int);
+            virtual SIZE __YYAPI UpdateDesiredSize(Element*, int, int);
             // 2
-            virtual void __MEGA_UI_API OnAdd(Element*, Element** ppElem, unsigned int uCountOfElement);
+            virtual void __YYAPI OnAdd(Element*, Element** ppElem, unsigned int uCountOfElement);
             // 3
-            virtual void __MEGA_UI_API OnRemove(Element*, Element** ppElem, unsigned int uCountOfElement);
+            virtual void __YYAPI OnRemove(Element*, Element** ppElem, unsigned int uCountOfElement);
             // 4
-            virtual void __MEGA_UI_API OnLayoutPosChanged(Element* pElem1, Element* pElem2, int nLayoutPos1, int nLayoutPos2);
+            virtual void __YYAPI OnLayoutPosChanged(Element* pElem1, Element* pElem2, int nLayoutPos1, int nLayoutPos2);
 
             // 5
-            virtual void __MEGA_UI_API Attach(Element* pElem);
+            virtual void __YYAPI Attach(Element* pElem);
             // 6
-            virtual void __MEGA_UI_API Detach(Element*);
+            virtual void __YYAPI Detach(Element*);
             // 7
-            virtual Element* __MEGA_UI_API GetAdjacent(Element*, Element*, int, NavReference const*, unsigned long);
+            virtual Element* __YYAPI GetAdjacent(Element*, Element*, int, NavReference const*, unsigned long);
 
         protected:
-            void __MEGA_UI_API ClearCacheDirty();
-            bool __MEGA_UI_API IsCacheDirty();
-            void __MEGA_UI_API SetCacheDirty();
+            void __YYAPI ClearCacheDirty();
+            bool __YYAPI IsCacheDirty();
+            void __YYAPI SetCacheDirty();
         };
     }
 } // namespace YY

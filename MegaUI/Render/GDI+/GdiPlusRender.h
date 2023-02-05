@@ -7,10 +7,10 @@
 #include "../../base/MegaUITypeInt.h"
 #include "../Render.h"
 #include "../../base/alloc.h"
-#include "../../base/DynamicArray.h"
+#include <Base/Containers/Array.h>
 #include "Brush/D2D1SolidColorBrushForGdiPlus.h"
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -28,7 +28,8 @@ namespace YY
             PAINTSTRUCT ps;
             Gdiplus::Bitmap* pSurfaceBitmap;
             Gdiplus::Graphics* pSurface;
-            DynamicArray<Gdiplus::RectF, false, false> vecClip;
+            Array<Gdiplus::RectF, AllocPolicy::SOO> vecClip;
+
         public:
             GdiPlusRender(HWND _hWnd, const D2D1_SIZE_U& _PixelSize)
                 : hWnd(_hWnd)
@@ -56,12 +57,12 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API Init()
+            HRESULT __YYAPI Init()
             {
                 return Gdiplus::GdiplusStartup(&GdiplusToken, &GdiplusStartupInput, NULL) == Gdiplus::Status::Ok ? S_OK : E_FAIL;
             }
 
-            static HRESULT __MEGA_UI_API CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
+            static HRESULT __YYAPI CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender)
             {
                 if (_ppRender == nullptr)
                     return E_INVALIDARG;
@@ -94,7 +95,7 @@ namespace YY
                 return S_OK;
             }
 
-            _Ret_notnull_ Gdiplus::Graphics* __MEGA_UI_API GetSurface()
+            _Ret_notnull_ Gdiplus::Graphics* __YYAPI GetSurface()
             {
                 if (!pSurface)
                 {
@@ -111,7 +112,7 @@ namespace YY
                 return pSurface;
             }
 
-            virtual HRESULT __MEGA_UI_API BeginDraw(Rect* _pNeedPaintRect) override
+            virtual HRESULT __YYAPI BeginDraw(Rect* _pNeedPaintRect) override
             {
                 vecClip.Clear();
 
@@ -142,7 +143,7 @@ namespace YY
                 return S_OK;
             }
 
-            virtual HRESULT __MEGA_UI_API EndDraw() override
+            virtual HRESULT __YYAPI EndDraw() override
             {
                 if (!hDC)
                     return E_FAIL;
@@ -166,7 +167,7 @@ namespace YY
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             PushAxisAlignedClip(
                 _In_ const Rect& _ClipRect) override
             {
@@ -188,7 +189,7 @@ namespace YY
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             PopAxisAlignedClip() override
             {
                 auto _uSize = vecClip.GetSize();
@@ -211,7 +212,7 @@ namespace YY
                 }
             }
             
-            virtual void __MEGA_UI_API FillRectangle(
+            virtual void __YYAPI FillRectangle(
                 _In_ const Rect& _Rect,
                 _In_ ID2D1Brush* _pBrush) override
             {
@@ -220,7 +221,7 @@ namespace YY
                     _Rect);
             }
 
-            virtual HRESULT __MEGA_UI_API CreateSolidColorBrush(
+            virtual HRESULT __YYAPI CreateSolidColorBrush(
                 Color _Color,
                 _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) override
             {
@@ -236,19 +237,19 @@ namespace YY
                 return S_OK;
             }
 
-            virtual HRESULT __MEGA_UI_API SetPixelSize(
+            virtual HRESULT __YYAPI SetPixelSize(
                 _In_ const D2D1_SIZE_U& _PixelSize)
             {
                 PixelSize = _PixelSize;
                 return S_OK;
             }
 
-            virtual D2D1_SIZE_U __MEGA_UI_API GetPixelSize()
+            virtual D2D1_SIZE_U __YYAPI GetPixelSize()
             {
                 return PixelSize;
             }
 
-            static int32_t __MEGA_UI_API GetFontStyle(_In_ const Font& _FontInfo)
+            static int32_t __YYAPI GetFontStyle(_In_ const Font& _FontInfo)
             {
                 int32_t _fFontStyle = 0;
 
@@ -291,7 +292,7 @@ namespace YY
             }
 
             // 
-            static Gdiplus::StringAlignment __MEGA_UI_API GetFontAlignment(_In_ int32_t _fTextAlign)
+            static Gdiplus::StringAlignment __YYAPI GetFontAlignment(_In_ int32_t _fTextAlign)
             {
                 if (_fTextAlign & ContentAlign::Right)
                 {
@@ -307,7 +308,7 @@ namespace YY
                 }
             }
 
-            static Gdiplus::StringAlignment __MEGA_UI_API GetFontLineAlignment(_In_ int32_t _fTextAlign)
+            static Gdiplus::StringAlignment __YYAPI GetFontLineAlignment(_In_ int32_t _fTextAlign)
             {
                 if (_fTextAlign & ContentAlign::Bottom)
                 {
@@ -325,7 +326,7 @@ namespace YY
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             DrawString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
@@ -361,7 +362,7 @@ namespace YY
 
             virtual
             void
-            __MEGA_UI_API
+            __YYAPI
             MeasureString(
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,

@@ -4,9 +4,9 @@
 #include "alloc.h"
 #include "Interlocked.h"
 #include "ErrorCode.h"
-#include "Encoding.h"
+#include <base/Encoding.h>
 #include "StringView.h"
-#include "Exception.h"
+#include <Base/Exception.h>
 
 /*
 
@@ -28,13 +28,13 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 
 */
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
     namespace MegaUI
     {
-        template<class T, typename char_t, Encoding _eEncoding>
+        template<class T, typename char_t, YY::Base::Encoding _eEncoding>
         class StringFunctionImp
         {
         public:
@@ -123,29 +123,30 @@ namespace YY
         };
 
         template<class T>
-        class StringFunctionImp<T, u16char_t, Encoding::UTF16BE>
+        class StringFunctionImp<T, YY::Base::u16char_t, YY::Base::Encoding::UTF16BE>
         {
         };
 
         template<class T>
-        class StringFunctionImp<T, u32char_t, Encoding::UTF32LE>
+        class StringFunctionImp<T, YY::Base::u32char_t, YY::Base::Encoding::UTF32LE>
         {
         };
 
         template<class T>
-        class StringFunctionImp<T, u32char_t, Encoding::UTF32BE>
+        class StringFunctionImp<T, YY::Base::u32char_t, YY::Base::Encoding::UTF32BE>
         {
         };
 
         class String;
         class EndianHelper;
 
-        template<typename _char_t, Encoding _eEncoding>
+        template<typename _char_t, YY::Base::Encoding _eEncoding>
         class StringBase : public StringFunctionImp<StringBase<_char_t, _eEncoding>, _char_t, _eEncoding>
         {
         public:
             using char_t = _char_t;
             using StringView_t = StringView<char_t, _eEncoding>;
+            using Encoding = YY::Base::Encoding;
 
         private:
             constexpr static Encoding eEncoding = _eEncoding;
@@ -161,7 +162,7 @@ namespace YY
             {
             }
 
-            StringBase(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+            StringBase(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
                 : szString(StringData::GetEmtpyStringData()->GetStringBuffer())
             {
                 auto _hr = SetString(_szSrc, _cchSrc);
@@ -180,7 +181,7 @@ namespace YY
                 }
             }
 
-            template<uint_t _uArrayCount>
+            template<size_t _uArrayCount>
             StringBase(const char_t (&_szSrc)[_uArrayCount])
                 : szString(StringData::GetEmtpyStringData()->GetStringBuffer())
             {
@@ -226,22 +227,22 @@ namespace YY
                 GetInternalStringData()->Release();
             }
 
-            uint_t __MEGA_UI_API GetSize() const
+            uint_t __YYAPI GetSize() const
             {
                 return GetInternalStringData()->uSize;
             }
 
-            uint_t __MEGA_UI_API GetCapacity() const
+            uint_t __YYAPI GetCapacity() const
             {
                 return GetInternalStringData()->uCapacity;
             }
 
-            _Ret_z_ const char_t* __MEGA_UI_API GetConstString() const
+            _Ret_z_ const char_t* __YYAPI GetConstString() const
             {
                 return szString;
             }
 
-            _Ret_writes_maybenull_(_uCapacity) char_t* __MEGA_UI_API LockBuffer(_In_ uint_t _uCapacity = 0)
+            _Ret_writes_maybenull_(_uCapacity) char_t* __YYAPI LockBuffer(_In_ size_t _uCapacity = 0)
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -288,7 +289,7 @@ namespace YY
                 return szString;
             }
 
-            void __MEGA_UI_API UnlockBuffer(_In_ uint_t _uNewSize)
+            void __YYAPI UnlockBuffer(_In_ size_t _uNewSize)
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -311,7 +312,7 @@ namespace YY
                 }
             }
 
-            void __MEGA_UI_API UnlockBuffer()
+            void __YYAPI UnlockBuffer()
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -321,7 +322,7 @@ namespace YY
                 }
             }
 
-            void __MEGA_UI_API Clear()
+            void __YYAPI Clear()
             {
                 auto _pInternalStringData = GetInternalStringData();
 
@@ -337,7 +338,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+            HRESULT __YYAPI SetString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
             {
                 if (_szSrc == nullptr && _cchSrc)
                 {
@@ -361,18 +362,18 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __MEGA_UI_API SetString(_In_opt_z_ const char_t* _szSrc)
+            HRESULT __YYAPI SetString(_In_opt_z_ const char_t* _szSrc)
             {
                 return SetString(_szSrc, GetStringLength(_szSrc));
             }
 
-            template<uint_t _uArrayCount>
-            HRESULT __MEGA_UI_API SetString(const char_t (&_szSrc)[_uArrayCount])
+            template<size_t _uArrayCount>
+            HRESULT __YYAPI SetString(const char_t (&_szSrc)[_uArrayCount])
             {
                 return SetString(_szSrc, _uArrayCount - 1);
             }
 
-            HRESULT __MEGA_UI_API SetString(const StringBase& _szSrc)
+            HRESULT __YYAPI SetString(const StringBase& _szSrc)
             {
                 if (szString != _szSrc.szString)
                 {
@@ -391,7 +392,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __MEGA_UI_API SetString(StringBase&& _szSrc)
+            HRESULT __YYAPI SetString(StringBase&& _szSrc)
             {
                 if (szString != _szSrc.szString)
                 {
@@ -411,7 +412,7 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __MEGA_UI_API SetItem(_In_ uint_t _uIndex, _In_ char_t _ch)
+            HRESULT __YYAPI SetItem(_In_ size_t _uIndex, _In_ char_t _ch)
             {
                 const auto _nSize = GetSize();
 
@@ -429,12 +430,12 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __MEGA_UI_API AppendString(_In_opt_z_ const char_t* _szSrc)
+            HRESULT __YYAPI AppendString(_In_opt_z_ const char_t* _szSrc)
             {
                 return AppendString(_szSrc, GetStringLength(_szSrc));
             }
 
-            HRESULT __MEGA_UI_API AppendString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ uint_t _cchSrc)
+            HRESULT __YYAPI AppendString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
             {
                 if (_cchSrc == 0)
                     return S_OK;
@@ -454,12 +455,12 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __MEGA_UI_API AppendString(const StringView_t& _szSrc)
+            HRESULT __YYAPI AppendString(const StringView_t& _szSrc)
             {
                 return AppendString(_szSrc.GetConstString(), _szSrc.GetSize());
             }
 
-            HRESULT __MEGA_UI_API AppendString(const StringBase& _szSrc)
+            HRESULT __YYAPI AppendString(const StringBase& _szSrc)
             {
                 if (_szSrc.GetSize() == 0)
                     return S_OK;
@@ -474,7 +475,7 @@ namespace YY
                 }
             }
 
-            HRESULT __MEGA_UI_API AppendChar(_In_ char_t ch)
+            HRESULT __YYAPI AppendChar(_In_ char_t ch)
             {
                 auto _cchOldString = GetSize();
                 const auto _cchNewString = _cchOldString + 1;
@@ -490,12 +491,12 @@ namespace YY
                 return S_OK;
             }
 
-            Encoding __MEGA_UI_API GetEncoding() const
+            Encoding __YYAPI GetEncoding() const
             {
                 return eEncoding != Encoding::ANSI ? eEncoding : Encoding(GetInternalStringData()->eEncoding);
             }
 
-            HRESULT __MEGA_UI_API SetANSIEncoding(_In_ Encoding _eNewEncoding)
+            HRESULT __YYAPI SetANSIEncoding(_In_ Encoding _eNewEncoding)
             {
                 if (GetEncoding() == _eNewEncoding)
                     return S_OK;
@@ -528,24 +529,24 @@ namespace YY
                 return S_OK;
             }
 
-            _Ret_z_ __MEGA_UI_API operator const char_t*() const
+            _Ret_z_ __YYAPI operator const char_t*() const
             {
                 return szString;
             }
 
-            __MEGA_UI_API operator StringView_t() const
+            __YYAPI operator StringView_t() const
             {
                 return StringView_t(szString, GetSize());
             }
 
-            char_t __MEGA_UI_API operator[](_In_ uint_t _uIndex) const
+            char_t __YYAPI operator[](_In_ size_t _uIndex) const
             {
                 _ASSERTE(_uIndex < GetSize());
 
                 return szString[_uIndex];
             }
 
-            StringBase& __MEGA_UI_API operator=(_In_opt_z_ const char_t* _szSrc)
+            StringBase& __YYAPI operator=(_In_opt_z_ const char_t* _szSrc)
             {
                 auto _hr = SetString(_szSrc);
                 if (FAILED(_hr))
@@ -554,7 +555,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __MEGA_UI_API operator=(const StringBase& _szSrc)
+            StringBase& __YYAPI operator=(const StringBase& _szSrc)
             {
                 auto _hr = SetString(_szSrc);
                 if (FAILED(_hr))
@@ -563,7 +564,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __MEGA_UI_API operator=(StringBase&& _szSrc) noexcept
+            StringBase& __YYAPI operator=(StringBase&& _szSrc) noexcept
             {
                 auto _hr = SetString(std::move(_szSrc));
                 if (FAILED(_hr))
@@ -574,7 +575,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __MEGA_UI_API operator+=(_In_opt_z_ const char_t* _szSrc) noexcept
+            StringBase& __YYAPI operator+=(_In_opt_z_ const char_t* _szSrc) noexcept
             {
                 auto _hr = AppendString(_szSrc);
                 if (FAILED(_hr))
@@ -583,7 +584,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __MEGA_UI_API operator+=(const StringBase& _szSrc) noexcept
+            StringBase& __YYAPI operator+=(const StringBase& _szSrc) noexcept
             {
                 auto _hr = AppendString(_szSrc);
                 if (FAILED(_hr))
@@ -592,7 +593,7 @@ namespace YY
                 return *this;
             }
 
-            StringBase& __MEGA_UI_API operator+=(_In_ char_t _ch) noexcept
+            StringBase& __YYAPI operator+=(_In_ char_t _ch) noexcept
             {
                 auto _hr = AppendChar(_ch);
                 if (FAILED(_hr))
@@ -601,7 +602,7 @@ namespace YY
                 return *this;
             }
 
-            bool __MEGA_UI_API operator==(const StringView_t& _szSrc) const
+            bool __YYAPI operator==(const StringView_t& _szSrc) const
             {
                 if (this->GetSize() != _szSrc.GetSize())
                     return false;
@@ -609,17 +610,17 @@ namespace YY
                 return memcmp(this->GetConstString(), _szSrc.GetConstString(), this->GetSize() * sizeof(char_t)) == 0;
             }
 
-            _Ret_z_ const char_t* __MEGA_UI_API begin() const
+            _Ret_z_ const char_t* __YYAPI begin() const
             {
                 return this->GetConstString();
             }
 
-            _Ret_z_ const char_t* __MEGA_UI_API end() const
+            _Ret_z_ const char_t* __YYAPI end() const
             {
                 return this->GetConstString() + this->GetSize();
             }
 
-            int32_t __MEGA_UI_API CompareI(_In_ StringView<char_t, eEncoding> _Other) const
+            int32_t __YYAPI CompareI(_In_ StringView<char_t, eEncoding> _Other) const
             {
                 auto _iLeftSize = GetSize();
                 auto _iRightSize = _Other.GetSize();
@@ -654,13 +655,13 @@ namespace YY
                 };
 
                 // 内存的申请长度
-                uint_t uCapacity;
+                size_t uCapacity;
                 // 字符串的实际长度，此长度不包含 0 终止。
-                uint_t uSize;
+                size_t uSize;
 
                 // char_t szString[0];
 
-                _Ret_maybenull_ StringData* __MEGA_UI_API CloneStringData(_In_ uint_t _uAllocLength)
+                _Ret_maybenull_ StringData* __YYAPI CloneStringData(_In_ size_t _uAllocLength)
                 {
                     if (_uAllocLength < uSize)
                         _uAllocLength = uSize;
@@ -681,7 +682,7 @@ namespace YY
                     return _pNewStringData;
                 }
 
-                static _Ret_maybenull_ StringData* __MEGA_UI_API ReallocStringData(_In_ StringData* _pOldStringData, _In_ uint_t _uAllocLength)
+                static _Ret_maybenull_ StringData* __YYAPI ReallocStringData(_In_ StringData* _pOldStringData, _In_ uint_t _uAllocLength)
                 {
                     if (_pOldStringData->uCapacity >= _uAllocLength)
                         return _pOldStringData;
@@ -707,7 +708,7 @@ namespace YY
                     return _pNewStringData;
                 }
 
-                static _Ret_maybenull_ StringData* __MEGA_UI_API AllocStringData(_In_ uint_t _uAllocLength)
+                static _Ret_maybenull_ StringData* __YYAPI AllocStringData(_In_ uint_t _uAllocLength)
                 {
                     if (_uAllocLength == 0)
                         return GetEmtpyStringData();
@@ -733,7 +734,7 @@ namespace YY
                     return _pNewStringData;
                 }
 
-                constexpr static _Ret_notnull_ StringData* __MEGA_UI_API GetEmtpyStringData()
+                constexpr static _Ret_notnull_ StringData* __YYAPI GetEmtpyStringData()
                 {
                     struct StaticStringData
                     {
@@ -748,32 +749,32 @@ namespace YY
                     return const_cast<StringData*>(&g_EmptyStringData.Base);
                 }
 
-                _Ret_z_ char_t* __MEGA_UI_API GetStringBuffer()
+                _Ret_z_ char_t* __YYAPI GetStringBuffer()
                 {
                     return reinterpret_cast<char_t*>(this + 1);
                 }
 
-                uint32_t __MEGA_UI_API AddRef()
+                uint32_t __YYAPI AddRef()
                 {
                     if (IsReadOnly())
                     {
-                        return int32_max;
+                        return YY::Base::int32_max;
                     }
 
                     if (iRef < 0)
                     {
-                        throw Exception(_S("缓冲区锁定时无法共享。"));
+                        throw YY::Base::Exception(_S("缓冲区锁定时无法共享。"));
                         return 1;
                     }
 
                     return (uint32_t)YY::MegaUI::Interlocked::Increment(&iRef);
                 }
 
-                uint32_t __MEGA_UI_API Release()
+                uint32_t __YYAPI Release()
                 {
                     if (IsReadOnly())
                     {
-                        return int32_max;
+                        return YY::Base::int32_max;
                     }
 
                     if (iRef < 0)
@@ -792,21 +793,21 @@ namespace YY
                     return (uint32_t)uRefNew;
                 }
 
-                bool __MEGA_UI_API IsReadOnly()
+                bool __YYAPI IsReadOnly()
                 {
-                    return iRef == int32_max;
+                    return iRef == YY::Base::int32_max;
                 }
 
-                bool __MEGA_UI_API IsShared()
+                bool __YYAPI IsShared()
                 {
                     return iRef > 1;
                 }
 
-                void __MEGA_UI_API Lock()
+                void __YYAPI Lock()
                 {
                     if (iRef > 1 || iRef == 0)
                     {
-                        throw Exception(_S("仅在非共享状态才允许锁定缓冲区。"));
+                        throw YY::Base::Exception(_S("仅在非共享状态才允许锁定缓冲区。"));
                         return;
                     }
 
@@ -820,11 +821,11 @@ namespace YY
                     }
                 }
 
-                void __MEGA_UI_API Unlock()
+                void __YYAPI Unlock()
                 {
                     if (iRef >= 0)
                     {
-                        throw Exception(_S("缓冲区并未锁定，无法 Unlock。"));
+                        throw YY::Base::Exception(_S("缓冲区并未锁定，无法 Unlock。"));
                         return;
                     }
 
@@ -838,12 +839,12 @@ namespace YY
                     }
                 }
 
-                bool __MEGA_UI_API IsLocked()
+                bool __YYAPI IsLocked()
                 {
                     return iRef < 0;
                 }
 
-                uint_t __MEGA_UI_API GetLockedCount()
+                uint_t __YYAPI GetLockedCount()
                 {
                     if (iRef >= 0)
                         return 0;
@@ -853,12 +854,12 @@ namespace YY
             };
             
         private:
-            _Ret_notnull_ StringData* __MEGA_UI_API GetInternalStringData() const
+            _Ret_notnull_ StringData* __YYAPI GetInternalStringData() const
             {
                 return reinterpret_cast<StringData*>(szString) - 1;
             }
 
-            void __MEGA_UI_API Attach(_In_ StringData* _pNewStringData)
+            void __YYAPI Attach(_In_ StringData* _pNewStringData)
             {
                 auto _pOldStringData = GetInternalStringData();
 
@@ -870,7 +871,7 @@ namespace YY
                 }
             }
 
-            _Ret_notnull_ StringData* __MEGA_UI_API Detach()
+            _Ret_notnull_ StringData* __YYAPI Detach()
             {
                 auto _pStringData = GetInternalStringData();
                 szString = StringData::GetEmtpyStringData()->GetStringBuffer();
@@ -878,20 +879,20 @@ namespace YY
             }
         };
 
-        typedef StringBase<achar_t, Encoding::ANSI> aString;
-        typedef StringBase<u8char_t, Encoding::UTF8> u8String;
-        typedef StringBase<u16char_t, Encoding::UTF16LE> u16StringLE;
-        typedef StringBase<u16char_t, Encoding::UTF16BE> u16StringBE;
-        typedef StringBase<u32char_t, Encoding::UTF32LE> u32StringLE;
-        typedef StringBase<u32char_t, Encoding::UTF32BE> u32StringBE;
+        typedef StringBase<YY::Base::achar_t, YY::Base::Encoding::ANSI> aString;
+        typedef StringBase<YY::Base::u8char_t, YY::Base::Encoding::UTF8> u8String;
+        typedef StringBase<YY::Base::u16char_t, YY::Base::Encoding::UTF16LE> u16StringLE;
+        typedef StringBase<YY::Base::u16char_t, YY::Base::Encoding::UTF16BE> u16StringBE;
+        typedef StringBase<YY::Base::u32char_t, YY::Base::Encoding::UTF32LE> u32StringLE;
+        typedef StringBase<YY::Base::u32char_t, YY::Base::Encoding::UTF32BE> u32StringBE;
 
-        typedef StringBase<u16char_t, Encoding::UTF16> u16String;
-        typedef StringBase<u32char_t, Encoding::UTF32> u32String;
+        typedef StringBase<YY::Base::u16char_t, YY::Base::Encoding::UTF16> u16String;
+        typedef StringBase<YY::Base::u32char_t, YY::Base::Encoding::UTF32> u32String;
 
-        typedef StringBase<wchar_t, Encoding::UTFW> wString;
+        typedef StringBase<wchar_t, YY::Base::Encoding::UTFW> wString;
 
         // 默认最佳的Unicode编码字符串
-        typedef StringBase<uchar_t, DetaultEncoding<uchar_t>::eEncoding> uString;
+        typedef StringBase<YY::Base::uchar_t, YY::Base::DetaultEncoding<YY::Base::uchar_t>::eEncoding> uString;
 
     } // namespace MegaUI
 } // namespace YY

@@ -2,9 +2,9 @@
 
 #include "MegaUI/base/MegaUITypeInt.h"
 #include "MegaUI/core/Element.h"
-#include "MegaUI/base/DynamicArray.h"
+#include <Base/Containers/Array.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 /*
 WindowElement 是Window与Element之间的纽带。
 Window 是真实的窗口，用于承载 Element
@@ -25,14 +25,14 @@ namespace YY
         public:
             WindowElement() = default;
 
-            HRESULT __MEGA_UI_API SetTitle(uString _szTitle);
+            HRESULT __YYAPI SetTitle(uString _szTitle);
 
-            uString __MEGA_UI_API GetTitle();
+            uString __YYAPI GetTitle();
 
         protected:
-            virtual bool __MEGA_UI_API OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle) override;
+            virtual bool __YYAPI OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle) override;
 
-            virtual bool __MEGA_UI_API OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle) override;
+            virtual bool __YYAPI OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle) override;
         };
     } // namespace MegaUI
 } // namespace YY

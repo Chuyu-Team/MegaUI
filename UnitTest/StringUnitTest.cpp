@@ -8,6 +8,7 @@
 #include <atltypes.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace YY::Base;
 
 namespace UnitTest
 {
@@ -28,7 +29,7 @@ namespace UnitTest
 
 				YY::MegaUI::String Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
-				Assert::IsTrue(Tmp2.GetEncoding() == YY::MegaUI::Encoding::ANSI);
+				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::ANSI);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 #undef _TEST_TEXT
 			}
@@ -43,7 +44,7 @@ namespace UnitTest
 
 				YY::MegaUI::String Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
-				Assert::IsTrue(Tmp2.GetEncoding() == YY::MegaUI::Encoding::UTF8);
+				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::UTF8);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 #undef _TEST_TEXT
 			}
@@ -58,7 +59,7 @@ namespace UnitTest
 
 				YY::MegaUI::String Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
-				Assert::IsTrue(Tmp2.GetEncoding() == YY::MegaUI::Encoding::UTF16);
+				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::UTF16);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 #undef _TEST_TEXT
 			}
@@ -73,7 +74,7 @@ namespace UnitTest
 
 				YY::MegaUI::String Tmp2(_TEST_TEXT);
 				Assert::AreEqual(Tmp2.GetSize(), _countof(_TEST_TEXT) - 1);
-				Assert::IsTrue(Tmp2.GetEncoding() == YY::MegaUI::Encoding::UTF32);
+				Assert::IsTrue(Tmp2.GetEncoding() == Encoding::UTF32);
 				Assert::IsTrue(memcmp(*(void**)&Tmp2, _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 #undef _TEST_TEXT
 			}

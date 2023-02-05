@@ -22,7 +22,7 @@
 #define LC_Normal 2
 #define LC_Optimize 3
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -139,7 +139,7 @@ namespace YY
             ElementRenderNode RenderNode;
             // _pvmLocal
 			// 所有 Local 值的
-			DynamicArray<Value, false, true> LocalPropValue;
+			Array<Value> LocalPropValue;
             
             ElementList vecLocChildren;
             
@@ -258,9 +258,9 @@ namespace YY
 			virtual ~Element();
             
             // 此函数来自 _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN
-            // static HRESULT __MEGA_UI_API Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
+            // static HRESULT __YYAPI Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
-            HRESULT __MEGA_UI_API Initialize(_In_ int32_t _iDPI, _In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
+            HRESULT __YYAPI Initialize(_In_ int32_t _iDPI, _In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
 			/// <summary>
 			/// 根据属性获取Value
@@ -270,7 +270,7 @@ namespace YY
 			/// <param name="_bUpdateCache">如果为true，那么重新获取值并刷新缓存，如果为 false则直接从缓存返回数据。</param>
 			/// <returns>如果返回，则返回 Unavailable。
 			/// 如果未设置，则返回 Unset</returns>
-            Value __MEGA_UI_API GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies = PropertyIndicies::PI_Specified, _In_ bool _bUpdateCache = false);
+            Value __YYAPI GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies = PropertyIndicies::PI_Specified, _In_ bool _bUpdateCache = false);
 			
             /// <summary>
             /// 修改 Local Value
@@ -278,159 +278,159 @@ namespace YY
             /// <param name="_Prop">元数据</param>
             /// <param name="_pValue">需要设置的新值</param>
             /// <returns></returns>
-            HRESULT __MEGA_UI_API SetValue(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value);
+            HRESULT __YYAPI SetValue(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value);
 
-            HRESULT __MEGA_UI_API SetValueInternal(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value, _In_ bool _bCanCancel = false);
+            HRESULT __YYAPI SetValueInternal(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value, _In_ bool _bCanCancel = false);
 
-			_Ret_maybenull_ Element* __MEGA_UI_API GetParent();
+			_Ret_maybenull_ Element* __YYAPI GetParent();
             
-            int32_t __MEGA_UI_API GetLayoutPos();
-            HRESULT __MEGA_UI_API SetLayoutPos(int32_t _iLayoutPos);
+            int32_t __YYAPI GetLayoutPos();
+            HRESULT __YYAPI SetLayoutPos(int32_t _iLayoutPos);
 
-            float __MEGA_UI_API GetWidth();
-            HRESULT __MEGA_UI_API SetWidth(float _iWidth);
+            float __YYAPI GetWidth();
+            HRESULT __YYAPI SetWidth(float _iWidth);
 
-            float __MEGA_UI_API GetHeight();
-            HRESULT __MEGA_UI_API SetHeight(float _iHeight);
+            float __YYAPI GetHeight();
+            HRESULT __YYAPI SetHeight(float _iHeight);
 
-            float __MEGA_UI_API GetX();
-            HRESULT __MEGA_UI_API SetX(float _iX);
+            float __YYAPI GetX();
+            HRESULT __YYAPI SetX(float _iX);
             
-            float __MEGA_UI_API GetY();
-            HRESULT __MEGA_UI_API SetY(float _iY);
+            float __YYAPI GetY();
+            HRESULT __YYAPI SetY(float _iY);
 
-            Point __MEGA_UI_API GetLocation();
+            Point __YYAPI GetLocation();
 
-            Size __MEGA_UI_API GetExtent();
+            Size __YYAPI GetExtent();
 
-            ValueIs<ValueType::Layout> __MEGA_UI_API GetLayout();
+            ValueIs<ValueType::Layout> __YYAPI GetLayout();
 
-            BorderStyle __MEGA_UI_API GetBorderStyle();
+            BorderStyle __YYAPI GetBorderStyle();
 
-            HRESULT __MEGA_UI_API SetBorderStyle(BorderStyle _eBorderStyle);
+            HRESULT __YYAPI SetBorderStyle(BorderStyle _eBorderStyle);
             
-            Color __MEGA_UI_API GetBorderColor();
+            Color __YYAPI GetBorderColor();
 
-            HRESULT __MEGA_UI_API SetBorderColor(Color _BorderColor);
+            HRESULT __YYAPI SetBorderColor(Color _BorderColor);
             
-            BorderStyle __MEGA_UI_API GetFocusBorderStyle();
+            BorderStyle __YYAPI GetFocusBorderStyle();
 
-            HRESULT __MEGA_UI_API SetFocusBorderStyle(BorderStyle _eBorderStyle);
+            HRESULT __YYAPI SetFocusBorderStyle(BorderStyle _eBorderStyle);
             
-            Color __MEGA_UI_API GetFocusBorderColor();
+            Color __YYAPI GetFocusBorderColor();
 
-            HRESULT __MEGA_UI_API SetFocusBorderColor(Color _BorderColor);
+            HRESULT __YYAPI SetFocusBorderColor(Color _BorderColor);
 
             /// <summary>
             /// 获取内容流动方式，从左到右还是从右到左。
             /// </summary>
             /// <returns></returns>
-            FlowDirection __MEGA_UI_API GetFlowDirection();
+            FlowDirection __YYAPI GetFlowDirection();
             
-            HRESULT __MEGA_UI_API SetFlowDirection(FlowDirection _eFlowDirection);
+            HRESULT __YYAPI SetFlowDirection(FlowDirection _eFlowDirection);
             
-            Rect __MEGA_UI_API ApplyFlowDirection(const Rect& _Src);
+            Rect __YYAPI ApplyFlowDirection(const Rect& _Src);
 
-            bool __MEGA_UI_API IsMouseFocusWithin();
+            bool __YYAPI IsMouseFocusWithin();
             
             /// <summary>
             /// 返回控件绑定的 Class，它用于 Sheet 表达式匹配。
             /// </summary>
             /// <returns>Class</returns>
-            uString __MEGA_UI_API GetClass();
+            uString __YYAPI GetClass();
 
-            HRESULT __MEGA_UI_API SetClass(uString _szClass);
+            HRESULT __YYAPI SetClass(uString _szClass);
 
             /// <summary>
             /// 控件是否被禁用。
             /// </summary>
             /// <returns></returns>
-            bool __MEGA_UI_API GetEnabled();
+            bool __YYAPI GetEnabled();
             
-            HRESULT __MEGA_UI_API SetEnabled(bool _bEnabled);
+            HRESULT __YYAPI SetEnabled(bool _bEnabled);
 
             /// <summary>
             /// 返回控件是否需要主动处理鼠标或者键盘的焦点状态。
             /// </summary>
             /// <returns>ActiveMarks的位组合</returns>
-            uint32_t __MEGA_UI_API GetActive();
+            uint32_t __YYAPI GetActive();
 
             /// <summary>
             /// 设置控件需要主动处理是焦点状态。比如设置鼠标后可以主动处理鼠标焦点。
             /// </summary>
             /// <param name="_fActive">ActiveMarks的位组合</param>
             /// <returns>HRESULT</returns>
-            HRESULT __MEGA_UI_API SetActive(uint32_t _fActive);
+            HRESULT __YYAPI SetActive(uint32_t _fActive);
 
-            bool __MEGA_UI_API GetMouseFocused();
+            bool __YYAPI GetMouseFocused();
 
-            int32_t __MEGA_UI_API GetDpi();
+            int32_t __YYAPI GetDpi();
 
-            uString __MEGA_UI_API GetFontFamily();
+            uString __YYAPI GetFontFamily();
 
-            HRESULT __MEGA_UI_API SetFontFamily(uString _szFontFamily);
+            HRESULT __YYAPI SetFontFamily(uString _szFontFamily);
 
-            float __MEGA_UI_API GetFontSize();
+            float __YYAPI GetFontSize();
 
-            HRESULT __MEGA_UI_API SetFontSize(float _iFontSize);
+            HRESULT __YYAPI SetFontSize(float _iFontSize);
 
-            uint32_t __MEGA_UI_API GetFontWeight();
+            uint32_t __YYAPI GetFontWeight();
 
-            HRESULT __MEGA_UI_API SetFontWeight(uint32_t _iFontWeight);
+            HRESULT __YYAPI SetFontWeight(uint32_t _iFontWeight);
 
-            uint32_t __MEGA_UI_API GetFontStyle();
+            uint32_t __YYAPI GetFontStyle();
 
-            HRESULT __MEGA_UI_API SetFontStyle(uint32_t _fFontStyle);
+            HRESULT __YYAPI SetFontStyle(uint32_t _fFontStyle);
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
             /// </summary>
             /// <returns>如果返回 true，那么允许更改。如果返回false，更改将被撤销。</returns>
-            virtual bool __MEGA_UI_API OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+            virtual bool __YYAPI OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
-			virtual void __MEGA_UI_API OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+			virtual void __YYAPI OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
             /// <summary>
             /// 用于通知 PropertyGroup 的状态
             /// </summary>
             /// <param name="_fGroups">PropertyGroup的组合</param>
-            void __MEGA_UI_API OnGroupChanged(uint32_t _fGroups);
+            void __YYAPI OnGroupChanged(uint32_t _fGroups);
 
             /// <summary>
             /// 获取顶层 Element，便于 StartDefer，如果未设置 pTopLevel，则自身为顶层 Element
             /// </summary>
             /// <returns></returns>
-            _Ret_notnull_ Element* __MEGA_UI_API GetTopLevel();
-			_Ret_maybenull_ DeferCycle* __MEGA_UI_API GetDeferObject(_In_ bool _bAllowCreate = true);
-            void __MEGA_UI_API StartDefer(_Out_ intptr_t* _pCooike);
-            void __MEGA_UI_API EndDefer(_In_ intptr_t _Cookie);
+            _Ret_notnull_ Element* __YYAPI GetTopLevel();
+			_Ret_maybenull_ DeferCycle* __YYAPI GetDeferObject(_In_ bool _bAllowCreate = true);
+            void __YYAPI StartDefer(_Out_ intptr_t* _pCooike);
+            void __YYAPI EndDefer(_In_ intptr_t _Cookie);
             
-            HRESULT __MEGA_UI_API SetVisible(bool bVisible);
+            HRESULT __YYAPI SetVisible(bool bVisible);
 
-            bool __MEGA_UI_API GetVisible();
+            bool __YYAPI GetVisible();
 
-            ElementList __MEGA_UI_API GetChildren();
+            ElementList __YYAPI GetChildren();
 
-            virtual HRESULT __MEGA_UI_API Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren, _In_ uint_t _uInsert);
+            virtual HRESULT __YYAPI Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren, _In_ uint_t _uInsert);
 
-            __inline HRESULT __MEGA_UI_API Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren)
+            __inline HRESULT __YYAPI Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren)
             {
                 return Insert(_ppChildren, _cChildren, vecLocChildren.GetSize());
             }
 
-            __inline HRESULT __MEGA_UI_API Add(_In_ Element* _ppChildren)
+            __inline HRESULT __YYAPI Add(_In_ Element* _ppChildren)
             {
                 return Insert(&_ppChildren, 1, vecLocChildren.GetSize());
             }
 
-            virtual HRESULT __MEGA_UI_API Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren);
+            virtual HRESULT __YYAPI Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren);
             
-            __inline HRESULT __MEGA_UI_API Remove(_In_ Element* _pChild)
+            __inline HRESULT __YYAPI Remove(_In_ Element* _pChild)
             {
                 return Remove(&_pChild, 1);
             }
 
-            __inline HRESULT __MEGA_UI_API RemoveAll()
+            __inline HRESULT __YYAPI RemoveAll()
             {
                 return Remove(vecLocChildren.GetData(), vecLocChildren.GetSize());
             }
@@ -439,29 +439,29 @@ namespace YY
             /// 当销毁控制时被调用。
             /// </summary>
             /// <returns></returns>
-            virtual void __MEGA_UI_API OnDestroy();
+            virtual void __YYAPI OnDestroy();
 
             /// <summary>
             /// 释放控件相关资源，包含子控件。
             /// </summary>
             /// <param name="_fDelayed">是否延迟删除。</param>
             /// <returns></returns>
-            HRESULT __MEGA_UI_API Destroy(_In_ bool _fDelayed = true);
+            HRESULT __YYAPI Destroy(_In_ bool _fDelayed = true);
 
             /// <summary>
             /// 释放子控件的相关资源（不会释放控件自己）。
             /// </summary>
             /// <param name="_fDelayed">是否延迟删除。</param>
             /// <returns></returns>
-            HRESULT __MEGA_UI_API DestroyAllChildren(_In_ bool _fDelayed = true);
+            HRESULT __YYAPI DestroyAllChildren(_In_ bool _fDelayed = true);
 
-            virtual void __MEGA_UI_API Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
+            virtual void __YYAPI Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
 
-            void __MEGA_UI_API PaintBorder(_In_ Render* _pRenderTarget, _In_ BorderStyle _eBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
+            void __YYAPI PaintBorder(_In_ Render* _pRenderTarget, _In_ BorderStyle _eBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
 
-            void __MEGA_UI_API PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
+            void __YYAPI PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
             
-            void __MEGA_UI_API PaintContent(
+            void __YYAPI PaintContent(
                 _In_ Render* _pRenderTarget,
                 _In_ const Value& _Content,
                 _In_ const Font& _FontInfo,
@@ -470,17 +470,17 @@ namespace YY
                 _In_ int32_t _fContentAlign
                 );
 
-            virtual Size __MEGA_UI_API GetContentSize(Size _ConstraintSize);
-            virtual Size __MEGA_UI_API SelfLayoutUpdateDesiredSize(Size _ConstraintSize);
-            virtual void __MEGA_UI_API SelfLayoutDoLayout(Size _ConstraintSize);
+            virtual Size __YYAPI GetContentSize(Size _ConstraintSize);
+            virtual Size __YYAPI SelfLayoutUpdateDesiredSize(Size _ConstraintSize);
+            virtual void __YYAPI SelfLayoutDoLayout(Size _ConstraintSize);
 
-            void __MEGA_UI_API Detach(DeferCycle* _pDeferCycle);
+            void __YYAPI Detach(DeferCycle* _pDeferCycle);
 
-            void __MEGA_UI_API Invalidate();
+            void __YYAPI Invalidate();
 
 
             template<typename _Type>
-            _Type* __MEGA_UI_API TryCast()
+            _Type* __YYAPI TryCast()
             {
                 auto _pControlInfo = GetControlInfo();
                 if (!_pControlInfo)
@@ -499,7 +499,7 @@ namespace YY
             /// <param name="_pElement2"></param>
             /// <param name="_Prop"></param>
             /// <returns>返回1表示相等，返回0表示不相等，返回 -1 表示比较失败。</returns>
-            static int32_t __MEGA_UI_API SpecCacheIsEqual(
+            static int32_t __YYAPI SpecCacheIsEqual(
                 _In_ Element* _pElement1,
                 _In_ Element* _pElement2,
                 _In_ const PropertyInfo& _Prop
@@ -510,7 +510,7 @@ namespace YY
             /// </summary>
             /// <param name="_pFrom"></param>
             /// <returns>如果没有这样的节点则返回 nullptr。</returns>
-            _Ret_maybenull_ Element* __MEGA_UI_API GetImmediateChild(_In_opt_ Element* _pFrom);
+            _Ret_maybenull_ Element* __YYAPI GetImmediateChild(_In_opt_ Element* _pFrom);
 
             /// <summary>
             /// 设置键盘焦点。
@@ -518,7 +518,7 @@ namespace YY
             /// 注意：因为键盘焦点属于物理焦点，设置键盘焦点时同时也将改变逻辑焦点。
             /// </summary>
             /// <returns>如果设置成功，则返回 true。</returns>
-            bool __MEGA_UI_API SetKeyboardFocus();
+            bool __YYAPI SetKeyboardFocus();
 
             /// <summary>
             /// 设置逻辑焦点。
@@ -526,19 +526,19 @@ namespace YY
             /// 注意：如果逻辑焦点与键盘焦点不同，那么将清除逻辑焦点。
             /// </summary>
             /// <returns>如果设置成功，则返回 true。</returns>
-            bool __MEGA_UI_API SetFocus();
+            bool __YYAPI SetFocus();
 
 		protected:
 			// Value Update
-            HRESULT __MEGA_UI_API PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
-			HRESULT __MEGA_UI_API PostSourceChange();
-            HRESULT __MEGA_UI_API GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _NewValue, DeferCycle* _pDeferCycle);
+            HRESULT __YYAPI PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+			HRESULT __YYAPI PostSourceChange();
+            HRESULT __YYAPI GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _NewValue, DeferCycle* _pDeferCycle);
 
-            static HRESULT __MEGA_UI_API AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
+            static HRESULT __YYAPI AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
             
-            HRESULT __MEGA_UI_API GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle);
+            HRESULT __YYAPI GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle);
 
-            static void __MEGA_UI_API VoidPCNotifyTree(int, DeferCycle*);
+            static void __YYAPI VoidPCNotifyTree(int, DeferCycle*);
 
 			/// <summary>
 			/// 通用处理程序，可以处理属性的默认缓存行为。
@@ -546,108 +546,108 @@ namespace YY
 			/// <param name="_eType"></param>
 			/// <param name="_pHandleData"></param>
 			/// <returns>如果被处理，则返回 true。</returns>
-            bool __MEGA_UI_API GeneralHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI GeneralHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
             template<typename _HandleType>
-            bool __MEGA_UI_API GeneralHandle(_Inout_ _HandleType* _pHandleData)
+            bool __YYAPI GeneralHandle(_Inout_ _HandleType* _pHandleData)
             {
                 return GeneralHandle(_HandleType::HandleType, _pHandleData);
             }
 
-            bool __MEGA_UI_API ParentPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI ParentPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-			virtual bool __MEGA_UI_API OnParentPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+			virtual bool __YYAPI OnParentPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
             
-            virtual bool __MEGA_UI_API GetParentDependencies(GetDependenciesHandleData* _pHandleData);
+            virtual bool __YYAPI GetParentDependencies(GetDependenciesHandleData* _pHandleData);
 
-            bool __MEGA_UI_API VisiblePropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI VisiblePropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
             
-            virtual bool __MEGA_UI_API OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
+            virtual bool __YYAPI OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
             
-            virtual bool __MEGA_UI_API GetVisibleDependencies(_In_ GetDependenciesHandleData* _pHandleData);
+            virtual bool __YYAPI GetVisibleDependencies(_In_ GetDependenciesHandleData* _pHandleData);
 
-            bool __MEGA_UI_API GetVisiblePropertyValue(_In_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetVisiblePropertyValue(_In_ GetValueHandleData* _pHandleData);
             
-            bool __MEGA_UI_API SetVisiblePropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetVisiblePropertyValue(_In_ SetValueHandleData* _pHandleData);
 
-			bool __MEGA_UI_API EnabledPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+			bool __YYAPI EnabledPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
             
-            virtual bool __MEGA_UI_API OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
+            virtual bool __YYAPI OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
-			bool __MEGA_UI_API ActivePropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+			bool __YYAPI ActivePropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            virtual bool __MEGA_UI_API OnActivePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
+            virtual bool __YYAPI OnActivePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 			
-            bool __MEGA_UI_API DpiPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI DpiPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            virtual bool __MEGA_UI_API OnDpiPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+            virtual bool __YYAPI OnDpiPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
-            void __MEGA_UI_API FlushDesiredSize(DeferCycle* _pDeferCycle);
+            void __YYAPI FlushDesiredSize(DeferCycle* _pDeferCycle);
 
-            void __MEGA_UI_API FlushLayout(DeferCycle* _pDeferCycle);
+            void __YYAPI FlushLayout(DeferCycle* _pDeferCycle);
 
-            static bool __MEGA_UI_API SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle);
+            static bool __YYAPI SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle);
 
-            static void __MEGA_UI_API TransferGroupFlags(Element* pElement, uint32_t _fGroups);
+            static void __YYAPI TransferGroupFlags(Element* pElement, uint32_t _fGroups);
             
-            static bool __MEGA_UI_API MarkElementForDesiredSize(Element* _pElement);
+            static bool __YYAPI MarkElementForDesiredSize(Element* _pElement);
 
-            static bool __MEGA_UI_API MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew);
+            static bool __YYAPI MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew);
 
-            bool __MEGA_UI_API SetNeedsLayout(uint32_t _fNeedsLayoutNew);
+            bool __YYAPI SetNeedsLayout(uint32_t _fNeedsLayoutNew);
 
-            Size __MEGA_UI_API UpdateDesiredSize(Size _ConstraintSize);
+            Size __YYAPI UpdateDesiredSize(Size _ConstraintSize);
 
-            void __MEGA_UI_API UpdateLayoutPosition(Point _LayoutPosition);
+            void __YYAPI UpdateLayoutPosition(Point _LayoutPosition);
             
-            void __MEGA_UI_API UpdateLayoutSize(Size _LayoutSize);
+            void __YYAPI UpdateLayoutSize(Size _LayoutSize);
 
-            bool __MEGA_UI_API ExtentPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI ExtentPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __MEGA_UI_API GetExtentPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetExtentPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __MEGA_UI_API LocationPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI LocationPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __MEGA_UI_API GetLocationPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetLocationPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __MEGA_UI_API MouseFocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI MouseFocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __MEGA_UI_API GetMouseFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetMouseFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __MEGA_UI_API SetMouseFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetMouseFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
             
-            bool __MEGA_UI_API KeyboardFocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI KeyboardFocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __MEGA_UI_API GetKeyboardFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetKeyboardFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __MEGA_UI_API SetKeyboardFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetKeyboardFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
 
-            bool __MEGA_UI_API FocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI FocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __MEGA_UI_API GetFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __MEGA_UI_API SetFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
 
-            bool __MEGA_UI_API SheetPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI SheetPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            virtual bool __MEGA_UI_API GeSheetDependencies(_Inout_ GetDependenciesHandleData* _pHandleData);
+            virtual bool __YYAPI GeSheetDependencies(_Inout_ GetDependenciesHandleData* _pHandleData);
             
-            virtual HRESULT __MEGA_UI_API OnHosted(Window* _pNewWindow);
+            virtual HRESULT __YYAPI OnHosted(Window* _pNewWindow);
 
-            virtual HRESULT __MEGA_UI_API OnUnHosted(Window* _pOldWindow);
+            virtual HRESULT __YYAPI OnUnHosted(Window* _pOldWindow);
 
-            virtual Element* __MEGA_UI_API GetAdjacent(Element* _pFrom, NavigatingType _eNavDir, NavReference const* _pnr, bool _bKeyableOnly);
+            virtual Element* __YYAPI GetAdjacent(Element* _pFrom, NavigatingType _eNavDir, NavReference const* _pnr, bool _bKeyableOnly);
 
-            virtual bool __MEGA_UI_API OnKeyDown(const KeyboardEvent& _KeyEvent);
+            virtual bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
 
-            virtual bool __MEGA_UI_API OnChar(const KeyboardEvent& _KeyEvent);
+            virtual bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
 
             /// <summary>
             /// 处理键盘导航事件。
             /// </summary>
             /// <param name="_Event">键盘导航事件。</param>
             /// <returns>如果已经处理，则返回 true</returns>
-            virtual bool __MEGA_UI_API OnKeyboardNavigate(const KeyboardNavigateEvent& _Event);
+            virtual bool __YYAPI OnKeyboardNavigate(const KeyboardNavigateEvent& _Event);
 
 		};
 	}

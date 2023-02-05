@@ -1,7 +1,7 @@
 #pragma once
 #include <MegaUI/base/MegaUITypeInt.h>
 
-#pragma pack(push, __MEGA_UI_PACKING)
+#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
@@ -49,7 +49,7 @@ namespace YY
             // EventModifier Î»×éºÏ
             uint32_t fModifiers;
 
-            static uint32_t __MEGA_UI_API GetEventModifier()
+            static uint32_t __YYAPI GetEventModifier()
             {
                 uint32_t _fModifiers = 0;
                 BYTE bKeys[256];

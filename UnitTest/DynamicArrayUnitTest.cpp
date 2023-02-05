@@ -5,9 +5,12 @@
 #include <tchar.h>
 #include <string>
 
-#include <MegaUI/base/DynamicArray.h>
+#include <Base/Containers/Array.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+using namespace YY::Base;
+using namespace YY::Base::Containers;
 
 namespace UnitTest
 {
@@ -16,20 +19,20 @@ namespace UnitTest
     public:
         TEST_METHOD(列表初始化)
         {
-            YY::MegaUI::DynamicArray<int> _Data = {0 ,1, 2, 3};
-            Assert::AreEqual(_Data.GetSize(), 4u);
+            Array<int> _Data = {0, 1, 2, 3};
+            Assert::AreEqual(_Data.GetSize(), size_t(4));
 
             for (int i = 0; i != 4; ++i)
                 Assert::AreEqual(*_Data.GetItemPtr(i), i);
         }
         TEST_METHOD(Add)
         {
-            YY::MegaUI::DynamicArray<int> _Data;
+            Array<int> _Data;
 
             for (int i = 0; i != 100; ++i)
                 Assert::IsTrue(SUCCEEDED(_Data.Add(i)));
 
-            Assert::AreEqual(_Data.GetSize(), 100u);
+            Assert::AreEqual(_Data.GetSize(), size_t(100));
 
             for (int i = 0; i != 100; ++i)
                 Assert::AreEqual(*_Data.GetItemPtr(i), i);
@@ -37,26 +40,26 @@ namespace UnitTest
 
         TEST_METHOD(Insert)
         {
-            YY::MegaUI::DynamicArray<int> _Data;
+            Array<int> _Data;
 
             Assert::IsTrue(SUCCEEDED(_Data.Insert(0, 1)));
-            Assert::AreEqual(_Data.GetSize(), 1u);
+            Assert::AreEqual(_Data.GetSize(), size_t(1));
             Assert::AreEqual(*_Data.GetItemPtr(0), 1);
             
             Assert::IsTrue(SUCCEEDED(_Data.Insert(0, 2)));
-            Assert::AreEqual(_Data.GetSize(), 2u);
+            Assert::AreEqual(_Data.GetSize(), size_t(2));
             Assert::AreEqual(*_Data.GetItemPtr(0), 2);
             Assert::AreEqual(*_Data.GetItemPtr(1), 1);
             
             Assert::IsTrue(SUCCEEDED(_Data.Insert(2, 3)));
-            Assert::AreEqual(_Data.GetSize(), 3u);
+            Assert::AreEqual(_Data.GetSize(), size_t(3));
             Assert::AreEqual(*_Data.GetItemPtr(0), 2);
             Assert::AreEqual(*_Data.GetItemPtr(1), 1);
             Assert::AreEqual(*_Data.GetItemPtr(2), 3);
 
 
             Assert::IsTrue(FAILED(_Data.Insert(4, 4)));
-            Assert::AreEqual(_Data.GetSize(), 3u);
+            Assert::AreEqual(_Data.GetSize(), size_t(3));
             Assert::AreEqual(*_Data.GetItemPtr(0), 2);
             Assert::AreEqual(*_Data.GetItemPtr(1), 1);
             Assert::AreEqual(*_Data.GetItemPtr(2), 3);
@@ -65,8 +68,8 @@ namespace UnitTest
         TEST_METHOD(Remove)
         {
             {
-                YY::MegaUI::DynamicArray<int> _Data = {0, 1, 2, 3, 4, 5, 6};
-                Assert::AreEqual(_Data.GetSize(), 7u);
+                Array<int> _Data = {0, 1, 2, 3, 4, 5, 6};
+                Assert::AreEqual(_Data.GetSize(), size_t(7));
 
 
                 {
@@ -100,39 +103,39 @@ namespace UnitTest
 
         TEST_METHOD(SetItem)
         {
-            YY::MegaUI::DynamicArray<int> _Data;
+            Array<int> _Data;
             Assert::IsTrue(FAILED(_Data.SetItem(0, 1)));
-            Assert::AreEqual(_Data.GetSize(), 0u);
+            Assert::AreEqual(_Data.GetSize(), size_t(0));
 
             Assert::IsTrue(SUCCEEDED(_Data.Insert(0, 1)));
             Assert::IsTrue(SUCCEEDED(_Data.SetItem(0, 2)));
             
-            Assert::AreEqual(_Data.GetSize(), 1u);
+            Assert::AreEqual(_Data.GetSize(), size_t(1));
             Assert::AreEqual(*_Data.GetItemPtr(0), 2);
         }
 
         TEST_METHOD(Clear)
         {
-            YY::MegaUI::DynamicArray<int> _Data;
+            Array<int> _Data;
             for (int i = 0; i != 100; ++i)
                 Assert::IsTrue(SUCCEEDED(_Data.Add(i)));
 
-            Assert::AreEqual(_Data.GetSize(), 100u);
+            Assert::AreEqual(_Data.GetSize(), size_t(100));
 
             _Data.Clear();
 
-            Assert::AreEqual(_Data.GetSize(), 0u);
+            Assert::AreEqual(_Data.GetSize(), size_t(0));
         }
 
         TEST_METHOD(Resize)
         {
-            YY::MegaUI::DynamicArray<int> _Data;
+            Array<int> _Data;
 
             Assert::IsTrue(SUCCEEDED(_Data.Resize(0)));
-            Assert::AreEqual(_Data.GetSize(), 0u);
+            Assert::AreEqual(_Data.GetSize(), size_t(0));
 
             Assert::IsTrue(SUCCEEDED(_Data.Resize(3)));
-            Assert::AreEqual(_Data.GetSize(), 3u);
+            Assert::AreEqual(_Data.GetSize(), size_t(3));
             Assert::AreEqual(*_Data.GetItemPtr(0), 0);
             Assert::AreEqual(*_Data.GetItemPtr(1), 0);
             Assert::AreEqual(*_Data.GetItemPtr(2), 0);
@@ -141,7 +144,7 @@ namespace UnitTest
         TEST_METHOD(SetArray)
         {
             static const int _Src[] = {0, 1, 2, 3};
-            YY::MegaUI::DynamicArray<int> _Data;
+            Array<int> _Data;
 
             Assert::IsTrue(SUCCEEDED(_Data.SetArray(_Src, _countof(_Src))));
             
@@ -157,7 +160,7 @@ namespace UnitTest
         {
             // 写覆盖模式
             {
-                YY::MegaUI::DynamicArray<int, true> _Data;
+                Array<int> _Data;
                 _Data.Add(1);
 
                 auto _pDateBuffer = _Data.GetData();
@@ -175,7 +178,7 @@ namespace UnitTest
 
             // 关闭写覆盖模式
             {
-                YY::MegaUI::DynamicArray<int, false> _Data;
+                Array<int, AllocPolicy::SOO> _Data;
                 _Data.Add(1);
 
                 auto _pDateBuffer = _Data.GetData();
