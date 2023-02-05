@@ -4,8 +4,8 @@
 #include "alloc.h"
 #include "Interlocked.h"
 #include "ErrorCode.h"
-#include <base/Encoding.h>
-#include "StringView.h"
+#include <Base/Encoding.h>
+#include <Base/Containers/StringView.h>
 #include <Base/Exception.h>
 
 /*

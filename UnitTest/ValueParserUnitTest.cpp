@@ -11,6 +11,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace YY::MegaUI;
 using namespace YY::Base;
+using namespace YY;
 
 namespace UnitTest
 {
