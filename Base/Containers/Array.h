@@ -30,9 +30,8 @@ LockBuffer 与 UnlockBuffer 必须成对出现！
 #include <Windows.h>
 
 #include <Base/YY.h>
-#include <MegaUI/base/alloc.h>
 #include <Base/Exception.h>
-#include <MegaUI/base/Interlocked.h>
+#include <Base/Sync/Interlocked.h>
 #include <Base/Containers/ConstructorPolicy.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -259,7 +258,7 @@ namespace YY
                             return;
                         }
 
-                        MegaUI::Interlocked::Increment(&iRef);
+                        Sync::Increment(&iRef);
                     }
 
                     void __YYAPI Release()
@@ -269,7 +268,7 @@ namespace YY
 
                         if (iRef > 0)
                         {
-                            auto iNewRef = MegaUI::Interlocked::Decrement(&iRef);
+                            auto iNewRef = Sync::Decrement(&iRef);
                             if (iNewRef != 0)
                                 return;
                         }

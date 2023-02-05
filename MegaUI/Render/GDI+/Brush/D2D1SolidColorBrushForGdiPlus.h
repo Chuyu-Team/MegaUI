@@ -2,10 +2,11 @@
 #include <d2d1.h>
 #include <GdiPlus.h>
 
-#include "../../../base/MegaUITypeInt.h"
-#include "../../../base/Interlocked.h"
-#include "../../../base/alloc.h"
+#include <Base/Sync/Interlocked.h>
 #include <Multimedia/Graphics/Color.h>
+
+#include "../../../base/MegaUITypeInt.h"
+#include "../../../base/alloc.h"
 
 #pragma pack(push, __YY_PACKING)
 
@@ -68,12 +69,12 @@ namespace YY
 
             virtual ULONG STDMETHODCALLTYPE AddRef(void) override
             {
-                return Interlocked::Increment(&uRef);
+                return Sync::Increment(&uRef);
             }
 
             virtual ULONG STDMETHODCALLTYPE Release(void) override
             {
-                auto _uNewRef = Interlocked::Decrement(&uRef);
+                auto _uNewRef = Sync::Decrement(&uRef);
                 if (_uNewRef == 0)
                     HDelete(this);
                 return _uNewRef;

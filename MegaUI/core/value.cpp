@@ -4,6 +4,7 @@
 
 #include "StyleSheet.h"
 #include "Element.h"
+#include <MegaUI/base/alloc.h>
 
 #pragma warning(disable : 28251)
 

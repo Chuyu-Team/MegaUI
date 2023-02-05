@@ -166,13 +166,13 @@
     <ClInclude Include="..\Base\Containers\StringView.h" />
     <ClInclude Include="..\base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
+    <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\base\tchar.h" />
     <ClInclude Include="..\base\YY.h" />
     <ClInclude Include="base\alloc.h" />
     <ClInclude Include="..\Multimedia\Graphics\Color.h" />
     <ClInclude Include="base\ComPtr.h" />
     <ClInclude Include="base\ErrorCode.h" />
-    <ClInclude Include="base\Interlocked.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />
     <ClInclude Include="base\Point.h" />
     <ClInclude Include="base\Rect.h" />

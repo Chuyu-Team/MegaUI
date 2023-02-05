@@ -55,6 +55,9 @@
     <Filter Include="Multimedia\Graphics">
       <UniqueIdentifier>{bb8776d7-d622-4056-8b39-48bdc225a23d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\Sync">
+      <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -83,9 +86,6 @@
     </ClInclude>
     <ClInclude Include="core\DeferCycle.h">
       <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="base\Interlocked.h">
-      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="base\ErrorCode.h">
       <Filter>UI\Base</Filter>
@@ -185,6 +185,9 @@
     </ClInclude>
     <ClInclude Include="..\Base\Containers\NString.h">
       <Filter>Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Sync\Interlocked.h">
+      <Filter>Base\Sync</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

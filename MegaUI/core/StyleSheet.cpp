@@ -2,7 +2,7 @@
 #include "StyleSheet.h"
 
 #include "Element.h"
-#include "../base/Interlocked.h"
+#include <Base/Sync/Interlocked.h>
 
 #pragma warning(disable : 28251)
 
@@ -47,12 +47,12 @@ namespace YY
         
         uint32_t __YYAPI StyleSheet::AddRef()
         {
-            return Interlocked::Increment(&uRef);
+            return Sync::Increment(&uRef);
         }
         
         uint32_t __YYAPI StyleSheet::Release()
         {
-            auto _uNewRef = Interlocked::Decrement(&uRef);
+            auto _uNewRef = Sync::Decrement(&uRef);
             if (_uNewRef == 0)
             {
                 HFree(this);

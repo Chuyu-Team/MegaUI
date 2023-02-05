@@ -26,7 +26,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 #include <Base/Exception.h>
 #include <Base/YY.h>
 #include <MegaUI/base/ErrorCode.h>
-#include <MegaUI/base/Interlocked.h>
+#include <Base/Sync/Interlocked.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -768,7 +768,7 @@ namespace YY
                             return 1;
                         }
 
-                        return (uint32_t)YY::MegaUI::Interlocked::Increment(&iRef);
+                        return (uint32_t)YY::Sync::Increment(&iRef);
                     }
 
                     uint32_t __YYAPI Release()
@@ -785,7 +785,7 @@ namespace YY
                             return 0;
                         }
 
-                        const auto uRefNew = YY::MegaUI::Interlocked::Decrement(&iRef);
+                        const auto uRefNew = YY::Sync::Decrement(&iRef);
                         if (uRefNew == 0)
                         {
                             free(this);

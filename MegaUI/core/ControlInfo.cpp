@@ -1,9 +1,11 @@
 ﻿#include "pch.h"
-
 #include "ControlInfo.h"
-#include <Base/Containers/Array.h>
 
 #include <unordered_map>
+
+#include <Base/Containers/Array.h>
+
+#include <MegaUI/base/alloc.h>
 
 #pragma warning(disable : 28251)
 

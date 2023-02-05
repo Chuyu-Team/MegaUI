@@ -4,13 +4,13 @@
 #include <Windows.h>
 #include <winnt.h>
 
-#include "MegaUITypeInt.h"
+#include <Base/YY.h>
 
 namespace YY
 {
-    namespace MegaUI
+    namespace Base
     {
-        namespace Interlocked
+        namespace Sync
         {
             __forceinline uint32_t __YYAPI Increment(uint32_t* _Addend)
             {
@@ -74,6 +74,8 @@ namespace YY
                 return Exchange((intptr_t*)_Destination, (intptr_t)_Exchange);
             }
 
-        } // namespace Interlocked
-    }     // namespace MegaUI
+        } // namespace Sync
+    } // namespace Base
+
+    using namespace YY::Base;
 } // namespace YY
