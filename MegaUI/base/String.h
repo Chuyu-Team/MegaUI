@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "StringBase.h"
+#include <Base/Containers/String.h>
 #include "StringTransform.h"
 
 #pragma pack(push, __YY_PACKING)

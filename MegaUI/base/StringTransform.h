@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "StringBase.h"
+#include <Base/Containers/String.h>
 
 namespace YY
 {

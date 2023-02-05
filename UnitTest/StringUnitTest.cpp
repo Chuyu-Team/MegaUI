@@ -8,7 +8,7 @@
 #include <atltypes.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace YY::Base;
+using namespace YY;
 
 namespace UnitTest
 {
@@ -21,7 +21,7 @@ namespace UnitTest
 			{
 #define _TEST_TEXT "从原生指针构造"
 
-				YY::MegaUI::aString Tmp(_TEST_TEXT);
+				aString Tmp(_TEST_TEXT);
 				Assert::AreEqual(Tmp.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(memcmp(Tmp.GetConstString(), _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 
@@ -37,7 +37,7 @@ namespace UnitTest
 			{
 #define _TEST_TEXT _U8S("从原生指针构造")
 
-				YY::MegaUI::u8String Tmp(_TEST_TEXT);
+				u8String Tmp(_TEST_TEXT);
 				Assert::AreEqual(Tmp.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(memcmp(Tmp.GetConstString(), _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 
@@ -52,7 +52,7 @@ namespace UnitTest
 			{
 #define _TEST_TEXT _U16S("从原生指针构造")
 
-				YY::MegaUI::u16String Tmp(_TEST_TEXT);
+				u16String Tmp(_TEST_TEXT);
 				Assert::AreEqual(Tmp.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(memcmp(Tmp.GetConstString(), _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 
@@ -67,7 +67,7 @@ namespace UnitTest
 			{
 #define _TEST_TEXT _U32S("从原生指针构造")
 
-				YY::MegaUI::u32String Tmp(_TEST_TEXT);
+				u32String Tmp(_TEST_TEXT);
 				Assert::AreEqual(Tmp.GetSize(), _countof(_TEST_TEXT) - 1);
 				Assert::IsTrue(memcmp(Tmp.GetConstString(), _TEST_TEXT, sizeof(_TEST_TEXT)) == 0);
 
@@ -83,11 +83,11 @@ namespace UnitTest
 
 		TEST_METHOD(引用计数能力验证)
 		{
-			YY::MegaUI::u16String Tmp(_U16S("一段测试文本"));
+			u16String Tmp(_U16S("一段测试文本"));
 
 			auto p1 = Tmp.GetConstString();
 
-			YY::MegaUI::u16String Tmp2 = Tmp;
+			u16String Tmp2 = Tmp;
 
 			auto p2 = Tmp.GetConstString();
 			auto p3 = Tmp2.GetConstString();
@@ -101,7 +101,7 @@ namespace UnitTest
 		{
 			// 这个缓冲区只共享一份，所以 LockBuffer，前后指针不变
 			{
-				YY::MegaUI::u16String Tmp(_U16S("一段测试文本"));
+				u16String Tmp(_U16S("一段测试文本"));
 				auto p1 = Tmp.GetConstString();
 
 				auto p2 = Tmp.LockBuffer(Tmp.GetSize());
@@ -116,10 +116,10 @@ namespace UnitTest
 
 			// 缓冲区存在，共享，所以 LockBuffer 后指针会重新开辟
 			{
-				YY::MegaUI::u16String Tmp(_U16S("一段测试文本"));
+				u16String Tmp(_U16S("一段测试文本"));
 				auto p1 = Tmp.GetConstString();
 
-				YY::MegaUI::u16String Tmp2 = Tmp;
+				u16String Tmp2 = Tmp;
 				auto p2 = Tmp2.LockBuffer(Tmp.GetSize());
 				Tmp2.UnlockBuffer(Tmp.GetSize());
 
@@ -137,10 +137,10 @@ namespace UnitTest
 		TEST_METHOD(写复制能力验证)
 		{
 			{
-				YY::MegaUI::u16String Tmp(_U16S("一段测试文本"));
+				u16String Tmp(_U16S("一段测试文本"));
 				auto p1 = Tmp.GetConstString();
 
-				YY::MegaUI::u16String Tmp2 = Tmp;
+				u16String Tmp2 = Tmp;
 				Tmp2 += _U16S("2");
 				auto p2 = Tmp.GetConstString();
 				auto p3 = Tmp2.GetConstString();

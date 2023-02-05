@@ -161,6 +161,7 @@
     <ClInclude Include="..\Base\Containers\ConstructorPolicy.h" />
     <ClInclude Include="..\base\Containers\Array.h" />
     <ClInclude Include="..\Base\Containers\HashSet.h" />
+    <ClInclude Include="..\Base\Containers\String.h" />
     <ClInclude Include="..\Base\Containers\StringView.h" />
     <ClInclude Include="..\base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
@@ -176,7 +177,6 @@
     <ClInclude Include="base\Rect.h" />
     <ClInclude Include="base\Size.h" />
     <ClInclude Include="base\String.h" />
-    <ClInclude Include="base\StringBase.h" />
     <ClInclude Include="base\StringTransform.h" />
     <ClInclude Include="core\ControlInfo.h" />
     <ClInclude Include="core\ControlInfoImp.h" />

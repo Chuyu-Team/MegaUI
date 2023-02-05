@@ -1,7 +1,7 @@
 #pragma once
 
 #include <MegaUI/base/MegaUITypeInt.h>
-#include <MegaUI/base/StringBase.h>
+#include <Base/Containers/String.h>
 #include <Multimedia/Graphics/Color.h>
 
 #pragma pack(push, __YY_PACKING)
