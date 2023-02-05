@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Base/Containers/Array.h>
-#include "..\base\HashSet.h"
+#include <Base/Containers/HashSet.h>
 
 #pragma pack(push, __YY_PACKING)
 
