@@ -2,7 +2,7 @@
 
 #include <MegaUI/base/MegaUITypeInt.h>
 #include <MegaUI/base/StringBase.h>
-#include <MegaUI/base/Color.h>
+#include <Multimedia/Graphics/Color.h>
 
 #pragma pack(push, __YY_PACKING)
 

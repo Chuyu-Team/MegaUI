@@ -49,6 +49,12 @@
     <Filter Include="Base\Containers">
       <UniqueIdentifier>{89a3bf71-18a5-4c34-9e8c-07dba97668f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Multimedia">
+      <UniqueIdentifier>{754a841a-e77f-4024-a903-0a33350948ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Multimedia\Graphics">
+      <UniqueIdentifier>{bb8776d7-d622-4056-8b39-48bdc225a23d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -102,8 +108,8 @@
     <ClInclude Include="core\Layout.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
-    <ClInclude Include="base\Color.h">
-      <Filter>UI\Base</Filter>
+    <ClInclude Include="..\Multimedia\Graphics\Color.h">
+      <Filter>Multimedia\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="base\Rect.h">
       <Filter>UI\Base</Filter>

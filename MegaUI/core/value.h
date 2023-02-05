@@ -7,7 +7,7 @@
 #include <MegaUI/base/MegaUITypeInt.h>
 #include <Base/Containers/Array.h>
 #include <MegaUI/base/StringBase.h>
-#include <MegaUI/base/Color.h>
+#include <Multimedia/Graphics/Color.h>
 #include <MegaUI/base/Rect.h>
 #include <MegaUI/Render/Font.h>
 #include <MegaUI/base/Size.h>

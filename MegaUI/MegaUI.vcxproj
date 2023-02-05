@@ -165,7 +165,7 @@
     <ClInclude Include="..\base\tchar.h" />
     <ClInclude Include="..\base\YY.h" />
     <ClInclude Include="base\alloc.h" />
-    <ClInclude Include="base\Color.h" />
+    <ClInclude Include="..\Multimedia\Graphics\Color.h" />
     <ClInclude Include="base\ComPtr.h" />
     <ClInclude Include="base\ErrorCode.h" />
     <ClInclude Include="base\HashSet.h" />

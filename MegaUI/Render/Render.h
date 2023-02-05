@@ -3,7 +3,7 @@
 
 #include <MegaUI/base/MegaUITypeInt.h>
 #include <MegaUI/base/Rect.h>
-#include <MegaUI/base/Color.h>
+#include <Multimedia/Graphics/Color.h>
 #include <MegaUI/base/StringView.h>
 #include <MegaUI/Render/Font.h>
 

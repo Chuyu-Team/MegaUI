@@ -5,7 +5,7 @@
 #include "../../../base/MegaUITypeInt.h"
 #include "../../../base/Interlocked.h"
 #include "../../../base/alloc.h"
-#include "../../../base/Color.h"
+#include <Multimedia/Graphics/Color.h>
 
 #pragma pack(push, __YY_PACKING)
 
