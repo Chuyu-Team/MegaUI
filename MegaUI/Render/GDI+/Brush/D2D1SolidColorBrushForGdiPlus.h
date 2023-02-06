@@ -3,7 +3,7 @@
 #include <GdiPlus.h>
 
 #include <Base/Sync/Interlocked.h>
-#include <Multimedia/Graphics/Color.h>
+#include <Multimedia/Color.h>
 
 #include "../../../base/MegaUITypeInt.h"
 #include "../../../base/alloc.h"

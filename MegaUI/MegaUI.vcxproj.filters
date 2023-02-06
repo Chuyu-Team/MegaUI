@@ -96,9 +96,6 @@
     <ClInclude Include="core\Layout.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Multimedia\Graphics\Color.h">
-      <Filter>Multimedia\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="base\Rect.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
@@ -191,6 +188,9 @@
     </ClInclude>
     <ClInclude Include="..\Base\String\StringTransform.h">
       <Filter>Base\String</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Multimedia\Color.h">
+      <Filter>Multimedia</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
