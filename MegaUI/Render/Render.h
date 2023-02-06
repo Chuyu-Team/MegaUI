@@ -4,7 +4,7 @@
 #include <MegaUI/base/MegaUITypeInt.h>
 #include <MegaUI/base/Rect.h>
 #include <Multimedia/Graphics/Color.h>
-#include <Base/Containers/StringView.h>
+#include <Base/String/StringView.h>
 #include <MegaUI/Render/Font.h>
 
 #pragma pack(push, __YY_PACKING)

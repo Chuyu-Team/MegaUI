@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "..\base\MegaUITypeInt.h"
-#include <Base/Containers/String.h>
+#include <Base/String/String.h>
 #include "value.h"
 #include <Base/Containers/Array.h>
 #include <Base/Containers/ArrayView.h>

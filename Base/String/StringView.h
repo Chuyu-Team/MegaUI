@@ -14,7 +14,7 @@ namespace YY
 {
     namespace Base
     {
-        namespace Containers
+        namespace String
         {
             template<typename _char_t, Encoding _eEncoding>
             class StringView
@@ -236,7 +236,7 @@ namespace YY
         } // namespace Containers
     } // namespace Base
 
-    using namespace YY::Base::Containers;
+    using namespace YY::Base::String;
 } // namespace YY
 
 #pragma pack(pop)

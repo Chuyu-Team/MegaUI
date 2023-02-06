@@ -21,7 +21,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 
 #pragma once
 
-#include <Base/Containers/StringView.h>
+#include <Base/String/StringView.h>
 #include <Base/Encoding.h>
 #include <Base/Exception.h>
 #include <Base/YY.h>
@@ -39,7 +39,7 @@ namespace YY
 
     namespace Base
     {
-        namespace Containers
+        namespace String
         {
             class NString;
 
@@ -897,7 +897,7 @@ namespace YY
         } // namespace Containers
     } // namespace Base
 
-    using namespace YY::Base::Containers;
+    using namespace YY::Base::String;
 } // namespace YY
 
 #pragma pack(pop)

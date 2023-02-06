@@ -161,11 +161,11 @@
     <ClInclude Include="..\Base\Containers\ConstructorPolicy.h" />
     <ClInclude Include="..\base\Containers\Array.h" />
     <ClInclude Include="..\Base\Containers\HashSet.h" />
-    <ClInclude Include="..\Base\Containers\String.h" />
-    <ClInclude Include="..\Base\Containers\NString.h" />
-    <ClInclude Include="..\Base\Containers\StringView.h" />
     <ClInclude Include="..\base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
+    <ClInclude Include="..\Base\String\NString.h" />
+    <ClInclude Include="..\Base\String\String.h" />
+    <ClInclude Include="..\Base\String\StringView.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\base\tchar.h" />
     <ClInclude Include="..\base\YY.h" />

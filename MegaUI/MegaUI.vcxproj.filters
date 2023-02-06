@@ -58,6 +58,9 @@
     <Filter Include="Base\Sync">
       <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\String">
+      <UniqueIdentifier>{a29a58ba-73ae-4a48-8891-56488d2ca06a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -177,17 +180,17 @@
     <ClInclude Include="..\Base\Containers\HashSet.h">
       <Filter>Base\Containers</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Containers\StringView.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\String.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\NString.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
     <ClInclude Include="..\Base\Sync\Interlocked.h">
       <Filter>Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\String\NString.h">
+      <Filter>Base\String</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\String\String.h">
+      <Filter>Base\String</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\String\StringView.h">
+      <Filter>Base\String</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

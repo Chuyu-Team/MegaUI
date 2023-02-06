@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-    <Type Name="YY::Base::Containers::StringView&lt;*&gt;" Priority="MediumLow">
+    <Type Name="YY::Base::String::StringView&lt;*&gt;" Priority="MediumLow">
         <Intrinsic Name="GetSize" Expression="cchString" />
         <Intrinsic Name="GetEncoding" Expression="eEncoding" />
         <DisplayString Condition="GetEncoding() == YY::Base::Encoding::UTF8">{ (size_t)szString,x } u8{ szString,s8 }</DisplayString>
@@ -18,7 +18,7 @@
 
     </Type>
     
-    <Type Name="YY::Base::Containers::StringBase&lt;*&gt;" Priority="MediumLow">
+    <Type Name="YY::Base::String::StringBase&lt;*&gt;" Priority="MediumLow">
         <Intrinsic Name="GetInternalStringData" Expression="((StringData*)szString)[-1]" />
 
         <Intrinsic Name="GetSize" Expression="GetInternalStringData().uSize" />
@@ -43,7 +43,7 @@
         </Expand>
     </Type>
     
-    <Type Name="YY::Base::Containers::NString" Priority="MediumLow">
+    <Type Name="YY::Base::String::NString" Priority="MediumLow">
         <Intrinsic Name="GetInternalStringData" Expression="((StringData*)szANSI.szString)[-1]" />
 
         <Intrinsic Name="GetSize" Expression="GetInternalStringData().uSize" />
