@@ -165,6 +165,7 @@
     <ClInclude Include="..\Base\Exception.h" />
     <ClInclude Include="..\Base\String\NString.h" />
     <ClInclude Include="..\Base\String\String.h" />
+    <ClInclude Include="..\Base\String\StringTransform.h" />
     <ClInclude Include="..\Base\String\StringView.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\base\tchar.h" />
@@ -177,7 +178,6 @@
     <ClInclude Include="base\Point.h" />
     <ClInclude Include="base\Rect.h" />
     <ClInclude Include="base\Size.h" />
-    <ClInclude Include="base\StringTransform.h" />
     <ClInclude Include="core\ControlInfo.h" />
     <ClInclude Include="core\ControlInfoImp.h" />
     <ClInclude Include="core\DeferCycle.h" />
@@ -202,7 +202,7 @@
     <ClInclude Include="Window\WindowElement.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base\StringTransform.cpp" />
+    <ClCompile Include="..\Base\String\StringTransform.cpp" />
     <ClCompile Include="core\ControlInfo.cpp" />
     <ClCompile Include="core\Element.cpp" />
     <ClCompile Include="core\StyleSheet.cpp" />

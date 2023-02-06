@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Base/String/String.h>
-#include <MegaUI/base/StringTransform.h>
+#include <Base/String/StringTransform.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -11,8 +11,6 @@ namespace YY
     {
         namespace String
         {
-            using MegaUI::Transform;
-
             // 万能String类
             class NString
             {
@@ -896,7 +894,7 @@ namespace YY
                     }
                 }
             };
-        } // namespace Containers
+        } // namespace String
     } // namespace Base
 
     using namespace YY::Base::String;

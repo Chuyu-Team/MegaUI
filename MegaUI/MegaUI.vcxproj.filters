@@ -93,9 +93,6 @@
     <ClInclude Include="base\ErrorCode.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
-    <ClInclude Include="base\StringTransform.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="core\Layout.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
@@ -192,6 +189,9 @@
     <ClInclude Include="..\Base\String\StringView.h">
       <Filter>Base\String</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\String\StringTransform.h">
+      <Filter>Base\String</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -208,9 +208,6 @@
     </ClCompile>
     <ClCompile Include="core\ControlInfo.cpp">
       <Filter>UI\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="base\StringTransform.cpp">
-      <Filter>UI\Base</Filter>
     </ClCompile>
     <ClCompile Include="Render\Render.cpp">
       <Filter>UI\Render</Filter>
@@ -229,6 +226,9 @@
     </ClCompile>
     <ClCompile Include="Render\Font.cpp">
       <Filter>UI\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\String\StringTransform.cpp">
+      <Filter>Base\String</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

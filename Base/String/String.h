@@ -32,16 +32,12 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 
 namespace YY
 {
-    namespace MegaUI
-    {
-        class EndianHelper;
-    } // namespace MegaUI
-
     namespace Base
     {
         namespace String
         {
             class NString;
+            class EndianHelper;
 
             template<class T, typename char_t, Encoding _eEncoding>
             class StringFunctionImp
@@ -158,7 +154,7 @@ namespace YY
                 constexpr static Encoding eEncoding = _eEncoding;
 
                 friend NString;
-                friend MegaUI::EndianHelper;
+                friend EndianHelper;
 
                 _Field_z_ char_t* szString;
 
@@ -764,11 +760,11 @@ namespace YY
 
                         if (iRef < 0)
                         {
-                            throw  Exception(_S("缓冲区锁定时无法共享。"));
+                            throw Exception(_S("缓冲区锁定时无法共享。"));
                             return 1;
                         }
 
-                        return (uint32_t)YY::Sync::Increment(&iRef);
+                        return (uint32_t)Sync::Increment(&iRef);
                     }
 
                     uint32_t __YYAPI Release()
@@ -785,7 +781,7 @@ namespace YY
                             return 0;
                         }
 
-                        const auto uRefNew = YY::Sync::Decrement(&iRef);
+                        const auto uRefNew = Sync::Decrement(&iRef);
                         if (uRefNew == 0)
                         {
                             free(this);
@@ -826,7 +822,7 @@ namespace YY
                     {
                         if (iRef >= 0)
                         {
-                            throw  Exception(_S("缓冲区并未锁定，无法 Unlock。"));
+                            throw Exception(_S("缓冲区并未锁定，无法 Unlock。"));
                             return;
                         }
 
@@ -880,21 +876,21 @@ namespace YY
                 }
             };
 
-            typedef StringBase< achar_t, Encoding::ANSI> aString;
-            typedef StringBase< u8char_t, Encoding::UTF8> u8String;
-            typedef StringBase< u16char_t, Encoding::UTF16LE> u16StringLE;
-            typedef StringBase< u16char_t, Encoding::UTF16BE> u16StringBE;
-            typedef StringBase< u32char_t, Encoding::UTF32LE> u32StringLE;
-            typedef StringBase< u32char_t, Encoding::UTF32BE> u32StringBE;
+            typedef StringBase<achar_t, Encoding::ANSI> aString;
+            typedef StringBase<u8char_t, Encoding::UTF8> u8String;
+            typedef StringBase<u16char_t, Encoding::UTF16LE> u16StringLE;
+            typedef StringBase<u16char_t, Encoding::UTF16BE> u16StringBE;
+            typedef StringBase<u32char_t, Encoding::UTF32LE> u32StringLE;
+            typedef StringBase<u32char_t, Encoding::UTF32BE> u32StringBE;
 
-            typedef StringBase< u16char_t, Encoding::UTF16> u16String;
-            typedef StringBase< u32char_t, Encoding::UTF32> u32String;
+            typedef StringBase<u16char_t, Encoding::UTF16> u16String;
+            typedef StringBase<u32char_t, Encoding::UTF32> u32String;
 
             typedef StringBase<wchar_t, Encoding::UTFW> wString;
 
             // 默认最佳的Unicode编码字符串
-            typedef StringBase< uchar_t,  DetaultEncoding< uchar_t>::eEncoding> uString;
-        } // namespace Containers
+            typedef StringBase<uchar_t,  DetaultEncoding<uchar_t>::eEncoding> uString;
+        } // namespace String
     } // namespace Base
 
     using namespace YY::Base::String;

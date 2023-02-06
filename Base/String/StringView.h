@@ -233,7 +233,7 @@ namespace YY
             typedef StringView<YY::Base::u16char_t, Encoding::UTF16> u16StringView;
             typedef StringView<YY::Base::u32char_t, Encoding::UTF32> u32StringView;
 
-        } // namespace Containers
+        } // namespace String
     } // namespace Base
 
     using namespace YY::Base::String;
