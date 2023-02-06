@@ -96,9 +96,6 @@
     <ClInclude Include="core\Layout.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
-    <ClInclude Include="base\Rect.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="Render\Render.h">
       <Filter>UI\Render</Filter>
     </ClInclude>
@@ -190,6 +187,9 @@
       <Filter>Multimedia</Filter>
     </ClInclude>
     <ClInclude Include="..\Multimedia\Point.h">
+      <Filter>Multimedia</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Multimedia\Rect.h">
       <Filter>Multimedia</Filter>
     </ClInclude>
   </ItemGroup>

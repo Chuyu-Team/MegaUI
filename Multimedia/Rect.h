@@ -3,16 +3,18 @@
 #include <d2d1.h>
 #include <GdiPlus.h>
 
-#include "MegaUITypeInt.h"
-#include "Size.h"
+#include <Base/YY.h>
+#include <MegaUI/base/Size.h>
 #include <Multimedia/Point.h>
 
 #pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
-    namespace MegaUI
+    namespace Multimedia
     {
+        using MegaUI::Size;
+
         class Rect
         {
         public:
@@ -250,7 +252,7 @@ namespace YY
         //    SubtractRect(&_Tmp, &_Left, &_Rigth);
         //    return _Tmp;
         //}
-    }
+    } // namespace Multimedia
 } // namespace YY
 
 #pragma pack(pop)

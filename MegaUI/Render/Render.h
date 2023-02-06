@@ -2,7 +2,7 @@
 #include <dwrite.h>
 
 #include <MegaUI/base/MegaUITypeInt.h>
-#include <MegaUI/base/Rect.h>
+#include <Multimedia/Rect.h>
 #include <Multimedia/Color.h>
 #include <Base/String/StringView.h>
 #include <MegaUI/Render/Font.h>
