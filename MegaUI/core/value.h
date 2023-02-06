@@ -11,7 +11,7 @@
 #include <MegaUI/base/Rect.h>
 #include <MegaUI/Render/Font.h>
 #include <MegaUI/base/Size.h>
-#include <MegaUI/base/Point.h>
+#include <Multimedia/Point.h>
 
 #pragma pack(push, __YY_PACKING)
 

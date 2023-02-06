@@ -1,13 +1,13 @@
 #pragma once
 #include <Windows.h>
 
-#include "MegaUITypeInt.h"
+#include <Base/YY.h>
 
 #pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
-    namespace MegaUI
+    namespace Multimedia
     {
         class Point
         {
@@ -54,7 +54,9 @@ namespace YY
                 return *(D2D1_POINT_2F*)this;
             }
         };
-    }
+    } // namespace Multimedia
+
+    using namespace YY::Multimedia;
 } // namespace YY
 
 #pragma pack(pop)

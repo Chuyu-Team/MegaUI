@@ -5,7 +5,7 @@
 
 #include "MegaUITypeInt.h"
 #include "Size.h"
-#include "Point.h"
+#include <Multimedia/Point.h>
 
 #pragma pack(push, __YY_PACKING)
 

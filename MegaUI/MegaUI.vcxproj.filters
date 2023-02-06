@@ -138,9 +138,6 @@
     <ClInclude Include="base\Size.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
-    <ClInclude Include="base\Point.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="Render\D2D\DWrite\DWriteHelper.h">
       <Filter>UI\Render\D2D\DWrite</Filter>
     </ClInclude>
@@ -190,6 +187,9 @@
       <Filter>Base\String</Filter>
     </ClInclude>
     <ClInclude Include="..\Multimedia\Color.h">
+      <Filter>Multimedia</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Multimedia\Point.h">
       <Filter>Multimedia</Filter>
     </ClInclude>
   </ItemGroup>
