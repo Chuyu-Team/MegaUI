@@ -173,11 +173,11 @@
     <ClInclude Include="..\Multimedia\Color.h" />
     <ClInclude Include="..\Multimedia\Point.h" />
     <ClInclude Include="..\Multimedia\Rect.h" />
+    <ClInclude Include="..\Multimedia\Size.h" />
     <ClInclude Include="base\alloc.h" />
     <ClInclude Include="base\ComPtr.h" />
     <ClInclude Include="base\ErrorCode.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />
-    <ClInclude Include="base\Size.h" />
     <ClInclude Include="core\ControlInfo.h" />
     <ClInclude Include="core\ControlInfoImp.h" />
     <ClInclude Include="core\DeferCycle.h" />

@@ -4,7 +4,7 @@
 #include <GdiPlus.h>
 
 #include <Base/YY.h>
-#include <MegaUI/base/Size.h>
+#include <Multimedia/Size.h>
 #include <Multimedia/Point.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -13,8 +13,6 @@ namespace YY
 {
     namespace Multimedia
     {
-        using MegaUI::Size;
-
         class Rect
         {
         public:
@@ -253,6 +251,8 @@ namespace YY
         //    return _Tmp;
         //}
     } // namespace Multimedia
+    
+    using namespace YY::Multimedia;
 } // namespace YY
 
 #pragma pack(pop)

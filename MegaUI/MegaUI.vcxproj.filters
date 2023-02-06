@@ -132,9 +132,6 @@
     <ClInclude Include="base\ComPtr.h">
       <Filter>UI\Base</Filter>
     </ClInclude>
-    <ClInclude Include="base\Size.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="Render\D2D\DWrite\DWriteHelper.h">
       <Filter>UI\Render\D2D\DWrite</Filter>
     </ClInclude>
@@ -190,6 +187,9 @@
       <Filter>Multimedia</Filter>
     </ClInclude>
     <ClInclude Include="..\Multimedia\Rect.h">
+      <Filter>Multimedia</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Multimedia\Size.h">
       <Filter>Multimedia</Filter>
     </ClInclude>
   </ItemGroup>

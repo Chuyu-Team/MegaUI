@@ -2,13 +2,13 @@
 #include <Windows.h>
 #include <d2d1.h>
 
-#include "MegaUITypeInt.h"
+#include <Base/YY.h>
 
 #pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
-    namespace MegaUI
+    namespace Multimedia
     {
         class Size
         {
@@ -49,7 +49,9 @@ namespace YY
                 return *(Gdiplus::SizeF*)this;
             }
         };
-    }
+    } // namespace Multimedia
+
+    using namespace YY::Multimedia;
 } // namespace YY
 
 #pragma pack(pop)
