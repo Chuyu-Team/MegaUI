@@ -9,6 +9,7 @@
 #include <MegaUI/Window/Window.h>
 #include "StyleSheet.h"
 #include <MegaUI/base/ComPtr.h>
+#include <Multimedia/Font.h>
 
 #pragma warning(disable : 28251)
 #pragma warning(disable : 26812)

@@ -24,21 +24,21 @@ namespace YY
 
         struct PCRecord
         {
-            PropertyIndicies iIndex;
-            Element* pElement;
+            PropertyIndicies iIndex = PropertyIndicies::PI_MAX;
+            Element* pElement = nullptr;
             // ppi
-            const PropertyInfo* pProp;
+            const PropertyInfo* pProp = nullptr;
             //bool bVoid;
-            uint8_t iRefCount;
-            bool vA;
-            bool vB;
+            uint8_t iRefCount = 0;
+            bool vA = false;
+            bool vB = false;
 
             // 0xC
-            long vC;
+            long vC = 0;
             Value pOldValue;
             Value pNewValue;
             DepRecs dr;
-            int32_t iPrevElRec;
+            int32_t iPrevElRec = 0;
         };
 
         // Group notifications: deferred until EndDefer and coalesced

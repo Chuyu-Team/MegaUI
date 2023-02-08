@@ -992,7 +992,7 @@ namespace YY
                         return _uCapacityNeed;
                 }
         
-                _Ret_maybenull_ InternalData* __YYAPI GetInternalData() const noexcept
+                _Ret_notnull_ InternalData* __YYAPI GetInternalData() const noexcept
                 {
                     return const_cast<InternalData*>(&Header);
                 }

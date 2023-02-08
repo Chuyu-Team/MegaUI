@@ -162,7 +162,12 @@ namespace YY
 
                 for (;;)
                 {
-                    auto _szDstBuffer = _pszDst->LockBuffer(_cchDstBuffer);
+                    if (_cchDstBuffer >= uint_max)
+                    {
+                        return E_OUTOFMEMORY;
+                    }
+
+                    auto _szDstBuffer = _pszDst->LockBuffer((size_t)_cchDstBuffer);
                     if (!_szDstBuffer)
                     {
                         return E_OUTOFMEMORY;
@@ -175,7 +180,7 @@ namespace YY
                         _cchOutBufferSize = YY::Base::int32_max;
 
                     auto _cchAppendDst = WideCharToMultiByte(UINT(_eEncoding), 0, _szSrc.GetConstString(), (int)_cchSrc, _szDstBuffer + _cchOldDst, (int)_cchOutBufferSize, nullptr, nullptr);
-                    _pszDst->UnlockBuffer(_cchOldDst + _cchAppendDst);
+                    _pszDst->UnlockBuffer((size_t)(_cchOldDst + _cchAppendDst));
 
                     if (_cchAppendDst != 0)
                     {

@@ -5,6 +5,7 @@
 #include <Base/String/StringTransform.h>
 #include "ValueParser.h"
 #include <MegaUI/core/StyleSheet.h>
+#include <MegaUI/Render/FontEnumMap.h>
 
 #define RAPIDXML_STATIC_POOL_SIZE 4 * 1024
 

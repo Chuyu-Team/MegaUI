@@ -9,7 +9,7 @@
 #include <Base/String/String.h>
 #include <Multimedia/Color.h>
 #include <Multimedia/Rect.h>
-#include <MegaUI/Render/Font.h>
+#include <Multimedia/Font.h>
 #include <Multimedia/Size.h>
 #include <Multimedia/Point.h>
 

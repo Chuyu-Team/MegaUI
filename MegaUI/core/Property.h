@@ -153,10 +153,10 @@ namespace YY
         {
             static constexpr auto HandleType = CustomPropertyHandleType::GetDependencies;
 
-            DepRecs* pdr;
+            DepRecs* pdr = nullptr;
             Value NewValue;
-            DeferCycle* pDeferCycle;
-            int iPCSrcRoot;
+            DeferCycle* pDeferCycle = nullptr;
+            int iPCSrcRoot = 0;
 
             struct
             {
@@ -190,7 +190,7 @@ namespace YY
         {
             static constexpr auto HandleType = CustomPropertyHandleType::FastSpecValueCompare;
 
-            Element* pOther;
+            Element* pOther = nullptr;
             struct
             {
                 // 返回1表示相等，返回0表示不相等，返回 -1 表示比较失败。

@@ -135,7 +135,7 @@
     <ClInclude Include="Render\D2D\DWrite\DWriteHelper.h">
       <Filter>UI\Render\D2D\DWrite</Filter>
     </ClInclude>
-    <ClInclude Include="Render\Font.h">
+    <ClInclude Include="Render\FontEnumMap.h">
       <Filter>UI\Render</Filter>
     </ClInclude>
     <ClInclude Include="core\UIEvent.h">
@@ -192,6 +192,12 @@
     <ClInclude Include="..\Multimedia\Size.h">
       <Filter>Multimedia</Filter>
     </ClInclude>
+    <ClInclude Include="..\Multimedia\Font.h">
+      <Filter>Multimedia</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\SAL.h">
+      <Filter>Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -224,11 +230,14 @@
     <ClCompile Include="Window\WindowElement.cpp">
       <Filter>UI\Window</Filter>
     </ClCompile>
-    <ClCompile Include="Render\Font.cpp">
+    <ClCompile Include="Render\FontEnumMap.cpp">
       <Filter>UI\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\String\StringTransform.cpp">
       <Filter>Base\String</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Multimedia\Font.cpp">
+      <Filter>Multimedia</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

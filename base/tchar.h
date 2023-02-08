@@ -69,7 +69,7 @@ namespace YY
         }
 
         template<typename _CharT, typename = typename CharConfing<_CharT>::_CharT>
-        __forceinline constexpr bool __YYAPI IsEmptyString(_In_z_ const _CharT* _szSrc)
+        __forceinline constexpr bool __YYAPI IsEmptyString(_In_opt_z_ const _CharT* _szSrc)
         {
             return _szSrc == nullptr || _szSrc[0] == _CharT('\0');
         }

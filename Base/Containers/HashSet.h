@@ -33,13 +33,10 @@ namespace YY
                 {
                     for (auto _pBucket : pBuckets)
                     {
-                        for (;;)
+                        for (auto _pItem = _pBucket; _pItem;)
                         {
-                            if (!_pBucket)
-                                break;
-
-                            auto _pTmp = _pBucket;
-                            _pBucket = _pBucket->pNext;
+                            auto _pTmp = _pItem;
+                            _pItem = _pItem->pNext;
                             free(_pTmp);
                         }
                     }

@@ -5,7 +5,7 @@
 #include <Multimedia/Rect.h>
 #include <Multimedia/Color.h>
 #include <Base/String/StringView.h>
-#include <MegaUI/Render/Font.h>
+#include <Multimedia/Font.h>
 
 #pragma pack(push, __YY_PACKING)
 

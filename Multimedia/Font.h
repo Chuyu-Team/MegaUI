@@ -1,17 +1,10 @@
 #pragma once
-
-#include <MegaUI/base/MegaUITypeInt.h>
 #include <Base/String/String.h>
-#include <Multimedia/Color.h>
-
-#pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
-    namespace MegaUI
+    namespace Multimedia
     {
-        struct EnumMap;
-
         namespace FontWeight
         {
             constexpr auto Thin = 100;
@@ -39,7 +32,7 @@ namespace YY
             constexpr auto Italic = 0x00000001;
             constexpr auto Underline = 0x00000002;
             constexpr auto StrikeOut = 0x00000004;
-        }
+        } // namespace FontStyle
 
         // 保存字体的基本信息
         struct Font
@@ -66,10 +59,7 @@ namespace YY
         };
 
         HRESULT __YYAPI GetSystemFont(_In_ SystemFont _eSystemFont, _Out_ Font* _pFont);
+    } // namespace Multimedia
 
-
-        _Ret_notnull_ const EnumMap* __YYAPI GetSystemFontEnumMap();
-    }
+    using namespace YY::Multimedia;
 } // namespace YY
-
-#pragma pack(pop)

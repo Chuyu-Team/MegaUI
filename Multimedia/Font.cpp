@@ -1,16 +1,16 @@
 #include "pch.h"
-#include "Font.h"
-#include <MegaUI/core/Property.h>
+#include <Multimedia/Font.h>
 
-// 批注不一致警告
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION();
 
 namespace YY
 {
-    namespace MegaUI
+    namespace Multimedia
     {
         HRESULT __YYAPI GetSystemFont(SystemFont _eSystemFont, Font* _pFont)
         {
+            __YY_IGNORE_UNINITIALIZED_VARIABLE(_pFont);
+
             _pFont->szFace.Clear();
             _pFont->iSize = 0;
             _pFont->uWeight = 0;
@@ -67,20 +67,5 @@ namespace YY
 
             return S_OK;
         }
-        
-        const EnumMap* __YYAPI GetSystemFontEnumMap()
-        {
-            static const EnumMap SystemFontEnumMap[] =
-            {
-                { "CaptionFont", (int32_t)SystemFont::CaptionFont },
-                { "MenuFont", (int32_t)SystemFont::MenuFont },
-                { "MessageFont", (int32_t)SystemFont::MessageFont },
-                { "SmCaptionFont", (int32_t)SystemFont::SmCaptionFont },
-                { "StatusFont", (int32_t)SystemFont::StatusFont },
-                { "IconFont", (int32_t)SystemFont::IconFont },
-                { }
-            };
-            return SystemFontEnumMap;
-        }
-    } // namespace MegaUI
+    } // namespace Multimedia
 } // namespace YY

@@ -1,13 +1,14 @@
-﻿#pragma once
-
+﻿
 /*
 本文定义了 YY基础库基本的数据类型（类似于 stdint.h），这样做是为了更好的进行跨平台移植工作
 
 我们优先使用 stdint.h 的内容，因为它属于 C++ 标准，更便于人们理解
 */
 
+#pragma once
 #include <stdint.h>
 
+#include <Base/SAL.h>
 #define __YY_PACKING 4
 
 #ifndef __YYAPI
