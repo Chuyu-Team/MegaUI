@@ -572,7 +572,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.ClassProp, _NewValue);
         }
 
-        bool Element::GetEnabled()
+        bool Element::IsEnabled()
         {
             return bSpecEnabled;
         }
@@ -592,7 +592,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.ActiveProp, Value::CreateInt32(_fActive));
         }
 
-        bool Element::GetMouseFocused()
+        bool Element::IsMouseFocused()
         {
             return bSpecMouseFocused;
         }
@@ -984,7 +984,7 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.VisibleProp, Value::CreateBool(bVisible));
         }
 
-        bool Element::GetVisible()
+        bool Element::IsVisible()
         {
             return bCmpVisible;
         }
@@ -1581,7 +1581,7 @@ namespace YY
             if (!pWindow)
                 return false;
 
-            if (GetVisible() == false || GetEnabled() == false || (GetActive() & Active::Keyboard) == 0)
+            if (IsVisible() == false || IsEnabled() == false || (GetActive() & Active::Keyboard) == 0)
                 return false;
 
             auto _hr = SetValueInternal(Element::g_ControlInfoData.KeyboardFocusedProp, Value::CreateBoolTrue(), false);
@@ -1590,7 +1590,7 @@ namespace YY
         
         bool Element::SetFocus()
         {
-            if (GetVisible() == false || GetEnabled() == false || (GetActive() & Active::ActiveMarks) == 0)
+            if (IsVisible() == false || IsEnabled() == false || (GetActive() & Active::ActiveMarks) == 0)
                 return false;
 
             auto _hr = SetValueInternal(Element::g_ControlInfoData.FocusedProp, Value::CreateBoolTrue(), false);
@@ -2504,18 +2504,18 @@ namespace YY
             return true;
         }
 
-        bool Element::VisiblePropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::VisiblePropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
             case CustomPropertyHandleType::OnPropertyChanged:
                 return OnVisiblePropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetDependencies:
-                return GetVisibleDependencies((GetDependenciesHandleData*)_pHandleData);
+                return GetVisiblePropDependencies((GetDependenciesHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
-                return GetVisiblePropertyValue((GetValueHandleData*)_pHandleData);
+                return GetVisiblePropValue((GetValueHandleData*)_pHandleData);
             case CustomPropertyHandleType::SetValue:
-                return SetVisiblePropertyValue((SetValueHandleData*)_pHandleData);
+                return SetVisiblePropValue((SetValueHandleData*)_pHandleData);
             default:
                 break;
             }
@@ -2534,7 +2534,7 @@ namespace YY
             return false;
         }
 
-        bool Element::GetVisiblePropertyValue(GetValueHandleData* _pHandleData)
+        bool Element::GetVisiblePropValue(GetValueHandleData* _pHandleData)
         {
             if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
@@ -2583,7 +2583,7 @@ namespace YY
             return false;
         }
 
-        bool Element::SetVisiblePropertyValue(SetValueHandleData* _pHandleData)
+        bool Element::SetVisiblePropValue(SetValueHandleData* _pHandleData)
         {
             if (_pHandleData->InputNewValue.GetType() == ValueType::boolean)
             {
@@ -2602,14 +2602,14 @@ namespace YY
             return false;
         }
 
-        bool Element::ParentPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::ParentPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
             case CustomPropertyHandleType::OnPropertyChanged:
                 return OnParentPropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetDependencies:
-                return GetParentDependencies((GetDependenciesHandleData*)_pHandleData);
+                return GetParentPropDependencies((GetDependenciesHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
                 break;
             case CustomPropertyHandleType::SetValue:
@@ -2620,7 +2620,7 @@ namespace YY
             return false;
         }
 
-        bool Element::EnabledPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::EnabledPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
@@ -2646,7 +2646,7 @@ namespace YY
             return false;
         }
 
-        bool Element::ActivePropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::ActivePropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
@@ -2668,7 +2668,7 @@ namespace YY
             return false;
         }
         
-        bool Element::DpiPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::DpiPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
@@ -2955,12 +2955,12 @@ namespace YY
                 pWindow->InvalidateRect(nullptr);
         }
         
-        bool Element::ExtentPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::ExtentPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
             case CustomPropertyHandleType::GetValue:
-                GetExtentPropertyValue((GetValueHandleData*)_pHandleData);
+                GetExtentPropValue((GetValueHandleData*)_pHandleData);
                 return true;
             default:
                 break;
@@ -2968,7 +2968,7 @@ namespace YY
             return false;
         }
 
-        bool Element::GetExtentPropertyValue(GetValueHandleData* _pHandleData)
+        bool Element::GetExtentPropValue(GetValueHandleData* _pHandleData)
         {
             auto& pExtentValue = _pHandleData->Output.RetValue;
 
@@ -2984,19 +2984,19 @@ namespace YY
             return true;
         }
 
-        bool Element::LocationPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::LocationPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
             case CustomPropertyHandleType::GetValue:
-                return GetLocationPropertyValue((GetValueHandleData*)_pHandleData);
+                return GetLocationPropValue((GetValueHandleData*)_pHandleData);
             default:
                 break;
             }
             return false;
         }
 
-        bool Element::GetLocationPropertyValue(GetValueHandleData* _pHandleData)
+        bool Element::GetLocationPropValue(GetValueHandleData* _pHandleData)
         {
             auto& _Location = _pHandleData->Output.RetValue;
 
@@ -3013,7 +3013,7 @@ namespace YY
             return true;
         }
         
-        bool Element::MouseFocusedPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::MouseFocusedPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
@@ -3022,16 +3022,16 @@ namespace YY
             case CustomPropertyHandleType::GetDependencies:
                 break;
             case CustomPropertyHandleType::GetValue:
-                return GetMouseFocusedPropertyValue((GetValueHandleData*)_pHandleData);
+                return GetMouseFocusedPropValue((GetValueHandleData*)_pHandleData);
             case CustomPropertyHandleType::SetValue:
-                return SetMouseFocusedPropertyValue((SetValueHandleData*)_pHandleData);
+                return SetMouseFocusedPropValue((SetValueHandleData*)_pHandleData);
             default:
                 break;
             }
             return false;
         }
 
-        bool Element::GetMouseFocusedPropertyValue(GetValueHandleData* _pHandleData)
+        bool Element::GetMouseFocusedPropValue(GetValueHandleData* _pHandleData)
         {
             auto& _RetValue = _pHandleData->Output.RetValue;
 
@@ -3073,7 +3073,7 @@ namespace YY
             return false;
         }
 
-        bool Element::SetMouseFocusedPropertyValue(SetValueHandleData* _pHandleData)
+        bool Element::SetMouseFocusedPropValue(SetValueHandleData* _pHandleData)
         {
             auto& _InputNewValue = _pHandleData->InputNewValue;
 
@@ -3099,7 +3099,7 @@ namespace YY
             return false;
         }
         
-        bool Element::KeyboardFocusedPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::KeyboardFocusedPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
@@ -3108,16 +3108,16 @@ namespace YY
             case CustomPropertyHandleType::GetDependencies:
                 break;
             case CustomPropertyHandleType::GetValue:
-                return GetKeyboardFocusedPropertyValue((GetValueHandleData*)_pHandleData);
+                return GetKeyboardFocusedPropValue((GetValueHandleData*)_pHandleData);
             case CustomPropertyHandleType::SetValue:
-                return SetKeyboardFocusedPropertyValue((SetValueHandleData*)_pHandleData);
+                return SetKeyboardFocusedPropValue((SetValueHandleData*)_pHandleData);
             default:
                 break;
             }
             return false;
         }
 
-        bool Element::GetKeyboardFocusedPropertyValue(GetValueHandleData* _pHandleData)
+        bool Element::GetKeyboardFocusedPropValue(GetValueHandleData* _pHandleData)
         {
             auto& _RetValue = _pHandleData->Output.RetValue;
 
@@ -3159,7 +3159,7 @@ namespace YY
             return false;
         }
 
-        bool Element::SetKeyboardFocusedPropertyValue(SetValueHandleData* _pHandleData)
+        bool Element::SetKeyboardFocusedPropValue(SetValueHandleData* _pHandleData)
         {
             auto& _InputNewValue = _pHandleData->InputNewValue;
 
@@ -3185,21 +3185,21 @@ namespace YY
             return false;
         }
 
-        bool Element::FocusedPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::FocusedPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
             case CustomPropertyHandleType::GetValue:
-                return GetFocusedPropertyValue((GetValueHandleData*)_pHandleData);
+                return GetFocusedPropValue((GetValueHandleData*)_pHandleData);
             case CustomPropertyHandleType::SetValue:
-                return SetFocusedPropertyValue((SetValueHandleData*)_pHandleData);
+                return SetFocusedPropValue((SetValueHandleData*)_pHandleData);
             default:
                 break;
             }
             return false;
         }
 
-        bool Element::GetFocusedPropertyValue(GetValueHandleData* _pHandleData)
+        bool Element::GetFocusedPropValue(GetValueHandleData* _pHandleData)
         {
             auto& _RetValue = _pHandleData->Output.RetValue;
 
@@ -3241,7 +3241,7 @@ namespace YY
             return false;
         }
 
-        bool Element::SetFocusedPropertyValue(SetValueHandleData* _pHandleData)
+        bool Element::SetFocusedPropValue(SetValueHandleData* _pHandleData)
         {
             auto& _InputNewValue = _pHandleData->InputNewValue;
 
@@ -3267,7 +3267,7 @@ namespace YY
             return false;
         }
 
-        bool Element::GetParentDependencies(GetDependenciesHandleData* _pHandleData)
+        bool Element::GetParentPropDependencies(GetDependenciesHandleData* _pHandleData)
         {
             HRESULT& _hrLast = _pHandleData->Output.hr;
 
@@ -3328,19 +3328,19 @@ namespace YY
             return true;
         }
 
-        bool Element::SheetPropertyHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::SheetPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
             case CustomPropertyHandleType::GetDependencies:
-                return GeSheetDependencies((GetDependenciesHandleData*)_pHandleData);
+                return GetSheetPropDependencies((GetDependenciesHandleData*)_pHandleData);
             default:
                 break;
             }
             return false;
         }
 
-        bool Element::GeSheetDependencies(GetDependenciesHandleData* _pHandleData)
+        bool Element::GetSheetPropDependencies(GetDependenciesHandleData* _pHandleData)
         {
             HRESULT& _hrLast = _pHandleData->Output.hr;
 
@@ -3403,7 +3403,7 @@ namespace YY
             return true;
         }
 
-        bool Element::GetVisibleDependencies(GetDependenciesHandleData* _pHandleData)
+        bool Element::GetVisiblePropDependencies(GetDependenciesHandleData* _pHandleData)
         {
             HRESULT& _hrLast = _pHandleData->Output.hr;
 

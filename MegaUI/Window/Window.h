@@ -138,7 +138,7 @@ namespace YY
 
             void __YYAPI OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect);
 
-            HRESULT __YYAPI UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue);
+            HRESULT __YYAPI UpdateDpi(Element* _pElement, Value _OldValue, const Value& _NewValue);
 
             void __YYAPI OnUpdateUiState(uint16_t _eType, uint16_t _fState);
 

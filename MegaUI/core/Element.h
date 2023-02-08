@@ -62,18 +62,18 @@ namespace YY
     // clang-format off
 	//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                         CustomPropertyHandle                      pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::ParentPropertyHandle,      nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0),       ValueType::Element) \
+    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::ParentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0),       ValueType::Element) \
     _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0),   ValueType::ElementList) \
-    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::VisiblePropertyHandle,     nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
-    _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::EnabledPropertyHandle,     nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean   ) \
-    _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::ActivePropertyHandle,      nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, uSpecActive), 0),    ValueType::int32_t   ) \
+    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::VisiblePropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
+    _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::EnabledPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean   ) \
+    _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::ActivePropHandle,          nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, uSpecActive), 0),    ValueType::int32_t   ) \
     _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>,         nullptr,                             nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
     _APPLY(Width,          PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
     _APPLY(Height,         PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
     _APPLY(X,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
     _APPLY(Y,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::CreatePointZero,              &Element::LocationPropertyHandle,    nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Point  ) \
-    _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::CreateSizeZero,               &Element::ExtentPropertyHandle,      nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Size   ) \
+    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::CreatePointZero,              &Element::LocationPropHandle,        nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Point  ) \
+    _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::CreateSizeZero,               &Element::ExtentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Size   ) \
     _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreatePointZero,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0),     ValueType::Point  ) \
     _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocSizeInLayout), 0, 0, 0),     ValueType::Size   ) \
     _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0),      ValueType::Size   ) \
@@ -91,14 +91,14 @@ namespace YY
     _APPLY(FocusStyle,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                             nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                          ValueType::int32_t   ) \
     _APPLY(FocusColor,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color   ) \
     _APPLY(FlowDirection,  PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                             nullptr, FlowDirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecFlowDirection), 0), ValueType::int32_t   ) \
-    _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusedPropertyHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                    ValueType::boolean   ) \
+    _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusedPropHandle,    nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                    ValueType::boolean   ) \
     _APPLY(MouseFocusWithin, PF_LocalOnly | PF_ReadOnly,          0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseFocusWithin), 0, 0, 0), ValueType::boolean   ) \
-    _APPLY(KeyboardFocused,PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusedPropertyHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                 ValueType::boolean   ) \
+    _APPLY(KeyboardFocused,PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusedPropHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                 ValueType::boolean   ) \
     _APPLY(KeyboardFocusWithin, PF_LocalOnly | PF_ReadOnly,       0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocKeyboardFocusWithin), 0, 0, 0), ValueType::boolean   ) \
-    _APPLY(Focused,        PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::FocusedPropertyHandle,     nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
+    _APPLY(Focused,        PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::FocusedPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
     _APPLY(FocusWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocFocusWithin), 0, 0, 0), ValueType::boolean   ) \
     _APPLY(Id,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0),              ValueType::ATOM   ) \
-    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              &Element::SheetPropertyHandle,       nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0),             ValueType::StyleSheet   ) \
+    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              &Element::SheetPropHandle,           nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0),             ValueType::StyleSheet   ) \
     _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString   ) \
     _APPLY(Content,        PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString   ) \
     _APPLY(ContentAlign,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32Zero,              nullptr,                             nullptr, ContentAlignEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, fSpecContentAlign), 0), ValueType::int32_t   ) \
@@ -106,7 +106,7 @@ namespace YY
     _APPLY(FontSize,       PF_Normal | PF_Cascade | PF_Inherit | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay, &Value::CreateFloat<20>,        nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_FLOAT(0, 0, UFIELD_OFFSET(Element, SpecFont.iSize), 0),     ValueType::float_t   ) \
     _APPLY(FontWeight,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32<FontWeight::Normal>, nullptr,                          nullptr, FontWeightEnumMaps, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.uWeight), 0), ValueType::int32_t   ) \
     _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<FontStyle::None>, nullptr,                             nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t   ) \
-    _APPLY(Dpi,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::DpiPropertyHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0),              ValueType::int32_t   ) 
+    _APPLY(Dpi,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::DpiPropHandle,             nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0),              ValueType::int32_t   ) 
 
     // clang-format on
 
@@ -345,7 +345,7 @@ namespace YY
             /// 控件是否被禁用。
             /// </summary>
             /// <returns></returns>
-            bool __YYAPI GetEnabled();
+            bool __YYAPI IsEnabled();
             
             HRESULT __YYAPI SetEnabled(bool _bEnabled);
 
@@ -362,7 +362,7 @@ namespace YY
             /// <returns>HRESULT</returns>
             HRESULT __YYAPI SetActive(uint32_t _fActive);
 
-            bool __YYAPI GetMouseFocused();
+            bool __YYAPI IsMouseFocused();
 
             int32_t __YYAPI GetDpi();
 
@@ -407,7 +407,7 @@ namespace YY
             
             HRESULT __YYAPI SetVisible(bool bVisible);
 
-            bool __YYAPI GetVisible();
+            bool __YYAPI IsVisible();
 
             ElementList __YYAPI GetChildren();
 
@@ -554,31 +554,31 @@ namespace YY
                 return GeneralHandle(_HandleType::HandleType, _pHandleData);
             }
 
-            bool __YYAPI ParentPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI ParentPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
 			virtual bool __YYAPI OnParentPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
             
-            virtual bool __YYAPI GetParentDependencies(GetDependenciesHandleData* _pHandleData);
+            virtual bool __YYAPI GetParentPropDependencies(GetDependenciesHandleData* _pHandleData);
 
-            bool __YYAPI VisiblePropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI VisiblePropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
             
             virtual bool __YYAPI OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
             
-            virtual bool __YYAPI GetVisibleDependencies(_In_ GetDependenciesHandleData* _pHandleData);
+            virtual bool __YYAPI GetVisiblePropDependencies(_In_ GetDependenciesHandleData* _pHandleData);
 
-            bool __YYAPI GetVisiblePropertyValue(_In_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetVisiblePropValue(_In_ GetValueHandleData* _pHandleData);
             
-            bool __YYAPI SetVisiblePropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetVisiblePropValue(_In_ SetValueHandleData* _pHandleData);
 
-			bool __YYAPI EnabledPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+			bool __YYAPI EnabledPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
             
             virtual bool __YYAPI OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
-			bool __YYAPI ActivePropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+			bool __YYAPI ActivePropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
             virtual bool __YYAPI OnActivePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 			
-            bool __YYAPI DpiPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI DpiPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
             virtual bool __YYAPI OnDpiPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
@@ -602,35 +602,35 @@ namespace YY
             
             void __YYAPI UpdateLayoutSize(Size _LayoutSize);
 
-            bool __YYAPI ExtentPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI ExtentPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __YYAPI GetExtentPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetExtentPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __YYAPI LocationPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI LocationPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __YYAPI GetLocationPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetLocationPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __YYAPI MouseFocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI MouseFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __YYAPI GetMouseFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetMouseFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __YYAPI SetMouseFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetMouseFocusedPropValue(_In_ SetValueHandleData* _pHandleData);
             
-            bool __YYAPI KeyboardFocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI KeyboardFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __YYAPI GetKeyboardFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetKeyboardFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __YYAPI SetKeyboardFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetKeyboardFocusedPropValue(_In_ SetValueHandleData* _pHandleData);
 
-            bool __YYAPI FocusedPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI FocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            bool __YYAPI GetFocusedPropertyValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __YYAPI SetFocusedPropertyValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI SetFocusedPropValue(_In_ SetValueHandleData* _pHandleData);
 
-            bool __YYAPI SheetPropertyHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI SheetPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-            virtual bool __YYAPI GeSheetDependencies(_Inout_ GetDependenciesHandleData* _pHandleData);
+            virtual bool __YYAPI GetSheetPropDependencies(_Inout_ GetDependenciesHandleData* _pHandleData);
             
             virtual HRESULT __YYAPI OnHosted(Window* _pNewWindow);
 

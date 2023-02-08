@@ -71,12 +71,12 @@ namespace YY
 
                 _szTitle = pHost->GetTitle();
 
-                if (pHost->GetVisible())
+                if (pHost->IsVisible())
                     _fStyle |= WS_VISIBLE;
                 else
                     _fStyle &= ~WS_VISIBLE;
 
-                if (pHost->GetEnabled())
+                if (pHost->IsEnabled())
                     _fStyle &= ~WS_DISABLED;
                 else
                     _fStyle |= WS_DISABLED;
@@ -232,10 +232,10 @@ namespace YY
             if (!pHost)
                 return nullptr;
             
-            if ((fFindMarks & FindVisible) && pHost->GetVisible() == false)
+            if ((fFindMarks & FindVisible) && pHost->IsVisible() == false)
                 return nullptr;
             
-            if ((fFindMarks & FindEnable) && pHost->GetEnabled() == false)
+            if ((fFindMarks & FindEnable) && pHost->IsEnabled() == false)
                 return nullptr;
 
             Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
@@ -266,7 +266,7 @@ namespace YY
 
                     auto _pChild = _pData[_uSize];
 
-                    if ((fFindMarks & FindVisible) && _pChild->GetVisible() == false)
+                    if ((fFindMarks & FindVisible) && _pChild->IsVisible() == false)
                         continue;
 
                     auto _Location = _pChild->GetLocation();
@@ -290,7 +290,7 @@ namespace YY
                         continue;
                     }
                     
-                    if ((fFindMarks & FindEnable) && _pChild->GetEnabled() == false)
+                    if ((fFindMarks & FindEnable) && _pChild->IsEnabled() == false)
                         return nullptr;
 
                     _pElement = _pChild;
@@ -542,7 +542,7 @@ namespace YY
                 return E_INVALIDARG;
 
             // 不显示就不用绘制
-            if (!_pElement->GetVisible())
+            if (!_pElement->IsVisible())
                 return S_FALSE;
 #if 0
             auto& RenderNode = _pElement->RenderNode;
@@ -688,11 +688,11 @@ namespace YY
                 pHost->PostSourceChange();
             }
 
-            UpdateDPI(pHost, _OldValue, _NewValue);
+            UpdateDpi(pHost, _OldValue, _NewValue);
             pHost->EndDefer(_Cooike);
         }
         
-        HRESULT Window::UpdateDPI(Element* _pElement, Value _OldValue, const Value& _NewValue)
+        HRESULT Window::UpdateDpi(Element* _pElement, Value _OldValue, const Value& _NewValue)
         {
             const auto _iNewDPI = _NewValue.GetInt32();
             for (auto pChild : _pElement->GetChildren())
@@ -711,7 +711,7 @@ namespace YY
                     pChild->PostSourceChange();
                 }
 
-                auto _hr = UpdateDPI(pChild, _OldValue, _NewValue);
+                auto _hr = UpdateDpi(pChild, _OldValue, _NewValue);
                 if (FAILED(_hr))
                     return _hr;
             }
