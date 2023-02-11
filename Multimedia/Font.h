@@ -26,13 +26,15 @@ namespace YY
             constexpr auto UltraBlack = 950;
         } // namespace FontWeight
 
-        namespace FontStyle
+        enum class FontStyle
         {
-            constexpr auto None = 0x00000000;
-            constexpr auto Italic = 0x00000001;
-            constexpr auto Underline = 0x00000002;
-            constexpr auto StrikeOut = 0x00000004;
-        } // namespace FontStyle
+            None = 0x00000000,
+            Italic = 0x00000001,
+            Underline = 0x00000002,
+            StrikeOut = 0x00000004,
+        };
+
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(FontStyle);
 
         // 保存字体的基本信息
         struct Font
@@ -44,7 +46,7 @@ namespace YY
             // 字体的粗细，FontWeight
             uint32_t uWeight = 0;
             // FontStyle 的位组合
-            uint32_t fStyle = 0;
+            FontStyle fStyle = FontStyle::None;
         };
 
         enum class SystemFont : uint32_t

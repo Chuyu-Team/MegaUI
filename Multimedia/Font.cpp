@@ -14,7 +14,7 @@ namespace YY
             _pFont->szFace.Clear();
             _pFont->iSize = 0;
             _pFont->uWeight = 0;
-            _pFont->fStyle = 0;
+            _pFont->fStyle = FontStyle::None;
 
             if (_eSystemFont >= SystemFont::SystemFontCount)
                 return E_NOINTERFACE;

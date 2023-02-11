@@ -406,7 +406,7 @@ namespace YY
                 _In_ const Font& _FontInfo,
                 _In_ Color _crTextColor,
                 _In_ const Rect& _LayoutRect,
-                _In_ int32_t _fTextAlign
+                _In_ ContentAlignStyle _fTextAlign
                 ) override
             {
                 DWrite.DrawString(pDeviceContext, _szText, _FontInfo, _crTextColor, _LayoutRect, _fTextAlign);
@@ -419,7 +419,7 @@ namespace YY
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
                 _In_ const Size& _LayoutSize,
-                _In_ int32_t _fTextAlign,
+                _In_ ContentAlignStyle _fTextAlign,
                 _Out_ Size* _pExtent
                 ) override
             {

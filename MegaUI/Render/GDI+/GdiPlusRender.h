@@ -256,7 +256,7 @@ namespace YY
                 if (_FontInfo.uWeight <= FontWeight::Medium)
                 {
                     // Regular
-                    if (_FontInfo.fStyle & FontStyle::Italic)
+                    if (HasFlags(_FontInfo.fStyle, FontStyle::Italic))
                     {
                         _fFontStyle = Gdiplus::FontStyleItalic;
                     }
@@ -268,7 +268,7 @@ namespace YY
                 else
                 {
                     // Bold
-                    if (_FontInfo.fStyle & FontStyle::Italic)
+                    if (HasFlags(_FontInfo.fStyle, FontStyle::Italic))
                     {
                         _fFontStyle = Gdiplus::FontStyleBoldItalic;
                     }
@@ -278,12 +278,12 @@ namespace YY
                     }
                 }
 
-                if (_FontInfo.fStyle & FontStyle::Underline)
+                if (HasFlags(_FontInfo.fStyle, FontStyle::Underline))
                 {
                     _fFontStyle |= Gdiplus::FontStyleUnderline;
                 }
 
-                if (_FontInfo.fStyle & FontStyle::StrikeOut)
+                if (HasFlags(_FontInfo.fStyle, FontStyle::StrikeOut))
                 {
                     _fFontStyle |= Gdiplus::FontStyleStrikeout;
                 }
@@ -292,13 +292,13 @@ namespace YY
             }
 
             // 
-            static Gdiplus::StringAlignment __YYAPI GetFontAlignment(_In_ int32_t _fTextAlign)
+            static Gdiplus::StringAlignment __YYAPI GetFontAlignment(_In_ ContentAlignStyle _fTextAlign)
             {
-                if (_fTextAlign & ContentAlign::Right)
+                if (HasFlags(_fTextAlign, ContentAlignStyle::Right))
                 {
                     return Gdiplus::StringAlignmentFar;
                 }
-                else if (_fTextAlign & ContentAlign::Center)
+                else if (HasFlags(_fTextAlign, ContentAlignStyle::Center))
                 {
                     return Gdiplus::StringAlignmentCenter;
                 }
@@ -308,13 +308,13 @@ namespace YY
                 }
             }
 
-            static Gdiplus::StringAlignment __YYAPI GetFontLineAlignment(_In_ int32_t _fTextAlign)
+            static Gdiplus::StringAlignment __YYAPI GetFontLineAlignment(_In_ ContentAlignStyle _fTextAlign)
             {
-                if (_fTextAlign & ContentAlign::Bottom)
+                if (HasFlags(_fTextAlign, ContentAlignStyle::Bottom))
                 {
                     return Gdiplus::StringAlignmentFar;
                 }
-                else if (_fTextAlign & ContentAlign::Middle)
+                else if (HasFlags(_fTextAlign, ContentAlignStyle::Middle))
                 {
                     return Gdiplus::StringAlignmentCenter;
                 }
@@ -332,7 +332,7 @@ namespace YY
                 _In_ const Font& _FontInfo,
                 _In_ Color _crTextColor,
                 _In_ const Rect& _LayoutRect,
-                _In_ int32_t _fTextAlign
+                _In_ ContentAlignStyle _fTextAlign
                 ) override
             {
                 if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty() || pSurface == nullptr)
@@ -345,14 +345,14 @@ namespace YY
                 Gdiplus::Font _Font(&_FontFamily, _FontInfo.iSize, GetFontStyle(_FontInfo), Gdiplus::Unit::UnitPixel);
 
                 int32_t _fStringFormatFlags = 0;
-                if ((_fTextAlign & ContentAlign::Wrap) == 0)
+                if (!HasFlags(_fTextAlign, ContentAlignStyle::Wrap))
                     _fStringFormatFlags |= Gdiplus::StringFormatFlags::StringFormatFlagsNoWrap;
 
                 Gdiplus::StringFormat _Format(_fStringFormatFlags);
                 _Format.SetAlignment(GetFontAlignment(_fTextAlign));
                 _Format.SetLineAlignment(GetFontLineAlignment(_fTextAlign));
 
-                if (_fTextAlign & ContentAlign::EndEllipsis)
+                if (HasFlags(_fTextAlign, ContentAlignStyle::EndEllipsis))
                     _Format.SetTrimming(Gdiplus::StringTrimming::StringTrimmingEllipsisCharacter);
 
                 Gdiplus::SolidBrush _Brush(_crTextColor);
@@ -367,7 +367,7 @@ namespace YY
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
                 _In_ const Size& _LayoutSize,
-                _In_ int32_t _fTextAlign,
+                _In_ ContentAlignStyle _fTextAlign,
                 _Out_ Size* _pExtent) override
             {
                 _pExtent->Width = 0;
@@ -380,14 +380,14 @@ namespace YY
                 Gdiplus::Font _Font(&_FontFamily, _FontInfo.iSize, GetFontStyle(_FontInfo), Gdiplus::Unit::UnitPixel);
 
                 int32_t _fStringFormatFlags = 0;
-                if ((_fTextAlign & ContentAlign::Wrap) == 0)
+                if (!HasFlags(_fTextAlign, ContentAlignStyle::Wrap))
                     _fStringFormatFlags |= Gdiplus::StringFormatFlags::StringFormatFlagsNoWrap;
 
                 Gdiplus::StringFormat _Format(_fStringFormatFlags);
                 _Format.SetAlignment(GetFontAlignment(_fTextAlign));
                 _Format.SetLineAlignment(GetFontLineAlignment(_fTextAlign));
 
-                if (_fTextAlign & ContentAlign::EndEllipsis)
+                if (HasFlags(_fTextAlign, ContentAlignStyle::EndEllipsis))
                     _Format.SetTrimming(Gdiplus::StringTrimming::StringTrimmingEllipsisCharacter);
 
                 Gdiplus::SizeF _Extent;

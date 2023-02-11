@@ -29,13 +29,16 @@ namespace YY
     namespace MegaUI
     {
         // ActiveProp
-        namespace Active
+        enum class Active
         {
-            constexpr auto Inactive = 0x00000000;
-            constexpr auto Mouse = 0x00000001;
-            constexpr auto Keyboard = 0x00000002;
-            constexpr auto ActiveMarks = Mouse | Keyboard;
-        }
+            None = 0x00000000,
+            Mouse = 0x00000001,
+            Keyboard = 0x00000002,
+        };
+
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(Active);
+
+        static constexpr auto AllActive = Active::Mouse | Active::Keyboard;
 
         // BorderStyleProp
         enum class BorderStyle
@@ -66,7 +69,7 @@ namespace YY
     _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0),   ValueType::ElementList) \
     _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::VisiblePropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecVisible), 0),                                                     ValueType::boolean   ) \
     _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::EnabledPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean   ) \
-    _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::ActivePropHandle,          nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, uSpecActive), 0),    ValueType::int32_t   ) \
+    _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::ActivePropHandle,          nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, fSpecActive), 0),    ValueType::int32_t   ) \
     _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>,         nullptr,                             nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
     _APPLY(Width,          PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
     _APPLY(Height,         PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
@@ -105,7 +108,7 @@ namespace YY
     _APPLY(FontFamily,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFontFamily,      nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_STRING(0, 0, UFIELD_OFFSET(Element, SpecFont.szFace), 0),   ValueType::uString   ) \
     _APPLY(FontSize,       PF_Normal | PF_Cascade | PF_Inherit | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay, &Value::CreateFloat<20>,        nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_FLOAT(0, 0, UFIELD_OFFSET(Element, SpecFont.iSize), 0),     ValueType::float_t   ) \
     _APPLY(FontWeight,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32<FontWeight::Normal>, nullptr,                          nullptr, FontWeightEnumMaps, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.uWeight), 0), ValueType::int32_t   ) \
-    _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<FontStyle::None>, nullptr,                             nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t   ) \
+    _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<(int32_t)FontStyle::None>, nullptr,                             nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t   ) \
     _APPLY(Dpi,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::DpiPropHandle,             nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0),              ValueType::int32_t   ) 
 
     // clang-format on
@@ -185,7 +188,7 @@ namespace YY
             // 0x58 ID
             ATOM SpecID;
             
-            uint32_t uSpecActive = Active::Inactive;
+            Active fSpecActive = Active::None;
             //bits
 #define _MEGA_UI_ELEMENT_BITS_TABLE(_APPLY) \
     _APPLY(bSelfLayout, 1)                  \
@@ -244,7 +247,7 @@ namespace YY
             // 最小限制
             Size SpecMinSize = {};
             FlowDirection iSpecFlowDirection = FlowDirection::LeftToRight;
-            int32_t fSpecContentAlign = ContentAlign::Top | ContentAlign::Left;
+            ContentAlignStyle fSpecContentAlign = ContentAlignStyle::Top | ContentAlignStyle::Left;
             // 当前DPI值
             int32_t iLocDpi = 96;
             // 承载控件的窗口
@@ -352,15 +355,15 @@ namespace YY
             /// <summary>
             /// 返回控件是否需要主动处理鼠标或者键盘的焦点状态。
             /// </summary>
-            /// <returns>ActiveMarks的位组合</returns>
-            uint32_t __YYAPI GetActive();
+            /// <returns>Active的位组合</returns>
+            Active __YYAPI GetActive();
 
             /// <summary>
             /// 设置控件需要主动处理是焦点状态。比如设置鼠标后可以主动处理鼠标焦点。
             /// </summary>
-            /// <param name="_fActive">ActiveMarks的位组合</param>
+            /// <param name="_fActive">Active的位组合</param>
             /// <returns>HRESULT</returns>
-            HRESULT __YYAPI SetActive(uint32_t _fActive);
+            HRESULT __YYAPI SetActive(Active _fActive);
 
             bool __YYAPI IsMouseFocused();
 
@@ -378,9 +381,9 @@ namespace YY
 
             HRESULT __YYAPI SetFontWeight(uint32_t _iFontWeight);
 
-            uint32_t __YYAPI GetFontStyle();
+            FontStyle __YYAPI GetFontStyle();
 
-            HRESULT __YYAPI SetFontStyle(uint32_t _fFontStyle);
+            HRESULT __YYAPI SetFontStyle(FontStyle _fFontStyle);
 
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
@@ -467,7 +470,7 @@ namespace YY
                 _In_ const Font& _FontInfo,
                 _In_ Color _ForegroundColor,
                 _In_ const Rect& _Bounds,
-                _In_ int32_t _fContentAlign
+                _In_ ContentAlignStyle _fContentAlign
                 );
 
             virtual Size __YYAPI GetContentSize(Size _ConstraintSize);

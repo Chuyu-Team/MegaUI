@@ -44,22 +44,22 @@ namespace YY
         
         static const EnumMap ActiveEnumMap[] =
         {
-            { "Inactive", Active::Inactive },
-            { "Mouse", Active::Mouse },
-            { "Keyboard", Active::Keyboard },
+            { "None", int32_t(Active::None) },
+            { "Mouse", int32_t(Active::Mouse) },
+            { "Keyboard", int32_t(Active::Keyboard) },
             { }
         };
 
         static const EnumMap ContentAlignEnumMap[] =
         {
-            { "Left", ContentAlign::Left },
-            { "Center", ContentAlign::Center },
-            { "Right", ContentAlign::Right },
-            { "Top", ContentAlign::Top },
-            { "Middle", ContentAlign::Middle },
-            { "Bottom", ContentAlign::Bottom },
-            { "Wrap", ContentAlign::Wrap },
-            { "EndEllipsis", ContentAlign::EndEllipsis },
+            { "Left", (int32_t)ContentAlignStyle::Left },
+            { "Center", (int32_t)ContentAlignStyle::Center },
+            { "Right", (int32_t)ContentAlignStyle::Right },
+            { "Top", (int32_t)ContentAlignStyle::Top },
+            { "Middle", (int32_t)ContentAlignStyle::Middle },
+            { "Bottom", (int32_t)ContentAlignStyle::Bottom },
+            { "Wrap", (int32_t)ContentAlignStyle::Wrap },
+            { "EndEllipsis", (int32_t)ContentAlignStyle::EndEllipsis },
             { }
         };
 
@@ -87,10 +87,10 @@ namespace YY
 
         static constexpr const EnumMap FontStyleEnumMap[] =
         {
-            {"None", FontStyle::None},
-            {"Italic", FontStyle::Italic},
-            {"Underline", FontStyle::Underline},
-            {"StrikeOut", FontStyle::StrikeOut},
+            {"None", (int32_t)FontStyle::None},
+            {"Italic", (int32_t)FontStyle::Italic},
+            {"Underline", (int32_t)FontStyle::Underline},
+            {"StrikeOut", (int32_t)FontStyle::StrikeOut},
             {},
         };
 
@@ -135,7 +135,7 @@ namespace YY
             SpecFont.szFace = Element::g_ControlInfoData.FontFamilyProp.pFunDefaultValue().GetString();
             SpecFont.iSize = Element::g_ControlInfoData.FontSizeProp.pFunDefaultValue().GetFloat();
             SpecFont.uWeight = Element::g_ControlInfoData.FontWeightProp.pFunDefaultValue().GetInt32();
-            SpecFont.fStyle = Element::g_ControlInfoData.FontStyleProp.pFunDefaultValue().GetInt32();
+            SpecFont.fStyle = (FontStyle)Element::g_ControlInfoData.FontStyleProp.pFunDefaultValue().GetInt32();
         }
 
         Element::~Element()
@@ -497,14 +497,14 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.EnabledProp, Value::CreateBool(_bEnabled));
         }
 
-        uint32_t Element::GetActive()
+        Active Element::GetActive()
         {
-            return uSpecActive;
+            return fSpecActive;
         }
 
-        HRESULT Element::SetActive(uint32_t _fActive)
+        HRESULT Element::SetActive(Active _fActive)
         {
-            return SetValue(Element::g_ControlInfoData.ActiveProp, Value::CreateInt32(_fActive));
+            return SetValue(Element::g_ControlInfoData.ActiveProp, Value::CreateInt32((int32_t)_fActive));
         }
 
         bool Element::IsMouseFocused()
@@ -792,14 +792,14 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FontWeightProp, _FontWeightValue);
         }
 
-        uint32_t Element::GetFontStyle()
+        FontStyle Element::GetFontStyle()
         {
             return SpecFont.fStyle;
         }
 
-        HRESULT Element::SetFontStyle(uint32_t _fFontStyle)
+        HRESULT Element::SetFontStyle(FontStyle _fFontStyle)
         {
-            auto _FontStyleValue = Value::CreateInt32(_fFontStyle);
+            auto _FontStyleValue = Value::CreateInt32((int32_t)_fFontStyle);
             if (_FontStyleValue == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -1111,7 +1111,7 @@ namespace YY
             const Font& _FontInfo,
             Color _ForegroundColor,
             const Rect& _Bounds,
-            int32_t _fContentAlign
+            ContentAlignStyle _fContentAlign
             )
         {
             if (_Content.GetType() == ValueType::uString)
@@ -1496,7 +1496,7 @@ namespace YY
             if (!pWindow)
                 return false;
 
-            if (IsVisible() == false || IsEnabled() == false || (GetActive() & Active::Keyboard) == 0)
+            if (IsVisible() == false || IsEnabled() == false || HasFlags(GetActive(), Active::Keyboard) == false)
                 return false;
 
             auto _hr = SetValueInternal(Element::g_ControlInfoData.KeyboardFocusedProp, Value::CreateBoolTrue(), false);
@@ -1505,7 +1505,7 @@ namespace YY
         
         bool Element::SetFocus()
         {
-            if (IsVisible() == false || IsEnabled() == false || (GetActive() & Active::ActiveMarks) == 0)
+            if (IsVisible() == false || IsEnabled() == false || HasFlags(GetActive(), AllActive) == false)
                 return false;
 
             auto _hr = SetValueInternal(Element::g_ControlInfoData.FocusedProp, Value::CreateBoolTrue(), false);
@@ -3116,7 +3116,7 @@ namespace YY
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
                 // 如果自己需要处理鼠标焦点，那么阻止 父节点继承
-                if (GetActive() & Active::Mouse)
+                if (HasFlags(GetActive(),Active::Mouse))
                     _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
 
                 return false;
@@ -3230,7 +3230,7 @@ namespace YY
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
                 // 如果自己需要处理键盘焦点，那么阻止 父节点继承
-                if (GetActive() & Active::Keyboard)
+                if (HasFlags(GetActive(), Active::Keyboard))
                     _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
 
                 return false;
@@ -3339,7 +3339,7 @@ namespace YY
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
                 // 如果自己需要处理键盘焦点，那么阻止 父节点继承
-                if (GetActive() & Active::ActiveMarks)
+                if (HasFlags(GetActive(), AllActive))
                     _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
 
                 return false;

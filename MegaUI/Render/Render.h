@@ -13,23 +13,25 @@ namespace YY
 {
     namespace MegaUI
     {
-        namespace ContentAlign
+        enum class ContentAlignStyle
         {
             // 横向对齐方式
-            constexpr auto Left = 0x00000000;
-            constexpr auto Center = 0x00000001;
-            constexpr auto Right = 0x00000002;
+            Left = 0x00000000,
+            Center = 0x00000001,
+            Right = 0x00000002,
 
             // 纵向对齐方式
-            constexpr auto Top = 0x00000000;
-            constexpr auto Middle = 0x00000004;
-            constexpr auto Bottom = 0x00000008;
+            Top = 0x00000000,
+            Middle = 0x00000004,
+            Bottom = 0x00000008,
 
             // 允许换行，一般文字排版使用
-            constexpr auto Wrap = 0x00000010;
+            Wrap = 0x00000010,
             // 将显示不下的字符统一显示为 "..."
-            constexpr auto EndEllipsis = 0x00000020;
-        }
+            EndEllipsis = 0x00000020,
+        };
+
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(ContentAlignStyle);
 
         // 用于保存 Element 的位置以及是否缓存绘制信息
         struct ElementRenderNode
@@ -111,7 +113,7 @@ namespace YY
                 _In_ const Font& _FontInfo,
                 _In_ Color _crTextColor,
                 _In_ const Rect& _LayoutRect,
-                _In_ int32_t _fTextAlign
+                _In_ ContentAlignStyle _fTextAlign
                 ) = 0;
 
             virtual
@@ -121,7 +123,7 @@ namespace YY
                 _In_ uStringView _szText,
                 _In_ const Font& _FontInfo,
                 _In_ const Size& _LayoutSize,
-                _In_ int32_t _fTextAlign,
+                _In_ ContentAlignStyle _fTextAlign,
                 _Out_ Size* _pExtent) = 0;
         };
 

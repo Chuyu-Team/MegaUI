@@ -250,7 +250,7 @@ namespace YY
             auto _fActiveMarks = fFindMarks & FindActionMarks;
             for (;;)
             {
-                if (_fActiveMarks == 0 || (_pElement->GetActive() & _fActiveMarks))
+                if (_fActiveMarks == 0 || HasFlags(_pElement->GetActive(), Active(_fActiveMarks)))
                     _pLastFind = _pElement;
 
                 auto _Children = _pElement->GetChildren();
