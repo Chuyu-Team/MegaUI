@@ -113,7 +113,7 @@ namespace YY
             , SpecID(0)
             , bSelfLayout(false)
             , fNeedsLayout(0)
-            , bLocMouseFocusWithin(false)
+            , uLocMouseFocusWithin(0)
             , bDestroy(false)
             , bSpecVisible(false)
             , bCmpVisible(false)
@@ -123,11 +123,11 @@ namespace YY
             , bSpecMouseFocused(false)
             , bSpecFocusVisible(false)
             , bNeedsDSUpdate(true)
-            , bLocKeyboardFocusWithin(false)
+            , uLocKeyboardFocusWithin(0)
             , bHasLocKeyboardFocused(false)
             , bLocKeyboardFocused(false)
             , bSpecKeyboardFocused(false)
-            , bLocFocusWithin(false)
+            , uLocFocusWithin(0)
             , bHasLocFocused(false)
             , bLocFocused(false)
             , bSpecFocused(false)
@@ -549,7 +549,7 @@ namespace YY
 
         bool Element::IsMouseFocusWithin()
         {
-            return bLocMouseFocusWithin;
+            return uLocMouseFocusWithin != 0;
         }
 
         uString Element::GetClass()
@@ -2166,7 +2166,6 @@ namespace YY
                     return true;
             }
 
-
             uint16_t _uOffsetToCache = 0;
             uint16_t _uOffsetToHasCache = 0;
             uint8_t _uCacheBit;
@@ -3018,15 +3017,64 @@ namespace YY
             switch (_eType)
             {
             case CustomPropertyHandleType::OnPropertyChanged:
-                break;
-            case CustomPropertyHandleType::GetDependencies:
-                break;
+                return OnMouseFocusedPropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
                 return GetMouseFocusedPropValue((GetValueHandleData*)_pHandleData);
-            case CustomPropertyHandleType::SetValue:
-                return SetMouseFocusedPropValue((SetValueHandleData*)_pHandleData);
-            default:
-                break;
+            }
+            return false;
+        }
+
+        bool Element::OnMouseFocusedPropChanged(OnPropertyChangedHandleData* _pHandleData)
+        {
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                auto _bOldMouseFocused = _pHandleData->OldValue.GetType() == ValueType::boolean && _pHandleData->OldValue.GetBool();
+                auto _bNewMouseFocused = _pHandleData->NewValue.GetType() == ValueType::boolean && _pHandleData->NewValue.GetBool();
+
+                if (_bOldMouseFocused != _bNewMouseFocused)
+                {
+                    intptr_t _Cooike;
+                    StartDefer(&_Cooike);
+
+                    if (_bNewMouseFocused)
+                    {
+                        // 当前节点获得了鼠标焦点
+                        for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                        {
+                            if (_pParent->uLocMouseFocusWithin == 0)
+                            {
+                                _pParent->PreSourceChange(Element::g_ControlInfoData.MouseFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
+                                _pParent->uLocMouseFocusWithin = 1;
+                                _pParent->PostSourceChange();
+                            }
+                            else
+                            {
+                                _pParent->uLocMouseFocusWithin += 1;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 当前节点鼠标焦点没了
+                        for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                        {
+                            if (_pParent->uLocMouseFocusWithin == 1)
+                            {
+                                _pParent->PreSourceChange(Element::g_ControlInfoData.MouseFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
+                                _pParent->uLocMouseFocusWithin = 0;
+                                _pParent->PostSourceChange();
+                            }
+                            else
+                            {
+                                _pParent->uLocMouseFocusWithin -= 1;
+                            }
+                        }
+                    }
+
+                    EndDefer(_Cooike);
+                }
+
+                return true;
             }
             return false;
         }
@@ -3037,16 +3085,8 @@ namespace YY
 
             if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                if (bHasLocMouseFocused)
-                {
-                    _RetValue = Value::CreateBool(bLocMouseFocused);
-                }
-                else
-                {
-                    _RetValue = Value::CreateUnset();
-                }
-                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                return true;
+                // 使用默认逻辑即可
+                return false;
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
@@ -3073,33 +3113,7 @@ namespace YY
             return false;
         }
 
-        bool Element::SetMouseFocusedPropValue(SetValueHandleData* _pHandleData)
-        {
-            auto& _InputNewValue = _pHandleData->InputNewValue;
-
-            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
-            {
-                if (_InputNewValue.GetType() == ValueType::Unset)
-                {
-                    bHasLocMouseFocused = false;
-                }
-                else
-                {
-                    bHasLocMouseFocused = true;
-                    bLocMouseFocused = _InputNewValue.GetBool();
-                }
-                return true;
-            }
-            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
-            {
-                bSpecMouseFocused = _InputNewValue.GetBool();
-                return true;
-            }
-
-            return false;
-        }
-        
-        bool Element::KeyboardFocusedPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        bool Element::MouseFocusWithinPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
@@ -3108,12 +3122,89 @@ namespace YY
             case CustomPropertyHandleType::GetDependencies:
                 break;
             case CustomPropertyHandleType::GetValue:
-                return GetKeyboardFocusedPropValue((GetValueHandleData*)_pHandleData);
-            case CustomPropertyHandleType::SetValue:
-                return SetKeyboardFocusedPropValue((SetValueHandleData*)_pHandleData);
-            default:
-                break;
+                return GetMouseFocusWithinPropValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::FastSpecValueCompare:
+            {
+                auto _pData = ((FastSpecValueCompareHandleData*)_pHandleData);
+                _pData->Output.iResult = uLocMouseFocusWithin == 0 == _pData->pOther->uLocMouseFocusWithin == 0 ? 1 : 0;
+                return true;
             }
+            }
+            return false;
+        }
+
+        bool Element::GetMouseFocusWithinPropValue(GetValueHandleData* _pHandleData)
+        {
+            _pHandleData->Output.RetValue = Value::CreateBool(uLocMouseFocusWithin != 0);
+            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+            return true;
+        }
+        
+        bool Element::KeyboardFocusedPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        {
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                return OnKeyboardFocusedPropChanged((OnPropertyChangedHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetValue:
+                return GetKeyboardFocusedPropValue((GetValueHandleData*)_pHandleData);
+            }
+            return false;
+        }
+
+        bool Element::OnKeyboardFocusedPropChanged(OnPropertyChangedHandleData* _pHandleData)
+        {
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                auto _bOldFocused = _pHandleData->OldValue.GetType() == ValueType::boolean && _pHandleData->OldValue.GetBool();
+                auto _bNewFocused = _pHandleData->NewValue.GetType() == ValueType::boolean && _pHandleData->NewValue.GetBool();
+
+                if (_bOldFocused != _bNewFocused)
+                {
+                    intptr_t _Cooike;
+                    StartDefer(&_Cooike);
+
+                    if (_bNewFocused)
+                    {
+                        // 当前节点获得了鼠标焦点
+                        for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                        {
+                            if (_pParent->uLocKeyboardFocusWithin == 0)
+                            {
+                                _pParent->PreSourceChange(Element::g_ControlInfoData.KeyboardFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
+                                _pParent->uLocKeyboardFocusWithin = 1;
+                                _pParent->PostSourceChange();
+                            }
+                            else
+                            {
+                                _pParent->uLocKeyboardFocusWithin += 1;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 当前节点鼠标焦点没了
+                        for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                        {
+                            if (_pParent->uLocKeyboardFocusWithin == 1)
+                            {
+                                _pParent->PreSourceChange(Element::g_ControlInfoData.KeyboardFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
+                                _pParent->uLocKeyboardFocusWithin = 0;
+                                _pParent->PostSourceChange();
+                            }
+                            else
+                            {
+                                _pParent->uLocKeyboardFocusWithin -= 1;
+                            }
+                        }
+                    }
+
+                    EndDefer(_Cooike);
+                }
+
+                return true;
+            }
+
             return false;
         }
 
@@ -3123,16 +3214,7 @@ namespace YY
 
             if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                if (bHasLocKeyboardFocused)
-                {
-                    _RetValue = Value::CreateBool(bLocKeyboardFocused);
-                }
-                else
-                {
-                    _RetValue = Value::CreateUnset();
-                }
-                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                return true;
+                return false;
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
@@ -3159,42 +3241,91 @@ namespace YY
             return false;
         }
 
-        bool Element::SetKeyboardFocusedPropValue(SetValueHandleData* _pHandleData)
+        bool Element::KeyboardFocusWithinPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            auto& _InputNewValue = _pHandleData->InputNewValue;
-
-            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            switch (_eType)
             {
-                if (_InputNewValue.GetType() == ValueType::Unset)
-                {
-                    bHasLocKeyboardFocused = false;
-                }
-                else
-                {
-                    bHasLocKeyboardFocused = true;
-                    bLocKeyboardFocused = _InputNewValue.GetBool();
-                }
+            case CustomPropertyHandleType::GetValue:
+                return GetKeyboardFocusWithinPropValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::FastSpecValueCompare:
+            {
+                auto _pData = ((FastSpecValueCompareHandleData*)_pHandleData);
+                _pData->Output.iResult = uLocKeyboardFocusWithin == 0 == _pData->pOther->uLocKeyboardFocusWithin == 0 ? 1 : 0;
                 return true;
             }
-            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
-            {
-                bSpecKeyboardFocused = _InputNewValue.GetBool();
-                return true;
             }
-
             return false;
+        }
+
+        bool Element::GetKeyboardFocusWithinPropValue(GetValueHandleData* _pHandleData)
+        {
+            _pHandleData->Output.RetValue = Value::CreateBool(uLocKeyboardFocusWithin != 0);
+            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+            return true;
         }
 
         bool Element::FocusedPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
             switch (_eType)
             {
+            case CustomPropertyHandleType::OnPropertyChanged:
+                return OnFocusedPropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
                 return GetFocusedPropValue((GetValueHandleData*)_pHandleData);
-            case CustomPropertyHandleType::SetValue:
-                return SetFocusedPropValue((SetValueHandleData*)_pHandleData);
-            default:
-                break;
+            }
+            return false;
+        }
+
+        bool Element::OnFocusedPropChanged(OnPropertyChangedHandleData* _pHandleData)
+        {
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                auto _bOldFocused = _pHandleData->OldValue.GetType() == ValueType::boolean && _pHandleData->OldValue.GetBool();
+                auto _bNewFocused = _pHandleData->NewValue.GetType() == ValueType::boolean && _pHandleData->NewValue.GetBool();
+
+                if (_bOldFocused != _bNewFocused)
+                {
+                    intptr_t _Cooike;
+                    StartDefer(&_Cooike);
+
+                    if (_bNewFocused)
+                    {
+                        // 当前节点获得了鼠标焦点
+                        for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                        {
+                            if (_pParent->uLocFocusWithin == 0)
+                            {
+                                _pParent->PreSourceChange(Element::g_ControlInfoData.FocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
+                                _pParent->uLocFocusWithin = 1;
+                                _pParent->PostSourceChange();
+                            }
+                            else
+                            {
+                                _pParent->uLocFocusWithin += 1;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 当前节点鼠标焦点没了
+                        for (auto _pParent = GetParent(); _pParent; _pParent = _pParent->GetParent())
+                        {
+                            if (_pParent->uLocFocusWithin == 1)
+                            {
+                                _pParent->PreSourceChange(Element::g_ControlInfoData.FocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
+                                _pParent->uLocFocusWithin = 0;
+                                _pParent->PostSourceChange();
+                            }
+                            else
+                            {
+                                _pParent->uLocFocusWithin -= 1;
+                            }
+                        }
+                    }
+
+                    EndDefer(_Cooike);
+                }
+                return true;
             }
             return false;
         }
@@ -3205,16 +3336,8 @@ namespace YY
 
             if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                if (bHasLocFocused)
-                {
-                    _RetValue = Value::CreateBool(bLocFocused);
-                }
-                else
-                {
-                    _RetValue = Value::CreateUnset();
-                }
-                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                return true;
+                // 使用默认逻辑即可
+                return false;
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
@@ -3241,30 +3364,22 @@ namespace YY
             return false;
         }
 
-        bool Element::SetFocusedPropValue(SetValueHandleData* _pHandleData)
+        bool Element::FocusWithinPropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
         {
-            auto& _InputNewValue = _pHandleData->InputNewValue;
-
-            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            switch (_eType)
             {
-                if (_InputNewValue.GetType() == ValueType::Unset)
-                {
-                    bHasLocKeyboardFocused = false;
-                }
-                else
-                {
-                    bHasLocKeyboardFocused = true;
-                    bLocKeyboardFocused = _InputNewValue.GetBool();
-                }
-                return true;
+            case CustomPropertyHandleType::GetValue:
+                return GetFocusWithinPropValue((GetValueHandleData*)_pHandleData);
             }
-            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
-            {
-                bSpecKeyboardFocused = _InputNewValue.GetBool();
-                return true;
-            }
-
+            
             return false;
+        }
+
+        bool Element::GetFocusWithinPropValue(GetValueHandleData* _pHandleData)
+        {
+            _pHandleData->Output.RetValue = Value::CreateBool(uLocFocusWithin != 0);
+            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+            return true;
         }
 
         bool Element::GetParentPropDependencies(GetDependenciesHandleData* _pHandleData)

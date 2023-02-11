@@ -91,12 +91,12 @@ namespace YY
     _APPLY(FocusStyle,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                             nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                          ValueType::int32_t   ) \
     _APPLY(FocusColor,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color   ) \
     _APPLY(FlowDirection,  PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                             nullptr, FlowDirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecFlowDirection), 0), ValueType::int32_t   ) \
-    _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusedPropHandle,    nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                    ValueType::boolean   ) \
-    _APPLY(MouseFocusWithin, PF_LocalOnly | PF_ReadOnly,          0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseFocusWithin), 0, 0, 0), ValueType::boolean   ) \
-    _APPLY(KeyboardFocused,PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusedPropHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                 ValueType::boolean   ) \
-    _APPLY(KeyboardFocusWithin, PF_LocalOnly | PF_ReadOnly,       0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocKeyboardFocusWithin), 0, 0, 0), ValueType::boolean   ) \
-    _APPLY(Focused,        PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::FocusedPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
-    _APPLY(FocusWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocFocusWithin), 0, 0, 0), ValueType::boolean   ) \
+    _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusedPropHandle,    nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bHasLocMouseFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecMouseFocused), 0), ValueType::boolean ) \
+    _APPLY(MouseFocusWithin, PF_LocalOnly | PF_ReadOnly,          0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusWithinPropHandle,nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
+    _APPLY(KeyboardFocused,PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusedPropHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocKeyboardFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bHasLocKeyboardFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecKeyboardFocused), 0), ValueType::boolean   ) \
+    _APPLY(KeyboardFocusWithin, PF_LocalOnly | PF_ReadOnly,       0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusWithinPropHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                 ValueType::boolean   ) \
+    _APPLY(Focused,        PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::FocusedPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bHasLocFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecFocused), 0), ValueType::boolean   ) \
+    _APPLY(FocusWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              &Element::FocusWithinPropHandle,     nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
     _APPLY(Id,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, UFIELD_OFFSET(Element, SpecID), 0),              ValueType::ATOM   ) \
     _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              &Element::SheetPropHandle,           nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, UFIELD_OFFSET(Element, pSheet), 0),             ValueType::StyleSheet   ) \
     _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString   ) \
@@ -192,7 +192,7 @@ namespace YY
     _APPLY(bNeedsDSUpdate, 1)               \
     /* UINT8 LayoutType : 2;*/              \
     _APPLY(fNeedsLayout, 2)                 \
-    _APPLY(bLocMouseFocusWithin, 1)         \
+    _APPLY(uLocMouseFocusWithin, 2)         \
     _APPLY(bDestroy, 1)                     \
     _APPLY(bSpecVisible, 1)                 \
     _APPLY(bCmpVisible, 1)                  \
@@ -201,11 +201,11 @@ namespace YY
     _APPLY(bLocMouseFocused, 1)             \
     _APPLY(bSpecMouseFocused, 1)            \
     _APPLY(bSpecFocusVisible, 1)            \
-    _APPLY(bLocKeyboardFocusWithin, 1)      \
+    _APPLY(uLocKeyboardFocusWithin, 2)      \
     _APPLY(bHasLocKeyboardFocused, 1)       \
     _APPLY(bLocKeyboardFocused, 1)          \
     _APPLY(bSpecKeyboardFocused, 1)         \
-    _APPLY(bLocFocusWithin, 1)              \
+    _APPLY(uLocFocusWithin, 2)              \
     _APPLY(bHasLocFocused, 1)               \
     _APPLY(bLocFocused, 1)                  \
     _APPLY(bSpecFocused, 1)
@@ -611,22 +611,34 @@ namespace YY
             bool __YYAPI GetLocationPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
             bool __YYAPI MouseFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            
+            virtual bool __YYAPI OnMouseFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
             bool __YYAPI GetMouseFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
-
-            bool __YYAPI SetMouseFocusedPropValue(_In_ SetValueHandleData* _pHandleData);
             
+            bool __YYAPI MouseFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+
+            bool __YYAPI GetMouseFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
+
             bool __YYAPI KeyboardFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            
+            virtual bool __YYAPI OnKeyboardFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
             bool __YYAPI GetKeyboardFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __YYAPI SetKeyboardFocusedPropValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI KeyboardFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            
+            bool __YYAPI GetKeyboardFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
             bool __YYAPI FocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
+            virtual bool __YYAPI OnFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+
             bool __YYAPI GetFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-            bool __YYAPI SetFocusedPropValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI FocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            
+            bool __YYAPI GetFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
             bool __YYAPI SheetPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 

@@ -776,37 +776,15 @@ namespace YY
             intptr_t _Cooike = 0;
 
             pHost->StartDefer(&_Cooike);
+            
+            if (_pTo)
+            {
+                _pTo->SetValueInternal(Element::g_ControlInfoData.MouseFocusedProp, Value::CreateBoolTrue());
+            }
 
             if (_pFrom)
             {
                 _pFrom->SetValueInternal(Element::g_ControlInfoData.MouseFocusedProp, Value::CreateUnset());
-
-                // _pFrom->SetValueInternal(Element::g_ControlInfoData.MouseFocusWithinProp, Value::CreateUnset());
-                for (auto _pItem = _pFrom; _pItem; _pItem = _pItem->GetParent())
-                {
-                    if (!_pItem->bLocMouseFocusWithin)
-                        break;
-
-                    _pItem->PreSourceChange(Element::g_ControlInfoData.MouseFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolTrue(), Value::CreateBoolFalse());
-                    _pItem->bLocMouseFocusWithin = false;
-                    _pItem->PostSourceChange();
-                }
-            }
-
-            if (_pTo)
-            {
-                _pTo->SetValueInternal(Element::g_ControlInfoData.MouseFocusedProp, Value::CreateBoolTrue());
-
-                // _pTo->SetValueInternal(Element::g_ControlInfoData.MouseFocusWithinProp, Value::CreateBoolTrue());
-                for (auto _pItem = _pTo; _pItem; _pItem = _pItem->GetParent())
-                {
-                    if (_pItem->bLocMouseFocusWithin)
-                        break;
-
-                    _pItem->PreSourceChange(Element::g_ControlInfoData.MouseFocusWithinProp, PropertyIndicies::PI_Local, Value::CreateBoolFalse(), Value::CreateBoolTrue());
-                    _pItem->bLocMouseFocusWithin = true;
-                    _pItem->PostSourceChange();
-                }
             }
 
             pHost->EndDefer(_Cooike);
