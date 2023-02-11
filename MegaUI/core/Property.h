@@ -129,7 +129,7 @@ namespace YY
             PropertyIndicies eIndicies;
         };
 
-        enum PropertyCustomCacheResult
+        enum class GetValueMarks : uint32_t
         {
             SkipNone = 0x00000000,
             // 跳过 _LocalPropValue 的查询。
@@ -140,6 +140,17 @@ namespace YY
             SkipInherit = 0x00000004,
             SkipAll = 0xFFFFFFFF,
         };
+
+        inline GetValueMarks& operator|=(GetValueMarks& _eLeft, GetValueMarks _eRight)
+        {
+            (std::_Underlying_type<GetValueMarks>::type&)_eLeft |= (std::_Underlying_type<GetValueMarks>::type)_eRight;
+            return _eLeft;
+        }
+
+        inline bool operator&(GetValueMarks _eLeft, GetValueMarks _eRight)
+        {
+            return (std::_Underlying_type<GetValueMarks>::type)_eLeft & (std::_Underlying_type<GetValueMarks>::type)_eRight;
+        }
 
         struct OnPropertyChangedHandleData : public CustomPropertyBaseHandleData
         {
@@ -173,7 +184,7 @@ namespace YY
             struct
             {
                 // 需要跳过的缓存类型
-                PropertyCustomCacheResult CacheResult = PropertyCustomCacheResult::SkipNone;
+                GetValueMarks CacheResult = GetValueMarks::SkipNone;
                 // 获取的值
                 Value RetValue;
             } Output;
@@ -184,6 +195,11 @@ namespace YY
             static constexpr auto HandleType = CustomPropertyHandleType::SetValue;
 
             Value InputNewValue;
+            struct
+            {
+                // 如果设置，成功，那么 >= 0。
+                HRESULT hr = S_OK;
+            } Output;
         };
 
         struct FastSpecValueCompareHandleData : public CustomPropertyBaseHandleData

@@ -169,88 +169,26 @@ namespace YY
             if (_iIndex < 0)
                 return Value::CreateUnavailable();
 
-            Value _pValue = Value::CreateUnset();
-
-            do
+            GetValueHandleData _HandleData;
+            _HandleData.pProp = &_Prop;
+            _HandleData.eIndicies = _eIndicies;
+            _HandleData.bUsingCache = _bUpdateCache == false;
+            if (!GeneralHandle(&_HandleData))
             {
-                GetValueHandleData _HandleData;
-                _HandleData.pProp = &_Prop;
-                _HandleData.eIndicies = _eIndicies;
-                _HandleData.bUsingCache = _bUpdateCache == false;
-                if (GeneralHandle(&_HandleData))
-                {
-                    if (_HandleData.Output.RetValue != nullptr)
-                    {
-                        _pValue = std::move(_HandleData.Output.RetValue);
+                return Value::CreateUnset();
+            }
 
-                        if (_pValue.GetType() != ValueType::Unset)
-                            break;
-                    }
-                }
-
-                PropertyCustomCacheResult& _CacheResult = _HandleData.Output.CacheResult;
-
-                // 走 _LocalPropValue，这是一种通用逻辑
-                if ((_CacheResult & SkipLocalPropValue) == 0)
-                {
-                    auto _ppValue = LocalPropValue.GetItemPtr(_iIndex);
-                    if (_ppValue && *_ppValue != nullptr)
-                    {
-                        _pValue = *_ppValue;
-                        break;
-                    }
-                }
-
-                // 如果值是本地的，那么最多就取一下 _LocalPropValue，我们就需要停止
-                if (_eIndicies == PropertyIndicies::PI_Local)
-                    break;
-
-                // 尝试获取来自属性表的值
-                if ((_Prop.fFlags & PF_Cascade) && (_CacheResult & SkipCascade) == 0)
-                {
-                    if (pSheet)
-                    {
-                        _pValue = pSheet->GetSheetValue(this, &_Prop);
-                        if (_pValue.GetType() != ValueType::Unset)
-                            break;
-                    }
-                }
-
-                // 尝试从父节点继承
-                if ((_Prop.fFlags & PF_Inherit) && (_CacheResult & SkipInherit) == 0)
-                {
-                    if (auto _pParent = GetParent())
-                    {
-                        auto pValueByParent = _pParent->GetValue(_Prop, _eIndicies, false);
-                        auto ValueByParentType = pValueByParent.GetType();
-                        if (ValueByParentType != ValueType::Unset && ValueByParentType != ValueType::Unavailable)
-                        {
-                            _pValue = std::move(pValueByParent);
-                            break;
-                        }
-                    }
-                }
-
-                // 最终还是没有，那么继承Default 值
-                if (_Prop.pFunDefaultValue)
-                    _pValue = _Prop.pFunDefaultValue();
-
-            } while (false);
-
-            if (_pValue.GetType() >= ValueType::Null && _bUpdateCache)
+            if (_HandleData.Output.RetValue.GetType() >= ValueType::Null && _bUpdateCache)
             {
                 SetValueHandleData _Info;
                 _Info.pProp = &_Prop;
                 _Info.eIndicies = _eIndicies;
-                _Info.InputNewValue = _pValue;
+                _Info.InputNewValue = _HandleData.Output.RetValue;
 
                 GeneralHandle(&_Info);
             }
 
-            if (_pValue == nullptr)
-                _pValue = Value::CreateUnset();
-
-            return _pValue;
+            return _HandleData.Output.RetValue;
         }
 
         HRESULT Element::SetValue(const PropertyInfo& _Prop, const Value& _Value)
@@ -284,39 +222,16 @@ namespace YY
 
             PreSourceChange(_Prop, PropertyIndicies::PI_Local, _pvOld, _Value);
 
-            auto _hr = S_OK;
-            do
-            {
-                SetValueHandleData _HandleData;
-                _HandleData.pProp = &_Prop;
-                _HandleData.eIndicies = PropertyIndicies::PI_Local;
-                _HandleData.InputNewValue = _Value;
+            SetValueHandleData _HandleData;
+            _HandleData.pProp = &_Prop;
+            _HandleData.eIndicies = PropertyIndicies::PI_Local;
+            _HandleData.InputNewValue = _Value;
 
-                if (GeneralHandle(&_HandleData))
-                    break;
-
-                const auto _uLocalPropValueCount = LocalPropValue.GetSize();
-
-                if (_Value.GetType() == ValueType::Unset)
-                {
-                    // 将数值取消
-                    if (_uLocalPropValueCount > _uIndex)
-                        _hr = LocalPropValue.SetItem(_uIndex, Value());
-                }
-                else
-                {
-                    if (_uLocalPropValueCount <= _uIndex)
-                        _hr = LocalPropValue.Resize(_uIndex + 1);
-
-                    if (SUCCEEDED(_hr))
-                        _hr = LocalPropValue.SetItem(_uIndex, _Value);
-                }
-
-            } while (false);
+            GeneralHandle(&_HandleData);
 
             PostSourceChange();
 
-            return _hr;
+            return _HandleData.Output.hr;
         }
 
         Element* Element::GetParent()
@@ -2166,315 +2081,436 @@ namespace YY
                     return true;
             }
 
-            uint16_t _uOffsetToCache = 0;
-            uint16_t _uOffsetToHasCache = 0;
-            uint8_t _uCacheBit;
-            uint8_t _uHasCacheBit;
-
-			switch (_pHandleData->eIndicies)
-			{
-			case PropertyIndicies::PI_Computed:
-			case PropertyIndicies::PI_Specified:
-                if (_pProp->BindCacheInfo.OffsetToSpecifiedValue)
-				{
-                    _uOffsetToCache = _pProp->BindCacheInfo.OffsetToSpecifiedValue;
-                    _uCacheBit = _pProp->BindCacheInfo.SpecifiedValueBit;
-                    _uOffsetToHasCache = _pProp->BindCacheInfo.OffsetToHasSpecifiedValueCache;
-                    _uHasCacheBit = _pProp->BindCacheInfo.HasSpecifiedValueCacheBit;
-					break;
-				}
-			case PropertyIndicies::PI_Local:
-                _uOffsetToCache = _pProp->BindCacheInfo.OffsetToLocalValue;
-                _uCacheBit = _pProp->BindCacheInfo.LocalValueBit;
-                _uOffsetToHasCache = _pProp->BindCacheInfo.OffsetToHasLocalCache;
-                _uHasCacheBit = _pProp->BindCacheInfo.HasLocalValueCacheBit;
-				break;
-			}
-
-			if (_eType == CustomPropertyHandleType::GetValue)
-			{
-                if (_uOffsetToCache == 0)
-                    return false;
-
-                auto _pInfo = (GetValueHandleData*)_pHandleData;
-                Value _pRetValue;
-
-				do
-				{
-					// 如果属性是 PF_ReadOnly，那么它必然不会实际走到 _LocalPropValue 里面去，必须走 缓存
-					// 如果 _UsingCache == true，那么我们可以走缓存
-                    if ((_pProp->fFlags & PF_ReadOnly) || _pInfo->bUsingCache)
-					{
-						// 检测实际是否存在缓存，如果检测到没有缓存，那么直接返回
-                        if (_uOffsetToHasCache)
-						{
-                            const auto _uHasValue = *((uint8_t*)this + _uOffsetToHasCache);
-                            if ((_uHasValue & (1 << _uHasCacheBit)) == 0)
-							{
-                                _pRetValue = Value::CreateUnset();
-								break;
-							}
-						}
-
-						auto _pCache = (uint8_t*)this + _uOffsetToCache;
-
-						switch ((ValueType)_pProp->BindCacheInfo.eType)
-						{
-						case ValueType::int32_t:
-                            _pRetValue = Value::CreateInt32(*(int32_t*)_pCache);
-							break;
-                        case ValueType::float_t:
-                            _pRetValue = Value::CreateFloat(*(float*)_pCache);
-                            break;
-						case ValueType::boolean:
-                            _pRetValue = Value::CreateBool((*(uint8_t*)_pCache) & (1 << _uCacheBit));
-							break;
-                        case ValueType::Color:
-                            _pRetValue = Value::CreateColor(*(Color*)_pCache);
-                            break;
-                        case ValueType::Point:
-                            _pRetValue = Value::CreatePoint(*(Point*)_pCache);
-                            break;
-                        case ValueType::Size:
-                            _pRetValue = Value::CreateSize(*(Size*)_pCache);
-                            break;
-                        case ValueType::Rect:
-                            _pRetValue = Value::CreateRect(*(Rect*)_pCache);
-                            break;
-                        case ValueType::Element:
-                            _pRetValue = Value::CreateElementRef(*(Element**)_pCache);
-                            break;
-                        case ValueType::ElementList:
-                            _pRetValue = Value::CreateElementList(*(ElementList*)_pCache);
-                            break;
-                        case ValueType::StyleSheet:
-                            _pRetValue = Value::CreateStyleSheet(*(StyleSheet**)_pCache);
-                            break;
-                        case ValueType::uString:
-                            _pRetValue = Value::CreateString(*(uString*)_pCache);
-                            break;
-						default:
-                            __debugbreak();
-                            _pRetValue = Value::CreateNull();
-							break;
-						}
-
-                        if (_pRetValue == nullptr)
-                            _pRetValue = Value::CreateUnset();
-					}
-				} while (false);
-				
-				_pInfo->Output.RetValue = std::move(_pRetValue);
-
-				if (_pProp->fFlags & PF_ReadOnly)
-				{
-                    _pInfo->Output.CacheResult = PropertyCustomCacheResult::SkipLocalPropValue;
-				}
-                else
-                {
-                    _pInfo->Output.CacheResult = PropertyCustomCacheResult::SkipNone;
-                }
-                return true;
-			}
-            else if (_eType == CustomPropertyHandleType::SetValue)
-			{
-                if (_uOffsetToCache == 0)
-                    return false;
-
-                auto _pInfo = (SetValueHandleData*)_pHandleData;
-
-				do
-				{
-					auto& _pNewValue = _pInfo->InputNewValue;
-
-					if (_pNewValue == nullptr)
-						break;
-
-                    auto _pCache = (uint8_t*)this + _uOffsetToCache;
-
-					if (_pNewValue.GetType() == ValueType::Unset)
-					{
-                        if (_uOffsetToHasCache == 0)
-                        {
-                            // 不应该设置 Unset
-                            __debugbreak();
-                            break;
-                        }
-
-						auto& _uHasCache = *((uint8_t*)this + _uOffsetToHasCache);
-
-						_uHasCache &= ~(1 << _uHasCacheBit);
-
-                        // 某些资源我们需要进行释放
-                        switch ((ValueType)_pProp->BindCacheInfo.eType)
-                        {
-                        case ValueType::Element:
-                            *(Element**)_pCache = nullptr;
-                            break;
-                        case ValueType::ElementList:
-                            ((ElementList*)_pCache)->Clear();
-                            break;
-                        case ValueType::StyleSheet:
-                        {
-                            auto& _pOldStyleSheet = *(StyleSheet**)_pCache;
-                            if (_pOldStyleSheet)
-                            {
-                                _pOldStyleSheet->Release();
-                                _pOldStyleSheet = nullptr;
-                            }
-                            break;
-                        }
-                        case ValueType::uString:
-                        {
-                            auto& _szOldString = *(uString*)_pCache;
-                            _szOldString.Clear();
-                            break;
-                        }
-                        }
-					}
-                    else if (_pNewValue.GetType() == (ValueType)_pProp->BindCacheInfo.eType)
-					{
-						// 标记缓存已经被设置
-                        if (_uOffsetToHasCache)
-                        {
-                            auto& _uHasCache = *((uint8_t*)this + _uOffsetToHasCache);
-                            _uHasCache |= (1 << _uHasCacheBit);
-                        }
-
-                        auto _pDataBuffer = _pNewValue.GetRawBuffer();
-
-						switch ((ValueType)_pProp->BindCacheInfo.eType)
-						{
-						case ValueType::int32_t:
-                            *(int32_t*)_pCache = *(int32_t*)_pDataBuffer;
-							break;
-                        case ValueType::float_t:
-                            *(float*)_pCache = *(float*)_pDataBuffer;
-                            break;
-						case ValueType::boolean:
-                            if (*(bool*)_pDataBuffer)
-							{
-                                *_pCache |= (1 << _uCacheBit);
-							}
-							else
-							{
-                                *_pCache &= ~(1 << _uCacheBit);
-							}
-							break;
-                        case ValueType::Color:
-                            *(Color*)_pCache = *(Color*)_pDataBuffer;
-                            break;
-                        case ValueType::Point:
-                            *(Point*)_pCache = *(Point*)_pDataBuffer;
-                            break;
-                        case ValueType::Size:
-                            *(Size*)_pCache = *(Size*)_pDataBuffer;
-                            break;
-                        case ValueType::Rect:
-                            *(Rect*)_pCache = *(Rect*)_pDataBuffer;
-                            break;
-                        case ValueType::Element:
-                            *(Element**)_pCache = *(Element**)_pDataBuffer;
-                            break;
-                        case ValueType::ElementList:
-                            ((ElementList*)_pCache)->SetArray(*(ElementList*)_pDataBuffer);
-                            break;
-                        case ValueType::StyleSheet:
-                        {
-                            auto& _pOldStyleSheet = *(StyleSheet**)_pCache;
-                            auto _pNewStyleSheet = *(StyleSheet**)_pDataBuffer;
-
-                            if (_pOldStyleSheet != _pNewStyleSheet)
-                            {
-                                if (_pOldStyleSheet)
-                                    _pOldStyleSheet->Release();
-                                if (_pNewStyleSheet)
-                                    _pNewStyleSheet->AddRef();
-                                _pOldStyleSheet = _pNewStyleSheet;
-                            }
-                            break;
-                        }
-                        case ValueType::uString:
-                        {
-                            auto& _szOldString = *(uString*)_pCache;
-                            auto& _szNewString = *(uString*)_pDataBuffer;
-                            if (_szOldString != _szNewString)
-                            {
-                                _szOldString = _szNewString;
-                            }
-                            break;
-                        }
-						default:
-                            __debugbreak();
-							break;
-						}
-					}
-
-				} while (false);
-
-                return true;
-			}
-            else if (_eType == CustomPropertyHandleType::FastSpecValueCompare)
+            switch (_eType)
             {
-                if (!_pProp->BindCacheInfo.OffsetToSpecifiedValue)
-                    return false;
-                
-                auto _pInfo = (FastSpecValueCompareHandleData*)_pHandleData;
-
-                if (_uOffsetToHasCache)
+            case CustomPropertyHandleType::OnPropertyChanged:
+                break;
+            case CustomPropertyHandleType::GetDependencies:
+                break;
+            case CustomPropertyHandleType::GetValue:
+                switch (_pHandleData->eIndicies)
                 {
-                    auto _uHasCacheBit = _pProp->BindCacheInfo.HasSpecifiedValueCacheBit;
-
-                    const auto _bHasValue1 = ((*((uint8_t*)this + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
-                    if (!_bHasValue1)
-                        return false;
-
-                    const auto _bHasValue2 = ((*((uint8_t*)_pInfo->pOther + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
-                    if (!_bHasValue2)
-                        return false;
-                }
-
-                auto _pRawBuffer1 = (uint8_t*)this + _uOffsetToCache;
-                auto _pRawBuffer2 = (uint8_t*)_pInfo->pOther + _uOffsetToCache;
-
-                switch (ValueType(_pProp->BindCacheInfo.eType))
-                {
-                case ValueType::int32_t:
-                    _pInfo->Output.iResult = *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
-                    break;
-                case ValueType::float_t:
-                    _pInfo->Output.iResult = *(float*)_pRawBuffer1 == *(float*)_pRawBuffer2;
-                    break;
-                case ValueType::boolean:
-                {
-                    auto _bValue1 = ((*(uint8_t*)_pRawBuffer1) & (1 << _pProp->BindCacheInfo.SpecifiedValueBit)) != 0;
-                    auto _bValue2 = ((*(uint8_t*)_pRawBuffer2) & (1 << _pProp->BindCacheInfo.SpecifiedValueBit)) != 0;
-
-                    _pInfo->Output.iResult = _bValue1 == _bValue2;
-                    break;
-                }
-                case ValueType::Color:
-                    _pInfo->Output.iResult = (*(Color*)_pRawBuffer1) == (*(Color*)_pRawBuffer2);
-                    break;
-                case ValueType::Point:
-                    _pInfo->Output.iResult = (*(Point*)_pRawBuffer1) == (*(Point*)_pRawBuffer2);
-                    break;
-                case ValueType::Size:
-                    _pInfo->Output.iResult = (*(Size*)_pRawBuffer1) == (*(Size*)_pRawBuffer2);
-                    break;
-                case ValueType::Rect:
-                    _pInfo->Output.iResult = *(Rect*)_pRawBuffer1 == *(Rect*)_pRawBuffer2;
-                    break;
+                case PropertyIndicies::PI_Local:
+                    return GetGeneralLocalValue((GetValueHandleData*)_pHandleData);
+                case PropertyIndicies::PI_Specified:
+                    return GetGeneralSpecifiedValue((GetValueHandleData*)_pHandleData);
                 default:
+                    std::abort();
                     return false;
-                    break;
                 }
-                return true;
+            case CustomPropertyHandleType::SetValue:
+                switch (_pHandleData->eIndicies)
+                {
+                case PropertyIndicies::PI_Local:
+                    return SetGeneralLocalValue((SetValueHandleData*)_pHandleData);
+                case PropertyIndicies::PI_Specified:
+                    return SetGeneralSpecifiedValue((SetValueHandleData*)_pHandleData);
+                default:
+                    std::abort();
+                    return false;
+                }
+            case CustomPropertyHandleType::FastSpecValueCompare:
+                return GetGeneralFastSpecValueCompare((FastSpecValueCompareHandleData*)_pHandleData);
+            default:
+                break;
             }
 
 			return false;
 		}
+
+        Value Element::GetGeneralCacheValue(ValueType _eType, uint16_t _uOffsetToCache, uint8_t _uCacheBit, uint16_t _uOffsetToHasCache, uint8_t _uHasCacheBit)
+        {
+            // 检测实际是否存在缓存，如果检测到没有缓存，那么直接返回
+            if (_uOffsetToHasCache)
+            {
+                const auto _uHasValue = *((byte_t*)this + _uOffsetToHasCache);
+                if ((_uHasValue & (1 << _uHasCacheBit)) == 0)
+                {
+                    return Value::CreateUnset();
+                }
+            }
+
+            auto _pCache = (byte_t*)this + _uOffsetToCache;
+
+            switch (_eType)
+            {
+            case ValueType::int32_t:
+                return Value::CreateInt32(*(int32_t*)_pCache);
+            case ValueType::float_t:
+                return Value::CreateFloat(*(float*)_pCache);
+            case ValueType::boolean:
+                return Value::CreateBool((*(uint8_t*)_pCache) & (1 << _uCacheBit));
+            case ValueType::Color:
+                return Value::CreateColor(*(Color*)_pCache);
+            case ValueType::Point:
+                return Value::CreatePoint(*(Point*)_pCache);
+            case ValueType::Size:
+                return Value::CreateSize(*(Size*)_pCache);
+            case ValueType::Rect:
+                return Value::CreateRect(*(Rect*)_pCache);
+            case ValueType::Element:
+                return Value::CreateElementRef(*(Element**)_pCache);
+            case ValueType::ElementList:
+                return Value::CreateElementList(*(ElementList*)_pCache);
+            case ValueType::StyleSheet:
+                return Value::CreateStyleSheet(*(StyleSheet**)_pCache);
+            case ValueType::uString:
+                return Value::CreateString(*(uString*)_pCache);
+            default:
+                __debugbreak();
+                return Value::CreateUnavailable();
+            }
+        }
 		
+        bool Element::GetGeneralLocalValue(GetValueHandleData* _pHandleData)
+        {
+            // Local 值不会刷新缓存，所以，如果配置了 Local Cache，那么不走通用 LocalPropValue
+            auto _pProp = _pHandleData->pProp;
+            if (uint16_t _uOffsetToCache = _pProp->BindCacheInfo.OffsetToLocalValue)
+            {
+                _pHandleData->Output.RetValue = GetGeneralCacheValue(
+                    ValueType(_pProp->BindCacheInfo.eType),
+                    _uOffsetToCache,
+                    _pProp->BindCacheInfo.LocalValueBit,
+                    _pProp->BindCacheInfo.OffsetToHasLocalCache,
+                    _pProp->BindCacheInfo.HasLocalValueCacheBit);
+                return true;
+            }
+
+            const auto _iIndex = GetControlInfo()->GetPropertyInfoIndex(*_pProp);
+            if (_iIndex < 0)
+            {
+                _pHandleData->Output.RetValue = Value::CreateUnavailable();
+                return true;
+            }
+            auto _ppValue = LocalPropValue.GetItemPtr(_iIndex);
+
+            _pHandleData->Output.RetValue = _ppValue && *_ppValue != nullptr ? *_ppValue : Value::CreateUnset();
+
+            return true;
+        }
+
+        bool Element::GetGeneralSpecifiedValue(GetValueHandleData* _pHandleData)
+        {
+            auto _pProp = _pHandleData->pProp;
+
+            if (_pHandleData->bUsingCache)
+            {
+                if (uint16_t _uOffsetToCache = _pProp->BindCacheInfo.OffsetToSpecifiedValue)
+                {
+                    _pHandleData->Output.RetValue = GetGeneralCacheValue(
+                        ValueType(_pProp->BindCacheInfo.eType),
+                        _uOffsetToCache,
+                        _pProp->BindCacheInfo.SpecifiedValueBit,
+                        _pProp->BindCacheInfo.OffsetToHasSpecifiedValueCache,
+                        _pProp->BindCacheInfo.HasSpecifiedValueCacheBit);
+                    return true;
+                }
+            }
+
+            // 先尝试读取本地值
+            if ((_pHandleData->Output.CacheResult & GetValueMarks::SkipLocalPropValue) == 0)
+            {
+                if (GetGeneralLocalValue(_pHandleData) && _pHandleData->Output.RetValue.GetType() != ValueType::Unset)
+                    return true;
+            }
+            
+            // 尝试获取来自属性表的值
+            if ((_pProp->fFlags & PF_Cascade) && (_pHandleData->Output.CacheResult & GetValueMarks::SkipCascade) == 0)
+            {
+                if (pSheet)
+                {
+                    auto _Value = pSheet->GetSheetValue(this, _pProp);
+                    if (_Value.GetType() != ValueType::Unset)
+                    {
+                        _pHandleData->Output.RetValue = std::move(_Value);
+                        return true;
+                    }
+                }
+            }
+
+            // 尝试从父节点继承
+            if ((_pProp->fFlags & PF_Inherit) && (_pHandleData->Output.CacheResult & GetValueMarks::SkipInherit) == 0)
+            {
+                if (auto _pParent = GetParent())
+                {
+                    auto pValueByParent = _pParent->GetValue(*_pProp, PropertyIndicies::PI_Specified, false);
+                    auto ValueByParentType = pValueByParent.GetType();
+                    if (ValueByParentType != ValueType::Unset && ValueByParentType != ValueType::Unavailable)
+                    {
+                        _pHandleData->Output.RetValue = std::move(pValueByParent);
+                        return true;
+                    }
+                }
+            }
+
+            // 最终还是没有，那么继承Default 值
+            if (_pProp->pFunDefaultValue)
+            {
+                _pHandleData->Output.RetValue = _pProp->pFunDefaultValue();
+                return true;
+            }
+
+            // 都取不到，只能返回未设置。
+            _pHandleData->Output.RetValue = Value::CreateUnset();
+            return true;
+        }
+
+        bool Element::SetGeneralCacheValue(ValueType _eType, uint16_t _uOffsetToCache, uint8_t _uCacheBit, uint16_t _uOffsetToHasCache, uint8_t _uHasCacheBit, Value _NewValue)
+        {
+            if (_uOffsetToCache == 0 || _NewValue == nullptr)
+                return false;
+
+            auto _pCache = (byte_t*)this + _uOffsetToCache;
+            if (_NewValue.GetType() == ValueType::Unset)
+            {
+                if (_uOffsetToHasCache == 0)
+                {
+                    // 不应该设置 Unset
+                    std::abort();
+                    return true;
+                }
+
+                auto& _uHasCache = *((byte_t*)this + _uOffsetToHasCache);
+
+                _uHasCache &= ~(1 << _uHasCacheBit);
+
+                // 某些资源我们需要进行释放
+                switch (_eType)
+                {
+                case ValueType::Element:
+                    *(Element**)_pCache = nullptr;
+                    break;
+                case ValueType::ElementList:
+                    ((ElementList*)_pCache)->Clear();
+                    break;
+                case ValueType::StyleSheet:
+                {
+                    auto& _pOldStyleSheet = *(StyleSheet**)_pCache;
+                    if (_pOldStyleSheet)
+                    {
+                        _pOldStyleSheet->Release();
+                        _pOldStyleSheet = nullptr;
+                    }
+                    break;
+                }
+                case ValueType::uString:
+                {
+                    auto& _szOldString = *(uString*)_pCache;
+                    _szOldString.Clear();
+                    break;
+                }
+                }
+                return true;
+            }
+            else if (_NewValue.GetType() == _eType)
+            {
+                // 标记缓存已经被设置
+                if (_uOffsetToHasCache)
+                {
+                    auto& _uHasCache = *((byte_t*)this + _uOffsetToHasCache);
+                    _uHasCache |= (1 << _uHasCacheBit);
+                }
+
+                auto _pDataBuffer = _NewValue.GetRawBuffer();
+
+                switch (_eType)
+                {
+                case ValueType::int32_t:
+                    *(int32_t*)_pCache = *(int32_t*)_pDataBuffer;
+                    break;
+                case ValueType::float_t:
+                    *(float*)_pCache = *(float*)_pDataBuffer;
+                    break;
+                case ValueType::boolean:
+                    if (*(bool*)_pDataBuffer)
+                    {
+                        *_pCache |= (1 << _uCacheBit);
+                    }
+                    else
+                    {
+                        *_pCache &= ~(1 << _uCacheBit);
+                    }
+                    break;
+                case ValueType::Color:
+                    *(Color*)_pCache = *(Color*)_pDataBuffer;
+                    break;
+                case ValueType::Point:
+                    *(Point*)_pCache = *(Point*)_pDataBuffer;
+                    break;
+                case ValueType::Size:
+                    *(Size*)_pCache = *(Size*)_pDataBuffer;
+                    break;
+                case ValueType::Rect:
+                    *(Rect*)_pCache = *(Rect*)_pDataBuffer;
+                    break;
+                case ValueType::Element:
+                    *(Element**)_pCache = *(Element**)_pDataBuffer;
+                    break;
+                case ValueType::ElementList:
+                    ((ElementList*)_pCache)->SetArray(*(ElementList*)_pDataBuffer);
+                    break;
+                case ValueType::StyleSheet:
+                {
+                    auto& _pOldStyleSheet = *(StyleSheet**)_pCache;
+                    auto _pNewStyleSheet = *(StyleSheet**)_pDataBuffer;
+
+                    if (_pOldStyleSheet != _pNewStyleSheet)
+                    {
+                        if (_pOldStyleSheet)
+                            _pOldStyleSheet->Release();
+                        if (_pNewStyleSheet)
+                            _pNewStyleSheet->AddRef();
+                        _pOldStyleSheet = _pNewStyleSheet;
+                    }
+                    break;
+                }
+                case ValueType::uString:
+                {
+                    auto& _szOldString = *(uString*)_pCache;
+                    auto& _szNewString = *(uString*)_pDataBuffer;
+                    if (_szOldString != _szNewString)
+                    {
+                        _szOldString = _szNewString;
+                    }
+                    break;
+                }
+                default:
+                    std::abort();
+                    break;
+                }
+            }
+
+            return true;
+        }
+
+        bool Element::SetGeneralLocalValue(SetValueHandleData* _pHandleData)
+        {
+            auto _pProp = _pHandleData->pProp;
+            if (uint16_t _uOffsetToCache = _pProp->BindCacheInfo.OffsetToLocalValue)
+            {
+                SetGeneralCacheValue(
+                    ValueType(_pProp->BindCacheInfo.eType),
+                    _uOffsetToCache,
+                    _pProp->BindCacheInfo.LocalValueBit,
+                    _pProp->BindCacheInfo.OffsetToHasLocalCache,
+                    _pProp->BindCacheInfo.HasLocalValueCacheBit,
+                    _pHandleData->InputNewValue);
+                return true;
+            }
+
+            const auto _uLocalPropValueCount = LocalPropValue.GetSize();
+            
+            const auto _iIndex = GetControlInfo()->GetPropertyInfoIndex(*_pProp);
+            if (_iIndex < 0)
+            {
+                _pHandleData->Output.hr = E_NOT_SET;
+                return true;
+            }
+
+            auto _uIndex = (uint32_t)_iIndex;
+            auto _hr = S_OK;
+
+            if (_pHandleData->InputNewValue.GetType() == ValueType::Unset)
+            {
+                // 将数值取消
+                if (_uLocalPropValueCount > _uIndex)
+                    _hr = LocalPropValue.SetItem(_uIndex, Value());
+            }
+            else
+            {
+                if (_uLocalPropValueCount <= _uIndex)
+                    _hr = LocalPropValue.Resize(_uIndex + 1);
+
+                if (SUCCEEDED(_hr))
+                    _hr = LocalPropValue.SetItem(_uIndex, _pHandleData->InputNewValue);
+            }
+
+            if (FAILED(_hr))
+                _pHandleData->Output.hr = _hr;
+
+            return true;
+        }
+
+        bool Element::SetGeneralSpecifiedValue(SetValueHandleData* _pHandleData)
+        {
+            auto _pProp = _pHandleData->pProp;
+
+            if (uint16_t _uOffsetToCache = _pProp->BindCacheInfo.OffsetToSpecifiedValue)
+            {
+                SetGeneralCacheValue(
+                    ValueType(_pProp->BindCacheInfo.eType),
+                    _uOffsetToCache,
+                    _pProp->BindCacheInfo.SpecifiedValueBit,
+                    _pProp->BindCacheInfo.OffsetToHasSpecifiedValueCache,
+                    _pProp->BindCacheInfo.HasSpecifiedValueCacheBit,
+                    _pHandleData->InputNewValue);
+                return true;
+            }
+
+            return false;
+        }
+
+        bool Element::GetGeneralFastSpecValueCompare(FastSpecValueCompareHandleData* _pHandleData)
+        {
+            auto _pProp = _pHandleData->pProp;
+            uint16_t _uOffsetToCache = _pProp->BindCacheInfo.OffsetToSpecifiedValue;
+            if (!_uOffsetToCache)
+                return false;
+
+            auto _pInfo = (FastSpecValueCompareHandleData*)_pHandleData;
+
+            if (auto _uOffsetToHasCache = _pProp->BindCacheInfo.OffsetToHasSpecifiedValueCache)
+            {
+                auto _uHasCacheBit = _pProp->BindCacheInfo.HasSpecifiedValueCacheBit;
+
+                const auto _bHasValue1 = ((*((byte_t*)this + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
+                if (!_bHasValue1)
+                    return false;
+
+                const auto _bHasValue2 = ((*((byte_t*)_pInfo->pOther + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
+                if (!_bHasValue2)
+                    return false;
+            }
+
+            auto _pRawBuffer1 = (byte_t*)this + _uOffsetToCache;
+            auto _pRawBuffer2 = (byte_t*)_pInfo->pOther + _uOffsetToCache;
+
+            switch (ValueType(_pProp->BindCacheInfo.eType))
+            {
+            case ValueType::int32_t:
+                _pInfo->Output.iResult = *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
+                break;
+            case ValueType::float_t:
+                _pInfo->Output.iResult = *(float*)_pRawBuffer1 == *(float*)_pRawBuffer2;
+                break;
+            case ValueType::boolean:
+            {
+                auto _bValue1 = ((*(byte_t*)_pRawBuffer1) & (1 << _pProp->BindCacheInfo.SpecifiedValueBit)) != 0;
+                auto _bValue2 = ((*(byte_t*)_pRawBuffer2) & (1 << _pProp->BindCacheInfo.SpecifiedValueBit)) != 0;
+
+                _pInfo->Output.iResult = _bValue1 == _bValue2;
+                break;
+            }
+            case ValueType::Color:
+                _pInfo->Output.iResult = (*(Color*)_pRawBuffer1) == (*(Color*)_pRawBuffer2);
+                break;
+            case ValueType::Point:
+                _pInfo->Output.iResult = (*(Point*)_pRawBuffer1) == (*(Point*)_pRawBuffer2);
+                break;
+            case ValueType::Size:
+                _pInfo->Output.iResult = (*(Size*)_pRawBuffer1) == (*(Size*)_pRawBuffer2);
+                break;
+            case ValueType::Rect:
+                _pInfo->Output.iResult = *(Rect*)_pRawBuffer1 == *(Rect*)_pRawBuffer2;
+                break;
+            default:
+                return false;
+                break;
+            }
+            return true;
+        }
+
 		bool Element::OnParentPropChanged(OnPropertyChangedHandleData* _pHandleData)
 		{
             if (_pHandleData->eIndicies != PropertyIndicies::PI_Local)
@@ -2535,23 +2571,10 @@ namespace YY
 
         bool Element::GetVisiblePropValue(GetValueHandleData* _pHandleData)
         {
-            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local || _pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
                 // 使用通用逻辑
                 return false;
-            }
-            else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
-            {
-                if (_pHandleData->bUsingCache)
-                {
-                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecVisible);
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                }
-                else
-                {
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipNone;
-                }
-                return true;
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Computed)
             {
@@ -2575,10 +2598,13 @@ namespace YY
                     _pHandleData->Output.RetValue = Value::CreateBool(bCmpVisible);
                 }
 
-                _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+                _pHandleData->Output.CacheResult = GetValueMarks::SkipAll;
                 return true;
             }
-
+            else
+            {
+                std::abort();
+            }
             return false;
         }
 
@@ -2979,7 +3005,7 @@ namespace YY
             {
                 pExtentValue = Value::CreateSize(LocDesiredSize);
             }
-            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+
             return true;
         }
 
@@ -3008,7 +3034,6 @@ namespace YY
                 _Location = Value::CreatePoint(GetX(), GetY());
             }
 
-            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
             return true;
         }
         
@@ -3090,24 +3115,11 @@ namespace YY
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
-                if (_pHandleData->bUsingCache)
-                {
-                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecMouseFocused);
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                    return true;
-                }
-
-                if (bHasLocMouseFocused)
-                {
-                    _RetValue = Value::CreateBool(bLocMouseFocused);
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                    return true;
-                }
-
-                _RetValue = Value::CreateUnset();
                 // 如果自己需要处理鼠标焦点，那么阻止 父节点继承
-                _pHandleData->Output.CacheResult = (GetActive() & Active::Mouse) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
-                return true;
+                if (GetActive() & Active::Mouse)
+                    _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
+
+                return false;
             }
 
             return false;
@@ -3136,7 +3148,6 @@ namespace YY
         bool Element::GetMouseFocusWithinPropValue(GetValueHandleData* _pHandleData)
         {
             _pHandleData->Output.RetValue = Value::CreateBool(uLocMouseFocusWithin != 0);
-            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
             return true;
         }
         
@@ -3218,24 +3229,11 @@ namespace YY
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
-                if (_pHandleData->bUsingCache)
-                {
-                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecKeyboardFocused);
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                    return true;
-                }
-
-                if (bHasLocKeyboardFocused)
-                {
-                    _RetValue = Value::CreateBool(bLocKeyboardFocused);
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                    return true;
-                }
-
-                _RetValue = Value::CreateUnset();
                 // 如果自己需要处理键盘焦点，那么阻止 父节点继承
-                _pHandleData->Output.CacheResult = (GetActive() & Active::Keyboard) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
-                return true;
+                if (GetActive() & Active::Keyboard)
+                    _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
+
+                return false;
             }
 
             return false;
@@ -3260,7 +3258,6 @@ namespace YY
         bool Element::GetKeyboardFocusWithinPropValue(GetValueHandleData* _pHandleData)
         {
             _pHandleData->Output.RetValue = Value::CreateBool(uLocKeyboardFocusWithin != 0);
-            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
             return true;
         }
 
@@ -3341,24 +3338,11 @@ namespace YY
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
-                if (_pHandleData->bUsingCache)
-                {
-                    _pHandleData->Output.RetValue = Value::CreateBool(bSpecFocused);
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                    return true;
-                }
-
-                if (bHasLocFocused)
-                {
-                    _RetValue = Value::CreateBool(bLocFocused);
-                    _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
-                    return true;
-                }
-
-                _RetValue = Value::CreateUnset();
                 // 如果自己需要处理键盘焦点，那么阻止 父节点继承
-                _pHandleData->Output.CacheResult = (GetActive() & Active::Keyboard) ? PropertyCustomCacheResult(SkipInherit | SkipLocalPropValue) : SkipLocalPropValue;
-                return true;
+                if (GetActive() & Active::ActiveMarks)
+                    _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
+
+                return false;
             }
 
             return false;
@@ -3370,6 +3354,12 @@ namespace YY
             {
             case CustomPropertyHandleType::GetValue:
                 return GetFocusWithinPropValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::FastSpecValueCompare:
+            {
+                auto _pData = ((FastSpecValueCompareHandleData*)_pHandleData);
+                _pData->Output.iResult = uLocFocusWithin == 0 == _pData->pOther->uLocFocusWithin == 0 ? 1 : 0;
+                return true;
+            }
             }
             
             return false;
@@ -3378,7 +3368,7 @@ namespace YY
         bool Element::GetFocusWithinPropValue(GetValueHandleData* _pHandleData)
         {
             _pHandleData->Output.RetValue = Value::CreateBool(uLocFocusWithin != 0);
-            _pHandleData->Output.CacheResult = PropertyCustomCacheResult::SkipAll;
+            _pHandleData->Output.CacheResult = GetValueMarks::SkipAll;
             return true;
         }
 

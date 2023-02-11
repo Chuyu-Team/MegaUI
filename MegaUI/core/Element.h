@@ -64,7 +64,7 @@ namespace YY
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
     _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::ParentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, pLocParent), 0, 0, 0),       ValueType::Element) \
     _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0),   ValueType::ElementList) \
-    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::VisiblePropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean   ) \
+    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::VisiblePropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecVisible), 0),                                                     ValueType::boolean   ) \
     _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::EnabledPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean   ) \
     _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::ActivePropHandle,          nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, uSpecActive), 0),    ValueType::int32_t   ) \
     _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>,         nullptr,                             nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
@@ -553,6 +553,32 @@ namespace YY
             {
                 return GeneralHandle(_HandleType::HandleType, _pHandleData);
             }
+            
+            Value __YYAPI GetGeneralCacheValue(
+                ValueType _eType,
+                uint16_t _uOffsetToCache,
+                uint8_t _uCacheBit,
+                uint16_t _uOffsetToHasCache,
+                uint8_t _uHasCacheBit
+                );
+
+            bool __YYAPI GetGeneralLocalValue(_Inout_ GetValueHandleData* _pHandleData);
+
+            bool __YYAPI GetGeneralSpecifiedValue(_Inout_ GetValueHandleData* _pHandleData);
+
+            bool __YYAPI SetGeneralCacheValue(
+                ValueType _eType,
+                uint16_t _uOffsetToCache,
+                uint8_t _uCacheBit,
+                uint16_t _uOffsetToHasCache,
+                uint8_t _uHasCacheBit,
+                Value _NewValue);
+
+            bool __YYAPI SetGeneralLocalValue(_Inout_ SetValueHandleData* _pHandleData);
+
+            bool __YYAPI SetGeneralSpecifiedValue(_Inout_ SetValueHandleData* _pHandleData);
+
+            bool __YYAPI GetGeneralFastSpecValueCompare(_Inout_ FastSpecValueCompareHandleData* _pHandleData);
 
             bool __YYAPI ParentPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
