@@ -44,9 +44,9 @@ namespace YY
         
         static const EnumMap ActiveEnumMap[] =
         {
-            { "None", int32_t(Active::None) },
-            { "Mouse", int32_t(Active::Mouse) },
-            { "Keyboard", int32_t(Active::Keyboard) },
+            { "None", int32_t(ActiveStyle::None) },
+            { "Mouse", int32_t(ActiveStyle::Mouse) },
+            { "Keyboard", int32_t(ActiveStyle::Keyboard) },
             { }
         };
 
@@ -497,12 +497,12 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.EnabledProp, Value::CreateBool(_bEnabled));
         }
 
-        Active Element::GetActive()
+        ActiveStyle Element::GetActive()
         {
             return fSpecActive;
         }
 
-        HRESULT Element::SetActive(Active _fActive)
+        HRESULT Element::SetActive(ActiveStyle _fActive)
         {
             return SetValue(Element::g_ControlInfoData.ActiveProp, Value::CreateInt32((int32_t)_fActive));
         }
@@ -1496,7 +1496,7 @@ namespace YY
             if (!pWindow)
                 return false;
 
-            if (IsVisible() == false || IsEnabled() == false || HasFlags(GetActive(), Active::Keyboard) == false)
+            if (IsVisible() == false || IsEnabled() == false || HasFlags(GetActive(), ActiveStyle::Keyboard) == false)
                 return false;
 
             auto _hr = SetValueInternal(Element::g_ControlInfoData.KeyboardFocusedProp, Value::CreateBoolTrue(), false);
@@ -1505,7 +1505,7 @@ namespace YY
         
         bool Element::SetFocus()
         {
-            if (IsVisible() == false || IsEnabled() == false || HasFlags(GetActive(), AllActive) == false)
+            if (IsVisible() == false || IsEnabled() == false || HasFlags(GetActive(), ActiveStyle::All) == false)
                 return false;
 
             auto _hr = SetValueInternal(Element::g_ControlInfoData.FocusedProp, Value::CreateBoolTrue(), false);
@@ -2209,14 +2209,14 @@ namespace YY
             }
 
             // 先尝试读取本地值
-            if ((_pHandleData->Output.CacheResult & GetValueMarks::SkipLocalPropValue) == 0)
+            if (!HasFlags(_pHandleData->Output.CacheResult, GetValueStyle::SkipLocalPropValue))
             {
                 if (GetGeneralLocalValue(_pHandleData) && _pHandleData->Output.RetValue.GetType() != ValueType::Unset)
                     return true;
             }
             
             // 尝试获取来自属性表的值
-            if ((_pProp->fFlags & PF_Cascade) && (_pHandleData->Output.CacheResult & GetValueMarks::SkipCascade) == 0)
+            if ((_pProp->fFlags & PF_Cascade) && HasFlags(_pHandleData->Output.CacheResult, GetValueStyle::SkipCascade) == false)
             {
                 if (pSheet)
                 {
@@ -2230,7 +2230,7 @@ namespace YY
             }
 
             // 尝试从父节点继承
-            if ((_pProp->fFlags & PF_Inherit) && (_pHandleData->Output.CacheResult & GetValueMarks::SkipInherit) == 0)
+            if ((_pProp->fFlags & PF_Inherit) && HasFlags(_pHandleData->Output.CacheResult, GetValueStyle::SkipInherit) == false)
             {
                 if (auto _pParent = GetParent())
                 {
@@ -2598,7 +2598,7 @@ namespace YY
                     _pHandleData->Output.RetValue = Value::CreateBool(bCmpVisible);
                 }
 
-                _pHandleData->Output.CacheResult = GetValueMarks::SkipAll;
+                _pHandleData->Output.CacheResult = GetValueStyle::SkipAll;
                 return true;
             }
             else
@@ -3116,8 +3116,8 @@ namespace YY
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
                 // 如果自己需要处理鼠标焦点，那么阻止 父节点继承
-                if (HasFlags(GetActive(),Active::Mouse))
-                    _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
+                if (HasFlags(GetActive(),ActiveStyle::Mouse))
+                    _pHandleData->Output.CacheResult |= GetValueStyle::SkipInherit;
 
                 return false;
             }
@@ -3230,8 +3230,8 @@ namespace YY
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
                 // 如果自己需要处理键盘焦点，那么阻止 父节点继承
-                if (HasFlags(GetActive(), Active::Keyboard))
-                    _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
+                if (HasFlags(GetActive(), ActiveStyle::Keyboard))
+                    _pHandleData->Output.CacheResult |= GetValueStyle::SkipInherit;
 
                 return false;
             }
@@ -3339,8 +3339,8 @@ namespace YY
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
                 // 如果自己需要处理键盘焦点，那么阻止 父节点继承
-                if (HasFlags(GetActive(), AllActive))
-                    _pHandleData->Output.CacheResult |= GetValueMarks::SkipInherit;
+                if (HasFlags(GetActive(), ActiveStyle::All))
+                    _pHandleData->Output.CacheResult |= GetValueStyle::SkipInherit;
 
                 return false;
             }
@@ -3368,7 +3368,7 @@ namespace YY
         bool Element::GetFocusWithinPropValue(GetValueHandleData* _pHandleData)
         {
             _pHandleData->Output.RetValue = Value::CreateBool(uLocFocusWithin != 0);
-            _pHandleData->Output.CacheResult = GetValueMarks::SkipAll;
+            _pHandleData->Output.CacheResult = GetValueStyle::SkipAll;
             return true;
         }
 
@@ -3656,7 +3656,7 @@ namespace YY
         {
             if (_KeyEvent.vKey == VK_TAB)
             {
-                const auto _NavigateType = _KeyEvent.fModifiers & EventModifier::Shift ? NavigatingType::Previous : NavigatingType::Next;
+                const auto _NavigateType = HasFlags(_KeyEvent.fModifiers, EventModifier::Shift) ? NavigatingType::Previous : NavigatingType::Next;
                 return OnKeyboardNavigate(KeyboardNavigateEvent(_KeyEvent.pTarget, _NavigateType));
             }
             return false;

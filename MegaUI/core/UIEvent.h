@@ -16,30 +16,33 @@ namespace YY
         };
 
 
-        namespace EventModifier
+        enum class EventModifier
         {
+            None = 0x00000000,
             // 左边的 Ctrl 按键
-            constexpr uint32_t LeftControl = 0x00000001;
+            LeftControl = 0x00000001,
             // 右边的 Ctrl 按键
-            constexpr uint32_t RightControl = 0x00000002;
+            RightControl = 0x00000002,
             // Ctrl 按键
-            constexpr uint32_t Control = LeftControl | RightControl;
+            Control = LeftControl | RightControl,
 
-            constexpr uint32_t LeftShift = 0x00000004;
-            constexpr uint32_t RightShift = 0x00000008;
-            constexpr uint32_t Shift = LeftShift | RightShift;
+            LeftShift = 0x00000004,
+            RightShift = 0x00000008,
+            Shift = LeftShift | RightShift,
 
-            constexpr uint32_t LeftAlt = 0x00000010;
-            constexpr uint32_t RightAlt = 0x00000020;
-            constexpr uint32_t Alt = LeftAlt | RightAlt;
+            LeftAlt = 0x00000010,
+            RightAlt = 0x00000020,
+            Alt = LeftAlt | RightAlt,
 
             // 鼠标左键
-            constexpr uint32_t LeftButton = 0x00000040;
+            LeftButton = 0x00000040,
             // 鼠标右键
-            constexpr uint32_t RightButton = 0x00000080;
+            RightButton = 0x00000080,
             // 鼠标中键
-            constexpr uint32_t MiddleButton = 0x00000100;
-        }
+            MiddleButton = 0x00000100,
+        };
+
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(EventModifier);
 
         struct BaseEvent
         {
@@ -47,11 +50,11 @@ namespace YY
             Element* pTarget;
             EventId eCode;
             // EventModifier 位组合
-            uint32_t fModifiers;
+            EventModifier fModifiers;
 
-            static uint32_t __YYAPI GetEventModifier()
+            static EventModifier __YYAPI GetEventModifier()
             {
-                uint32_t _fModifiers = 0;
+                EventModifier _fModifiers = EventModifier::None;
                 BYTE bKeys[256];
                 if (GetKeyboardState(bKeys))
                 {
@@ -85,7 +88,7 @@ namespace YY
             uint16_t uRepeatCount;
             uint16_t fFlags;
 
-            KeyboardEvent(Element* _pTarget, WPARAM _wParam, LPARAM _lParam, uint32_t _fModifiers = 0)
+            KeyboardEvent(Element* _pTarget, WPARAM _wParam, LPARAM _lParam, EventModifier _fModifiers = EventModifier::None)
                 : BaseEvent {_pTarget, EventId::KeyboardEvent, _fModifiers}
                 , vKey(LOWORD(_wParam))
                 , uRepeatCount(LOWORD(_lParam))
@@ -94,36 +97,43 @@ namespace YY
             }
         };
         
-        namespace NavigatingMarks
+        enum class NavigatingStyle
         {
             // 逻辑上的，如果没有此标志位则表示 定向的
-            constexpr auto Logical = 0x00000001u;
+            Logical = 0x00000001u,
             // 向前，如果没有此标志位则表示 向后
-            constexpr auto Forward = 0x00000002u;
+            Forward = 0x00000002u,
             // 垂直方向，如果没有此标志位则表示 水平方向
-            constexpr auto Vertical = 0x00000004u;
+            Vertical = 0x00000004u,
             // 相对的，如果没有此标志位则表示 绝对的
-            constexpr auto Relative = 0x00000008u;
-        } // namespace NavigatingMarks
+            Relative = 0x00000008u,
+        };
 
         enum class NavigatingType
         {
-            First = NavigatingMarks::Forward | NavigatingMarks::Logical,
-            Last = NavigatingMarks::Logical,
-            Up = NavigatingMarks::Relative | NavigatingMarks::Vertical,
-            Down = NavigatingMarks::Relative | NavigatingMarks::Vertical | NavigatingMarks::Forward,
-            Left = NavigatingMarks::Relative,
-            Right = NavigatingMarks::Relative | NavigatingMarks::Forward,
-            Next = NavigatingMarks::Relative | NavigatingMarks::Forward | NavigatingMarks::Logical,
-            Previous = NavigatingMarks::Relative | NavigatingMarks::Logical,
+            First = (int32_t)NavigatingStyle::Forward | (int32_t)NavigatingStyle::Logical,
+            Last = (int32_t)NavigatingStyle::Logical,
+            Up = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Vertical,
+            Down = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Vertical | (int32_t)NavigatingStyle::Forward,
+            Left = (int32_t)NavigatingStyle::Relative,
+            Right = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Forward,
+            Next = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Forward | (int32_t)NavigatingStyle::Logical,
+            Previous = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Logical,
         };
+        
+        inline constexpr bool HasFlags(NavigatingType _eLeft, NavigatingStyle _eRight)
+        {
+            using _LeftType = std::_Underlying_type<NavigatingType>::type;
+            using _RigthType = std::_Underlying_type<NavigatingStyle>::type;
+            return (_LeftType)_eLeft & (_RigthType)_eRight;
+        }
 
         struct KeyboardNavigateEvent : public BaseEvent
         {
             NavigatingType Navigate;
 
             KeyboardNavigateEvent(Element* _pTarget, NavigatingType _Navigate)
-                : BaseEvent {_pTarget, EventId::KeyboardNavigateEvent, 0}
+                : BaseEvent {_pTarget, EventId::KeyboardNavigateEvent, EventModifier::None}
                 , Navigate(_Navigate)
             {
             }

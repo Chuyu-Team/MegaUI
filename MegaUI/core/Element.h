@@ -29,16 +29,15 @@ namespace YY
     namespace MegaUI
     {
         // ActiveProp
-        enum class Active
+        enum class ActiveStyle
         {
             None = 0x00000000,
             Mouse = 0x00000001,
             Keyboard = 0x00000002,
+            All = Mouse | Keyboard,
         };
 
-        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(Active);
-
-        static constexpr auto AllActive = Active::Mouse | Active::Keyboard;
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(ActiveStyle);
 
         // BorderStyleProp
         enum class BorderStyle
@@ -188,7 +187,7 @@ namespace YY
             // 0x58 ID
             ATOM SpecID;
             
-            Active fSpecActive = Active::None;
+            ActiveStyle fSpecActive = ActiveStyle::None;
             //bits
 #define _MEGA_UI_ELEMENT_BITS_TABLE(_APPLY) \
     _APPLY(bSelfLayout, 1)                  \
@@ -356,14 +355,14 @@ namespace YY
             /// 返回控件是否需要主动处理鼠标或者键盘的焦点状态。
             /// </summary>
             /// <returns>Active的位组合</returns>
-            Active __YYAPI GetActive();
+            ActiveStyle __YYAPI GetActive();
 
             /// <summary>
             /// 设置控件需要主动处理是焦点状态。比如设置鼠标后可以主动处理鼠标焦点。
             /// </summary>
             /// <param name="_fActive">Active的位组合</param>
             /// <returns>HRESULT</returns>
-            HRESULT __YYAPI SetActive(Active _fActive);
+            HRESULT __YYAPI SetActive(ActiveStyle _fActive);
 
             bool __YYAPI IsMouseFocused();
 
@@ -517,7 +516,7 @@ namespace YY
 
             /// <summary>
             /// 设置键盘焦点。
-            /// 注意：控件需要Visible、未禁用，且拥有 Active::Keyboard，否则将失败。
+            /// 注意：控件需要Visible、未禁用，且拥有 ActiveStyle::Keyboard，否则将失败。
             /// 注意：因为键盘焦点属于物理焦点，设置键盘焦点时同时也将改变逻辑焦点。
             /// </summary>
             /// <returns>如果设置成功，则返回 true。</returns>
@@ -525,7 +524,7 @@ namespace YY
 
             /// <summary>
             /// 设置逻辑焦点。
-            /// 注意：控件需要Visible、未禁用，且拥有 Active::Keyboard 或者 Active::Mouse，否则将失败。
+            /// 注意：控件需要Visible、未禁用，且拥有 ActiveStyle::Keyboard 或者 ActiveStyle::Mouse，否则将失败。
             /// 注意：如果逻辑焦点与键盘焦点不同，那么将清除逻辑焦点。
             /// </summary>
             /// <returns>如果设置成功，则返回 true。</returns>

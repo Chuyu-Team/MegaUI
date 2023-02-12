@@ -48,12 +48,12 @@
         return _ENUM((_Type)_eLeft & (_Type)_eRight);                \
     }                                                                \
                                                                      \
-    inline constexpr _ENUM operator~(_ENUM _eLeft)    \
+    inline constexpr _ENUM operator~(_ENUM _eLeft)                   \
     {                                                                \
         using _Type = std::_Underlying_type<_ENUM>::type;            \
-        return _ENUM(~(_Type)_eLeft);                \
+        return _ENUM(~(_Type)_eLeft);                                \
     }                                                                \
-\
+                                                                     \
     inline constexpr bool HasFlags(_ENUM _eLeft, _ENUM _eRight)      \
     {                                                                \
         using _Type = std::_Underlying_type<_ENUM>::type;            \

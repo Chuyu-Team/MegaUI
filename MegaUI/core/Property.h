@@ -129,7 +129,7 @@ namespace YY
             PropertyIndicies eIndicies;
         };
 
-        enum class GetValueMarks : uint32_t
+        enum class GetValueStyle : uint32_t
         {
             SkipNone = 0x00000000,
             // 跳过 _LocalPropValue 的查询。
@@ -141,16 +141,7 @@ namespace YY
             SkipAll = 0xFFFFFFFF,
         };
 
-        inline GetValueMarks& operator|=(GetValueMarks& _eLeft, GetValueMarks _eRight)
-        {
-            (std::_Underlying_type<GetValueMarks>::type&)_eLeft |= (std::_Underlying_type<GetValueMarks>::type)_eRight;
-            return _eLeft;
-        }
-
-        inline bool operator&(GetValueMarks _eLeft, GetValueMarks _eRight)
-        {
-            return (std::_Underlying_type<GetValueMarks>::type)_eLeft & (std::_Underlying_type<GetValueMarks>::type)_eRight;
-        }
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(GetValueStyle)
 
         struct OnPropertyChangedHandleData : public CustomPropertyBaseHandleData
         {
@@ -184,7 +175,7 @@ namespace YY
             struct
             {
                 // 需要跳过的缓存类型
-                GetValueMarks CacheResult = GetValueMarks::SkipNone;
+                GetValueStyle CacheResult = GetValueStyle::SkipNone;
                 // 获取的值
                 Value RetValue;
             } Output;
