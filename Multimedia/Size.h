@@ -34,6 +34,11 @@ namespace YY
             {
             }
 
+            inline bool __YYAPI IsEmpty()
+            {
+                return Width == 0 || Height == 0;
+            }
+
             inline bool __YYAPI operator == (Size _Other)
             {
                 return Width == _Other.Width && Height == _Other.Height;

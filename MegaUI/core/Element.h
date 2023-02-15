@@ -146,7 +146,7 @@ namespace YY
             ElementList vecLocChildren;
             
             // 0x8 Index
-            int32_t _iIndex = -1;
+            int32_t iIndex = -1;
 
             // 正常优先级的组 0x10
             int32_t _iGCSlot;
@@ -675,8 +675,37 @@ namespace YY
             virtual HRESULT __YYAPI OnHosted(Window* _pNewWindow);
 
             virtual HRESULT __YYAPI OnUnHosted(Window* _pOldWindow);
+            
+            /// <summary>
+            /// GetAdjacent 过程中，当前元素自身是否可以被选择。
+            /// </summary>
+            /// <param name="_eNavigate"></param>
+            /// <param name="_pnr"></param>
+            /// <param name="_bKeyableOnly"></param>
+            /// <returns>如果返回 S_OK，那么当前元素可以被选择。
+            /// 如果返回 大于 0，那么当前元素不能被选择，但是其子元素可能可以被选择。
+            /// 如果返回 小于 0，当前元素及其子元素均不可能被选择。</returns>
+            virtual HRESULT __YYAPI CanChooseSelf(_In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
 
-            virtual Element* __YYAPI GetAdjacent(Element* _pFrom, NavigatingType _eNavDir, NavReference const* _pnr, bool _bKeyableOnly);
+            /// <summary>
+            /// GetAdjacent 过程中，尝试从孩子中选取附近的元素。
+            /// </summary>
+            /// <param name="_pFrom"></param>
+            /// <param name="_eNavigate"></param>
+            /// <param name="_pnr"></param>
+            /// <param name="_bKeyableOnly"></param>
+            /// <returns>需要移动的新元素。</returns>
+            virtual Element* __YYAPI GetAdjacentChild(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
+
+            /// <summary>
+            /// 选取靠近_pFrom 附近的元素。此函数可能向上搜索。
+            /// </summary>
+            /// <param name="_pFrom"></param>
+            /// <param name="_eNavigate"></param>
+            /// <param name="_pnr"></param>
+            /// <param name="_bKeyableOnly"></param>
+            /// <returns></returns>
+            virtual Element* __YYAPI GetAdjacent(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
 
             virtual bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
 

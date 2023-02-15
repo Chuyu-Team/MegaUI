@@ -109,6 +109,8 @@ namespace YY
             Relative = 0x00000008u,
         };
 
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(NavigatingStyle);
+
         enum class NavigatingType
         {
             First = (int32_t)NavigatingStyle::Forward | (int32_t)NavigatingStyle::Logical,
@@ -121,6 +123,23 @@ namespace YY
             Previous = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Logical,
         };
         
+        
+        inline constexpr NavigatingType& operator&=(NavigatingType& _eLeft, NavigatingStyle _eRight)
+        {
+            using _LeftType = std::_Underlying_type<NavigatingType>::type;
+            using _RigthType = std::_Underlying_type<NavigatingStyle>::type;
+            (_LeftType&)_eLeft &= _LeftType((_RigthType)_eRight);
+            return _eLeft;
+        }
+
+        inline constexpr NavigatingType& operator^=(NavigatingType& _eLeft, NavigatingStyle _eRight)
+        {
+            using _LeftType = std::_Underlying_type<NavigatingType>::type;
+            using _RigthType = std::_Underlying_type<NavigatingStyle>::type;
+            (_LeftType&)_eLeft ^= _LeftType((_RigthType)_eRight);
+            return _eLeft;
+        }
+
         inline constexpr bool HasFlags(NavigatingType _eLeft, NavigatingStyle _eRight)
         {
             using _LeftType = std::_Underlying_type<NavigatingType>::type;

@@ -1260,7 +1260,7 @@ namespace YY
                     if (_pTmp == nullptr || _pTmp == this)
                         continue;
 
-                    _pTmp->_iIndex = (int32_t)_uLastIndex;
+                    _pTmp->iIndex = (int32_t)_uLastIndex;
                     _NewChildrenList.Add(_pTmp);
                     ++_uLastIndex;
                 }
@@ -1268,7 +1268,7 @@ namespace YY
                 for (uint_t _uIndex = _uInsert; _uIndex != _cOldChildrenList; ++_uIndex)
                 {
                     auto _pTmp = _OldChildrenList[_uIndex];
-                    _pTmp->_iIndex = (int32_t)_uLastIndex;
+                    _pTmp->iIndex = (int32_t)_uLastIndex;
                     _NewChildrenList.Add(_pTmp);
                     ++_uLastIndex;
                 }
@@ -1333,7 +1333,7 @@ namespace YY
             {
                 for (uint_t _uIndex = _uInsert; _uIndex != _cOldChildrenList; ++_uIndex)
                 {
-                    _OldChildrenList[_uIndex]->_iIndex = (int32_t)_uIndex;
+                    _OldChildrenList[_uIndex]->iIndex = (int32_t)_uIndex;
                 }
             }
 
@@ -1368,7 +1368,7 @@ namespace YY
                 if (_pItem->GetParent() != this)
                     continue;
 
-                _pItem->_iIndex = -1;
+                _pItem->iIndex = -1;
                 ++_uRemoveCount;
             }
 
@@ -1399,10 +1399,10 @@ namespace YY
 
                     for (auto _pItem : _ChildrenOld)
                     {
-                        if (_pItem->_iIndex == -1)
+                        if (_pItem->iIndex == -1)
                             continue;
 
-                         _pItem->_iIndex = int32_t(_pBuffer - _ChildrenNew.GetData());
+                         _pItem->iIndex = int32_t(_pBuffer - _ChildrenNew.GetData());
                         *_pBuffer = _pItem;
                         ++_pBuffer;
                     }
@@ -1471,7 +1471,7 @@ namespace YY
                 for (uint_t _uIndex = 0; _uIndex != _cChildrenOldSize; ++_uIndex)
                 {
                     // _cChildrenOldSize 保证 <= int32max
-                    _ChildrenOld[_uIndex]->_iIndex = (int32_t)_uIndex;
+                    _ChildrenOld[_uIndex]->iIndex = (int32_t)_uIndex;
                 }
             }
 
@@ -1493,14 +1493,7 @@ namespace YY
 
         bool Element::SetKeyboardFocus()
         {
-            if (!pWindow)
-                return false;
-
-            if (IsVisible() == false || IsEnabled() == false || HasFlags(GetActive(), ActiveStyle::Keyboard) == false)
-                return false;
-
-            auto _hr = SetValueInternal(Element::g_ControlInfoData.KeyboardFocusedProp, Value::CreateBoolTrue(), false);
-            return SUCCEEDED(_hr);
+            return Window::SetKeyboardFocus(this);
         }
         
         bool Element::SetFocus()
@@ -3614,10 +3607,130 @@ namespace YY
             return S_OK;
         }
 
-        Element* Element::GetAdjacent(Element* _pFrom, NavigatingType _eNavDir, NavReference const* _pnr, bool _bKeyableOnly)
+        HRESULT Element::CanChooseSelf(NavigatingType _eNavigate, NavReference const* _pnr, bool _bKeyableOnly)
         {
-            // todo
+            // 当前元素处于隐藏状态，那么不能被选择，包括子元素
+            if (!IsVisible())
+                return E_NOT_SET;
+
+            // 显示区域是空白，那么不能被选择，包括子元素
+            if (GetExtent().IsEmpty())
+                return E_NOT_SET;
+
+            if (_bKeyableOnly)
+            {
+                if (!IsEnabled())
+                    return E_NOT_SET;
+
+                if (HasFlags(GetActive(), ActiveStyle::Keyboard))
+                    return S_OK;
+                else
+                    return S_FALSE;
+            }
+            else
+            {
+                return S_OK;
+            }
+        }
+
+        Element* Element::GetAdjacentChild(Element* _pFrom, NavigatingType _eNavigate, NavReference const* _pnr, bool _bKeyableOnly)
+        {
+            // todo: 调用Layout的 GetAdjacent
+            auto _Children = GetChildren();
+            const auto _uChildrenSize = _Children.GetSize();
+
+            if (HasFlags(_eNavigate, NavigatingStyle::Forward))
+            {
+                // 正向增长
+                size_t _uStart = _pFrom && HasFlags(_eNavigate, NavigatingStyle::Relative) ? _pFrom->iIndex + 1 : 0;
+
+                for (; _uStart != _uChildrenSize; ++_uStart)
+                {
+                    auto _pItem = _Children[_uStart];
+
+                    // 先判断自身是否符合条件
+                    auto _hr = _pItem->CanChooseSelf(_eNavigate, _pnr, _bKeyableOnly);
+                    if (FAILED(_hr))
+                        continue;
+
+                    if (_hr == S_OK)
+                        return _pItem;
+
+                    // 如果自身不符合，那么递归子元素
+                    auto _pTo = _pItem->GetAdjacentChild(nullptr, _eNavigate, _pnr, _bKeyableOnly);
+                    if (_pTo)
+                        return _pTo;
+                }
+            }
+            else
+            {
+                // 反向增长
+                size_t _uStart = _pFrom && HasFlags(_eNavigate, NavigatingStyle::Relative) ? _pFrom->iIndex - 1 : _uChildrenSize - 1;
+
+                for (; _uStart != uint_max; --_uStart)
+                {
+                    auto _pItem = _Children[_uStart];
+
+                    // 先判断自身是否符合条件
+                    auto _hr = _pItem->CanChooseSelf(_eNavigate, _pnr, _bKeyableOnly);
+                    if (FAILED(_hr))
+                        continue;
+
+                    // 如果自身不符合，那么递归子元素
+                    auto _pTo = _pItem->GetAdjacentChild(nullptr, _eNavigate, _pnr, _bKeyableOnly);
+                    if (_pTo)
+                        return _pTo;
+                    
+                    // 再判断自身是否符合条件
+                    if (_hr == S_OK)
+                        return _pItem;
+                }
+            }
+
             return nullptr;
+        }
+
+        Element* Element::GetAdjacent(Element* _pFrom, NavigatingType _eNavigate, NavReference const* _pnr, bool _bKeyableOnly)
+        {
+            const auto _hrCanChooseSelf = CanChooseSelf(_eNavigate, _pnr, _bKeyableOnly);
+
+            Element* _pTo = nullptr;
+            if (_pFrom || HasFlags(_eNavigate, NavigatingStyle::Forward))
+            {
+                // 尝试调度到某个子元素，注意反向进行时，不需要编译当前节点的子元素
+                if (SUCCEEDED(_hrCanChooseSelf))
+                {
+                    _pTo = GetAdjacentChild(_pFrom, _eNavigate, _pnr, _bKeyableOnly);
+                    if (_pTo)
+                        return _pTo;
+                }
+            }
+            
+            if (_pFrom && HasFlags(_eNavigate, NavigatingStyle::Forward) == false)
+            {
+                if (_hrCanChooseSelf == S_OK)
+                    return this;
+            }
+
+            // 调度到父节点
+            auto _pParent = GetParent();
+            if (_pParent)
+            {
+                return _pParent->GetAdjacent(this, _eNavigate, _pnr, _bKeyableOnly);
+            }
+
+            if (FAILED(_hrCanChooseSelf))
+                return nullptr;
+
+            // 已经是绝对定位，现在又是顶级父，所以无法继续。
+            if (!HasFlags(_eNavigate, NavigatingStyle::Relative))
+            {
+                return nullptr;
+            }
+            
+            _eNavigate ^= NavigatingStyle::Relative;
+
+            return GetAdjacentChild(nullptr, _eNavigate, _pnr, _bKeyableOnly);
         }
 
         bool Element::OnKeyDown(const KeyboardEvent& _KeyEvent)
@@ -3664,8 +3777,11 @@ namespace YY
         
         bool Element::OnKeyboardNavigate(const KeyboardNavigateEvent& _KeyEvent)
         {
-            auto _pForm = _KeyEvent.pTarget == this ? this : GetImmediateChild(_KeyEvent.pTarget);
-            auto _pTo = GetAdjacent(_pForm, _KeyEvent.Navigate, nullptr, true);
+            auto _pForm = _KeyEvent.pTarget;
+            if (!_pForm)
+                _pForm = this;
+
+            auto _pTo = _pForm->GetAdjacent(nullptr, _KeyEvent.Navigate, nullptr, true);
             if (_pTo)
             {
                 _pTo->SetKeyboardFocus();

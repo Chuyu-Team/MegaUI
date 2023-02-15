@@ -9,6 +9,8 @@ namespace YY
 {
     namespace MegaUI
     {
+        Element* Window::g_pLastKeyboardFocusedElement = nullptr;
+
         Window::Window(int32_t _DefaultDpi)
             : hWnd(nullptr)
             , pHost(nullptr)
@@ -325,6 +327,62 @@ namespace YY
             return pRender;
         }
 
+        bool Window::SetKeyboardFocus(Element* _pElement)
+        {
+            if (_pElement == g_pLastKeyboardFocusedElement)
+                return true;
+
+            auto _pOldKeyboardFocusedElement = g_pLastKeyboardFocusedElement;
+
+            intptr_t _Cooike = 0;
+            HRESULT _hr = S_OK;
+
+            if (_pElement)
+            {
+                // 必须在某个窗口中
+                if (!_pElement->pWindow)
+                    return false;
+
+                if (_pElement->IsVisible() == false || _pElement->IsEnabled() == false || HasFlags(_pElement->GetActive(), ActiveStyle::Keyboard) == false)
+                    return false;
+
+                _pElement->StartDefer(&_Cooike);
+
+                _hr = _pElement->SetValueInternal(Element::g_ControlInfoData.KeyboardFocusedProp, Value::CreateBoolTrue(), false);
+                if (SUCCEEDED(_hr))
+                {
+                    g_pLastKeyboardFocusedElement = _pElement;
+                    
+                    // 键盘焦点为物理焦点，所以也更新逻辑焦点
+                    if (_pElement->pWindow->pLastFocusedElement != _pElement)
+                    {
+                        auto _pOldFocusedElement = _pElement->pWindow->pLastFocusedElement;
+                        _hr = _pElement->SetValueInternal(Element::g_ControlInfoData.FocusedProp, Value::CreateBoolTrue(), false);
+                        if (SUCCEEDED(_hr))
+                        {
+                            _pElement->pWindow->pLastFocusedElement = _pElement;
+                            if (_pOldFocusedElement)
+                                _hr = _pOldFocusedElement->SetValueInternal(Element::g_ControlInfoData.FocusedProp, Value::CreateBoolFalse(), false);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                g_pLastKeyboardFocusedElement = nullptr;
+            }
+            
+            if (SUCCEEDED(_hr) && _pOldKeyboardFocusedElement)
+            {
+                _hr = _pOldKeyboardFocusedElement->SetValueInternal(Element::g_ControlInfoData.KeyboardFocusedProp, Value::CreateBoolFalse(), false);
+            }
+
+            if (_pElement)
+                _pElement->EndDefer(_Cooike);
+
+            return SUCCEEDED(_hr);
+        }
+
         LRESULT Window::StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())
@@ -460,10 +518,10 @@ namespace YY
                 OnUpdateUiState(LOWORD(_wParam), HIWORD(_wParam));
                 break;
             case WM_KEYDOWN:
-                OnKeyDown(KeyboardEvent(pLastFocusedElement, _wParam, _lParam));
+                OnKeyDown(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam));
                 break;
             case WM_CHAR:
-                OnChar(KeyboardEvent(pLastFocusedElement, _wParam, _lParam, KeyboardEvent::GetEventModifier()));
+                OnChar(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam, KeyboardEvent::GetEventModifier()));
                 break;
             default:
                 break;
@@ -792,17 +850,18 @@ namespace YY
 
         bool Window::OnKeyDown(const KeyboardEvent& _KeyEvent)
         {
-            switch (_KeyEvent.vKey)
-            {
-            default:
-                break;
-            }
-            return false;
+            if (!_KeyEvent.pTarget)
+                return false;
+            
+            return _KeyEvent.pTarget->OnKeyDown(_KeyEvent);
         }
 
         bool Window::OnChar(const KeyboardEvent& _KeyEvent)
         {
-            return false;
+            if (!_KeyEvent.pTarget)
+                return false;
+
+            return _KeyEvent.pTarget->OnChar(_KeyEvent);
         }
 
     } // namespace MegaUI
