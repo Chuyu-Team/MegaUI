@@ -12,66 +12,98 @@ namespace YY
     {
         namespace Sync
         {
-            __forceinline uint32_t __YYAPI Increment(uint32_t* _Addend)
+            __forceinline uint32_t __YYAPI Increment(uint32_t* _pAddend)
             {
-                return _InterlockedIncrement(reinterpret_cast<long volatile*>(_Addend));
+                return (uint32_t)_InterlockedIncrement(reinterpret_cast<long volatile*>(_pAddend));
             }
 
-            __forceinline int32_t __YYAPI Increment(int32_t* _Addend)
+            __forceinline int32_t __YYAPI Increment(int32_t* _pAddend)
             {
-                return _InterlockedIncrement(reinterpret_cast<long volatile*>(_Addend));
+                return (int32_t)_InterlockedIncrement(reinterpret_cast<long volatile*>(_pAddend));
             }
 
-            __forceinline uint32_t __YYAPI Decrement(uint32_t* _Addend)
+            __forceinline uint64_t __YYAPI Increment(uint64_t* _pAddend)
             {
-                return _InterlockedDecrement(reinterpret_cast<long volatile*>(_Addend));
+                return (uint64_t)_interlockedincrement64(reinterpret_cast<long long volatile*>(_pAddend));
+            }
+
+            __forceinline int64_t __YYAPI Increment(int64_t* _pAddend)
+            {
+                return (int64_t)_interlockedincrement64(reinterpret_cast<long long volatile*>(_pAddend));
+            }
+
+            __forceinline uint32_t __YYAPI Decrement(uint32_t* _pAddend)
+            {
+                return (uint32_t)_InterlockedDecrement(reinterpret_cast<long volatile*>(_pAddend));
             }
             
-            __forceinline int32_t __YYAPI Decrement(int32_t* _Addend)
+            __forceinline int32_t __YYAPI Decrement(int32_t* _pAddend)
             {
-                return _InterlockedDecrement(reinterpret_cast<long volatile*>(_Addend));
+                return (int32_t)_InterlockedDecrement(reinterpret_cast<long volatile*>(_pAddend));
             }
 
-            __forceinline bool __YYAPI BitTestAndSet(uint32_t* _Base, uint32_t _Offset)
+            __forceinline uint64_t __YYAPI Decrement(uint64_t* _pAddend)
             {
-                return _interlockedbittestandset(reinterpret_cast<long volatile*>(_Base), _Offset);
+                return (uint64_t)_interlockeddecrement64(reinterpret_cast<long long volatile*>(_pAddend));
             }
 
-            __forceinline bool __YYAPI BitTestAndReset(uint32_t* _Base, uint32_t _Offset)
+            __forceinline int64_t __YYAPI Decrement(int64_t* _pAddend)
             {
-                return _interlockedbittestandreset(reinterpret_cast<long volatile*>(_Base), _Offset);
+                return (int64_t)_interlockeddecrement64(reinterpret_cast<long long volatile*>(_pAddend));
             }
 
-            __forceinline int32_t __YYAPI CompareExchange(int32_t* _Destination, int32_t _Exchange, int32_t _Comparand)
+            /// <summary>
+            /// 使用原子操作，将指定位Bit位设为 1
+            /// </summary>
+            /// <param name="_pBase"></param>
+            /// <param name="_uOffset">指定bit</param>
+            /// <returns>该 _uOffset bit位，原始值</returns>
+            __forceinline bool __YYAPI BitSet(uint32_t* _pBase, uint32_t _uOffset)
             {
-                return _InterlockedCompareExchange(reinterpret_cast<long volatile*>(_Destination), _Exchange, _Comparand);
+                return _interlockedbittestandset(reinterpret_cast<long volatile*>(_pBase), _uOffset);
             }
 
-            __forceinline int64_t __YYAPI CompareExchange(int64_t* _Destination, int64_t _Exchange, int64_t _Comparand)
+            /// <summary>
+            /// 使用原子操作，将指定位Bit位设为 0
+            /// </summary>
+            /// <param name="_pBase"></param>
+            /// <param name="_uOffset">指定bit</param>
+            /// <returns>该 _uOffset bit位，原始值</returns>
+            __forceinline bool __YYAPI BitReset(uint32_t* _pBase, uint32_t _uOffset)
             {
-                return _InterlockedCompareExchange64(reinterpret_cast<long long volatile*>(_Destination), _Exchange, _Comparand);
+                return _interlockedbittestandreset(reinterpret_cast<long volatile*>(_pBase), _uOffset);
+            }
+
+            __forceinline int32_t __YYAPI CompareExchange(int32_t* _pDestination, int32_t _iExchange, int32_t _iComparand)
+            {
+                return (int32_t)_InterlockedCompareExchange(reinterpret_cast<long volatile*>(_pDestination), _iExchange, _iComparand);
+            }
+
+            __forceinline int64_t __YYAPI CompareExchange(int64_t* _pDestination, int64_t _iExchange, int64_t _iComparand)
+            {
+                return (int64_t)_InterlockedCompareExchange64(reinterpret_cast<long long volatile*>(_pDestination), _iExchange, _iComparand);
             }
 
             template<typename _Type>
-            __forceinline _Type* __YYAPI CompareExchangePoint(_Type** _Destination, _Type* _Exchange, _Type* _Comparand)
+            __forceinline _Type* __YYAPI CompareExchangePoint(_Type** _ppDestination, _Type* _pExchange, _Type* _pComparand)
             {
-                return CompareExchange((intptr_t*)_Destination, (intptr_t)_Exchange, (intptr_t)_Comparand);
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
             }
 
-            __forceinline int32_t __YYAPI Exchange(int32_t* _Destination, int32_t _Exchange)
+            __forceinline int32_t __YYAPI Exchange(int32_t* _pDestination, int32_t _iExchange)
             {
-                return _InterlockedExchange(reinterpret_cast<long volatile*>(_Destination), _Exchange);
+                return (int32_t)_InterlockedExchange(reinterpret_cast<long volatile*>(_pDestination), _iExchange);
             }
 
-            __forceinline int64_t __YYAPI Exchange(int64_t* _Destination, int64_t _Exchange)
+            __forceinline int64_t __YYAPI Exchange(int64_t* _pDestination, int64_t _iExchange)
             {
-                return InterlockedExchange64(reinterpret_cast<long long volatile*>(_Destination), _Exchange);
+                return (int64_t)_interlockedexchange64(reinterpret_cast<long long volatile*>(_pDestination), _iExchange);
             }
 
             template<typename _Type>
-            __forceinline _Type* __YYAPI ExchangePoint(_Type** _Destination, _Type* _Exchange)
+            __forceinline _Type* __YYAPI ExchangePoint(_Type** _ppDestination, _Type* _pExchange)
             {
-                return Exchange((intptr_t*)_Destination, (intptr_t)_Exchange);
+                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)_pExchange);
             }
 
         } // namespace Sync
