@@ -2413,7 +2413,7 @@ namespace YY
             else
             {
                 if (_uLocalPropValueCount <= _uIndex)
-                    _hr = LocalPropValue.Resize(_uIndex + 1);
+                    _hr = LocalPropValue.Resize(size_t(_uIndex) + 1);
 
                 if (SUCCEEDED(_hr))
                     _hr = LocalPropValue.SetItem(_uIndex, _pHandleData->InputNewValue);
@@ -3638,6 +3638,8 @@ namespace YY
             // todo: 调用Layout的 GetAdjacent
             auto _Children = GetChildren();
             const auto _uChildrenSize = _Children.GetSize();
+            if (_uChildrenSize == 0)
+                return nullptr;
 
             if (HasFlags(_eNavigate, NavigatingStyle::Forward))
             {
@@ -3665,7 +3667,7 @@ namespace YY
             else
             {
                 // 反向增长
-                size_t _uStart = _pFrom && HasFlags(_eNavigate, NavigatingStyle::Relative) ? _pFrom->iIndex - 1 : _uChildrenSize - 1;
+                size_t _uStart = _pFrom && HasFlags(_eNavigate, NavigatingStyle::Relative) ? (size_t(_pFrom->iIndex) - 1) : (_uChildrenSize - 1);
 
                 for (; _uStart != uint_max; --_uStart)
                 {
