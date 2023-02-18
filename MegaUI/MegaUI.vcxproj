@@ -170,6 +170,9 @@
     <ClInclude Include="..\Base\String\StringView.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\base\tchar.h" />
+    <ClInclude Include="..\Base\Threading\TaskRunner.h" />
+    <ClInclude Include="..\Base\Threading\TaskRunnerInterface.h" />
+    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\base\YY.h" />
     <ClInclude Include="..\Multimedia\Color.h" />
     <ClInclude Include="..\Multimedia\Font.h" />
@@ -205,6 +208,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Base\String\StringTransform.cpp" />
+    <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
     <ClCompile Include="..\Multimedia\Font.cpp" />
     <ClCompile Include="core\ControlInfo.cpp" />
     <ClCompile Include="core\Element.cpp" />
