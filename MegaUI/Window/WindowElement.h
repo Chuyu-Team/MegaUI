@@ -29,6 +29,8 @@ namespace YY
 
             uString __YYAPI GetTitle();
 
+            virtual HRESULT __YYAPI GetAccessibleProvider(_Outptr_ ElementAccessibleProvider** _ppAccessibleProvider) override;
+
         protected:
             virtual bool __YYAPI OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle) override;
 

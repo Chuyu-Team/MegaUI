@@ -64,6 +64,12 @@
     <Filter Include="Base\Threading">
       <UniqueIdentifier>{70ce5618-1412-4047-91ac-176a84a368fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Accessibility">
+      <UniqueIdentifier>{4ef86392-f933-4b2b-958d-b1814e191e02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI\Accessibility\UIAutomation">
+      <UniqueIdentifier>{b98e6b48-18ae-4ea5-99c9-2187cb16e8ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -210,6 +216,15 @@
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h">
       <Filter>Base\Threading</Filter>
     </ClInclude>
+    <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImp.h">
+      <Filter>UI\Accessibility\UIAutomation</Filter>
+    </ClInclude>
+    <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h">
+      <Filter>UI\Accessibility\UIAutomation</Filter>
+    </ClInclude>
+    <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImp.h">
+      <Filter>UI\Accessibility\UIAutomation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -253,6 +268,15 @@
     </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp">
       <Filter>Base\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImp.cpp">
+      <Filter>UI\Accessibility\UIAutomation</Filter>
+    </ClCompile>
+    <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp">
+      <Filter>UI\Accessibility\UIAutomation</Filter>
+    </ClCompile>
+    <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImp.cpp">
+      <Filter>UI\Accessibility\UIAutomation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

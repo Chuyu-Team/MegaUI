@@ -10,4 +10,6 @@
 // 添加要在此处预编译的标头
 #include "framework.h"
 
+#define __DuiWarningMassage(Msg) __pragma(message(__FILE__ "(" _CRT_STRINGIZE(__LINE__) ") : warning Code :" Msg))
+
 #endif //PCH_H

@@ -11,6 +11,9 @@
 #include <MegaUI/base/ComPtr.h>
 #include <Multimedia/Font.h>
 
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImp.h>
+#include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
+
 #pragma warning(disable : 28251)
 #pragma warning(disable : 26812)
 
@@ -93,6 +96,20 @@ namespace YY
             {"StrikeOut", (int32_t)FontStyle::StrikeOut},
             {},
         };
+
+
+#define __APPLY_ENUM_ITEM(_NAME, ...) { #_NAME, (int32_t)_ENUM_TYPE::_NAME },
+
+#define __APPLY_ENUM_MAP(_ENUM_NAME)                   \
+        static constexpr const EnumMap _ENUM_NAME[] =  \
+        {                                              \
+            __ACCESSIBLE_ROLE_TABLE(__APPLY_ENUM_ITEM) \
+            { },                                       \
+        }
+
+#define _ENUM_TYPE AccessibleRole
+        __APPLY_ENUM_MAP(AccRoleEnumMap);
+#undef _ENUM_TYPE
 
 		_APPLY_MEGA_UI_STATIC_CONTROL_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
@@ -534,6 +551,8 @@ namespace YY
 
                 (this->*_Prop.pfnCustomPropertyHandle)(CustomPropertyHandleType::OnPropertyChanged, &_HandleData);
             }
+
+            AccessibleEventManager::NotifyPropertyChanged(this, _Prop, _eIndicies, _OldValue, _NewValue);
         }
 
         void Element::OnGroupChanged(uint32_t _fGroups)
@@ -889,6 +908,8 @@ namespace YY
                     _pDeferCycle->bFiring = false;
                     break;
                 }
+
+                AccessibleEventManager::CommitPropertyChanges(this);
             }
 
             --_pDeferCycle->uEnter;
@@ -1505,6 +1526,109 @@ namespace YY
             return SUCCEEDED(_hr);
         }
 
+        bool Element::IsContentProtected()
+        {
+            return false;
+        }
+
+        achar_t Element::GetShortcutChar()
+        {
+            __DuiWarningMassage("todo");
+            return '\0';
+        }
+
+        bool Element::IsAccessible()
+        {
+            return bSpecAccessible;
+        }
+
+        AccessibleRole Element::GetAccRole()
+        {
+            auto _AccRoleVaule = GetValue(Element::g_ControlInfoData.AccRoleProp);
+            return (AccessibleRole)_AccRoleVaule.GetInt32();
+        }
+
+        uString Element::GetAccName()
+        {
+            auto _AccNameVaule = GetValue(Element::g_ControlInfoData.AccNameProp);
+            return _AccNameVaule.GetString();
+        }
+
+        uString Element::GetAccNameAsDisplayed()
+        {
+            auto _szAccName = GetAccName();
+            if (_szAccName.GetSize())
+            {
+                __DuiWarningMassage("需要处理Shortcut");
+            }
+
+            return _szAccName;
+        }
+
+        uString Element::GetContentStringAsDisplayed()
+        {
+            auto _ContentValue = GetValue(Element::g_ControlInfoData.ContentProp);
+            if (_ContentValue.GetType() != ValueType::uString)
+            {
+                return uString();
+            }
+            
+            __DuiWarningMassage("需要处理Shortcut");
+            return _ContentValue.GetString();
+        }
+
+        uString Element::GetAccHelp()
+        {
+            auto _AccHelpValue = GetValue(Element::g_ControlInfoData.AccHelpProp);
+            return _AccHelpValue.GetString();
+        }
+
+        uString Element::GetAccDescription()
+        {
+            auto _Value = GetValue(Element::g_ControlInfoData.AccDescriptionProp);
+            return _Value.GetString();
+        }
+
+        uString Element::GetAccItemType()
+        {
+            auto _Value = GetValue(Element::g_ControlInfoData.AccItemTypeProp);
+            return _Value.GetString();
+        }
+
+        uString Element::GetAccItemStatus()
+        {
+            auto _Value = GetValue(Element::g_ControlInfoData.AccItemStatusProp);
+            return _Value.GetString();
+        }
+
+        ATOM Element::GetId()
+        {
+            return SpecID;
+        }
+        
+        Window* Element::GetWindow()
+        {
+            return pWindow;
+        }
+
+        HRESULT Element::GetAccessibleProvider(ElementAccessibleProvider** _ppAccessibleProvider)
+        {
+            if (!_ppAccessibleProvider)
+                return E_INVALIDARG;
+            *_ppAccessibleProvider = nullptr;
+
+            if(!pAccessibleProvider)
+            {
+                pAccessibleProvider = new (std::nothrow) ElementAccessibleProvider(this, ThreadTaskRunner::GetCurrentThreadTaskRunner());
+                if (!pAccessibleProvider)
+                    return E_OUTOFMEMORY;
+            }
+
+            pAccessibleProvider->AddRef();
+            *_ppAccessibleProvider = pAccessibleProvider;
+            return S_OK;
+        }
+
         Element* Element::GetImmediateChild(Element* _pFrom)
         {
             if (!_pFrom)
@@ -1521,10 +1645,17 @@ namespace YY
             return _pFrom;
         }
 
+        bool Element::IsKeyboardFocus()
+        {
+            return bSpecKeyboardFocused;
+        }
+
         HRESULT Element::PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _pOldValue, _In_ const Value& _pNewValue)
         {
             if (_pOldValue == nullptr || _pNewValue == nullptr)
                 return E_INVALIDARG;
+
+            AccessibleEventManager::NotifyPropertyChanging(this, _Prop, _eIndicies, _pOldValue, _pNewValue);
 
             auto _pDeferObject = GetDeferObject();
 

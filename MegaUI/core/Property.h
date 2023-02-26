@@ -262,6 +262,11 @@ namespace YY
             } BindCacheInfo;
         };
 
+        inline bool operator==(const PropertyInfo& _Left, const PropertyInfo& _Right)
+        {
+            return &_Left == &_Right;
+        }
+
         template<class _T1, class _T2>
         __inline constexpr _T1 __GetMegaUICallback(_T2 p2)
         {

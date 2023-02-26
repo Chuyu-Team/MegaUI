@@ -1045,6 +1045,8 @@ namespace YY
                 using AllocPolicyArray = AllocPolicyArray<_Type, _eAllocPolicy, _uInsideBufferSize>;
                 using _ReadPoint = typename AllocPolicyArray::_ReadPoint;
                 static constexpr AllocPolicy eAllocPolicy = _eAllocPolicy;
+                
+                constexpr static size_t uInvalidIndex = uint_max;
 
                 Array()
                 {
@@ -1174,7 +1176,22 @@ namespace YY
 
                 size_t __YYAPI GetItemIndex(const _Type* _pItem) const
                 {
-                    return _pItem - AllocPolicyArray::GetData();
+                    size_t _uIndex =  _pItem - AllocPolicyArray::GetData();
+                    if (_uIndex < AllocPolicyArray::GetSize())
+                        return _uIndex;
+
+                    return uInvalidIndex;
+                }
+
+                size_t __YYAPI FindItemIndex(const _Type& _Item) const
+                {
+                    for (const auto& _Current : *this)
+                    {
+                        if (_Current == _Item)
+                            return &_Current - AllocPolicyArray::GetData();
+                    }
+
+                    return uInvalidIndex;
                 }
 
                 HRESULT __YYAPI Add(const _Type& _NewItem)

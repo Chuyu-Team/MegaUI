@@ -179,6 +179,9 @@
     <ClInclude Include="..\Multimedia\Point.h" />
     <ClInclude Include="..\Multimedia\Rect.h" />
     <ClInclude Include="..\Multimedia\Size.h" />
+    <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImp.h" />
+    <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h" />
+    <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImp.h" />
     <ClInclude Include="base\alloc.h" />
     <ClInclude Include="base\ComPtr.h" />
     <ClInclude Include="base\ErrorCode.h" />
@@ -210,6 +213,9 @@
     <ClCompile Include="..\Base\String\StringTransform.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
     <ClCompile Include="..\Multimedia\Font.cpp" />
+    <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImp.cpp" />
+    <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp" />
+    <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImp.cpp" />
     <ClCompile Include="core\ControlInfo.cpp" />
     <ClCompile Include="core\Element.cpp" />
     <ClCompile Include="core\StyleSheet.cpp" />

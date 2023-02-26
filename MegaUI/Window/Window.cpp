@@ -2,6 +2,7 @@
 
 #include "Window.h"
 #include "../core/ControlInfoImp.h"
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImp.h>
 
 #pragma warning(disable : 28251)
 
@@ -131,6 +132,11 @@ namespace YY
             pHost->EndDefer(_Cooike);*/
 
             return S_OK;
+        }
+
+        WindowElement* Window::GetHost()
+        {
+            return pHost;
         }
 
         UINT Window::AsyncDestroyMsg()
@@ -383,6 +389,55 @@ namespace YY
             return SUCCEEDED(_hr);
         }
 
+        Element* Window::GetFocus()
+        {
+            return pLastFocusedElement;
+        }
+
+        void Window::ClientToScreen(Rect* _Bounds)
+        {
+            POINT _Point = {};
+            ::ClientToScreen(hWnd, &_Point);
+
+            _Bounds->Left += _Point.x;
+            _Bounds->Right += _Point.x;
+            _Bounds->Top += _Point.y;
+            _Bounds->Bottom += _Point.y;
+        }
+
+        void Window::ClientToScreen(Point* _pPoint)
+        {
+            POINT _Point = {};
+            ::ClientToScreen(hWnd, &_Point);
+            _pPoint->X += _Point.x;
+            _pPoint->Y += _Point.y;
+        }
+
+        void Window::ScreenToClient(Rect* _Bounds)
+        {
+            POINT _Point = {};
+            ::ScreenToClient(hWnd, &_Point);
+
+            _Bounds->Left += _Point.x;
+            _Bounds->Right += _Point.x;
+            _Bounds->Top += _Point.y;
+            _Bounds->Bottom += _Point.y;
+        }
+
+        void Window::ScreenToClient(Point* _pPoint)
+        {
+            POINT _Point = {};
+            ::ScreenToClient(hWnd, &_Point);
+
+            _pPoint->X += _Point.x;
+            _pPoint->Y += _Point.y;
+        }
+
+        HWND Window::GetWnd()
+        {
+            return hWnd;
+        }
+
         LRESULT Window::StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())
@@ -523,6 +578,13 @@ namespace YY
             case WM_CHAR:
                 OnChar(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam, KeyboardEvent::GetEventModifier()));
                 break;
+            case WM_GETOBJECT:
+            {
+                LRESULT _lResult = 0;
+                if (OnGetObject((uint32_t)_wParam, (int32_t)_lParam, &_lResult))
+                    return _lResult;
+                break;
+            }
             default:
                 break;
             }
@@ -862,6 +924,24 @@ namespace YY
                 return false;
 
             return _KeyEvent.pTarget->OnChar(_KeyEvent);
+        }
+
+        bool Window::OnGetObject(uint32_t _fFlags, int32_t _uObjectId, LRESULT* _plResult)
+        {
+            if (_uObjectId != UiaRootObjectId)
+                return false;
+
+            if (!pHost)
+                return false;
+
+            ElementAccessibleProvider* _pAccessibleProvider;
+            auto _hr = pHost->GetAccessibleProvider(&_pAccessibleProvider);
+            if (FAILED(_hr) || _pAccessibleProvider == nullptr)
+                return false;
+
+            *_plResult = UiaReturnRawElementProvider(hWnd, _fFlags, _uObjectId, static_cast<IRawElementProviderSimple*>(_pAccessibleProvider));
+
+            return true;
         }
 
     } // namespace MegaUI

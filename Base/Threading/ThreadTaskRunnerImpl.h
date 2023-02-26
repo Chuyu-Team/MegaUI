@@ -170,6 +170,12 @@ namespace YY
                 /// <returns></returns>
                 virtual HRESULT __YYAPI Sync(_In_ TaskRunnerCallback _pCallback, _In_opt_ void* _pUserData) override
                 {
+                    if (GetCurrentThreadId() == uThreadId)
+                    {
+                        _pCallback(_pUserData);
+                        return S_OK;
+                    }
+
                     auto _lResult = SendMessageW(hTaskRunnerWnd, WM_APP, (WPARAM)_pCallback, (LPARAM)_pUserData);
                     if (_lResult != uHandleMessageSuccess)
                         return E_FAIL;

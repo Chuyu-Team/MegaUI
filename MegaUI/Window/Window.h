@@ -61,6 +61,8 @@ namespace YY
 
             HRESULT __YYAPI SetHost(_In_ WindowElement* _pHost);
 
+            WindowElement* __YYAPI GetHost();
+
             static UINT __YYAPI AsyncDestroyMsg();
 
             void __YYAPI DestroyWindow();
@@ -115,6 +117,20 @@ namespace YY
             /// <returns>如果设置成功，则返回 true。</returns>
             bool __YYAPI SetFocus(_In_opt_ Element* _pElement);
 
+            Element* __YYAPI GetFocus();
+
+            void __YYAPI GetRect(Rect* _Bounds);
+
+            void __YYAPI ClientToScreen(_Inout_ Rect* _Bounds);
+            
+            void __YYAPI ClientToScreen(_Inout_ Point* _pPoint);
+
+            void __YYAPI ScreenToClient(_Inout_ Rect* _Bounds);
+            
+            void __YYAPI ScreenToClient(_Inout_ Point* _pPoint);
+
+            HWND __YYAPI GetWnd();
+
         protected:
             static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
@@ -149,6 +165,8 @@ namespace YY
             bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
             
             bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
+
+            bool __YYAPI OnGetObject(uint32_t _fFlags, int32_t _uObjectId, LRESULT* _plResult);
         };
     }
 } // namespace YY

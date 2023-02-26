@@ -142,6 +142,15 @@ namespace YY
                 return GetWidth() == _Size.Width && GetHeight() == _Size.Height;
             }
 
+            __inline Rect& __YYAPI operator+=(Point _Point)
+            {
+                Left += _Point.X;
+                Right += _Point.X;
+                Top += _Point.Y;
+                Bottom += _Point.Y;
+                return *this;
+            }
+
             void __YYAPI DeflateRect(_In_ const Rect& _Other)
             {
                 Left += _Other.Left;
@@ -215,6 +224,19 @@ namespace YY
             bool __YYAPI IsEmpty() const
             {
                 return Left >= Right || Top >= Bottom;
+            }
+
+            void Clear()
+            {
+                Left = 0;
+                Right = 0;
+                Top = 0;
+                Bottom = 0;
+            }
+
+            Point __YYAPI GetCenterPoint() const
+            {
+                return Point(Left + GetWidth() / 2, Top + GetHeight() / 2);
             }
 
             __YYAPI operator D2D_RECT_F&() const

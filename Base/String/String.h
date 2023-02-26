@@ -573,7 +573,7 @@ namespace YY
                     return *this;
                 }
 
-                StringBase& __YYAPI operator+=(_In_opt_z_ const char_t* _szSrc) noexcept
+                StringBase& __YYAPI operator+=(_In_opt_z_ const char_t* _szSrc)
                 {
                     auto _hr = AppendString(_szSrc);
                     if (FAILED(_hr))
@@ -582,7 +582,7 @@ namespace YY
                     return *this;
                 }
 
-                StringBase& __YYAPI operator+=(const StringBase& _szSrc) noexcept
+                StringBase& __YYAPI operator+=(const StringBase& _szSrc)
                 {
                     auto _hr = AppendString(_szSrc);
                     if (FAILED(_hr))
@@ -591,7 +591,7 @@ namespace YY
                     return *this;
                 }
 
-                StringBase& __YYAPI operator+=(_In_ char_t _ch) noexcept
+                StringBase& __YYAPI operator+=(_In_ char_t _ch)
                 {
                     auto _hr = AppendChar(_ch);
                     if (FAILED(_hr))

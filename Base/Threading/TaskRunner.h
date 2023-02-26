@@ -22,7 +22,7 @@ namespace YY
                     IParallelTaskRunner* pParallelTaskRunner;
                 };
                 
-                TaskRunner(ITaskRunner* _pTask = nullptr)
+                TaskRunner(ITaskRunner* _pTask)
                     : pTaskRunner(_pTask)
                 {
                     if (pTaskRunner)
@@ -30,6 +30,11 @@ namespace YY
                 }
 
             public:
+                TaskRunner()
+                    : pTaskRunner(nullptr)
+                {
+                }
+
                 TaskRunner(const TaskRunner& _Other)
                     : pTaskRunner(_Other.pTaskRunner)
                 {
@@ -117,12 +122,16 @@ namespace YY
             class SequencedTaskRunner : public TaskRunner
             {
             protected:
-                SequencedTaskRunner(ISequencedTaskRunner* _pSequencedTask = nullptr)
+                SequencedTaskRunner(ISequencedTaskRunner* _pSequencedTask)
                     : TaskRunner(_pSequencedTask)
                 {
                 }
 
             public:
+                SequencedTaskRunner()
+                {
+                }
+
                 SequencedTaskRunner(const TaskRunner& _Other)
                 {
                     if (HasFlags(_Other.GetStyle(), TaskRunnerStyle::Sequenced))
@@ -150,12 +159,16 @@ namespace YY
             class ThreadTaskRunner : public SequencedTaskRunner
             {
             protected:
-                ThreadTaskRunner(IThreadTaskRunner* _pThreadTask = nullptr)
+                ThreadTaskRunner(IThreadTaskRunner* _pThreadTask)
                     : SequencedTaskRunner(_pThreadTask)
                 {
                 }
 
             public:
+                ThreadTaskRunner()
+                {
+                }
+
                 ThreadTaskRunner(const TaskRunner& _Other)
                 {
                     if (HasFlags(_Other.GetStyle(), TaskRunnerStyle::FixedThread))

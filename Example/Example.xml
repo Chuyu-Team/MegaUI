@@ -9,6 +9,9 @@
                     <!--允许使用ARBG-->
                     <Element BorderStyle="Sunken" Background="ARGB(255, 0, 0, 0)" />
                 </MouseFocused>
+                <KeyboardFocused Equal="true">
+                    <Element FocusVisible="true"/>
+                </KeyboardFocused>
             </Class>
             <Class Equal="背景黄变黑">
                 <Default>
@@ -18,11 +21,17 @@
                     <!--允许使用ARBG-->
                     <Element BorderStyle="Sunken" Background="ARGB(255, 0, 0, 0)" />
                 </MouseFocused>
+                <KeyboardFocused Equal="true">
+                    <Element FocusVisible="true"/>
+                </KeyboardFocused>
             </Class>
             <Class Equal="FocusVisible">
                 <MouseFocusWithin Equal="true">
                     <Element FocusVisible="true"/>
                 </MouseFocusWithin>
+                <KeyboardFocused Equal="true">
+                    <Element FocusVisible="true"/>
+                </KeyboardFocused>
             </Class>
             <Default>
                 <Element BorderStyle="Solid"/>
@@ -33,8 +42,8 @@
         </StyleSheet>
     </StyleSheets>
     <Windows>
-        <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600dp" Width="800dp" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet">
-            <Element Class="FocusVisible" Active="Mouse"
+        <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600dp" Width="800dp" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet" Accessible="true" AccRole="Window">
+            <Element Class="FocusVisible" Active="Mouse | Keyboard" Accessible="true" AccName="大号文本" AccRole="Text"
                 LayoutPos="Absolute" X="100dp" Y="100dp" Width="300dp" Background="ARGB(128, 255, 255, 0)"
                      BorderStyle="Raised" BorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" BorderColor="ARGB(255, 163, 73, 164)"
                      Padding="Rect(4dp, 4dp, 4dp, 4dp)"
@@ -42,13 +51,21 @@
                      Foreground="RGB(50,0,0)"
                      ContentAlign="Wrap | EndEllipsis"
                      FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)"
-                     Content="聊天止到底
+                     Content="测试文字
    的观对方
    的嘀咕嘀咕嘀咕嘀咕的嘀咕嘀咕的点的地方的于呵呵">
-                <Element LayoutPos="Absolute" X="150dp" Y="155dp" Height="50dp" Width="40dp" Class="背景黄变黑" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 0, 0)" Active="Mouse"/>
+                <Element LayoutPos="Absolute" X="10dp" Y="140dp" Height="50dp" Width="40dp" Class="背景黄变黑" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 0, 0)" Active="Mouse|Keyboard"
+                         FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)" AccName="内部小文本" AccRole="Text"/>
             </Element>
             <Element LayoutPos="Absolute" X="300dp" Y="305dp" Height="400dp" Width="300dp" Background="ARGB(32, 255, 255, 0)" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 163, 73, 164)"/>
-            <Element LayoutPos="Absolute" X="450dp" Y="205dp" Height="50dp" Width="40dp" Class="背景蓝色变原谅色" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 128, 192)" Active="Mouse"/>
+            <Element LayoutPos="Absolute" X="450dp" Y="205dp" Height="50dp" Width="40dp" Class="背景蓝色变原谅色" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 128, 192)" Active="Mouse | Keyboard"
+                                          Padding="Rect(4dp, 4dp, 4dp, 4dp)"
+                                          FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)"/>
+
+            <Element LayoutPos="Absolute" X="550dp" Y="205dp" Height="50dp" Width="40dp" Class="背景蓝色变原谅色" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 128, 192)" Active="Mouse | Keyboard"
+                              Padding="Rect(4dp, 4dp, 4dp, 4dp)"
+                              FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)"/>
+
         </WindowElement>
     </Windows>
 </MegaUI>
