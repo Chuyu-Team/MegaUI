@@ -164,10 +164,10 @@
     <ClInclude Include="..\base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
     <ClInclude Include="..\Base\SAL.h" />
-    <ClInclude Include="..\Base\String\NString.h" />
-    <ClInclude Include="..\Base\String\String.h" />
-    <ClInclude Include="..\Base\String\StringTransform.h" />
-    <ClInclude Include="..\Base\String\StringView.h" />
+    <ClInclude Include="..\Base\Strings\NString.h" />
+    <ClInclude Include="..\Base\Strings\String.h" />
+    <ClInclude Include="..\Base\Strings\StringTransform.h" />
+    <ClInclude Include="..\Base\Strings\StringView.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\base\tchar.h" />
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />
@@ -210,7 +210,7 @@
     <ClInclude Include="Window\WindowElement.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Base\String\StringTransform.cpp" />
+    <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
     <ClCompile Include="..\Multimedia\Font.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImp.cpp" />

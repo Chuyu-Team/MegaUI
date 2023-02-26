@@ -58,9 +58,6 @@
     <Filter Include="Base\Sync">
       <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\String">
-      <UniqueIdentifier>{a29a58ba-73ae-4a48-8891-56488d2ca06a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Base\Threading">
       <UniqueIdentifier>{70ce5618-1412-4047-91ac-176a84a368fd}</UniqueIdentifier>
     </Filter>
@@ -69,6 +66,9 @@
     </Filter>
     <Filter Include="UI\Accessibility\UIAutomation">
       <UniqueIdentifier>{b98e6b48-18ae-4ea5-99c9-2187cb16e8ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Strings">
+      <UniqueIdentifier>{a29a58ba-73ae-4a48-8891-56488d2ca06a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -177,18 +177,6 @@
     <ClInclude Include="..\Base\Sync\Interlocked.h">
       <Filter>Base\Sync</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\String\NString.h">
-      <Filter>Base\String</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\String\String.h">
-      <Filter>Base\String</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\String\StringView.h">
-      <Filter>Base\String</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\String\StringTransform.h">
-      <Filter>Base\String</Filter>
-    </ClInclude>
     <ClInclude Include="..\Multimedia\Color.h">
       <Filter>Multimedia</Filter>
     </ClInclude>
@@ -225,6 +213,18 @@
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImp.h">
       <Filter>UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Strings\NString.h">
+      <Filter>Base\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Strings\String.h">
+      <Filter>Base\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Strings\StringTransform.h">
+      <Filter>Base\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Strings\StringView.h">
+      <Filter>Base\Strings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -260,9 +260,6 @@
     <ClCompile Include="Render\FontEnumMap.cpp">
       <Filter>UI\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\Base\String\StringTransform.cpp">
-      <Filter>Base\String</Filter>
-    </ClCompile>
     <ClCompile Include="..\Multimedia\Font.cpp">
       <Filter>Multimedia</Filter>
     </ClCompile>
@@ -277,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImp.cpp">
       <Filter>UI\Accessibility\UIAutomation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Strings\StringTransform.cpp">
+      <Filter>Base\Strings</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

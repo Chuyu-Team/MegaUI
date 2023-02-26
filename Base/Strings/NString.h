@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <Base/String/String.h>
-#include <Base/String/StringTransform.h>
+#include <Base/Strings/String.h>
+#include <Base/Strings/StringTransform.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -9,7 +9,7 @@ namespace YY
 {
     namespace Base
     {
-        namespace String
+        namespace Strings
         {
             // 万能String类
             class NString
@@ -894,10 +894,10 @@ namespace YY
                     }
                 }
             };
-        } // namespace String
+        } // namespace Strings
     } // namespace Base
 
-    using namespace YY::Base::String;
+    using namespace YY::Base::Strings;
 } // namespace YY
 
 #pragma pack(pop)

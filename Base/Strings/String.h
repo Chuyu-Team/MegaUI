@@ -21,7 +21,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 
 #pragma once
 
-#include <Base/String/StringView.h>
+#include <Base/Strings/StringView.h>
 #include <Base/Encoding.h>
 #include <Base/Exception.h>
 #include <Base/YY.h>
@@ -34,7 +34,7 @@ namespace YY
 {
     namespace Base
     {
-        namespace String
+        namespace Strings
         {
             class NString;
             class EndianHelper;
@@ -890,10 +890,10 @@ namespace YY
 
             // 默认最佳的Unicode编码字符串
             typedef StringBase<uchar_t,  DetaultEncoding<uchar_t>::eEncoding> uString;
-        } // namespace String
+        } // namespace Strings
     } // namespace Base
 
-    using namespace YY::Base::String;
+    using namespace YY::Base::Strings;
 } // namespace YY
 
 #pragma pack(pop)

@@ -1,11 +1,11 @@
 ﻿#pragma once
-#include <Base/String/String.h>
+#include <Base/Strings/String.h>
 
 namespace YY
 {
     namespace Base
     {
-        namespace String
+        namespace Strings
         {
             // To ANSI
             HRESULT __YYAPI Transform(_In_ const aStringView& _szSrc, _Inout_ aString* _pszDst);
@@ -70,8 +70,8 @@ namespace YY
 
             HRESULT __YYAPI Transform(_In_ u32StringLE&& _szSrc, _Inout_ u32StringBE* pszDst);
             HRESULT __YYAPI Transform(_In_ const u32StringBE& _szSrc, _Inout_ u32StringBE* pszDst);
-        } // namespace String
+        } // namespace Strings
     } // namespace Base
 
-    using namespace YY::Base::String;
+    using namespace YY::Base::Strings;
 } // namespace YY

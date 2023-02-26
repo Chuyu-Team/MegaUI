@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include <Base/String/StringTransform.h>
+#include <Base/Strings/StringTransform.h>
 
 #include <Windows.h>
 
@@ -10,7 +10,7 @@ namespace YY
 {
     namespace Base
     {
-        namespace String
+        namespace Strings
         {
             __forceinline u16char_t __YYAPI byteswap(u16char_t _ch)
             {

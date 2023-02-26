@@ -2,7 +2,7 @@
 #include "UIParser.h"
 
 #include <MegaUI/base/alloc.h>
-#include <Base/String/StringTransform.h>
+#include <Base/Strings/StringTransform.h>
 #include "ValueParser.h"
 #include <MegaUI/core/StyleSheet.h>
 #include <MegaUI/Render/FontEnumMap.h>

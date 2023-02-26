@@ -7,7 +7,7 @@
 #include <string>
 #include <atltypes.h>
 
-#include <Base/String/NString.h>
+#include <Base/Strings/NString.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace YY;
