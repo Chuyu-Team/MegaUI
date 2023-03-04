@@ -69,6 +69,12 @@ namespace YY
             
             bool __YYAPI IsMinimized() const;
 
+            bool __YYAPI CanMinimize() const;
+            
+            bool __YYAPI IsTopmost() const;
+
+            bool __YYAPI CanMaximize() const;
+
             void __YYAPI ShowWindow(int _iCmdShow);
 
             void __YYAPI InvalidateRect(_In_opt_ const Rect* _pRect);

@@ -162,6 +162,21 @@ namespace YY
             return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
         }
 
+        bool Window::CanMinimize() const
+        {
+            return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZEBOX) != 0;
+        }
+
+        bool Window::IsTopmost() const
+        {
+            return hWnd && (GetWindowLongPtrW(hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
+        }
+
+        bool Window::CanMaximize() const
+        {
+            return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MAXIMIZEBOX) != 0;
+        }
+
         void Window::ShowWindow(int _iCmdShow)
         {
             if (hWnd)

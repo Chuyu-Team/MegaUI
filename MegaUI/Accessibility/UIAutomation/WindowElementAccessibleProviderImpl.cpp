@@ -2,6 +2,7 @@
 #include "WindowElementAccessibleProviderImpl.h"
 
 #include <MegaUI/Window/Window.h>
+#include <MegaUI/Accessibility/UIAutomation/WindowElementPatternProviderImpl.h>
 
 #pragma warning(disable : 28251)
 
@@ -38,6 +39,68 @@ namespace YY
         ULONG WindowElementAccessibleProvider::Release()
         {
             return ElementAccessibleProvider::Release();
+        }
+
+        HRESULT WindowElementAccessibleProvider::GetPatternProvider(PATTERNID _iPatternId, IUnknown** _pRetVal)
+        {
+            if (!_pRetVal)
+                return E_INVALIDARG;
+
+            *_pRetVal = nullptr;
+
+            HRESULT _hr = E_FAIL;
+
+            TaskRunner.Sync(
+                [=, &_hr]()
+                {
+                    if (_iPatternId == UIA_TransformPatternId || _iPatternId == UIA_TransformPattern2Id)
+                    {
+                        auto& _pCrash = PatternProviderCache[UIA_TransformPatternId - UIA_FirstPatternId];
+                        if (!_pCrash)
+                        {
+                            auto _pPatternProvider = new (std::nothrow) PatternProvider<WindowElement, ITransformProvider2>((WindowElement*)pElement, TaskRunner);
+                            if (!_pPatternProvider)
+                            {
+                                _hr = E_OUTOFMEMORY;
+                                return;
+                            }
+
+                            _pCrash = _pPatternProvider;
+                        }
+                        
+                        _pCrash->AddRef();
+                        *_pRetVal = _pCrash;
+
+                        _hr = S_OK;
+                        return;
+                    }
+                    else if (_iPatternId == UIA_WindowPatternId)
+                    {
+                        auto& _pCrash = PatternProviderCache[UIA_WindowPatternId - UIA_FirstPatternId];
+                        if (!_pCrash)
+                        {
+                            auto _pPatternProvider = new (std::nothrow) PatternProvider<WindowElement, IWindowProvider>((WindowElement*)pElement, TaskRunner);
+                            if (!_pPatternProvider)
+                            {
+                                _hr = E_OUTOFMEMORY;
+                                return;
+                            }
+
+                            _pCrash = _pPatternProvider;
+                        }
+
+                        _pCrash->AddRef();
+                        *_pRetVal = _pCrash;
+
+                        _hr = S_OK;
+                        return;
+                    }
+
+                    _hr = ElementAccessibleProvider::GetPatternProvider(_iPatternId, _pRetVal);
+                    return;
+                });
+
+            return _hr;
         }
 
         HRESULT WindowElementAccessibleProvider::ElementProviderFromPoint(double _X, double _Y, IRawElementProviderFragment** _pRetVal)

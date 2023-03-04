@@ -24,6 +24,10 @@ namespace YY
 
             virtual ULONG STDMETHODCALLTYPE Release() override;
 
+            virtual HRESULT STDMETHODCALLTYPE GetPatternProvider(
+                /* [in] */ PATTERNID _iPatternId,
+                /* [retval][out] */ __RPC__deref_out_opt IUnknown** _pRetVal) override;
+
             // IRawElementProviderFragmentRoot
 
             virtual HRESULT STDMETHODCALLTYPE ElementProviderFromPoint(

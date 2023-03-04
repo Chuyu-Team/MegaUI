@@ -179,10 +179,11 @@
     <ClInclude Include="..\Multimedia\Point.h" />
     <ClInclude Include="..\Multimedia\Rect.h" />
     <ClInclude Include="..\Multimedia\Size.h" />
-    <ClInclude Include="Accessibility\UIAutomation\ElementAccessiblePatternProviderImpl.h" />
+    <ClInclude Include="Accessibility\UIAutomation\PatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h" />
+    <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h" />
     <ClInclude Include="base\alloc.h" />
     <ClInclude Include="base\ComPtr.h" />
     <ClInclude Include="base\ComUnknowImpl.h" />
