@@ -181,7 +181,26 @@ namespace YY
 
             Rect __YYAPI GetBoundingRectangle();
 
-            Element* __YYAPI GetVisibleAccessibleParent(Element* _pElem);
+            static Element* __YYAPI GetVisibleAccessibleParent(Element* _pElem);
+            
+            static HRESULT __YYAPI ForEachAccessibleChildren(
+                Element* _pParentElement,
+                bool (__YYAPI* _pCallback)(Element* _pChildElement, void* _pUserData),
+                void* _pUserData);
+
+            template<class Fun>
+            static HRESULT __YYAPI ForEachAccessibleChildren(
+                Element* _pParentElement,
+                Fun&& _Fun)
+            {
+                return ForEachAccessibleChildren(
+                    _pParentElement,
+                    [](Element* _pChildElement, void* _pUserData) -> bool
+                    {
+                        return (*(Fun*)_pUserData)(_pChildElement);
+                    },
+                    &_Fun);
+            }
 
             ////////////////////////////////////////////////////////////////
             // IRawElementProviderSimple

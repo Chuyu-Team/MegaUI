@@ -147,6 +147,35 @@ namespace YY
             return _pElem;
         }
 
+        HRESULT ElementAccessibleProvider::ForEachAccessibleChildren(
+            Element* _pParentElement,
+            bool(__YYAPI* _pCallback)(Element* _pChildElement, void* _pUserData),
+            void* _pUserData)
+        {
+            if (_pParentElement == nullptr || _pCallback == nullptr)
+                return E_NOINTERFACE;
+
+            for (auto _pChild : _pParentElement->GetChildren())
+            {
+                if (!_pChild->IsVisible())
+                    continue;
+
+                if (_pChild->IsAccessible())
+                {
+                    if (!_pCallback(_pChild, _pUserData))
+                        return __HRESULT_FROM_WIN32(ERROR_CANCELLED);
+                }
+                else
+                {
+                    auto _hr = ForEachAccessibleChildren(_pChild, _pCallback, _pUserData);
+                    if (FAILED(_hr))
+                        return _hr;
+                }
+            }
+
+            return S_OK;
+        }
+
         HRESULT ElementAccessibleProvider::get_ProviderOptions(ProviderOptions* _peRetVal)
         {
             if (!_peRetVal)
@@ -467,6 +496,8 @@ namespace YY
             TaskRunner.Sync(
                 [=, &_hr]()
                 {
+                    _hr = S_OK;
+
                     Element* _pTarget = nullptr;
                     switch (_eDirection)
                     {
@@ -474,9 +505,76 @@ namespace YY
                         _pTarget = GetVisibleAccessibleParent(pElement);
                         break;
                     case NavigateDirection_NextSibling:
-                        // todo
+                    {
+                        auto _pParent = GetVisibleAccessibleParent(pElement);
+                        if (!_pParent)
+                        {
+                            _hr = E_NOT_SET;
+                            return;
+                        }
+
+                        bool _bFindCurrent = false;
+                        ForEachAccessibleChildren(
+                            _pParent,
+                            [=, &_bFindCurrent, &_pTarget](Element* _pChildElement) -> bool
+                            {
+                                if (_pChildElement == pElement)
+                                {
+                                    _bFindCurrent = true;
+                                }
+                                else if (_bFindCurrent)
+                                {
+                                    _pTarget = _pChildElement;
+                                    return false;
+                                }
+                                return true;
+                            });
+
                         break;
-                    default:
+                    }
+                    case NavigateDirection_PreviousSibling:
+                    {
+                        auto _pParent = GetVisibleAccessibleParent(pElement);
+                        if (!_pParent)
+                        {
+                            _hr = E_NOT_SET;
+                            return;
+                        }
+
+                        ForEachAccessibleChildren(
+                            _pParent,
+                            [=, &_pTarget](Element* _pChildElement) -> bool
+                            {
+                                if (_pChildElement == pElement)
+                                {
+                                    return false;
+                                }
+                                _pTarget = _pChildElement;
+                                return true;
+                            });
+
+                        break;
+                    }
+                    
+                    case NavigateDirection_FirstChild:
+                        ForEachAccessibleChildren(
+                            pElement,
+                            [=, &_pTarget](Element* _pChildElement) -> bool
+                            {
+                                _pTarget = _pChildElement;                            
+                                return false;
+                            });
+
+                        break;
+                    case NavigateDirection_LastChild:
+                        ForEachAccessibleChildren(
+                            pElement,
+                            [=, &_pTarget](Element* _pChildElement) -> bool
+                            {
+                                _pTarget = _pChildElement;
+                                return true;
+                            });
+
                         break;
                     }
 

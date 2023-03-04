@@ -55,7 +55,7 @@
    的观对方
    的嘀咕嘀咕嘀咕嘀咕的嘀咕嘀咕的点的地方的于呵呵">
                 <Element LayoutPos="Absolute" X="10dp" Y="140dp" Height="50dp" Width="40dp" Class="背景黄变黑" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 0, 0)" Active="Mouse|Keyboard"
-                         FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)" AccName="内部小文本" AccRole="Text"/>
+                         FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)" AccName="内部小文本" AccRole="Text" Accessible="true"/>
             </Element>
             <Element LayoutPos="Absolute" X="300dp" Y="305dp" Height="400dp" Width="300dp" Background="ARGB(32, 255, 255, 0)" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 163, 73, 164)"/>
             <Element LayoutPos="Absolute" X="450dp" Y="205dp" Height="50dp" Width="40dp" Class="背景蓝色变原谅色" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 128, 192)" Active="Mouse | Keyboard"

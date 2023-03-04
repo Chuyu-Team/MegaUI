@@ -148,6 +148,7 @@ namespace YY
             , bHasLocFocused(false)
             , bLocFocused(false)
             , bSpecFocused(false)
+            , bSpecAccessible(false)
         {
             SpecFont.szFace = Element::g_ControlInfoData.FontFamilyProp.pFunDefaultValue().GetString();
             SpecFont.iSize = Element::g_ControlInfoData.FontSizeProp.pFunDefaultValue().GetFloat();
