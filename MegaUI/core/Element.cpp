@@ -11,7 +11,7 @@
 #include <MegaUI/base/ComPtr.h>
 #include <Multimedia/Font.h>
 
-#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImp.h>
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
 
 #pragma warning(disable : 28251)

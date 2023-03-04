@@ -1,5 +1,5 @@
 #pragma once
-#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImp.h>
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 
 #pragma pack(push, __YY_PACKING)
 

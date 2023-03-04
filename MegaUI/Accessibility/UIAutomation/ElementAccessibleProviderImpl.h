@@ -9,6 +9,7 @@
 #include <Base/Threading/TaskRunner.h>
 
 #include <MegaUI/core/Element.h>
+#include <MegaUI/base/ComUnknowImpl.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -148,18 +149,24 @@ namespace YY
         }
 
         class ElementAccessibleProvider
-            : public IRawElementProviderSimple3
-            , public IRawElementProviderFragment
-            , public IRawElementProviderAdviseEvents
+            : public ComUnknowImpl<ElementAccessibleProvider, IRawElementProviderSimple3, IRawElementProviderFragment, IRawElementProviderAdviseEvents>
         {
         protected:
-            uint32_t uRef;
             ThreadTaskRunner TaskRunner;
             Element* pElement;
             // GetPatternProvider ½Ó¿ÚµÄ»º´æ
             IUnknown* PatternProviderCache[UIA_LastPatternId - UIA_FirstPatternId + 1];
 
-        public:
+        public:           
+            __YY_BEGIN_COM_QUERY_MAP(ElementAccessibleProvider)
+                __YY_QUERY_ENTRY(IRawElementProviderSimple3)
+                __YY_QUERY_ENTRY(IRawElementProviderSimple2)
+                __YY_QUERY_ENTRY(IRawElementProviderSimple)
+                __YY_QUERY_ENTRY_WITH_BASE(IUnknown, IRawElementProviderSimple)
+                __YY_QUERY_ENTRY(IRawElementProviderFragment)
+                __YY_QUERY_ENTRY(IRawElementProviderAdviseEvents)
+            __YY_END_COM_QUERY_MAP();
+
             ElementAccessibleProvider(Element* _pElement, ThreadTaskRunner _TaskRunner);
 
             virtual ~ElementAccessibleProvider();
@@ -175,17 +182,6 @@ namespace YY
             Rect __YYAPI GetBoundingRectangle();
 
             Element* __YYAPI GetVisibleAccessibleParent(Element* _pElem);
-
-            //////////////////////////////////////////////////////////////
-            // IUnknown
-
-            virtual HRESULT STDMETHODCALLTYPE QueryInterface(
-                /* [in] */ REFIID _riid,
-                /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR* __RPC_FAR* _ppvObject) override;
-
-            virtual ULONG STDMETHODCALLTYPE AddRef() override;
-
-            virtual ULONG STDMETHODCALLTYPE Release() override;
 
             ////////////////////////////////////////////////////////////////
             // IRawElementProviderSimple

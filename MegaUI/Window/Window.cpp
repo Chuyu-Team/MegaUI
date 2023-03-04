@@ -2,7 +2,7 @@
 
 #include "Window.h"
 #include "../core/ControlInfoImp.h"
-#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImp.h>
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 
 #pragma warning(disable : 28251)
 

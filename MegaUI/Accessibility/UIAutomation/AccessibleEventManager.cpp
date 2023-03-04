@@ -3,7 +3,7 @@
 
 #include <Base/Containers/Array.h>
 #include <MegaUI/base/ComPtr.h>
-#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImp.h>
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 
 #pragma warning(disable : 28251)
 

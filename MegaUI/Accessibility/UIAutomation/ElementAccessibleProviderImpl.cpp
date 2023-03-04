@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "ElementAccessibleProviderImp.h"
+#include "ElementAccessibleProviderImpl.h"
 
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
@@ -13,8 +13,7 @@ namespace YY
     namespace MegaUI
     {
         ElementAccessibleProvider::ElementAccessibleProvider(Element* _pElement, ThreadTaskRunner _TaskRunner)
-            : uRef(1)
-            , TaskRunner(std::move(_TaskRunner))
+            : TaskRunner(std::move(_TaskRunner))
             , pElement(_pElement)
             , PatternProviderCache {}
         {
@@ -148,53 +147,6 @@ namespace YY
             return _pElem;
         }
 
-        HRESULT ElementAccessibleProvider::QueryInterface(REFIID _riid, void** _ppvObject)
-        {
-            if (!_ppvObject)
-                return E_POINTER;
-
-            if (_riid == __uuidof(IUnknown)
-                || _riid == __uuidof(IRawElementProviderSimple)
-                || _riid == __uuidof(IRawElementProviderSimple2)
-                || _riid == __uuidof(IRawElementProviderSimple3))
-            {
-                AddRef();
-                *_ppvObject = static_cast<IRawElementProviderSimple*>(this);
-                return S_OK;
-            }
-            else if (_riid == __uuidof(IRawElementProviderFragment))
-            {
-                AddRef();
-                *_ppvObject = static_cast<IRawElementProviderFragment*>(this);
-                return S_OK;
-            }
-            else if (_riid == __uuidof(IRawElementProviderAdviseEvents))
-            {
-                AddRef();
-                *_ppvObject = static_cast<IRawElementProviderAdviseEvents*>(this);
-                return S_OK;
-            }
-
-            *_ppvObject = nullptr;
-            return E_NOINTERFACE;
-        }
-
-        ULONG ElementAccessibleProvider::AddRef()
-        {
-            return Sync::Increment(&uRef);
-        }
-
-        ULONG ElementAccessibleProvider::Release()
-        {
-            auto _uOldRef = Sync::Decrement(&uRef);
-            if (_uOldRef == 0)
-            {
-                delete this;
-            }
-
-            return _uOldRef;
-        }
-
         HRESULT ElementAccessibleProvider::get_ProviderOptions(ProviderOptions* _peRetVal)
         {
             if (!_peRetVal)
@@ -214,6 +166,22 @@ namespace YY
             if (_uPatternIndex >= std::size(PatternProviderCache))
                 return E_NOINTERFACE;
 
+            if (auto _pPatternProvider = PatternProviderCache[_uPatternIndex])
+            {
+                _pPatternProvider->AddRef();
+                *_pRetVal = _pPatternProvider;
+                return S_OK;
+            }
+
+            switch (_iPatternId)
+            {
+            case UIA_TextPatternId:
+            case UIA_TextPattern2Id:
+
+                break;
+            }
+
+            // todo:
 
             return E_NOINTERFACE;
         }
@@ -338,7 +306,7 @@ namespace YY
                     case UIA_NativeWindowHandlePropertyId:
                         // MegaUI为虚拟控件，一般没有创建句柄
                         if (pElement == pElement->GetWindow()->GetHost())
-                            return _hr = VariantSetInt32(_pRetVal, (int32_t)pElement->GetWindow()->GetWnd());
+                            return _hr = VariantSetInt32(_pRetVal, (int32_t)(intptr_t)pElement->GetWindow()->GetWnd());
                         return S_FALSE;
                     case UIA_ItemTypePropertyId:
                         return _hr = VariantSetString(_pRetVal, pElement->GetAccItemType());
