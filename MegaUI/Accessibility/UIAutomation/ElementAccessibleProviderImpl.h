@@ -86,6 +86,13 @@ namespace YY
             return S_OK;
         }
 
+        inline HRESULT __YYAPI VariantSetDouble(_Out_ VARIANT* _pVariant, _In_ double _Value)
+        {
+            _pVariant->vt = VT_I8;
+            _pVariant->dblVal = _Value;
+            return S_OK;
+        }
+
         template<class _Type>
         struct VariantHelp
         {
@@ -170,6 +177,10 @@ namespace YY
             ElementAccessibleProvider(Element* _pElement, ThreadTaskRunner _TaskRunner);
 
             virtual ~ElementAccessibleProvider();
+
+            Element* __YYAPI GetElement();
+
+            ThreadTaskRunner __YYAPI GetTaskRunner();
 
             static int32_t __YYAPI AccessibleRoleToControlType(AccessibleRole _eRole);
 

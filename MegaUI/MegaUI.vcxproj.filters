@@ -234,6 +234,9 @@
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h">
       <Filter>UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
+    <ClInclude Include="Accessibility\UIAutomation\ElementPatternProviderImpl.h">
+      <Filter>UI\Accessibility\UIAutomation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

@@ -3,6 +3,7 @@
 
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
+#include <MegaUI/Accessibility/UIAutomation/ElementPatternProviderImpl.h>
 
 #pragma warning(disable : 28251)
 
@@ -26,6 +27,16 @@ namespace YY
                 if (_pPantern)
                     _pPantern->Release();
             }
+        }
+
+        Element* ElementAccessibleProvider::GetElement()
+        {
+            return pElement;
+        }
+
+        ThreadTaskRunner ElementAccessibleProvider::GetTaskRunner()
+        {
+            return TaskRunner;
         }
 
         int32_t ElementAccessibleProvider::AccessibleRoleToControlType(AccessibleRole _eRole)
@@ -195,24 +206,19 @@ namespace YY
             if (_uPatternIndex >= std::size(PatternProviderCache))
                 return E_NOINTERFACE;
 
-            if (auto _pPatternProvider = PatternProviderCache[_uPatternIndex])
-            {
-                _pPatternProvider->AddRef();
-                *_pRetVal = _pPatternProvider;
-                return S_OK;
-            }
+            HRESULT _hr = E_NOINTERFACE;
+            TaskRunner.Sync(
+                [=, &_hr]()
+                {
+                    switch (_iPatternId)
+                    {
+                    case UIA_InvokePatternId:
+                        _hr = PatternProvider<Element, IInvokeProvider>::Create(this, _pRetVal, &PatternProviderCache[_uPatternIndex]);
+                        break;
+                    }
+                });
 
-            switch (_iPatternId)
-            {
-            case UIA_TextPatternId:
-            case UIA_TextPattern2Id:
-
-                break;
-            }
-
-            // todo:
-
-            return E_NOINTERFACE;
+            return _hr;
         }
 
         HRESULT ElementAccessibleProvider::GetPropertyValue(PROPERTYID _iPropertyId, VARIANT* _pRetVal)

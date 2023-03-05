@@ -71,7 +71,8 @@ namespace YY
     _APPLY(None,             none,             0,                        0) \
     _APPLY(Custom,           custom,           0,                        UIA_CustomControlTypeId) \
     _APPLY(Window,           custom,           ROLE_SYSTEM_WINDOW,       UIA_WindowControlTypeId) \
-    _APPLY(Text,             description,      ROLE_SYSTEM_TEXT,         UIA_TextControlTypeId)
+    _APPLY(Text,             description,      ROLE_SYSTEM_TEXT,         UIA_TextControlTypeId) \
+    _APPLY(Button,           button,           ROLE_SYSTEM_PUSHBUTTON,   UIA_ButtonControlTypeId)
 
             #if 0
     _APPLY(None,             none,             0,                        0) \
@@ -481,6 +482,8 @@ namespace YY
 
             HRESULT __YYAPI SetFontStyle(FontStyle _fFontStyle);
 
+            ContentAlignStyle __YYAPI GetContentAlign();
+
             /// <summary>
             /// 当属性正在更改时调用，可以终止属性更改。
             /// </summary>
@@ -667,6 +670,8 @@ namespace YY
             uString __YYAPI GetAccItemStatus();
 
             virtual HRESULT __YYAPI GetAccessibleProvider(_Outptr_ ElementAccessibleProvider** _ppAccessibleProvider);
+
+            virtual HRESULT __YYAPI DefaultAction();
 
 		protected:
 			// Value Update

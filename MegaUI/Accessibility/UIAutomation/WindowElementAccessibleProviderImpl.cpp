@@ -55,44 +55,12 @@ namespace YY
                 {
                     if (_iPatternId == UIA_TransformPatternId || _iPatternId == UIA_TransformPattern2Id)
                     {
-                        auto& _pCrash = PatternProviderCache[UIA_TransformPatternId - UIA_FirstPatternId];
-                        if (!_pCrash)
-                        {
-                            auto _pPatternProvider = new (std::nothrow) PatternProvider<WindowElement, ITransformProvider2>((WindowElement*)pElement, TaskRunner);
-                            if (!_pPatternProvider)
-                            {
-                                _hr = E_OUTOFMEMORY;
-                                return;
-                            }
-
-                            _pCrash = _pPatternProvider;
-                        }
-                        
-                        _pCrash->AddRef();
-                        *_pRetVal = _pCrash;
-
-                        _hr = S_OK;
+                        _hr = PatternProvider<WindowElement, ITransformProvider2>::Create(this, _pRetVal, &PatternProviderCache[UIA_TransformPatternId - UIA_FirstPatternId]);
                         return;
                     }
                     else if (_iPatternId == UIA_WindowPatternId)
                     {
-                        auto& _pCrash = PatternProviderCache[UIA_WindowPatternId - UIA_FirstPatternId];
-                        if (!_pCrash)
-                        {
-                            auto _pPatternProvider = new (std::nothrow) PatternProvider<WindowElement, IWindowProvider>((WindowElement*)pElement, TaskRunner);
-                            if (!_pPatternProvider)
-                            {
-                                _hr = E_OUTOFMEMORY;
-                                return;
-                            }
-
-                            _pCrash = _pPatternProvider;
-                        }
-
-                        _pCrash->AddRef();
-                        *_pRetVal = _pCrash;
-
-                        _hr = S_OK;
+                        _hr = PatternProvider<WindowElement, ITransformProvider2>::Create(this, _pRetVal, &PatternProviderCache[UIA_WindowPatternId - UIA_FirstPatternId]);
                         return;
                     }
 

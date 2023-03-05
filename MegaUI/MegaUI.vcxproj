@@ -179,6 +179,7 @@
     <ClInclude Include="..\Multimedia\Point.h" />
     <ClInclude Include="..\Multimedia\Rect.h" />
     <ClInclude Include="..\Multimedia\Size.h" />
+    <ClInclude Include="Accessibility\UIAutomation\ElementPatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\PatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h" />

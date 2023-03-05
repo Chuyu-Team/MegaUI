@@ -826,6 +826,11 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FontStyleProp, _FontStyleValue);
         }
 
+        ContentAlignStyle Element::GetContentAlign()
+        {
+            return fSpecContentAlign;
+        }
+
 		void Element::EndDefer(intptr_t _Cookie)
 		{
             auto _pDeferCycle = GetDeferObject(false);
@@ -1627,6 +1632,12 @@ namespace YY
 
             pAccessibleProvider->AddRef();
             *_ppAccessibleProvider = pAccessibleProvider;
+            return S_OK;
+        }
+
+        HRESULT Element::DefaultAction()
+        {
+            // Element默认的 Action行为什么也不做。
             return S_OK;
         }
 

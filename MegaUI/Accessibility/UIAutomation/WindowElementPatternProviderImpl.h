@@ -11,24 +11,27 @@ namespace YY
     {
         template<>
         class PatternProvider<WindowElement, ITransformProvider2>
-            : public ComUnknowImpl<PatternProvider<WindowElement, ITransformProvider2>, ITransformProvider2>
+            : public PatternProviderBase<PatternProvider<WindowElement, ITransformProvider2>, WindowElement, ITransformProvider2>
         {
-        protected:
-            ThreadTaskRunner TaskRunner;
-            WindowElement* pElement;
-
         public:
-            PatternProvider(WindowElement* _pElement, ThreadTaskRunner _TaskRunner)
-                : TaskRunner(std::move(_TaskRunner))
-                , pElement(_pElement)
+            PatternProvider(_In_ ElementAccessibleProvider* _pProvider)
+                : PatternProviderBase(_pProvider)
             {
             }
-            
+
             __YY_BEGIN_COM_QUERY_MAP(PatternProvider)
                 __YY_QUERY_ENTRY(IUnknown)
                 __YY_QUERY_ENTRY(ITransformProvider)
                 __YY_QUERY_ENTRY(ITransformProvider2)
             __YY_END_COM_QUERY_MAP();
+
+            static bool __YYAPI IsPatternSupported(_In_ Element* _pElement)
+            {
+                if (!_pElement)
+                    return false;
+
+                return _pElement->GetWindow()->GetHost() == _pElement;
+            }
 
             // ITransformProvider
 
@@ -47,8 +50,8 @@ namespace YY
                 auto _bRet = ::SetWindowPos(
                     pElement->GetWindow()->GetWnd(),
                     NULL,
-                    _X,
-                    _Y,
+                    (int)_X,
+                    (int)_Y,
                     0,
                     0,
                     SWP_NOZORDER | SWP_NOSIZE);
@@ -75,8 +78,8 @@ namespace YY
                     NULL,
                     0,
                     0,
-                    _Width,
-                    _Height,
+                    (int)_Width,
+                    (int)_Height,
                     SWP_NOZORDER | SWP_NOMOVE);
 
                 if (_bRet)
@@ -175,19 +178,27 @@ namespace YY
 
         template<>
         class PatternProvider<WindowElement, IWindowProvider>
-            : public ComUnknowImpl<PatternProvider<WindowElement, IWindowProvider>, IWindowProvider>
+            : public PatternProviderBase<PatternProvider<WindowElement, IWindowProvider>, WindowElement, IWindowProvider>
         {
-        protected:
-            ThreadTaskRunner TaskRunner;
-            WindowElement* pElement;
-            
         public:
-            PatternProvider(WindowElement* _pElement, ThreadTaskRunner _TaskRunner)
-                : TaskRunner(std::move(_TaskRunner))
-                , pElement(_pElement)
+            PatternProvider(_In_ ElementAccessibleProvider* _pProvider)
+                : PatternProviderBase(_pProvider)
             {
             }
+
+            __YY_BEGIN_COM_QUERY_MAP(PatternProvider)
+                __YY_QUERY_ENTRY(IUnknown)
+                __YY_QUERY_ENTRY(IWindowProvider)
+            __YY_END_COM_QUERY_MAP();
             
+            static bool __YYAPI IsPatternSupported(_In_ Element* _pElement)
+            {
+                if (!_pElement)
+                    return false;
+
+                return _pElement->GetWindow()->GetHost() == _pElement;
+            }
+
             // IWindowProvider
 
             virtual HRESULT STDMETHODCALLTYPE SetVisualState(
