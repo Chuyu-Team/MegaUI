@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include <combaseapi.h>
 #include <UIAutomationCore.h>
@@ -39,7 +39,7 @@ namespace YY
 	    }
         
         /// <summary>
-        /// Ω´“ª∏ˆ¥øASCII◊÷∑˚¥Æ…Ë÷√µΩ VARIANT÷–°£ 
+        /// Â∞Ü‰∏Ä‰∏™Á∫ØASCIIÂ≠óÁ¨¶‰∏≤ËÆæÁΩÆÂà∞ VARIANT‰∏≠„ÄÇ 
         /// </summary>
         /// <param name="_pVariant"></param>
         /// <param name="_szValue"></param>
@@ -155,13 +155,37 @@ namespace YY
             return VariantSetSafeArray<double>(_pVariant, &_ptValue.X, 2);
         }
 
+        inline HRESULT __YYAPI VariantSetUiaRect(_Out_ VARIANT* _pVariant, _In_ Rect& _Value)
+        {
+            double _UiaRect[4] = { _Value.Left, _Value.Top, _Value.GetWidth(), _Value.GetHeight() };
+            return VariantSetSafeArray<double>(_pVariant, &_UiaRect[0], std::size(_UiaRect));
+        }
+
+        union RuntimeId
+        {
+            struct
+            {
+                uint64_t pElementPtr64;
+                uint32_t uProcessId;
+                uint32_t uReserve;
+            };
+
+            Element* pElement;
+            int32_t UiaIds[4];
+        };
+
+        inline bool operator==(const RuntimeId& _Left, const RuntimeId& _Right)
+        {
+            return _Left.pElementPtr64 == _Right.pElementPtr64 && _Left.uProcessId == _Right.uProcessId;
+        }
+
         class ElementAccessibleProvider
             : public ComUnknowImpl<ElementAccessibleProvider, IRawElementProviderSimple3, IRawElementProviderFragment, IRawElementProviderAdviseEvents>
         {
         protected:
             ThreadTaskRunner TaskRunner;
             Element* pElement;
-            // GetPatternProvider Ω”ø⁄µƒª∫¥Ê
+            // GetPatternProvider Êé•Âè£ÁöÑÁºìÂ≠ò
             IUnknown* PatternProviderCache[UIA_LastPatternId - UIA_FirstPatternId + 1];
 
         public:           
@@ -194,6 +218,17 @@ namespace YY
 
             static Element* __YYAPI GetVisibleAccessibleParent(Element* _pElem);
             
+            static bool __YYAPI IsAccessibleAncestor(Element* pElem, Element* _pAccessibleParent)
+            {
+                for (; pElem; pElem = GetVisibleAccessibleParent(pElem))
+                {
+                    if (_pAccessibleParent == pElem)
+                        return true;
+                }
+
+                return false;
+            }
+
             static HRESULT __YYAPI ForEachAccessibleChildren(
                 Element* _pParentElement,
                 bool (__YYAPI* _pCallback)(Element* _pChildElement, void* _pUserData),
@@ -212,6 +247,8 @@ namespace YY
                     },
                     &_Fun);
             }
+            
+            static RuntimeId __YYAPI GetElementRuntimeId(Element* _pElement);
 
             ////////////////////////////////////////////////////////////////
             // IRawElementProviderSimple
@@ -273,6 +310,16 @@ namespace YY
             virtual HRESULT STDMETHODCALLTYPE AdviseEventRemoved(
                 /* [in] */ EVENTID _iEventId,
                 /* [in] */ __RPC__in SAFEARRAY* _pPropertyIds) override;
+            
+            
+            virtual HRESULT __YYAPI HandlePropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value _OldValue, _In_ Value _NewValue);
+
+        private:
+            HRESULT __YYAPI HandleChildrenChanged(ElementList _OldChildren, ElementList _NewChildren);
+
+            HRESULT __YYAPI HandleAccDescriptionChanged(uString _szOldValue, uString _szNewValue);
+            
+            HRESULT __YYAPI HandleAccRoleChanged(AccessibleRole _eOldValue, AccessibleRole _eNewValue);
         };
 
     }

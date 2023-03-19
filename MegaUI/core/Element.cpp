@@ -552,8 +552,6 @@ namespace YY
 
                 (this->*_Prop.pfnCustomPropertyHandle)(CustomPropertyHandleType::OnPropertyChanged, &_HandleData);
             }
-
-            AccessibleEventManager::NotifyPropertyChanged(this, _Prop, _eIndicies, _OldValue, _NewValue);
         }
 
         void Element::OnGroupChanged(uint32_t _fGroups)
@@ -1667,7 +1665,7 @@ namespace YY
             if (_pOldValue == nullptr || _pNewValue == nullptr)
                 return E_INVALIDARG;
 
-            AccessibleEventManager::NotifyPropertyChanging(this, _Prop, _eIndicies, _pOldValue, _pNewValue);
+            AccessibleEventManager::NotifyPropertyChanging(this, _Prop, _eIndicies, _pOldValue);
 
             auto _pDeferObject = GetDeferObject();
 
@@ -1732,6 +1730,8 @@ namespace YY
                     auto p2a = -1;
 
                     auto pValue = pc->pElement->GetValue(*pc->pProp, pc->iIndex, false);
+                    
+                    AccessibleEventManager::NotifyPropertyChanging(pc->pElement, *pc->pProp, pc->iIndex, pValue);
 
                     auto j = pc->pElement->_iPCTail;
 
@@ -1837,7 +1837,7 @@ namespace YY
                             bSuccess = SetGroupChanges(pPCRecord->pElement, pPCRecord->pProp->fGroups, pDeferObject) == 0;
                         }
 
-                        //pPCRecord->pElement->HandleUiaPropertyListener(pPCRecord->pProp, pPCRecord->iIndex, pPCRecord->pOldValue, pPCRecord->pNewValue);
+                        AccessibleEventManager::NotifyPropertyChanged(pPCRecord->pElement, *pPCRecord->pProp, pPCRecord->iIndex, pPCRecord->pOldValue, pPCRecord->pNewValue);
 
                         pPCRecord->pElement->OnPropertyChanged(*pPCRecord->pProp, pPCRecord->iIndex, pPCRecord->pOldValue, pPCRecord->pNewValue);
                         

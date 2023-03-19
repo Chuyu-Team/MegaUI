@@ -1,8 +1,9 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "WindowElementAccessibleProviderImpl.h"
 
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Accessibility/UIAutomation/WindowElementPatternProviderImpl.h>
+#include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
 
 #pragma warning(disable : 28251)
 
@@ -71,6 +72,31 @@ namespace YY
             return _hr;
         }
 
+        HRESULT WindowElementAccessibleProvider::get_BoundingRectangle(UiaRect* _pRetVal)
+        {
+            if (!_pRetVal)
+                return E_INVALIDARG;
+
+            _pRetVal->left = 0;
+            _pRetVal->top = 0;
+            _pRetVal->width = 0;
+            _pRetVal->height = 0;
+
+            if (!pElement->IsAccessible())
+                return S_FALSE;
+
+            RECT _Rect;
+            if (!::GetWindowRect(pElement->GetWindow()->GetWnd(), &_Rect))
+                return __HRESULT_FROM_WIN32(GetLastError());
+            
+            _pRetVal->left = _Rect.left;
+            _pRetVal->top = _Rect.top;
+            _pRetVal->width = _Rect.right - _Rect.left;
+            _pRetVal->height = _Rect.bottom - _Rect.top;
+
+            return S_OK;
+        }
+
         HRESULT WindowElementAccessibleProvider::ElementProviderFromPoint(double _X, double _Y, IRawElementProviderFragment** _pRetVal)
         {
             if (!_pRetVal)
@@ -107,8 +133,8 @@ namespace YY
                             return _hr = S_OK;
                         }
                     }
-
-                    return _hr = E_NOT_SET;
+                    _hr = S_OK;
+                    return _hr;
                 });
 
             return _hr;
@@ -142,6 +168,27 @@ namespace YY
                 });       
 
             return _hr;
+        }
+        
+        HRESULT WindowElementAccessibleProvider::HandlePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, Value _OldValue, Value _NewValue)
+        {
+            if (_Prop == Element::g_ControlInfoData.VisibleProp)
+            {
+                if (_eIndicies == PropertyFlagMapToMaxPropertyIndicies((PropertyFlag)_Prop.fFlags))
+                {
+                    if (pElement->IsAccessible())
+                    {
+                        const auto _Id = _NewValue.GetBool() ? UIA_Window_WindowOpenedEventId : UIA_Window_WindowClosedEventId;
+
+                        if (AccessibleEventManager::IsEventIdRegistered(_Id))
+                        {
+                            UiaRaiseAutomationEvent(this, _Id);
+                        }                        
+                    }
+                }
+            }
+
+            return ElementAccessibleProvider::HandlePropertyChanged(_Prop, _eIndicies, _OldValue, _NewValue);
         }
     } // namespace MegaUI
 } // namespace YY

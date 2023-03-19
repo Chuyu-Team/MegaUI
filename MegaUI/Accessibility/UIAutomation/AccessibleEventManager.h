@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <combaseapi.h>
 #include <UIAutomationClient.h>
@@ -6,6 +6,7 @@
 #include <Base/YY.h>
 
 #include <MegaUI/core/Element.h>
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -19,7 +20,39 @@ namespace YY
         constexpr auto UIA_FirstPropertyId = UIA_RuntimeIdPropertyId;
         constexpr auto UIA_LastPropertyId = UIA_IsDialogPropertyId;
 
+        struct RectangleData
+        {
+            Element* pElem;
+            //4
+            Rect OldBoundingRectangle;
+            //0x14
+            Rect NewBoundingRectangle;
+            //0x24
+            bool bOldOffScreen;
+            bool bNewOffScreen;
+        };
 
+        struct ChildrenChangeData
+        {
+            Element* pElem;
+            // pElem å³å°†è¦ç§»é™¤çš„å­©å­ RuntimeIdåˆ—è¡¨
+            Array<RuntimeId, AllocPolicy::SOO> RemoveChildrenRuntimeIds;
+            Array<Element*, AllocPolicy::SOO> AddChildrenArray;
+        };
+
+        struct ChildrenVisibleChangeData
+        {
+            Element* pElem;
+            Array<Element*, AllocPolicy::SOO> Children;
+        };
+
+        struct AccessibleThreadData
+        {
+            YY::Array<Element*, AllocPolicy::SOO> VisibleChange;
+            YY::Array<RectangleData, AllocPolicy::SOO> RectangleChange;
+            YY::Array<ChildrenChangeData, AllocPolicy::SOO> ChildrenChange;
+        };
+        
         class AccessibleEventManager
         {
         public:
@@ -30,7 +63,7 @@ namespace YY
             static HRESULT __YYAPI AdviseEventRemoved(EVENTID _iEventId, SAFEARRAY* _pPropertyIds);
             
             /// <summary>
-            /// ¼ì²âÖ¸¶¨ÊôĞÔÊÇ·ñÔÙ¶©ÔÄÁĞ±íÖĞ¡£
+            /// æ£€æµ‹æŒ‡å®šå±æ€§æ˜¯å¦å†è®¢é˜…åˆ—è¡¨ä¸­ã€‚
             /// </summary>
             /// <param name="_iPropertyId"></param>
             /// <returns></returns>
@@ -41,7 +74,7 @@ namespace YY
                 _In_range_(UIA_FirstEventId, UIA_LastEventId) EVENTID _iEventId);
 
             /// <summary>
-            /// ½«ÊôĞÔ¸ü¸ÄÔİ´æ¡£×¢Òâ£¬Ê¹ÓÃCommitPropertyChanges¿ÉÒÔ½«Ôİ´æ¸ü¸ÄÓ¦ÓÃµ½UIA¡£
+            /// å°†å±æ€§æ›´æ”¹æš‚å­˜ã€‚æ³¨æ„ï¼Œä½¿ç”¨CommitPropertyChangeså¯ä»¥å°†æš‚å­˜æ›´æ”¹åº”ç”¨åˆ°UIAã€‚
             /// </summary>
             /// <param name="pElem"></param>
             /// <param name="_Prop"></param>
@@ -53,8 +86,7 @@ namespace YY
                 _In_ Element* _pElem,
                 _In_ const PropertyInfo& _Prop,
                 _In_ PropertyIndicies _eIndicies,
-                _In_ Value _OldValue,
-                _In_ Value _NewValue
+                _In_ Value _OldValue
                 );
             
             static HRESULT __YYAPI NotifyPropertyChanged(
@@ -66,14 +98,28 @@ namespace YY
                 );
 
             /// <summary>
-            /// ½«NotifyPropertyChangingÔİ´æ¸ü¸ÄÓ¦ÓÃµ½UIA¡£
+            /// å°†NotifyPropertyChangingæš‚å­˜æ›´æ”¹åº”ç”¨åˆ°UIAã€‚
             /// </summary>
             /// <param name="pElem"></param>
             /// <returns></returns>
             static HRESULT __YYAPI CommitPropertyChanges(_In_ Element* _pElem);
             
-        private:
+            static _Ret_notnull_ AccessibleThreadData* GetAccessibleThreadData();
+
             static HRESULT __YYAPI AddRectangleChange(_In_ Element* _pElem, _In_ bool _bViewSize, _In_ bool _bOffscreen);
+
+            static HRESULT __YYAPI AddVisibleChange(_In_ Element* _pElem);
+
+        private:
+
+            static HRESULT __YYAPI RaiseGeometryEvents();
+
+            static HRESULT __YYAPI RaiseVisibilityEvents();
+
+            // Childä¿¡æ¯å˜æ›´åº”ç”¨
+            static HRESULT __YYAPI RaiseStructureEvents();
+
+            static HRESULT __YYAPI HandleChildrenChanged(_In_ Element* _pElem, ElementList _OldChildren, ElementList _NewChildren);
         };
     }
 } // namespace YY

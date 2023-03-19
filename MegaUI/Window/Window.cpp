@@ -551,6 +551,8 @@ namespace YY
                 auto _pFind = FindElementFromPoint(MAKEPOINTS(_lParam), FindVisible | FindEnable | FindActionMouse);
                 if (_pFind)
                 {
+                    SetKeyboardFocus(_pFind);
+
                     pLastPressedElement = _pFind;
 
                     // 启用鼠标消息跟踪

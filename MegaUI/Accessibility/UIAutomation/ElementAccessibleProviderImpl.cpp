@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "ElementAccessibleProviderImpl.h"
 
 #include <MegaUI/Window/Window.h>
@@ -196,6 +196,11 @@ namespace YY
             return S_OK;
         }
 
+        RuntimeId ElementAccessibleProvider::GetElementRuntimeId(Element* _pElement)
+        {
+            return RuntimeId{ (uint64_t)_pElement, GetCurrentProcessId() };
+        }
+
         HRESULT ElementAccessibleProvider::GetPatternProvider(PATTERNID _iPatternId, IUnknown** _pRetVal)
         {
             if (!_pRetVal)
@@ -333,13 +338,13 @@ namespace YY
                     case UIA_IsControlElementPropertyId:
                         return _hr = VariantSetBool(_pRetVal, AccessibleRoleToControlType(pElement->GetAccRole()) != 0);
                     case UIA_IsContentElementPropertyId:
-                        // todo: ÐèÒªµ÷ÕûÎª°´ÄÚÈÝ
+                        // todo: éœ€è¦è°ƒæ•´ä¸ºæŒ‰å†…å®¹
                         return _hr = VariantSetBool(_pRetVal, AccessibleRoleToControlType(pElement->GetAccRole()) != 0);
                     // case UIA_LabeledByPropertyId:
                     case UIA_IsPasswordPropertyId:
                         return _hr = VariantSetBool(_pRetVal, pElement->IsContentProtected());
                     case UIA_NativeWindowHandlePropertyId:
-                        // MegaUIÎªÐéÄâ¿Ø¼þ£¬Ò»°ãÃ»ÓÐ´´½¨¾ä±ú
+                        // MegaUIä¸ºè™šæ‹ŸæŽ§ä»¶ï¼Œä¸€èˆ¬æ²¡æœ‰åˆ›å»ºå¥æŸ„
                         if (pElement == pElement->GetWindow()->GetHost())
                             return _hr = VariantSetInt32(_pRetVal, (int32_t)(intptr_t)pElement->GetWindow()->GetWnd());
                         return S_FALSE;
@@ -391,14 +396,14 @@ namespace YY
                 return UiaHostProviderFromHwnd(pElement->GetWindow()->GetWnd(), _pRetVal);
             }
 
-            // Element ¿Ø¼þÃ»ÓÐÊµ¼ÊµÄ´°¿Ú
+            // Element æŽ§ä»¶æ²¡æœ‰å®žé™…çš„çª—å£
 
             return E_NOT_SET;
         }
         
         HRESULT ElementAccessibleProvider::ShowContextMenu()
         {
-            // ElementÃ»ÓÐµ¯³ö²Ëµ¥
+            // Elementæ²¡æœ‰å¼¹å‡ºèœå•
             return E_NOTIMPL;
         }
 
@@ -407,7 +412,7 @@ namespace YY
             if (returnVal)
                 returnVal->vt = VT_EMPTY;
 
-            // todo: ÔÝÊ±²»ÖªµÀÕâÊÇÔõÃ´ÓÃµÄ
+            // todo: æš‚æ—¶ä¸çŸ¥é“è¿™æ˜¯æ€Žä¹ˆç”¨çš„
             // https://learn.microsoft.com/zh-cn/windows/win32/api/uiautomationcore/ne-uiautomationcore-sayasinterpretas
             return E_NOTIMPL;
         }
@@ -418,13 +423,8 @@ namespace YY
                 return E_INVALIDARG;
             *pRetVal = nullptr;
 
-            struct
-            {
-                uint64_t uRawElementPoint;
-                uint32_t uProcessId;
-            } RuntimeId = {(uint64_t)pElement, GetCurrentProcessId()};
-
-            constexpr auto _uCount = sizeof(RuntimeId) / sizeof(int32_t);
+            auto _RuntimeId = GetElementRuntimeId(pElement);
+            constexpr auto _uCount = sizeof(_RuntimeId) / sizeof(int32_t);
             auto _pSafeArry = SafeArrayCreateVector(VT_I4, 0, _uCount);
             if (!_pSafeArry)
                 return E_OUTOFMEMORY;
@@ -433,7 +433,7 @@ namespace YY
             auto _hr = SafeArrayAccessData(_pSafeArry, (void**)&_pData);
             if (SUCCEEDED(_hr))
             {
-                auto _pValue = (int32_t*)&RuntimeId;
+                auto _pValue = (int32_t*)&_RuntimeId;
                 for (size_t _uIndex = 0; _uIndex != _uCount; ++_uIndex)
                 {
                     _pData[_uIndex] = _pValue[_uIndex];
@@ -662,6 +662,204 @@ namespace YY
         HRESULT ElementAccessibleProvider::AdviseEventRemoved(EVENTID _iEventId, SAFEARRAY* _pPropertyIds)
         {
             return AccessibleEventManager::AdviseEventRemoved(_iEventId, _pPropertyIds);
+        }
+        
+        HRESULT ElementAccessibleProvider::HandlePropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, Value _OldValue, Value _NewValue)
+        {
+            if (_eIndicies != PropertyFlagMapToMaxPropertyIndicies((PropertyFlag)_Prop.fFlags))
+                return S_FALSE;
+
+            if (_Prop == Element::g_ControlInfoData.ChildrenProp)
+            {
+                return HandleChildrenChanged(_OldValue.GetElementList(), _NewValue.GetElementList());
+            }
+            else if (_Prop == Element::g_ControlInfoData.AccDescriptionProp)
+            {
+                return HandleAccDescriptionChanged(_OldValue.GetString(), _NewValue.GetString());
+            }
+            else if (_Prop == Element::g_ControlInfoData.AccRoleProp)
+            {
+                return HandleAccRoleChanged((AccessibleRole)_OldValue.GetInt32(), (AccessibleRole)_NewValue.GetInt32());
+            }
+            else if (_Prop == Element::g_ControlInfoData.VisibleProp)
+            {
+                if(!pElement->IsAccessible())
+                    return S_OK;
+                
+                return AccessibleEventManager::AddVisibleChange(pElement);
+            }
+            else if (_Prop == Element::g_ControlInfoData.EnabledProp)
+            {
+                if (!pElement->IsAccessible())
+                    return S_OK;
+
+                if (!pElement->IsVisible())
+                    return S_OK;
+                
+                if (!AccessibleEventManager::IsPropertyIdSubscribed(UIA_IsEnabledPropertyId))
+                    return S_OK;
+
+                VARIANT _Old = {VT_EMPTY};
+                VARIANT _New = {VT_EMPTY};
+
+                VariantSetBool(&_Old, _OldValue.GetBool());
+                VariantSetBool(&_New, _NewValue.GetBool());
+
+                return UiaRaiseAutomationPropertyChangedEvent(this, UIA_IsEnabledPropertyId, _Old, _New);
+            }
+            else if (_Prop == Element::g_ControlInfoData.KeyboardFocusedProp)
+            {
+                if (!pElement->IsAccessible())
+                    return S_OK;
+
+                if (!pElement->IsVisible())
+                    return S_OK;
+
+                if (!AccessibleEventManager::IsEventIdRegistered(UIA_AutomationFocusChangedEventId))
+                    return S_OK;
+                
+                return UiaRaiseAutomationEvent(this, UIA_AutomationFocusChangedEventId);
+            }
+
+            return S_FALSE;
+        }
+
+        HRESULT ElementAccessibleProvider::HandleChildrenChanged(ElementList _OldChildren, ElementList _NewChildren)
+        {
+            ChildrenChangeData _TmpData = {pElement};
+
+            // ç¡®å®šé‚£äº›Childrenè¢«åˆ é™¤
+            for (auto _pChild : _OldChildren)
+            {
+                if (!_pChild->IsAccessible())
+                    continue;
+
+                if (_NewChildren.FindItemIndex(_pChild) != _NewChildren.uInvalidIndex)
+                    continue;
+
+                if (!_TmpData.RemoveChildrenRuntimeIds.EmplacePtr(GetElementRuntimeId(_pChild)))
+                    return E_OUTOFMEMORY;
+            }
+
+            // ç¡®å®šé‚£äº›Childrenæ˜¯æ–°å¢žçš„
+            for (auto _pChild : _NewChildren)
+            {
+                if (!_pChild->IsAccessible())
+                    continue;
+
+                if (_OldChildren.FindItemIndex(_pChild) != _OldChildren.uInvalidIndex)
+                    continue;
+
+                if (!_TmpData.AddChildrenArray.EmplacePtr(_pChild))
+                    return E_OUTOFMEMORY;
+            }
+
+            auto _pAccessibleData = AccessibleEventManager::GetAccessibleThreadData();
+
+            // å°è¯•åˆå¹¶åˆ°çŽ°æœ‰åˆ—è¡¨
+            for (auto& _Item : _pAccessibleData->ChildrenChange)
+            {
+                if (_Item.pElem == pElement)
+                {
+                    // åˆå¹¶ RuntimeId
+                    for (auto& _RuntimeId : _TmpData.RemoveChildrenRuntimeIds)
+                    {
+                        if (_Item.RemoveChildrenRuntimeIds.FindItemIndex(_RuntimeId) == _Item.RemoveChildrenRuntimeIds.uInvalidIndex)
+                        {
+                            if (!_Item.RemoveChildrenRuntimeIds.EmplacePtr(_RuntimeId))
+                                return E_OUTOFMEMORY;
+                        }
+                    }
+
+                    // åˆå¹¶æ–°å¢žçš„å­©å­
+                    for (auto _pChildren : _TmpData.AddChildrenArray)
+                    {
+                        if (_Item.AddChildrenArray.FindItemIndex(_pChildren) == _Item.AddChildrenArray.uInvalidIndex)
+                        {
+                            if (!_Item.AddChildrenArray.EmplacePtr(_pChildren))
+                                return E_OUTOFMEMORY;
+                        }
+                    }
+                    return S_OK;
+                }
+            }
+
+            // æ˜¯æ–°å¢ž
+            if (!_pAccessibleData->ChildrenChange.EmplacePtr(std::move(_TmpData)))
+                return E_OUTOFMEMORY;
+
+            return S_OK;
+        }
+        
+        HRESULT ElementAccessibleProvider::HandleAccDescriptionChanged(uString _OldValue, uString _NewValue)
+        {
+            if (!pElement->IsAccessible())
+                return S_OK;
+
+            if (!pElement->IsVisible())
+                return S_OK;
+
+            const auto _bHasSubscribedHelpTextPropertyId = AccessibleEventManager::IsPropertyIdSubscribed(UIA_HelpTextPropertyId);
+            const auto _bHasSubscribedItemTypePropertyId = AccessibleEventManager::IsPropertyIdSubscribed(UIA_ItemTypePropertyId);
+
+            if (_bHasSubscribedHelpTextPropertyId == false && _bHasSubscribedItemTypePropertyId == false)
+                return S_OK;
+
+            VARIANT _Old = {VT_EMPTY};
+            VARIANT _New = {VT_EMPTY};
+
+            HRESULT _hr = S_OK;
+
+            do
+            {
+                _hr = VariantSetString(&_Old, _OldValue);
+                if (FAILED(_hr))
+                    break;
+                _hr = VariantSetString(&_New, _NewValue);
+                if (FAILED(_hr))
+                    break;
+
+                if (_bHasSubscribedHelpTextPropertyId)
+                {
+                    auto _szAccHelp = pElement->GetAccHelp();
+                    if (_szAccHelp.GetSize() == 0)
+                    {
+                        _hr = UiaRaiseAutomationPropertyChangedEvent(this, UIA_HelpTextPropertyId, _Old, _New);
+                        if (FAILED(_hr))
+                            break;
+                    }
+                }
+                
+                if (_bHasSubscribedItemTypePropertyId)
+                    _hr = UiaRaiseAutomationPropertyChangedEvent(this, UIA_ItemTypePropertyId, _Old, _New);
+
+
+            } while (false);
+
+            VariantClear(&_New);
+            VariantClear(&_Old);
+
+            return _hr;
+        }
+        
+        HRESULT ElementAccessibleProvider::HandleAccRoleChanged(AccessibleRole _eOldValue, AccessibleRole _eNewValue)
+        {
+            if (!pElement->IsAccessible())
+                return S_OK;
+
+            if (!pElement->IsVisible())
+                return S_OK;
+
+            if (!AccessibleEventManager::IsPropertyIdSubscribed(UIA_ControlTypePropertyId))
+                return S_OK;
+
+            VARIANT _Old = {VT_EMPTY};
+            VARIANT _New = {VT_EMPTY};
+
+            VariantSetInt32(&_Old, AccessibleRoleToControlType(_eOldValue));
+            VariantSetInt32(&_New, AccessibleRoleToControlType(_eNewValue));
+
+            return UiaRaiseAutomationPropertyChangedEvent(this, UIA_ControlTypePropertyId, _Old, _New);
         }
     } // namespace MegaUI
 } // namespace YY

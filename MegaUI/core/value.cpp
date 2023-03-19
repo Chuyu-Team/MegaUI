@@ -554,6 +554,14 @@ namespace YY
             return pSharedData->pEleValue;
         }
 
+        ElementList Value::GetElementList() const
+        {
+            if (GetType() != ValueType::Element)
+                throw Exception();
+
+            return pSharedData->ListVal;
+        }
+
         uString __YYAPI Value::GetString() const
         {
             if (GetType() != ValueType::uString)

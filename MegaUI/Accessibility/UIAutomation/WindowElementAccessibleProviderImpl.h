@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -27,6 +27,11 @@ namespace YY
             virtual HRESULT STDMETHODCALLTYPE GetPatternProvider(
                 /* [in] */ PATTERNID _iPatternId,
                 /* [retval][out] */ __RPC__deref_out_opt IUnknown** _pRetVal) override;
+            
+            // IRawElementProviderFragment
+
+            virtual HRESULT STDMETHODCALLTYPE get_BoundingRectangle(
+                /* [retval][out] */ __RPC__out struct UiaRect* _pRetVal) override;
 
             // IRawElementProviderFragmentRoot
 
@@ -37,6 +42,12 @@ namespace YY
 
             virtual HRESULT STDMETHODCALLTYPE GetFocus(
                 /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** _pRetVal) override;
+            
+
+            // ElementAccessibleProvider
+
+            virtual HRESULT __YYAPI HandlePropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ Value _OldValue, _In_ Value _NewValue) override;
+
         };
     }
 } // namespace YY

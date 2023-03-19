@@ -347,6 +347,9 @@ namespace YY
             uint8_t* __YYAPI GetRawBuffer();
             Color __YYAPI GetColor() const;
             Element* __YYAPI GetElement() const;
+
+            ElementList __YYAPI GetElementList() const;
+
             uString __YYAPI GetString() const;
 
             StyleSheet* __YYAPI GetStyleSheet() const;

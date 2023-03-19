@@ -1389,6 +1389,24 @@ namespace YY
 
                     return true;
                 }
+
+                Array& __YYAPI operator=(const Array& _Array)
+                {
+                    auto _hr = AllocPolicyArray::SetArray(_Array);
+                    if (FAILED(_hr))
+                        throw Exception();
+
+                    return *this;
+                }
+
+                Array& __YYAPI operator=(Array&& _Array) noexcept
+                {
+                    auto _hr = AllocPolicyArray::SetArray(std::move(_Array));
+                    if (FAILED(_hr))
+                        std::abort();
+
+                    return *this;
+                }
             };
 
         } // namespace Containers
