@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <MegaUI/base/MegaUITypeInt.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -9,21 +9,26 @@ namespace YY
     {
         class Element;
 
-        enum class EventId
+        enum class EventId : uint32_t
         {
             KeyboardEvent,
             KeyboardNavigateEvent,
+            MouseEvent,
+            // ç‚¹å‡»äº‹ä»¶ï¼Œä¸€èˆ¬æ˜¯æŒ‡é¼ æ ‡å·¦é”®
+            ClickEvent,
+            // ä¸Šä¸‹æ–‡äº‹ä»¶ï¼Œæ¥è‡ªé¼ æ ‡å³é”®æˆ–è€…å…¶ä»–å¿«æ·é”®ï¼Œä¸€èˆ¬è¡Œä¸ºæ˜¯å¼¹å‡ºèœå•ã€‚
+            ContextEvent,
         };
 
 
         enum class EventModifier
         {
             None = 0x00000000,
-            // ×ó±ßµÄ Ctrl °´¼ü
+            // å·¦è¾¹çš„ Ctrl æŒ‰é”®
             LeftControl = 0x00000001,
-            // ÓÒ±ßµÄ Ctrl °´¼ü
+            // å³è¾¹çš„ Ctrl æŒ‰é”®
             RightControl = 0x00000002,
-            // Ctrl °´¼ü
+            // Ctrl æŒ‰é”®
             Control = LeftControl | RightControl,
 
             LeftShift = 0x00000004,
@@ -34,22 +39,55 @@ namespace YY
             RightAlt = 0x00000020,
             Alt = LeftAlt | RightAlt,
 
-            // Êó±ê×ó¼ü
+            // é¼ æ ‡å·¦é”®
             LeftButton = 0x00000040,
-            // Êó±êÓÒ¼ü
+            // é¼ æ ‡å³é”®
             RightButton = 0x00000080,
-            // Êó±êÖĞ¼ü
+            // é¼ æ ‡ä¸­é”®
             MiddleButton = 0x00000100,
+            // ç¬¬ä¸€ä¸ª XæŒ‰é’®
+            XButton1 = 0x00000200,
+            // ç¬¬äºŒä¸ª XæŒ‰é’®
+            XButton2 = 0x00000400,
         };
 
         YY_APPLY_ENUM_CALSS_BIT_OPERATOR(EventModifier);
 
+        inline EventModifier __YYAPI Win32EventModifierToEventModifier(uint32_t _fWin32EventModifier)
+        {
+            EventModifier _Modifier = EventModifier::None;
+
+            if (_fWin32EventModifier & MK_CONTROL)
+                _Modifier |= EventModifier::Control;
+            
+            if (_fWin32EventModifier & MK_LBUTTON)
+                _Modifier |= EventModifier::LeftButton;
+            
+            if (_fWin32EventModifier & MK_MBUTTON)
+                _Modifier |= EventModifier::MiddleButton;
+
+            if (_fWin32EventModifier & MK_RBUTTON)
+                _Modifier |= EventModifier::RightButton;
+
+            if (_fWin32EventModifier & MK_SHIFT)
+                _Modifier |= EventModifier::Shift;
+
+            if (_fWin32EventModifier & MK_XBUTTON1)
+                _Modifier |= EventModifier::XButton1;
+
+            if (_fWin32EventModifier & MK_XBUTTON2)
+                _Modifier |= EventModifier::XButton2;
+
+            return _Modifier;
+        }
+
+
         struct BaseEvent
         {
-            // ²úÉúÊÂ¼şµÄElement
+            // äº§ç”Ÿäº‹ä»¶çš„Element
             Element* pTarget;
             EventId eCode;
-            // EventModifier Î»×éºÏ
+            // EventModifier ä½ç»„åˆ
             EventModifier fModifiers;
 
             static EventModifier __YYAPI GetEventModifier()
@@ -64,6 +102,10 @@ namespace YY
                         _fModifiers |= EventModifier::RightButton;
                     if (bKeys[VK_MBUTTON] & 0x80)
                         _fModifiers |= EventModifier::MiddleButton;
+                    if (bKeys[VK_XBUTTON1] & 0x80)
+                        _fModifiers |= EventModifier::XButton1;
+                    if (bKeys[VK_XBUTTON2] & 0x80)
+                        _fModifiers |= EventModifier::XButton2;
                     if (bKeys[VK_LSHIFT] & 0x80)
                         _fModifiers |= EventModifier::LeftShift;
                     if (bKeys[VK_RSHIFT] & 0x80)
@@ -84,6 +126,7 @@ namespace YY
 
         struct KeyboardEvent : public BaseEvent
         {
+            constexpr static EventId Id = EventId::KeyboardEvent;
             u16char_t vKey;
             uint16_t uRepeatCount;
             uint16_t fFlags;
@@ -99,13 +142,13 @@ namespace YY
         
         enum class NavigatingStyle
         {
-            // Âß¼­ÉÏµÄ£¬Èç¹ûÃ»ÓĞ´Ë±êÖ¾Î»Ôò±íÊ¾ ¶¨ÏòµÄ
+            // é€»è¾‘ä¸Šçš„ï¼Œå¦‚æœæ²¡æœ‰æ­¤æ ‡å¿—ä½åˆ™è¡¨ç¤º å®šå‘çš„
             Logical = 0x00000001u,
-            // ÏòÇ°£¬Èç¹ûÃ»ÓĞ´Ë±êÖ¾Î»Ôò±íÊ¾ Ïòºó
+            // å‘å‰ï¼Œå¦‚æœæ²¡æœ‰æ­¤æ ‡å¿—ä½åˆ™è¡¨ç¤º å‘å
             Forward = 0x00000002u,
-            // ´¹Ö±·½Ïò£¬Èç¹ûÃ»ÓĞ´Ë±êÖ¾Î»Ôò±íÊ¾ Ë®Æ½·½Ïò
+            // å‚ç›´æ–¹å‘ï¼Œå¦‚æœæ²¡æœ‰æ­¤æ ‡å¿—ä½åˆ™è¡¨ç¤º æ°´å¹³æ–¹å‘
             Vertical = 0x00000004u,
-            // Ïà¶ÔµÄ£¬Èç¹ûÃ»ÓĞ´Ë±êÖ¾Î»Ôò±íÊ¾ ¾ø¶ÔµÄ
+            // ç›¸å¯¹çš„ï¼Œå¦‚æœæ²¡æœ‰æ­¤æ ‡å¿—ä½åˆ™è¡¨ç¤º ç»å¯¹çš„
             Relative = 0x00000008u,
         };
 
@@ -149,6 +192,7 @@ namespace YY
 
         struct KeyboardNavigateEvent : public BaseEvent
         {
+            constexpr static EventId Id = EventId::KeyboardNavigateEvent;
             NavigatingType Navigate;
 
             KeyboardNavigateEvent(Element* _pTarget, NavigatingType _Navigate)
@@ -156,6 +200,42 @@ namespace YY
                 , Navigate(_Navigate)
             {
             }
+        };
+
+        struct MouseEvent : public BaseEvent
+        {
+            constexpr static EventId Id = EventId::MouseEvent;
+            // é¼ æ ‡åæ ‡
+            Point pt;
+
+            MouseEvent(Element* _pTarget, EventModifier _fEventModifier, Point _pt)
+                : BaseEvent {_pTarget, EventId::MouseEvent, _fEventModifier}
+                , pt(_pt)
+            {
+            }
+        };
+
+
+
+
+        struct ClickEvent : public BaseEvent
+        {
+            constexpr static EventId Id = EventId::ClickEvent;
+            // é¼ æ ‡åæ ‡
+            Point pt;
+
+            ClickEvent(Element* _pTarget, EventModifier _fEventModifier = EventModifier::None, Point _pt = Point {-1, -1})
+                : BaseEvent {_pTarget, EventId::ClickEvent, _fEventModifier}
+                , pt(_pt)
+            {
+            }
+        };
+        
+        struct ContextEvent : public BaseEvent
+        {
+            constexpr static EventId Id = EventId::ContextEvent;
+            // é¼ æ ‡åæ ‡
+            Point pt;
         };
     }
 } // namespace YY

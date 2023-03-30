@@ -453,6 +453,43 @@ namespace YY
             return hWnd;
         }
 
+        Element* Window::GetPressed()
+        {
+            return pLastPressedElement;
+        }
+
+        void Window::SetPressed(Element* _pElement)
+        {
+            if (bCapture && _pElement == nullptr)
+            {
+                bCapture = false;
+                ReleaseCapture();
+            }
+
+            if (pLastPressedElement == _pElement)
+                return;
+
+            if (_pElement && _pElement->GetWindow() != this)
+            {
+                throw Exception();
+                return;
+            }
+
+            auto _pOldPressed = pLastPressedElement;
+            pLastPressedElement = _pElement;
+
+            intptr_t _Cooike;
+            pHost->StartDefer(&_Cooike);
+
+            if (pLastPressedElement)
+                pLastPressedElement->SetValue(Element::g_ControlInfoData.PressedProp, Value::CreateBoolTrue());
+
+            if (_pOldPressed)
+                _pOldPressed->SetValue(Element::g_ControlInfoData.PressedProp, Value::CreateUnset());
+
+            pHost->EndDefer(_Cooike);
+        }
+
         LRESULT Window::StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())
@@ -546,38 +583,24 @@ namespace YY
                 break;
             case WM_LBUTTONDOWN:
             {
-                auto _pOldPressedElement = pLastPressedElement;
-
-                auto _pFind = FindElementFromPoint(MAKEPOINTS(_lParam), FindVisible | FindEnable | FindActionMouse);
-                if (_pFind)
-                {
-                    SetKeyboardFocus(_pFind);
-
-                    pLastPressedElement = _pFind;
-
-                    // 启用鼠标消息跟踪
-                    ::SetCapture(hWnd);
-                    bCapture = TRUE;
-                }
-                else
-                {
-                    pLastPressedElement = nullptr;
-                }
-                
-                auto _pNewPressedElement = pLastPressedElement;
+                MouseEvent _Event(nullptr, Win32EventModifierToEventModifier(_wParam), MAKEPOINTS(_lParam));
+                _Event.pTarget = FindElementFromPoint(_Event.pt, FindVisible | FindEnable | FindActionMouse);
+                OnLeftButtonDown(_Event);
                 break;
             }
             case WM_LBUTTONUP:
+            {
+                MouseEvent _Event(nullptr, Win32EventModifierToEventModifier(_wParam), MAKEPOINTS(_lParam));
+                _Event.pTarget = FindElementFromPoint(_Event.pt, FindVisible | FindEnable | FindActionMouse);
+
+                OnLeftButtonUp(_Event);
+                break;
+            }
+            case WM_CAPTURECHANGED:
                 if (bCapture)
                 {
-                    ReleaseCapture();
                     bCapture = false;
                 }
-                pLastPressedElement = nullptr;
-                break;
-            case WM_CAPTURECHANGED:
-                bCapture = false;
-                pLastPressedElement = nullptr;
                 break;
             case WM_ENABLE:
                 if (pHost)
@@ -591,6 +614,9 @@ namespace YY
                 break;
             case WM_KEYDOWN:
                 OnKeyDown(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam));
+                break;
+            case WM_KEYUP:
+                OnKeyUp(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam));
                 break;
             case WM_CHAR:
                 OnChar(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam, KeyboardEvent::GetEventModifier()));
@@ -927,12 +953,47 @@ namespace YY
             pHost->EndDefer(_Cooike);
         }
 
+        bool Window::OnLeftButtonDown(const MouseEvent& _Event)
+        {
+            SetPressed(_Event.pTarget);
+
+            if (_Event.pTarget)
+            {
+                SetKeyboardFocus(_Event.pTarget);
+
+                // 启用鼠标消息跟踪
+                ::SetCapture(hWnd);
+                bCapture = TRUE;                
+
+                _Event.pTarget->OnLeftButtonDown(_Event);
+            }
+
+            return true;
+        }
+
+        bool Window::OnLeftButtonUp(const MouseEvent& _Event)
+        {
+            SetPressed(nullptr);
+            if (_Event.pTarget)
+                _Event.pTarget->OnLeftButtonUp(_Event);
+
+            return true;
+        }
+
         bool Window::OnKeyDown(const KeyboardEvent& _KeyEvent)
         {
             if (!_KeyEvent.pTarget)
                 return false;
             
             return _KeyEvent.pTarget->OnKeyDown(_KeyEvent);
+        }
+
+        bool Window::OnKeyUp(const KeyboardEvent& _KeyEvent)
+        {
+            if (!_KeyEvent.pTarget)
+                return false;
+
+            return _KeyEvent.pTarget->OnKeyUp(_KeyEvent);
         }
 
         bool Window::OnChar(const KeyboardEvent& _KeyEvent)

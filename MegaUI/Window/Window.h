@@ -41,6 +41,7 @@ namespace YY
             int32_t iDpi;
             // WM_UPDATEUISTATE的缓存
             uint16_t fUIState = 0;
+
         public:
             Window(_In_ int32_t _DefaultDpi = 96);
 
@@ -137,6 +138,10 @@ namespace YY
 
             HWND __YYAPI GetWnd();
 
+            Element* __YYAPI GetPressed();
+
+            void __YYAPI SetPressed(Element* _pElement);
+
         protected:
             static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
@@ -168,8 +173,14 @@ namespace YY
             
             void __YYAPI OnMouseFocusMoved(Element* _pFrom, Element* _pTo);
 
+            bool __YYAPI OnLeftButtonDown(const MouseEvent& _Event);
+
+            bool __YYAPI OnLeftButtonUp(const MouseEvent& _Event);
+
             bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
             
+            bool __YYAPI OnKeyUp(const KeyboardEvent& _KeyEvent);
+           
             bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
 
             bool __YYAPI OnGetObject(uint32_t _fFlags, int32_t _uObjectId, LRESULT* _plResult);

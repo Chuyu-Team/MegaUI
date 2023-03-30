@@ -190,6 +190,7 @@
     <ClInclude Include="base\ComUnknowImpl.h" />
     <ClInclude Include="base\ErrorCode.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />
+    <ClInclude Include="Control\Button.h" />
     <ClInclude Include="core\ControlInfo.h" />
     <ClInclude Include="core\ControlInfoImp.h" />
     <ClInclude Include="core\DeferCycle.h" />
@@ -220,6 +221,7 @@
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp" />
+    <ClCompile Include="Control\Button.cpp" />
     <ClCompile Include="core\ControlInfo.cpp" />
     <ClCompile Include="core\Element.cpp" />
     <ClCompile Include="core\StyleSheet.cpp" />

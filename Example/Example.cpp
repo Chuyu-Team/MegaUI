@@ -7,6 +7,7 @@
 
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Parser/UIParser.h>
+#include <MegaUI/Control/Button.h>
 
 
 using namespace YY;
@@ -24,6 +25,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::vector<int> dd;
     
     WindowElement::Register();
+    Button::Register();
 
     Window* _pTestWindow = HNew<Window>();
     
@@ -41,13 +43,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     UIParserPlayContext _Context;
     _Context.iDPI = 96;
-    _Parser.Play(u8"测试窗口", &_Context, nullptr, &pWindowElement);
+    intptr_t Cooike;
+    _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
 
     _pTestWindow->SetHost(pWindowElement);
+
     _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+    pWindowElement->EndDefer(Cooike);
 
     _pTestWindow->ShowWindow(SW_SHOWNORMAL);
-
+    
 
 
     //YY::MegaUI::Element* p;

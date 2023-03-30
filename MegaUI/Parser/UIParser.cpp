@@ -344,6 +344,9 @@ namespace YY
 
         HRESULT __YYAPI UIParser::Play(u8StringView _szResID, UIParserPlayContext* _pContext, intptr_t* _pCooike, WindowElement** _ppElement)
         {
+            if (_pCooike)
+                *_pCooike = 0;
+
             if (!_ppElement)
                 return E_INVALIDARG;
 
@@ -368,9 +371,12 @@ namespace YY
                 _ByteCode.Slice(_pByteCodeBegin->cbData);
 
                 UIParserPlayContext _Context;
+                if (!_pContext)
+                    _pContext = &_Context;
 
                 Array<Element*, AllocPolicy::SOO> _ElementList;
-                auto _hr = Play(_ByteCode, _pContext ? _pContext : &_Context, _pCooike, &_ElementList);
+                intptr_t _Cooike = 0;
+                auto _hr = Play(_ByteCode, _pContext, _pContext->pTopElement, &_Cooike, &_ElementList);
                 if (SUCCEEDED(_hr))
                 {
                     // 正确的数据只可能存在一个顶级控件，顶级控件只能是 WindowElement。
@@ -380,6 +386,15 @@ namespace YY
 
                         if (_pWindowElement)
                         {
+                            if (_pCooike)
+                            {
+                                *_pCooike = _Cooike;
+                            }
+                            else
+                            {
+                                _pWindowElement->EndDefer(_Cooike);
+                            }
+
                             // 成功
                             *_ppElement = _pWindowElement;
                             return _hr;
@@ -1205,7 +1220,7 @@ namespace YY
             return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
         }
         
-        HRESULT __YYAPI UIParser::Play(ArrayView<const uint8_t>& _ByteCode, UIParserPlayContext* _pContext, intptr_t* _pCooike, Array<Element*, AllocPolicy::SOO>* _pElementArray)
+        HRESULT __YYAPI UIParser::Play(ArrayView<const uint8_t>& _ByteCode, UIParserPlayContext* _pContext, Element* _pTopLevel, intptr_t* _pCooike, Array<Element*, AllocPolicy::SOO>* _pElementArray)
         {
             if (_pCooike)
                 *_pCooike = 0;
@@ -1240,7 +1255,7 @@ namespace YY
 
                     Array<Element*, AllocPolicy::SOO> _Child;
 
-                    _hr = Play(_ByteCode, _pContext, _pCooike, &_Child);
+                    _hr = Play(_ByteCode, _pContext, _pTopLevel, nullptr, &_Child);
                     if (FAILED(_hr))
                         break;
 
@@ -1301,9 +1316,14 @@ namespace YY
                     }
                     auto _pClass = *_ppClass;
 
-                    _hr = _pClass->CreateInstance(_pContext->iDPI, _pContext->pTopElement, _pCooike, &_pCurrentElement);
+                    _hr = _pClass->CreateInstance(_pContext->iDPI, _pTopLevel, _pCooike, &_pCurrentElement);
                     if (FAILED(_hr))
                         break;
+                    _pCooike = nullptr;
+
+                    // 第一个创建的作为 TopLevel
+                    if (!_pTopLevel)
+                        _pTopLevel = _pCurrentElement;
 
                     if (!_pElementArray->EmplacePtr(_pCurrentElement))
                     {

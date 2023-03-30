@@ -2383,7 +2383,14 @@ namespace YY
             // 最终还是没有，那么继承Default 值
             if (_pProp->pFunDefaultValue)
             {
-                _pHandleData->Output.RetValue = _pProp->pFunDefaultValue();
+                if (_pProp->fFlags & PF_GetDefaultValueEx)
+                {
+                    _pHandleData->Output.RetValue = _pProp->pFunDefaultValueEx(this, *_pProp);
+                }
+                else
+                {
+                    _pHandleData->Output.RetValue = _pProp->pFunDefaultValue();
+                }
                 return true;
             }
 
@@ -2968,7 +2975,7 @@ namespace YY
 
             const auto _bChangedConst = LocLastDesiredSizeConstraint != _ConstraintSize;
 
-            if (pWindow && bNeedsDSUpdate || _bChangedConst)
+            if (pWindow && (bNeedsDSUpdate || _bChangedConst))
             {
                 bNeedsDSUpdate = false;
 
@@ -3910,6 +3917,11 @@ namespace YY
             return OnKeyboardNavigate(KeyboardNavigateEvent(_KeyEvent.pTarget, _NavigateType));
         }
 
+        bool Element::OnKeyUp(const KeyboardEvent& _KeyEvent)
+        {
+            return false;
+        }
+
         bool Element::OnChar(const KeyboardEvent& _KeyEvent)
         {
             if (_KeyEvent.vKey == VK_TAB)
@@ -3933,6 +3945,22 @@ namespace YY
                 return true;
             }
 
+            return false;
+        }
+
+        bool Element::OnLeftButtonDown(const MouseEvent& _Event)
+        {
+            return false;
+        }
+
+        bool Element::OnLeftButtonUp(const MouseEvent& _Event)
+        {
+            ClickEvent _ClickEvent(_Event.pTarget, _Event.fModifiers, _Event.pt);
+            return OnClick(_ClickEvent);
+        }
+
+        bool Element::OnClick(const ClickEvent& _Event)
+        {
             return false;
         }
 	}

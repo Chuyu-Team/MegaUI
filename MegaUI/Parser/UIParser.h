@@ -132,6 +132,7 @@ namespace YY
             HRESULT __YYAPI Play(
                 _In_ ArrayView<const uint8_t>& _ByteCode,
                 _In_ UIParserPlayContext* _pContext,
+                _In_opt_ Element* _pTopLevel,
                 _Out_opt_ intptr_t* _pCooike,
                 _Inout_ Array<Element*, AllocPolicy::SOO>* _ppElement
                 );

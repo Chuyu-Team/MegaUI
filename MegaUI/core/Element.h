@@ -196,12 +196,13 @@ namespace YY
     _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<(int32_t)FontStyle::None>, nullptr,                    nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t ) \
     _APPLY(Dpi,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::DpiPropHandle,             nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0),              ValueType::int32_t ) \
     _APPLY(Accessible,     PF_Normal | PF_Cascade,                0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecAccessible), 0), ValueType::boolean ) \
-    _APPLY(AccRole,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateInt32Zero,              nullptr,                             nullptr, AccRoleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::int32_t ) \
+    _APPLY(AccRole,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateInt32Zero,              nullptr,                             nullptr, AccRoleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                              ValueType::int32_t ) \
     _APPLY(AccName,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
     _APPLY(AccHelp,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
     _APPLY(AccDescription, PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
     _APPLY(AccItemType,    PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(AccItemStatus,  PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) 
+    _APPLY(AccItemStatus,  PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
+    _APPLY(Pressed,        PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) 
 
     // clang-format on
 
@@ -852,6 +853,8 @@ namespace YY
 
             virtual bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
 
+            virtual bool __YYAPI OnKeyUp(const KeyboardEvent& _KeyEvent);
+
             virtual bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
 
             /// <summary>
@@ -861,6 +864,11 @@ namespace YY
             /// <returns>如果已经处理，则返回 true</returns>
             virtual bool __YYAPI OnKeyboardNavigate(const KeyboardNavigateEvent& _Event);
 
+            virtual bool __YYAPI OnLeftButtonDown(const MouseEvent& _Event);
+
+            virtual bool __YYAPI OnLeftButtonUp(const MouseEvent& _Event);
+
+            virtual bool __YYAPI OnClick(const ClickEvent& _Event);
 		};
 
 	}

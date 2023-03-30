@@ -70,6 +70,9 @@
     <Filter Include="Base\Strings">
       <UniqueIdentifier>{a29a58ba-73ae-4a48-8891-56488d2ca06a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI\Control">
+      <UniqueIdentifier>{33cbca5b-e9af-4a6f-925d-ff8643527b56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -237,6 +240,9 @@
     <ClInclude Include="Accessibility\UIAutomation\ElementPatternProviderImpl.h">
       <Filter>UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
+    <ClInclude Include="Control\Button.h">
+      <Filter>UI\Control</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -289,6 +295,9 @@
     </ClCompile>
     <ClCompile Include="..\Base\Strings\StringTransform.cpp">
       <Filter>Base\Strings</Filter>
+    </ClCompile>
+    <ClCompile Include="Control\Button.cpp">
+      <Filter>UI\Control</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

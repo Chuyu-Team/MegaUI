@@ -67,6 +67,8 @@ namespace YY
             PF_40 = 0x40,
             // 当DPI更新时，同步更新此属性
             PF_UpdateDpi = 0x80,
+            // pFunDefaultValueEx 生效
+            PF_GetDefaultValueEx = 0x100,
 		};
 
 		inline PropertyFlag __YYAPI PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
@@ -205,6 +207,11 @@ namespace YY
             } Output;
         };
         
+        typedef Value(__YYAPI *GetPropertyDefaultValue)();
+        typedef Value(__YYAPI *GetPropertyDefaultValueEx)(Element* _pElem, const PropertyInfo& _Prop);
+        // 与 GetPropertyDefaultValueEx ABI兼容
+        typedef Value(__YYAPI Element::*GetPropertyDefaultValueEx2)(const PropertyInfo& _Prop);
+
         typedef bool (__YYAPI Element::*FunTypeCustomPropertyHandle)(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
         typedef void (__YYAPI Element::*FunTypeOnPropertyChanged)(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
@@ -227,7 +234,12 @@ namespace YY
             // 一串枚举值，以 { nullptr, 0 } 结束
             const EnumMap* pEnumMaps;
             // 默认值的初始化函数
-            Value (__YYAPI* pFunDefaultValue)();
+            union
+            {
+                uintptr_t RawDefaultValue;
+                GetPropertyDefaultValue pFunDefaultValue;
+                GetPropertyDefaultValueEx pFunDefaultValueEx;
+            };
             // 自定义属性处理器，比如接受事件更改、读取值等功能
             FunTypeCustomPropertyHandle pfnCustomPropertyHandle;
             // 此属性依赖的属性，以 nullptr 结束
@@ -277,6 +289,32 @@ namespace YY
             } __data{ p2 };
 
             return __data.p1;
+        }
+        template<class _Type>
+        __inline constexpr uint32_t __GetMegaUIDefaultValueFlag(_Type p2);
+        
+        template<>
+        __inline constexpr uint32_t __GetMegaUIDefaultValueFlag(std::nullptr_t)
+        {
+            return 0;
+        }
+
+        template<>
+        __inline constexpr uint32_t __GetMegaUIDefaultValueFlag(GetPropertyDefaultValueEx _pfn)
+        {
+            return PF_GetDefaultValueEx;
+        }
+
+        template<>
+        __inline constexpr uint32_t __GetMegaUIDefaultValueFlag(GetPropertyDefaultValueEx2 _pfn)
+        {
+            return PF_GetDefaultValueEx;
+        }
+
+        template<>
+        __inline constexpr uint32_t __GetMegaUIDefaultValueFlag(GetPropertyDefaultValue _pfn)
+        {
+            return 0;
         }
 
 #define _MEGA_UI_PROP_BIND_VALUE(_VALUE_TYPE, _LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED_BIT, _HAS_SPECIFIED_BIT) \
@@ -330,11 +368,11 @@ namespace YY
 #define _APPLY_MEGA_UI_PROPERTY(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) \
 		{                                                                                                         \
 			# _PRO_NAME,                                                                                          \
-			_FLAGS,                                                                                               \
+			_FLAGS | __GetMegaUIDefaultValueFlag(_DEF_VALUE_FUN),                                                 \
 			_GROUPS,                                                                                              \
 			_CRT_CONCATENATE(vv, _PRO_NAME),                                                                      \
 			_ENUM,                                                                                                \
-			_DEF_VALUE_FUN,                                                                                       \
+			{ __GetMegaUICallback<uintptr_t>(_DEF_VALUE_FUN) },                                                   \
 			__GetMegaUICallback<FunTypeCustomPropertyHandle>(_CUSTOM_PRO_HANDLE),                                 \
             _PROP_DEPENDENCIES_DATA,                                                                              \
 			_BIND_INT,                                                                                            \
