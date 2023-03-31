@@ -387,6 +387,7 @@ namespace YY
                         }
                         else
                         {
+                            _pStringDataOld->AddRef();
                             Attach(_pStringDataOld);
                         }
                     }
@@ -404,11 +405,7 @@ namespace YY
                             return E_UNEXPECTED;
                         }
 
-                        auto _pNewData = _szSrc.Detach();
-
-                        Attach(_pNewData);
-
-                        _pNewData->Release();
+                        Attach(_szSrc.Detach());
                     }
 
                     return S_OK;
@@ -627,7 +624,7 @@ namespace YY
                     uint_t _uIndex = 0;
                     for (; _uIndex != _iMinSize; ++_uIndex)
                     {
-                        int32_t _result = CharUpperASCII(szString[_uIndex]) - CharUpperASCII(_Other[_uIndex]);
+                        int32_t _result = CharUpperAsASCII(szString[_uIndex]) - CharUpperAsASCII(_Other[_uIndex]);
                         if (_result != 0)
                             return _result;
                     }
@@ -856,18 +853,22 @@ namespace YY
                     return reinterpret_cast<StringData*>(szString) - 1;
                 }
 
+                /// <summary>
+                /// 把内部指针挂接，注意此函数不会增加引用计数。
+                /// </summary>
+                /// <param name="_pNewStringData"></param>
+                /// <returns></returns>
                 void __YYAPI Attach(_In_ StringData* _pNewStringData)
                 {
                     auto _pOldStringData = GetInternalStringData();
-
-                    if (_pOldStringData != _pNewStringData)
-                    {
-                        _pNewStringData->AddRef();
-                        szString = _pNewStringData->GetStringBuffer();
-                        _pOldStringData->Release();
-                    }
+                    szString = _pNewStringData->GetStringBuffer();
+                    _pOldStringData->Release();
                 }
 
+                /// <summary>
+                /// 注意把返回的指针释放。
+                /// </summary>
+                /// <typeparam name="_char_t"></typeparam>
                 _Ret_notnull_ StringData* __YYAPI Detach()
                 {
                     auto _pStringData = GetInternalStringData();

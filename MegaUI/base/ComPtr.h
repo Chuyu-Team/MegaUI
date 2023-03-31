@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "MegaUITypeInt.h"
 
 #pragma pack(push, __YY_PACKING)
@@ -17,6 +17,13 @@ namespace YY
             ComPtr()
                 : p(nullptr)
             {
+            }
+
+            ComPtr(_Type* _pOther)
+                : p(_pOther)
+            {
+                if (_pOther)
+                    _pOther->AddRef();
             }
 
             ComPtr(const ComPtr& _Other)
@@ -48,6 +55,12 @@ namespace YY
                 return p;
             }
 
+            void __YYAPI Attach(_Type* _pOther)
+            {
+                if (p)
+                    p->Release();
+                p = _pOther;
+            }
 
             inline _Type* __YYAPI Detach()
             {
