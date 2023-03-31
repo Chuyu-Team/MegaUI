@@ -73,6 +73,9 @@
     <Filter Include="UI\Control">
       <UniqueIdentifier>{33cbca5b-e9af-4a6f-925d-ff8643527b56}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\Memory">
+      <UniqueIdentifier>{dbc00a38-0fe8-4789-bcdb-931c58800068}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -140,9 +143,6 @@
     </ClInclude>
     <ClInclude Include="Window\WindowElement.h">
       <Filter>UI\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="base\ComPtr.h">
-      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="Render\D2D\DWrite\DWriteHelper.h">
       <Filter>UI\Render\D2D\DWrite</Filter>
@@ -242,6 +242,9 @@
     </ClInclude>
     <ClInclude Include="Control\Button.h">
       <Filter>UI\Control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Memory\RefPtr.h">
+      <Filter>Base\Memory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

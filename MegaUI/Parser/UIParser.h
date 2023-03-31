@@ -4,8 +4,9 @@
 #include <MegaUI/Window/WindowElement.h>
 #include <Base/Containers/Array.h>
 #include <Base/Containers/ArrayView.h>
+#include <Base/Memory/RefPtr.h>
+
 #include <MegaUI/core/Property.h>
-#include <MegaUI/base/ComPtr.h>
 #include <MegaUI/core/StyleSheet.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -54,7 +55,7 @@ namespace YY
             Array<UIParserRecorder, AllocPolicy::SOO> RecorderArray;
             
             Array<IControlInfo*> ControlInfoArray;
-            Array<ComPtr<StyleSheet>> StyleSheets;
+            Array<RefPtr<StyleSheet>> StyleSheets;
 
         public:
             UIParser() = default;
@@ -85,7 +86,7 @@ namespace YY
 
             HRESULT __YYAPI GetStyleSheet(_In_ u8StringView _szSheetResourceID, _Outptr_ StyleSheet** _ppSheet);
 
-            Array<ComPtr<StyleSheet>> __YYAPI GetAllStyleSheet();
+            Array<RefPtr<StyleSheet>> __YYAPI GetAllStyleSheet();
 
         protected:
 

@@ -8,7 +8,8 @@
 #include "Layout.h"
 #include <MegaUI/Window/Window.h>
 #include "StyleSheet.h"
-#include <MegaUI/base/ComPtr.h>
+#include <Base/Memory/RefPtr.h>
+
 #include <Multimedia/Font.h>
 
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
@@ -1031,7 +1032,7 @@ namespace YY
                 {
                 case BorderStyle::Solid:
                 {
-                    ComPtr<ID2D1SolidColorBrush> _BorderBrush;
+                    RefPtr<ID2D1SolidColorBrush> _BorderBrush;
                     auto hr = _pRenderTarget->CreateSolidColorBrush(
                         _BorderColor,
                         &_BorderBrush);
@@ -1055,10 +1056,10 @@ namespace YY
                     Rect _BoundsOutter = _Bounds;
                     _BoundsOutter.DeflateRect({_BorderThickness.Left / 2, _BorderThickness.Top / 2, _BorderThickness.Right / 2, _BorderThickness.Bottom / 2});
 
-                    ComPtr<ID2D1SolidColorBrush> hbOLT;       // Brush for outter Left and Top
-                    ComPtr<ID2D1SolidColorBrush> hbORB;       // Brush for outter Right and Bottom
-                    ComPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner Left Top
-                    ComPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner Right and Bottom
+                    RefPtr<ID2D1SolidColorBrush> hbOLT;       // Brush for outter Left and Top
+                    RefPtr<ID2D1SolidColorBrush> hbORB;       // Brush for outter Right and Bottom
+                    RefPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner Left Top
+                    RefPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner Right and Bottom
 
                     if (_eBorderStyle == BorderStyle::Raised)
                     {
@@ -1118,7 +1119,7 @@ namespace YY
                 if (_BackgroundColor.Alpha == 0)
                     return;
 
-                ComPtr<ID2D1SolidColorBrush> _BackgroundBrush;
+                RefPtr<ID2D1SolidColorBrush> _BackgroundBrush;
                 auto hr = _pRenderTarget->CreateSolidColorBrush(
                     _Background.GetColor(),
                     &_BackgroundBrush);

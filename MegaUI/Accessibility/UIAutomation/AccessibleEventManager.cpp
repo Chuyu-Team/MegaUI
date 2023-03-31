@@ -2,7 +2,8 @@
 #include "AccessibleEventManager.h"
 
 #include <Base/Containers/Array.h>
-#include <MegaUI/base/ComPtr.h>
+#include <Base/Memory/RefPtr.h>
+
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 
 #pragma warning(disable : 28251)
@@ -219,7 +220,7 @@ namespace YY
             if (g_uRegisteredEventIdCount == 0)
                 return S_FALSE;
 
-            YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+            YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
             auto _hr = _pElem->GetAccessibleProvider(&_pAccessibleProvider);
             if (FAILED(_hr))
                 return _hr;
@@ -260,7 +261,7 @@ namespace YY
                 RectangleData _RectangleChange = {};
                 _RectangleChange.pElem = _pElem;
                 
-                YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                 auto _hr = _pElem->GetAccessibleProvider(&_pAccessibleProvider);
                 if (FAILED(_hr))
                     return _hr;
@@ -341,7 +342,7 @@ namespace YY
                 
                 bool _bChanged = false;
                 
-                YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                 auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
                 if (SUCCEEDED(_hr))
                 {
@@ -413,7 +414,7 @@ namespace YY
                     if (!_Item.pElem)
                         continue;
 
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         continue;
@@ -429,7 +430,7 @@ namespace YY
                     if (!_Item.pElem)
                         continue;
                     
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         continue;
@@ -565,7 +566,7 @@ namespace YY
                 if (_SrcItem.AddChildrenArray.GetSize() >= 25 && _pRoot)
                 {
                     _bAdd = true;
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         return _hr;
@@ -579,7 +580,7 @@ namespace YY
                             continue;
                         _bAdd = true;
 
-                        YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                        YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                         auto _hr = _pChild->GetAccessibleProvider(&_pAccessibleProvider);
                         if (FAILED(_hr))
                             return _hr;
@@ -593,7 +594,7 @@ namespace YY
                 if (_SrcItem.RemoveChildrenRuntimeIds.GetSize() >= 25 && _pRoot)
                 {
                     _bRemove = true;
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         return _hr;
@@ -602,7 +603,7 @@ namespace YY
                 }
                 else if (_pRoot)
                 {
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         return _hr;
@@ -621,7 +622,7 @@ namespace YY
 
                 if (_pRoot && _bAdd == false && _bRemove == false)
                 {
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         return _hr;
@@ -654,7 +655,7 @@ namespace YY
                 {
                     // 它是顶级元素
                     // todo 如果有多个顶级，这行为可能存在问题
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _pElem->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         return _hr;
@@ -693,7 +694,7 @@ namespace YY
                     {
                         if (_pChild->IsVisible())
                         {
-                            YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                            YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                             auto _hr = _pChild->GetAccessibleProvider(&_pAccessibleProvider);
                             if (FAILED(_hr))
                                 return _hr;
@@ -704,7 +705,7 @@ namespace YY
                         }
                         else
                         {
-                            YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                            YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                             auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
                             if (FAILED(_hr))
                                 return _hr;
@@ -718,7 +719,7 @@ namespace YY
                 }
                 else
                 {
-                    YY::MegaUI::ComPtr<ElementAccessibleProvider> _pAccessibleProvider;
+                    YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
                     auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
                     if (FAILED(_hr))
                         return _hr;

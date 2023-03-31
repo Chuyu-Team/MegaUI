@@ -7,7 +7,8 @@
 #include <MegaUI/Render/Render.h>
 #include <MegaUI/base/alloc.h>
 #include <Multimedia/Font.h>
-#include <MegaUI/base/ComPtr.h>
+#include <Base/Memory/RefPtr.h>
+
 #include <MegaUI/Render/D2D/DWrite/DWriteHelper.h>
 
 #pragma comment(lib, "d2d1.lib")

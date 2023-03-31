@@ -259,14 +259,14 @@ namespace YY
                             break;
                         }
 
-                        ComPtr<StyleSheet> _pInherit;
+                        RefPtr<StyleSheet> _pInherit;
                         auto _pInheritAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("Inherit"), false);
                         if (_pInheritAttribute && _pInheritAttribute->value_size())
                         {
                             GetStyleSheet(u8StringView((u8char_t*)_pInheritAttribute->value(), _pInheritAttribute->value_size()), &_pInherit);
                         }
 
-                        ComPtr<StyleSheet> _pStyleSheet;
+                        RefPtr<StyleSheet> _pStyleSheet;
                         _pStyleSheet.Attach(HNew<StyleSheet>(_pInherit));
                         if (!_pStyleSheet)
                         {
@@ -442,7 +442,7 @@ namespace YY
             return StyleSheet::GetGlobalStyleSheet(_szSheetResourceID, _ppSheet);
         }
 
-        Array<ComPtr<StyleSheet>> __YYAPI UIParser::GetAllStyleSheet()
+        Array<RefPtr<StyleSheet>> __YYAPI UIParser::GetAllStyleSheet()
         {
             return StyleSheets;
         }
@@ -1233,7 +1233,7 @@ namespace YY
             if (_pExprNode->Type != ExprNodeType::BaseIdentifier)
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-            ComPtr<StyleSheet> _pStyleSheet;
+            RefPtr<StyleSheet> _pStyleSheet;
             if(SUCCEEDED(GetStyleSheet(_pExprNode->szValue, &_pStyleSheet)))
             {
                 auto _StyleSheetValue = Value::CreateStyleSheet(_pStyleSheet);

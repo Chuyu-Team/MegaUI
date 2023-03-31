@@ -9,8 +9,6 @@
 #include <MegaUI/Parser/UIParser.h>
 #include <MegaUI/Control/Button.h>
 
-#include <atlcomcli.h>
-
 using namespace YY;
 using namespace YY::MegaUI;
 

@@ -1,9 +1,10 @@
-#pragma once
+﻿#pragma once
 #include <dwrite.h>
 
-#include <MegaUI/Render/Render.h>
-#include <MegaUI/base/ComPtr.h>
+#include <Base/Memory/RefPtr.h>
 #include <Multimedia/Font.h>
+
+#include <MegaUI/Render/Render.h>
 
 #pragma comment(lib, "Dwrite.lib")
 
@@ -60,7 +61,7 @@ namespace YY
                 if (HasFlags(_FontInfo.fStyle, FontStyle::Italic))
                     _eFontStyle = DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_ITALIC;
                 
-                ComPtr<IDWriteTextFormat> _pTextFormat;
+                RefPtr<IDWriteTextFormat> _pTextFormat;
                 auto _hr = _pDWriteFactory->CreateTextFormat(
                     _FontInfo.szFace,
                     nullptr,
@@ -107,7 +108,7 @@ namespace YY
 
                 if (HasFlags(_fTextAlign, ContentAlignStyle::EndEllipsis))
                 {
-                    ComPtr<IDWriteInlineObject> pDWriteInlineObject;
+                    RefPtr<IDWriteInlineObject> pDWriteInlineObject;
                     auto _hr = _pDWriteFactory->CreateEllipsisTrimmingSign(_pTextFormat, &pDWriteInlineObject);
                     if (SUCCEEDED(_hr))
                     {
@@ -143,7 +144,7 @@ namespace YY
                 if (!_pDWriteFactory)
                     return E_NOINTERFACE;
 
-                ComPtr<IDWriteTextLayout> _pTextLayout;
+                RefPtr<IDWriteTextLayout> _pTextLayout;
                 auto _hr = _pDWriteFactory->CreateTextLayout(
                     _szText.GetConstString(),
                     (UINT32)_szText.GetSize(),
@@ -186,21 +187,21 @@ namespace YY
                 if (_szText.GetSize() == 0 || _LayoutRect.IsEmpty() || pRenderTarget == nullptr)
                     return;
 
-                ComPtr<IDWriteTextFormat> _pTextFormat;
+                RefPtr<IDWriteTextFormat> _pTextFormat;
                 auto _hr = CreateTextFormat(_FontInfo, _fTextAlign, L"", &_pTextFormat);
                 if (FAILED(_hr))
                 {
                     throw Exception(_hr);
                 }
 
-                ComPtr<IDWriteTextLayout> _pTextLayout;
+                RefPtr<IDWriteTextLayout> _pTextLayout;
                 _hr = CreateTextLayout(_szText, _pTextFormat, _FontInfo.fStyle, _LayoutRect.GetSize(), &_pTextLayout);
                 if (FAILED(_hr))
                 {
                     throw Exception(_hr);
                 }
 
-                ComPtr<ID2D1SolidColorBrush> _pDefaultFillBrush;
+                RefPtr<ID2D1SolidColorBrush> _pDefaultFillBrush;
                 _hr = pRenderTarget->CreateSolidColorBrush(_crTextColor, &_pDefaultFillBrush);
                 if (FAILED(_hr))
                     return;
@@ -227,14 +228,14 @@ namespace YY
                 _pExtent->Width = 0;
                 _pExtent->Height = 0;
 
-                ComPtr<IDWriteTextFormat> _pTextFormat;
+                RefPtr<IDWriteTextFormat> _pTextFormat;
                 auto _hr = CreateTextFormat(_FontInfo, _fTextAlign & ~ContentAlignStyle::EndEllipsis, L"", &_pTextFormat);
                 if (FAILED(_hr))
                 {
                     throw Exception(_hr);
                 }
 
-                ComPtr<IDWriteTextLayout> _pTextLayout;
+                RefPtr<IDWriteTextLayout> _pTextLayout;
                 _hr = CreateTextLayout(_szText, _pTextFormat, _FontInfo.fStyle, _LayoutSize, &_pTextLayout);
                 if (FAILED(_hr))
                 {

@@ -3,8 +3,8 @@
 
 #include "Element.h"
 #include <Base/Sync/Interlocked.h>
+#include <Base/Memory/RefPtr.h>
 
-#include <MegaUI/base/ComPtr.h>
 #include <MegaUI/Parser/UIParser.h>
 
 #pragma warning(disable : 28251)
@@ -13,7 +13,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        static Array<ComPtr<StyleSheet>> g_GlobalStyleSheet;
+        static Array<RefPtr<StyleSheet>> g_GlobalStyleSheet;
 
         template<typename ArrayType>
         bool __YYAPI IsPIInList(const PropertyInfo* pProp, const ArrayType& Array)

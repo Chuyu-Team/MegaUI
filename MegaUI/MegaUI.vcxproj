@@ -163,6 +163,7 @@
     <ClInclude Include="..\Base\Containers\HashSet.h" />
     <ClInclude Include="..\base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
+    <ClInclude Include="..\Base\Memory\RefPtr.h" />
     <ClInclude Include="..\Base\SAL.h" />
     <ClInclude Include="..\Base\Strings\NString.h" />
     <ClInclude Include="..\Base\Strings\String.h" />
@@ -186,7 +187,6 @@
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h" />
     <ClInclude Include="base\alloc.h" />
-    <ClInclude Include="base\ComPtr.h" />
     <ClInclude Include="base\ComUnknowImpl.h" />
     <ClInclude Include="base\ErrorCode.h" />
     <ClInclude Include="base\MegaUITypeInt.h" />
