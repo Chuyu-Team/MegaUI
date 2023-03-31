@@ -35,6 +35,9 @@ namespace YY
                 return E_INVALIDARG;
             *_ppAccessibleProvider = nullptr;
 
+            if (!IsAccessible())
+                return E_NOTIMPL;
+
             if (!pAccessibleProvider)
             {
                 pAccessibleProvider = new (std::nothrow) WindowElementAccessibleProvider(this, ThreadTaskRunner::GetCurrentThreadTaskRunner());

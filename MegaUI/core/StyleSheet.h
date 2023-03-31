@@ -232,13 +232,18 @@ namespace YY
             // 0x60
             u8String szSheetResourceID;
 
+            // 需要继承的属性
+            StyleSheet* pInheritStyle;
+
             bool bMakeImmutable;
         public:
             // void* _vftable_
-            StyleSheet();
+            StyleSheet(StyleSheet* _pInheritStyle = nullptr);
 
             StyleSheet(StyleSheet const&) = delete;
             StyleSheet& operator=(StyleSheet const&) = delete;
+
+            ~StyleSheet();
 
             uint32_t __YYAPI AddRef();
 
@@ -260,7 +265,13 @@ namespace YY
             // 7
             HRESULT __YYAPI SetSheetResourceID(u8String _szSheetResourceID);
             
-        private:
+            HRESULT __YYAPI SetInherit(_In_opt_ StyleSheet* _pInheritStyle);
+
+            static HRESULT __YYAPI GetGlobalStyleSheet(_In_ u8StringView _szSheetResourceID, _Outptr_ StyleSheet** _ppSheet);
+
+            static HRESULT __YYAPI AddGlobalStyleSheet(_In_ u8String&& _szXmlString);
+
+      private:
             _Ret_maybenull_ ControlStyleData* __YYAPI GetControlStyleData(_In_ IControlInfo* _pControlInfo);
 
             HRESULT __YYAPI AddControlStyleData(_Outptr_ ControlStyleData** _ppData, _In_ IControlInfo* _pControlInfo);

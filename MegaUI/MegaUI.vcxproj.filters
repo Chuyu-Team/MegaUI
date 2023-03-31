@@ -305,4 +305,9 @@
       <Filter>资源文件</Filter>
     </Natvis>
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Common.xml">
+      <Filter>资源文件</Filter>
+    </Xml>
+  </ItemGroup>
 </Project>

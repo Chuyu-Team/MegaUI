@@ -9,9 +9,21 @@
 #include <MegaUI/Parser/UIParser.h>
 #include <MegaUI/Control/Button.h>
 
+#include <atlcomcli.h>
 
 using namespace YY;
 using namespace YY::MegaUI;
+
+static u8String GetUiResource(DWORD _uResourceId)
+{
+    auto _hRes = FindResourceW(NULL, MAKEINTRESOURCEW(_uResourceId), L"UI");
+    if (_hRes)
+    {
+        return u8String((u8char_t*)LockResource(LoadResource(NULL, _hRes)), SizeofResource(NULL, _hRes));
+    }
+
+    return u8String();
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -27,17 +39,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     WindowElement::Register();
     Button::Register();
 
+    StyleSheet::AddGlobalStyleSheet(GetUiResource(IDR_UI_COMMON));
+
     Window* _pTestWindow = HNew<Window>();
     
     UIParser _Parser;
 
-    auto hRes = FindResourceW(NULL, MAKEINTRESOURCEW(IDR_UI1), L"UI");
-
-    ;
-
-    u8String _szXml((u8char_t*)LockResource(LoadResource(NULL, hRes)), SizeofResource(NULL, hRes));
-
-    _Parser.ParserByXmlString(std::move(_szXml));
+    _Parser.ParserByXmlString(GetUiResource(IDR_UI1));
 
     YY::MegaUI::WindowElement* pWindowElement;
 

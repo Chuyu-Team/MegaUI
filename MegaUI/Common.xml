@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MegaUI>
+    <StyleSheets>
+        <StyleSheet ResourceID="Common">
+            <Default>
+                <WindowElement Accessible="true" AccRole="Window"/>
+                <Button Accessible="true" AccRole="Button"/>
+            </Default>
+        </StyleSheet>
+    </StyleSheets>
+</MegaUI>

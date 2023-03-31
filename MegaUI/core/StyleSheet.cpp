@@ -4,12 +4,17 @@
 #include "Element.h"
 #include <Base/Sync/Interlocked.h>
 
+#include <MegaUI/base/ComPtr.h>
+#include <MegaUI/Parser/UIParser.h>
+
 #pragma warning(disable : 28251)
 
 namespace YY
 {
     namespace MegaUI
     {
+        static Array<ComPtr<StyleSheet>> g_GlobalStyleSheet;
+
         template<typename ArrayType>
         bool __YYAPI IsPIInList(const PropertyInfo* pProp, const ArrayType& Array)
         {
@@ -38,13 +43,22 @@ namespace YY
             return S_OK;
         }
 
-        StyleSheet::StyleSheet()
+        StyleSheet::StyleSheet(StyleSheet* _pInheritStyle)
             : uRef(1u)
             , uRuleId(0u)
+            , pInheritStyle(_pInheritStyle)
             , bMakeImmutable(false)
         {
+            if (_pInheritStyle)
+                _pInheritStyle->AddRef();
         }
         
+        StyleSheet::~StyleSheet()
+        {
+            if (pInheritStyle)
+                pInheritStyle->Release();
+        }
+
         uint32_t __YYAPI StyleSheet::AddRef()
         {
             return Sync::Increment(&uRef);
@@ -145,50 +159,55 @@ namespace YY
             if (_pElement == nullptr || _pProp == nullptr)
                 return Value::CreateNull();
 
-            auto pClassData = GetControlStyleData(_pElement->GetControlInfo());
-
-            if (!pClassData)
-                return Value::CreateUnset();
-
-            auto pPropertyData = pClassData->GetPropertyData(_pProp);
-            if (!pPropertyData)
-                return Value::CreateUnset();
-
-            for(auto& _ConMap : pPropertyData->CondMapList)
+            do
             {
-                //CondData.GetItemPtr(_ConMap.m8)
-                const auto _uSize = _ConMap.CondArray.GetSize();
-                for (uint_t _uIndex = 0u;; ++_uIndex)
+                auto pClassData = GetControlStyleData(_pElement->GetControlInfo());
+
+                if (!pClassData)
+                    break;
+
+                auto pPropertyData = pClassData->GetPropertyData(_pProp);
+                if (!pPropertyData)
+                    break;
+
+                for (auto& _ConMap : pPropertyData->CondMapList)
                 {
-                    if (_uIndex == _uSize)
+                    //CondData.GetItemPtr(_ConMap.m8)
+                    const auto _uSize = _ConMap.CondArray.GetSize();
+                    for (uint_t _uIndex = 0u;; ++_uIndex)
                     {
-                        // 如果扫描到结束，那么说明命中条件。
-                        // 这些规则只有 && 逻辑，引入 || 逻辑破坏性较大。
-                        return _ConMap.CondValue.UpdateDpi(_pElement->GetDpi());
-                    }
+                        if (_uIndex == _uSize)
+                        {
+                            // 如果扫描到结束，那么说明命中条件。
+                            // 这些规则只有 && 逻辑，引入 || 逻辑破坏性较大。
+                            return _ConMap.CondValue.UpdateDpi(_pElement->GetDpi());
+                        }
 
-                    
-                    auto pCond = _ConMap.CondArray.GetItemPtr(_uIndex);
-                    if (!pCond)
-                        break;
-
-                    auto _ElementValue = _pElement->GetValue(
-                        *pCond->pProp,
-                        PropertyFlagMapToMaxPropertyIndicies(PropertyFlag(pCond->pProp->fFlags & PropertyFlag::PF_TypeBits)),
-                        false);
-
-                    if (_ElementValue.GetType() != pCond->Value.GetType())
-                    {
-                        if (pCond->OperationType != ValueCmpOperation::NotEqual)
+                        auto pCond = _ConMap.CondArray.GetItemPtr(_uIndex);
+                        if (!pCond)
                             break;
-                    }
-                    else
-                    {
-                        if (!_ElementValue.CmpValue(pCond->Value, pCond->OperationType, false))
-                            break;
+
+                        auto _ElementValue = _pElement->GetValue(
+                            *pCond->pProp,
+                            PropertyFlagMapToMaxPropertyIndicies(PropertyFlag(pCond->pProp->fFlags & PropertyFlag::PF_TypeBits)),
+                            false);
+
+                        if (_ElementValue.GetType() != pCond->Value.GetType())
+                        {
+                            if (pCond->OperationType != ValueCmpOperation::NotEqual)
+                                break;
+                        }
+                        else
+                        {
+                            if (!_ElementValue.CmpValue(pCond->Value, pCond->OperationType, false))
+                                break;
+                        }
                     }
                 }
-            }
+            } while (false);
+
+            if (pInheritStyle)
+                return pInheritStyle->GetSheetValue(_pElement, _pProp);
 
             return Value::CreateUnset();
         }
@@ -197,24 +216,29 @@ namespace YY
         {
             if (_pElement == nullptr || _pProp == nullptr || _pdr == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
-            auto _pControlStyleData = GetControlStyleData(_pElement->GetControlInfo());
-            if (!_pControlStyleData)
-                return S_OK;
 
-            auto _pPropData = _pControlStyleData->GetPropertyData(_pProp);
-            if (!_pPropData)
-                return S_OK;
-            
-            HRESULT _hr = S_OK;
-
-            for (auto _pDependencyProp : _pPropData->DependencyPropList)
+            do
             {
-                auto _hrAdd = Element::AddDependency(_pElement, *_pDependencyProp, PropertyIndicies::PI_Specified, _pdr, _pDeferCycle);
-                if (FAILED(_hrAdd))
-                    _hr = _hrAdd;
-            }
+                auto _pControlStyleData = GetControlStyleData(_pElement->GetControlInfo());
+                if (!_pControlStyleData)
+                    break;
 
-            return _hr;
+                auto _pPropData = _pControlStyleData->GetPropertyData(_pProp);
+                if (!_pPropData)
+                    break;
+
+                for (auto _pDependencyProp : _pPropData->DependencyPropList)
+                {
+                    auto _hr = Element::AddDependency(_pElement, *_pDependencyProp, PropertyIndicies::PI_Specified, _pdr, _pDeferCycle);
+                    if (FAILED(_hr))
+                        return _hr;
+                }
+            } while (false);
+
+            if (pInheritStyle)
+                return pInheritStyle->GetSheetDependencies(_pElement, _pProp, _pdr, _pDeferCycle);
+
+            return S_OK;
         }
 
         HRESULT __YYAPI StyleSheet::GetSheetScope(Element* _pElement, DepRecs* _pDepRecs, DeferCycle* _pDeferCycle)
@@ -222,20 +246,24 @@ namespace YY
             if (_pElement == nullptr || _pDepRecs == nullptr || _pDeferCycle == nullptr)
                 return E_INVALIDARG;
 
-            auto _pControlStyleData = GetControlStyleData(_pElement->GetControlInfo());
-            if (!_pControlStyleData)
-                return S_OK;
-
-            HRESULT _hr = S_OK;
-
-            for (auto _pDependencyProp : _pControlStyleData->DependencyPropList)
+            do
             {
-                auto _hrAdd = Element::AddDependency(_pElement, *_pDependencyProp, PropertyIndicies::PI_Specified, _pDepRecs, _pDeferCycle);
-                if (FAILED(_hrAdd))
-                    _hr = _hrAdd;
-            }
+                auto _pControlStyleData = GetControlStyleData(_pElement->GetControlInfo());
+                if (!_pControlStyleData)
+                    break;
 
-            return _hr;
+                for (auto _pDependencyProp : _pControlStyleData->DependencyPropList)
+                {
+                    auto _hr = Element::AddDependency(_pElement, *_pDependencyProp, PropertyIndicies::PI_Specified, _pDepRecs, _pDeferCycle);
+                    if (FAILED(_hr))
+                        return _hr;
+                }
+            } while (false);
+
+            if (pInheritStyle)
+                return pInheritStyle->GetSheetScope(_pElement, _pDepRecs, _pDeferCycle);
+
+            return S_OK;
         }
 
         u8String __YYAPI StyleSheet::GetSheetResourceID()
@@ -246,6 +274,60 @@ namespace YY
         HRESULT __YYAPI StyleSheet::SetSheetResourceID(u8String _szSheetResourceID)
         {
             return szSheetResourceID.SetString(_szSheetResourceID);
+        }
+
+        HRESULT StyleSheet::SetInherit(StyleSheet* _pInheritStyle)
+        {
+            if (_pInheritStyle)
+                _pInheritStyle->AddRef();
+
+            if (pInheritStyle)
+                pInheritStyle->Release();
+
+            pInheritStyle = _pInheritStyle;
+
+            return S_OK;
+        }
+
+        HRESULT StyleSheet::GetGlobalStyleSheet(u8StringView _szSheetResourceID, StyleSheet** _ppSheet)
+        {
+            *_ppSheet = nullptr;
+
+            for (StyleSheet* _pSheet : g_GlobalStyleSheet)
+            {
+                auto _szDstId = _pSheet->GetSheetResourceID();
+                if (_szDstId.GetSize() != _szSheetResourceID.GetSize())
+                    continue;
+
+                if (_szDstId.CompareI(_szSheetResourceID) == 0)
+                {
+                    _pSheet->AddRef();
+                    *_ppSheet = _pSheet;
+                    return S_OK;
+                }
+            }
+
+            return E_NOT_SET;
+        }
+
+        HRESULT StyleSheet::AddGlobalStyleSheet(u8String&& _szXmlString)
+        {
+            UIParser _Tmp;
+            auto _hr = _Tmp.ParserByXmlString(std::move(_szXmlString));
+            if (FAILED(_hr))
+                return _hr;
+
+            auto _AppendStyleSheets = _Tmp.GetAllStyleSheet();
+
+            if (g_GlobalStyleSheet.GetSize() == 0)
+            {
+                g_GlobalStyleSheet = std::move(_AppendStyleSheets);
+                return S_OK;
+            }
+            else
+            {
+                return g_GlobalStyleSheet.Add(_AppendStyleSheets.GetData(), _AppendStyleSheets.GetSize());
+            }
         }
         
         ControlStyleData* __YYAPI StyleSheet::GetControlStyleData(IControlInfo* _pControlInfo)

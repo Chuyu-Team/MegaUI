@@ -66,7 +66,7 @@ namespace YY
             public:
                 typedef const typename _Type* _ReadPoint;
 
-                AllocPolicyArray()
+                constexpr AllocPolicyArray()
                     : pData(SharedData::GetEmptySharedData()->GetData())
                 {
                 }
@@ -230,13 +230,13 @@ namespace YY
                         ConstructorPolicy<_Type>::Destructor(GetData(), uSize);
                     }
 
-                    static _Ret_notnull_ SharedData* __YYAPI _GetEmptySharedData()
+                    constexpr static _Ret_notnull_ SharedData* __YYAPI _GetEmptySharedData()
                     {
                         static const SharedData s_Empty = {0, int_max};
                         return const_cast<SharedData*>(&s_Empty);
                     }
 
-                    static _Ret_notnull_ SharedData* __YYAPI GetEmptySharedData()
+                    constexpr static _Ret_notnull_ SharedData* __YYAPI GetEmptySharedData()
                     {
                         // 为了将其他特化后的类型使用同一份数据，所以再次强制转换一次。
                         return reinterpret_cast<SharedData*>(AllocPolicyArray<int, AllocPolicy::COW, 0>::SharedData::_GetEmptySharedData());
@@ -353,7 +353,7 @@ namespace YY
                         }
                     }
 
-                    _Ret_notnull_ _Type* __YYAPI GetData()
+                    constexpr _Ret_notnull_ _Type* __YYAPI GetData()
                     {
                         return reinterpret_cast<_Type*>(this + 1);
                     }
@@ -669,7 +669,7 @@ namespace YY
                         size_t uSize;
                     };
 
-                    InternalData()
+                    constexpr InternalData()
                         : Small{1}
                     {
                     }
@@ -853,7 +853,7 @@ namespace YY
             public:
                 typedef typename _Type* _ReadPoint;
         
-                AllocPolicyArray()
+                constexpr AllocPolicyArray()
                 {
                 }
 
@@ -1048,7 +1048,7 @@ namespace YY
                 
                 constexpr static size_t uInvalidIndex = uint_max;
 
-                Array()
+                constexpr Array()
                 {
                 }
 

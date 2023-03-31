@@ -242,6 +242,9 @@
   <ItemGroup>
     <Natvis Include="MegaUI.natvis" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Common.xml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

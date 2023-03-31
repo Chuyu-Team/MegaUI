@@ -5,6 +5,8 @@
 #include <Base/Containers/Array.h>
 #include <Base/Containers/ArrayView.h>
 #include <MegaUI/core/Property.h>
+#include <MegaUI/base/ComPtr.h>
+#include <MegaUI/core/StyleSheet.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -37,7 +39,7 @@ namespace YY
         // 从 XML 或者 二进制XML反序列出 Element
         class UIParser
         {
-        private:
+        protected:
             struct UIParserRecorder
             {
                 // 缩写为 resid
@@ -52,8 +54,13 @@ namespace YY
             Array<UIParserRecorder, AllocPolicy::SOO> RecorderArray;
             
             Array<IControlInfo*> ControlInfoArray;
-            Array<StyleSheet*> StyleSheets;
+            Array<ComPtr<StyleSheet>> StyleSheets;
+
         public:
+            UIParser() = default;
+
+            ~UIParser() = default;
+
             void __YYAPI Clear();
 
 
@@ -76,7 +83,10 @@ namespace YY
                 _Outptr_ WindowElement** _ppElement
                 );
 
-            
+            HRESULT __YYAPI GetStyleSheet(_In_ u8StringView _szSheetResourceID, _Outptr_ StyleSheet** _ppSheet);
+
+            Array<ComPtr<StyleSheet>> __YYAPI GetAllStyleSheet();
+
         protected:
 
             IControlInfo* __YYAPI FindControlInfo(_In_ raw_const_astring_t _szControlName, _Out_opt_ uint32_t* _pIndex = nullptr);

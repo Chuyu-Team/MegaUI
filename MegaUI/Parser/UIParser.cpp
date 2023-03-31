@@ -209,6 +209,8 @@ namespace YY
         {
             LocalValueCache.Clear();
             RecorderArray.Clear();
+
+            StyleSheets.Clear();
         }
 
         HRESULT __YYAPI UIParser::ParserByXmlString(u8String&& _szXmlString)
@@ -257,7 +259,15 @@ namespace YY
                             break;
                         }
 
-                        auto _pStyleSheet = HNew<StyleSheet>();
+                        ComPtr<StyleSheet> _pInherit;
+                        auto _pInheritAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("Inherit"), false);
+                        if (_pInheritAttribute && _pInheritAttribute->value_size())
+                        {
+                            GetStyleSheet(u8StringView((u8char_t*)_pInheritAttribute->value(), _pInheritAttribute->value_size()), &_pInherit);
+                        }
+
+                        ComPtr<StyleSheet> _pStyleSheet;
+                        _pStyleSheet.Attach(HNew<StyleSheet>(_pInherit));
                         if (!_pStyleSheet)
                         {
                             _hr = E_OUTOFMEMORY;
@@ -287,7 +297,6 @@ namespace YY
                             _hr = E_OUTOFMEMORY;
                         }
 
-                        _pStyleSheet->Release();
                         if (FAILED(_hr))
                             break;
                     }
@@ -415,6 +424,29 @@ namespace YY
             return E_NOT_SET;
         }
         
+        HRESULT UIParser::GetStyleSheet(u8StringView _szSheetResourceID, StyleSheet** _ppSheet)
+        {
+            *_ppSheet = nullptr;
+
+            for (StyleSheet* _pStyleSheet : StyleSheets)
+            {
+                auto _szSheetResidTarget = _pStyleSheet->GetSheetResourceID();
+                if (_szSheetResourceID.GetSize() == _szSheetResidTarget.GetSize() && _szSheetResourceID.CompareI(_szSheetResidTarget.GetConstString()) == 0)
+                {
+                    _pStyleSheet->AddRef();
+                    *_ppSheet = _pStyleSheet;
+                    return S_OK;
+                }
+            }
+
+            return StyleSheet::GetGlobalStyleSheet(_szSheetResourceID, _ppSheet);
+        }
+
+        Array<ComPtr<StyleSheet>> __YYAPI UIParser::GetAllStyleSheet()
+        {
+            return StyleSheets;
+        }
+
         IControlInfo* __YYAPI UIParser::FindControlInfo(raw_const_astring_t _szControlName, uint32_t* _pIndex)
         {
             if (_pIndex)
@@ -1201,20 +1233,14 @@ namespace YY
             if (_pExprNode->Type != ExprNodeType::BaseIdentifier)
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
-            auto _szSheetResidNeed = _pExprNode->szValue;
-
-            for (auto pStyleSheet : StyleSheets)
+            ComPtr<StyleSheet> _pStyleSheet;
+            if(SUCCEEDED(GetStyleSheet(_pExprNode->szValue, &_pStyleSheet)))
             {
-                auto _szSheetResidTarget = pStyleSheet->GetSheetResourceID();
-                if (_szSheetResidNeed.GetSize() == _szSheetResidTarget.GetSize() && _szSheetResidNeed.CompareI(_szSheetResidTarget.GetConstString()) == 0)
-                {
-                    auto _StyleSheetValue = Value::CreateStyleSheet(pStyleSheet);
-                    if (_StyleSheetValue == nullptr)
-                        return E_OUTOFMEMORY;
-                    *_pValue = _StyleSheetValue;
-                    return S_OK;
-                    break;
-                }
+                auto _StyleSheetValue = Value::CreateStyleSheet(_pStyleSheet);
+                if (_StyleSheetValue == nullptr)
+                    return E_OUTOFMEMORY;
+                *_pValue = _StyleSheetValue;
+                return S_OK;
             }
 
             return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
