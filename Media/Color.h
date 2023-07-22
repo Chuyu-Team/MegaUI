@@ -9,7 +9,7 @@
 
 namespace YY
 {
-    namespace Multimedia
+    namespace Media
     {
         union Color
         {
@@ -76,9 +76,9 @@ namespace YY
                 return ColorRGBA == _Other.ColorRGBA;
             }
         };
-    } // namespace Multimedia
+    } // namespace Media
 
-    using namespace YY::Multimedia;
+    using namespace YY::Media;
 } // namespace YY
 
 #pragma pack(pop)

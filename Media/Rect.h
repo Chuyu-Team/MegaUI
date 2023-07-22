@@ -4,14 +4,14 @@
 #include <GdiPlus.h>
 
 #include <Base/YY.h>
-#include <Multimedia/Size.h>
-#include <Multimedia/Point.h>
+#include <Media/Size.h>
+#include <Media/Point.h>
 
 #pragma pack(push, __YY_PACKING)
 
 namespace YY
 {
-    namespace Multimedia
+    namespace Media
     {
         class Rect
         {
@@ -272,9 +272,9 @@ namespace YY
         //    SubtractRect(&_Tmp, &_Left, &_Rigth);
         //    return _Tmp;
         //}
-    } // namespace Multimedia
+    } // namespace Media
     
-    using namespace YY::Multimedia;
+    using namespace YY::Media;
 } // namespace YY
 
 #pragma pack(pop)

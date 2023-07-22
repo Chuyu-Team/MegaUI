@@ -175,11 +175,11 @@
     <ClInclude Include="..\Base\Threading\TaskRunnerInterface.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\base\YY.h" />
-    <ClInclude Include="..\Multimedia\Color.h" />
-    <ClInclude Include="..\Multimedia\Font.h" />
-    <ClInclude Include="..\Multimedia\Point.h" />
-    <ClInclude Include="..\Multimedia\Rect.h" />
-    <ClInclude Include="..\Multimedia\Size.h" />
+    <ClInclude Include="..\Media\Color.h" />
+    <ClInclude Include="..\Media\Font.h" />
+    <ClInclude Include="..\Media\Point.h" />
+    <ClInclude Include="..\Media\Rect.h" />
+    <ClInclude Include="..\Media\Size.h" />
     <ClInclude Include="Accessibility\UIAutomation\ElementPatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\PatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.h" />
@@ -217,7 +217,7 @@
   <ItemGroup>
     <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
-    <ClCompile Include="..\Multimedia\Font.cpp" />
+    <ClCompile Include="..\Media\Font.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp" />

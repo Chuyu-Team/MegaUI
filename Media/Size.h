@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Windows.h>
 #include <d2d1.h>
 
@@ -8,7 +8,7 @@
 
 namespace YY
 {
-    namespace Multimedia
+    namespace Media
     {
         class Size
         {
@@ -54,9 +54,9 @@ namespace YY
                 return *(Gdiplus::SizeF*)this;
             }
         };
-    } // namespace Multimedia
+    } // namespace Media
 
-    using namespace YY::Multimedia;
+    using namespace YY::Media;
 } // namespace YY
 
 #pragma pack(pop)

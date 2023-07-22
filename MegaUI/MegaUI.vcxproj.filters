@@ -49,12 +49,6 @@
     <Filter Include="Base\Containers">
       <UniqueIdentifier>{89a3bf71-18a5-4c34-9e8c-07dba97668f7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Multimedia">
-      <UniqueIdentifier>{754a841a-e77f-4024-a903-0a33350948ac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Multimedia\Graphics">
-      <UniqueIdentifier>{bb8776d7-d622-4056-8b39-48bdc225a23d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Base\Sync">
       <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
     </Filter>
@@ -75,6 +69,12 @@
     </Filter>
     <Filter Include="Base\Memory">
       <UniqueIdentifier>{dbc00a38-0fe8-4789-bcdb-931c58800068}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Media">
+      <UniqueIdentifier>{754a841a-e77f-4024-a903-0a33350948ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Media\Graphics">
+      <UniqueIdentifier>{bb8776d7-d622-4056-8b39-48bdc225a23d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -180,20 +180,20 @@
     <ClInclude Include="..\Base\Sync\Interlocked.h">
       <Filter>Base\Sync</Filter>
     </ClInclude>
-    <ClInclude Include="..\Multimedia\Color.h">
-      <Filter>Multimedia</Filter>
+    <ClInclude Include="..\Media\Color.h">
+      <Filter>Media</Filter>
     </ClInclude>
-    <ClInclude Include="..\Multimedia\Point.h">
-      <Filter>Multimedia</Filter>
+    <ClInclude Include="..\Media\Point.h">
+      <Filter>Media</Filter>
     </ClInclude>
-    <ClInclude Include="..\Multimedia\Rect.h">
-      <Filter>Multimedia</Filter>
+    <ClInclude Include="..\Media\Rect.h">
+      <Filter>Media</Filter>
     </ClInclude>
-    <ClInclude Include="..\Multimedia\Size.h">
-      <Filter>Multimedia</Filter>
+    <ClInclude Include="..\Media\Size.h">
+      <Filter>Media</Filter>
     </ClInclude>
-    <ClInclude Include="..\Multimedia\Font.h">
-      <Filter>Multimedia</Filter>
+    <ClInclude Include="..\Media\Font.h">
+      <Filter>Media</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\SAL.h">
       <Filter>Base</Filter>
@@ -281,8 +281,8 @@
     <ClCompile Include="Render\FontEnumMap.cpp">
       <Filter>UI\Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\Multimedia\Font.cpp">
-      <Filter>Multimedia</Filter>
+    <ClCompile Include="..\Media\Font.cpp">
+      <Filter>Media</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp">
       <Filter>Base\Threading</Filter>

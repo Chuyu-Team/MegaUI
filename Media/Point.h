@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Windows.h>
 
 #include <Base/YY.h>
@@ -7,7 +7,7 @@
 
 namespace YY
 {
-    namespace Multimedia
+    namespace Media
     {
         class Point
         {
@@ -54,9 +54,9 @@ namespace YY
                 return *(D2D1_POINT_2F*)this;
             }
         };
-    } // namespace Multimedia
+    } // namespace Media
 
-    using namespace YY::Multimedia;
+    using namespace YY::Media;
 } // namespace YY
 
 #pragma pack(pop)

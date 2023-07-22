@@ -1,11 +1,11 @@
-#include "pch.h"
-#include <Multimedia/Font.h>
+﻿#include "pch.h"
+#include <Media/Font.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION();
 
 namespace YY
 {
-    namespace Multimedia
+    namespace Media
     {
         HRESULT __YYAPI GetSystemFont(SystemFont _eSystemFont, Font* _pFont)
         {
@@ -67,5 +67,5 @@ namespace YY
 
             return S_OK;
         }
-    } // namespace Multimedia
+    } // namespace Media
 } // namespace YY

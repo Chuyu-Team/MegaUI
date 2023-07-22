@@ -10,7 +10,7 @@
 #include "StyleSheet.h"
 #include <Base/Memory/RefPtr.h>
 
-#include <Multimedia/Font.h>
+#include <Media/Font.h>
 
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>

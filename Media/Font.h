@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include <Base/Strings/String.h>
 
 namespace YY
 {
-    namespace Multimedia
+    namespace Media
     {
         namespace FontWeight
         {
@@ -36,16 +36,16 @@ namespace YY
 
         YY_APPLY_ENUM_CALSS_BIT_OPERATOR(FontStyle);
 
-        // ±£´æ×ÖÌåµÄ»ù±¾ĞÅÏ¢
+        // ä¿å­˜å­—ä½“çš„åŸºæœ¬ä¿¡æ¯
         struct Font
         {
-            // ×ÖÌåÃû³Æ
+            // å­—ä½“åç§°
             uString szFace;
-            // ×ÖÌå´óĞ¡
+            // å­—ä½“å¤§å°
             float iSize = 0;
-            // ×ÖÌåµÄ´ÖÏ¸£¬FontWeight
+            // å­—ä½“çš„ç²—ç»†ï¼ŒFontWeight
             uint32_t uWeight = 0;
-            // FontStyle µÄÎ»×éºÏ
+            // FontStyle çš„ä½ç»„åˆ
             FontStyle fStyle = FontStyle::None;
         };
 
@@ -61,7 +61,7 @@ namespace YY
         };
 
         HRESULT __YYAPI GetSystemFont(_In_ SystemFont _eSystemFont, _Out_ Font* _pFont);
-    } // namespace Multimedia
+    } // namespace Media
 
-    using namespace YY::Multimedia;
+    using namespace YY::Media;
 } // namespace YY

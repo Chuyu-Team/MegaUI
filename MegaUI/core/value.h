@@ -7,11 +7,11 @@
 #include <MegaUI/base/MegaUITypeInt.h>
 #include <Base/Containers/Array.h>
 #include <Base/Strings/String.h>
-#include <Multimedia/Color.h>
-#include <Multimedia/Rect.h>
-#include <Multimedia/Font.h>
-#include <Multimedia/Size.h>
-#include <Multimedia/Point.h>
+#include <Media/Color.h>
+#include <Media/Rect.h>
+#include <Media/Font.h>
+#include <Media/Size.h>
+#include <Media/Point.h>
 
 #pragma pack(push, __YY_PACKING)
 
