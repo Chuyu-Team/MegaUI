@@ -213,11 +213,11 @@ namespace YY
 
         struct NavReference
         {
-            UINT cbSize;
+            uint32_t cbSize;
             Element* pElement;
-            RECT* pRect;
+            Rect* pRect;
 
-            NavReference(Element* _pElement, RECT* _pRect = nullptr)
+            NavReference(Element* _pElement, Rect* _pRect = nullptr)
                 : cbSize(sizeof(NavReference))
                 , pElement(_pElement)
                 , pRect(_pRect)
