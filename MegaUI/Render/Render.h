@@ -13,26 +13,6 @@ namespace YY
 {
     namespace MegaUI
     {
-        enum class ContentAlignStyle
-        {
-            // 横向对齐方式
-            Left = 0x00000000,
-            Center = 0x00000001,
-            Right = 0x00000002,
-
-            // 纵向对齐方式
-            Top = 0x00000000,
-            Middle = 0x00000004,
-            Bottom = 0x00000008,
-
-            // 允许换行，一般文字排版使用
-            Wrap = 0x00000010,
-            // 将显示不下的字符统一显示为 "..."
-            EndEllipsis = 0x00000020,
-        };
-
-        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(ContentAlignStyle);
-
         // 用于保存 Element 的位置以及是否缓存绘制信息
         struct ElementRenderNode
         {
@@ -52,83 +32,6 @@ namespace YY
             uint32_t uInvalidateMarks;
         };
 
-        class Render
-        {
-        public:
-            Render() = default;
-            virtual ~Render() = default;
-
-            Render(const Render&) = delete;
-            Render& __YYAPI operator=(const Render&) = delete;
-
-            virtual
-            HRESULT
-            __YYAPI
-            BeginDraw(Rect* _pNeedPaintRect) =0;
-
-            virtual
-            HRESULT
-            __YYAPI
-            EndDraw() = 0;
-
-            virtual
-            void
-            __YYAPI
-            PushAxisAlignedClip(
-                _In_ const Rect& _ClipRect) = 0;
-
-            virtual
-            void
-            __YYAPI
-            PopAxisAlignedClip() = 0;
-
-            virtual
-            void
-            __YYAPI
-            FillRectangle(
-                _In_ const Rect& _Rect,
-                _In_ ID2D1Brush* _pBrush) = 0;
-                
-            virtual
-            HRESULT
-            __YYAPI
-            CreateSolidColorBrush(
-                Color _Color,
-                _Outptr_ ID2D1SolidColorBrush** _ppSolidColorBrush) = 0;
-
-            virtual
-            HRESULT
-            __YYAPI
-            SetPixelSize(
-                _In_ const D2D1_SIZE_U& _PixelSize) = 0;
-
-            virtual
-            D2D1_SIZE_U __YYAPI GetPixelSize() = 0;
-            
-            virtual
-            void
-            __YYAPI
-            DrawString(
-                _In_ uStringView _szText,
-                _In_ const Font& _FontInfo,
-                _In_ Color _crTextColor,
-                _In_ const Rect& _LayoutRect,
-                _In_ ContentAlignStyle _fTextAlign
-                ) = 0;
-
-            virtual
-            void
-            __YYAPI
-            MeasureString(
-                _In_ uStringView _szText,
-                _In_ const Font& _FontInfo,
-                _In_ const Size& _LayoutSize,
-                _In_ ContentAlignStyle _fTextAlign,
-                _Out_ Size* _pExtent) = 0;
-        };
-
-        HRESULT __YYAPI CreateRender(_In_ HWND _hWnd, _Outptr_ Render** _ppRender);
-        
 #define LIGHT 0.5
 #define VERYLIGHT 0.8
 #define DARK -0.3

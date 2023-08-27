@@ -19,15 +19,6 @@
     <Filter Include="UI\Render">
       <UniqueIdentifier>{ef62d851-a980-4f9c-ae41-8fe95c244e1c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\Render\D2D">
-      <UniqueIdentifier>{80f35b95-c220-4f77-9d87-315a15c7c7e7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Render\GDI+">
-      <UniqueIdentifier>{0944464f-3612-479e-b28b-bd72f7b11be0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Render\GDI+\Brush">
-      <UniqueIdentifier>{29e046e3-1fba-4c8e-9954-6e58ddb94da6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI\Window">
       <UniqueIdentifier>{8f1999d2-8ce0-493c-a0e4-969c84f2d144}</UniqueIdentifier>
     </Filter>
@@ -39,9 +30,6 @@
     </Filter>
     <Filter Include="UI\Parser">
       <UniqueIdentifier>{7587d627-2fbc-43c0-b592-b31c1c1eadd1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Render\D2D\DWrite">
-      <UniqueIdentifier>{c2520be1-66f0-4d70-9d7f-43f5785cd918}</UniqueIdentifier>
     </Filter>
     <Filter Include="Base">
       <UniqueIdentifier>{b2d76587-f02c-4e66-a9b6-103ca4da3552}</UniqueIdentifier>
@@ -75,6 +63,18 @@
     </Filter>
     <Filter Include="Media\Graphics">
       <UniqueIdentifier>{bb8776d7-d622-4056-8b39-48bdc225a23d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Media\Graphics\D2D">
+      <UniqueIdentifier>{bc9668cf-3d13-49a1-b026-391a5d76a74d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Media\Brushes">
+      <UniqueIdentifier>{a8543da6-6cc0-40b8-b076-0b5b92c2c114}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Media\Pens">
+      <UniqueIdentifier>{fe1299b8-efec-441f-995f-5d8e4e52aa7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Media\Graphics\GDIPlus">
+      <UniqueIdentifier>{1c62b765-e956-4202-aa72-a94f3fd0ee3f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -114,18 +114,6 @@
     <ClInclude Include="Render\Render.h">
       <Filter>UI\Render</Filter>
     </ClInclude>
-    <ClInclude Include="Render\D2D\D2D1.0Render.h">
-      <Filter>UI\Render\D2D</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\GDI+\GdiPlusRender.h">
-      <Filter>UI\Render\GDI+</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\GDI+\Brush\D2D1SolidColorBrushForGdiPlus.h">
-      <Filter>UI\Render\GDI+\Brush</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\D2D\D2D1.1Render.h">
-      <Filter>UI\Render\D2D</Filter>
-    </ClInclude>
     <ClInclude Include="Window\Window.h">
       <Filter>UI\Window</Filter>
     </ClInclude>
@@ -143,9 +131,6 @@
     </ClInclude>
     <ClInclude Include="Window\WindowElement.h">
       <Filter>UI\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\D2D\DWrite\DWriteHelper.h">
-      <Filter>UI\Render\D2D\DWrite</Filter>
     </ClInclude>
     <ClInclude Include="Render\FontEnumMap.h">
       <Filter>UI\Render</Filter>
@@ -246,6 +231,45 @@
     <ClInclude Include="..\Base\Memory\RefPtr.h">
       <Filter>Base\Memory</Filter>
     </ClInclude>
+    <ClInclude Include="..\Media\Resource.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Sync\SingleLinkedList.h">
+      <Filter>Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\DrawContext.h">
+      <Filter>Media\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\DrawAsyncCommandContext.h">
+      <Filter>Media\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Pens\Pen.h">
+      <Filter>Media\Pens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Brushes\Brush.h">
+      <Filter>Media\Brushes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\D2D\D2D1_0DrawContext.h">
+      <Filter>Media\Graphics\D2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\D2D\DWriteHelper.h">
+      <Filter>Media\Graphics\D2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Memory\UniquePtr.h">
+      <Filter>Base\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\D2D\D2D1_1DrawContext.h">
+      <Filter>Media\Graphics\D2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.h">
+      <Filter>Media\Graphics\GDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusHelper.h">
+      <Filter>Media\Graphics\GDIPlus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Containers\Optional.h">
+      <Filter>Base\Containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -301,6 +325,21 @@
     </ClCompile>
     <ClCompile Include="Control\Button.cpp">
       <Filter>UI\Control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\DrawAsyncCommandContext.cpp">
+      <Filter>Media\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\D2D\D2D1_0DrawContext.cpp">
+      <Filter>Media\Graphics\D2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\D2D\DWriteHelper.cpp">
+      <Filter>Media\Graphics\D2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\D2D\D2D1_1DrawContext.cpp">
+      <Filter>Media\Graphics\D2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp">
+      <Filter>Media\Graphics\GDIPlus</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

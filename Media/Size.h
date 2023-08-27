@@ -34,17 +34,17 @@ namespace YY
             {
             }
 
-            inline bool __YYAPI IsEmpty()
+            inline bool __YYAPI IsEmpty() const
             {
                 return Width == 0 || Height == 0;
             }
 
-            inline bool __YYAPI operator == (Size _Other)
+            inline bool __YYAPI operator == (Size _Other) const
             {
                 return Width == _Other.Width && Height == _Other.Height;
             }
             
-            inline bool __YYAPI operator != (Size _Other)
+            inline bool __YYAPI operator!=(Size _Other) const
             {
                 return Width != _Other.Width || Height != _Other.Height;
             }

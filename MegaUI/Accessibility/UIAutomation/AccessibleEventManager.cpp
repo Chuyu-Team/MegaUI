@@ -221,7 +221,7 @@ namespace YY
                 return S_FALSE;
 
             YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-            auto _hr = _pElem->GetAccessibleProvider(&_pAccessibleProvider);
+            auto _hr = _pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
             if (FAILED(_hr))
                 return _hr;
 
@@ -262,7 +262,7 @@ namespace YY
                 _RectangleChange.pElem = _pElem;
                 
                 YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                auto _hr = _pElem->GetAccessibleProvider(&_pAccessibleProvider);
+                auto _hr = _pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                 if (FAILED(_hr))
                     return _hr;
 
@@ -343,7 +343,7 @@ namespace YY
                 bool _bChanged = false;
                 
                 YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
+                auto _hr = _Item.pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                 if (SUCCEEDED(_hr))
                 {
                     if (_bSubscribedBounds)
@@ -415,7 +415,7 @@ namespace YY
                         continue;
 
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _Item.pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         continue;
 
@@ -431,7 +431,7 @@ namespace YY
                         continue;
                     
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _Item.pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         continue;
 
@@ -567,7 +567,7 @@ namespace YY
                 {
                     _bAdd = true;
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _pRoot->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         return _hr;
                     UiaRaiseStructureChangedEvent(_pAccessibleProvider, StructureChangeType_ChildrenBulkAdded, nullptr, 0);
@@ -581,7 +581,7 @@ namespace YY
                         _bAdd = true;
 
                         YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                        auto _hr = _pChild->GetAccessibleProvider(&_pAccessibleProvider);
+                        auto _hr = _pChild->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                         if (FAILED(_hr))
                             return _hr;
 
@@ -595,7 +595,7 @@ namespace YY
                 {
                     _bRemove = true;
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _pRoot->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         return _hr;
                     
@@ -604,7 +604,7 @@ namespace YY
                 else if (_pRoot)
                 {
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _pRoot->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         return _hr;
                     
@@ -623,7 +623,7 @@ namespace YY
                 if (_pRoot && _bAdd == false && _bRemove == false)
                 {
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _pRoot->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _pRoot->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         return _hr;
                     UiaRaiseStructureChangedEvent(_pAccessibleProvider, StructureChangeType_ChildrenReordered, nullptr, 0);
@@ -656,7 +656,7 @@ namespace YY
                     // 它是顶级元素
                     // todo 如果有多个顶级，这行为可能存在问题
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _pElem->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         return _hr;
 
@@ -695,7 +695,7 @@ namespace YY
                         if (_pChild->IsVisible())
                         {
                             YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                            auto _hr = _pChild->GetAccessibleProvider(&_pAccessibleProvider);
+                            auto _hr = _pChild->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                             if (FAILED(_hr))
                                 return _hr;
 
@@ -706,7 +706,7 @@ namespace YY
                         else
                         {
                             YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                            auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
+                            auto _hr = _Item.pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                             if (FAILED(_hr))
                                 return _hr;
 
@@ -720,7 +720,7 @@ namespace YY
                 else
                 {
                     YY::RefPtr<ElementAccessibleProvider> _pAccessibleProvider;
-                    auto _hr = _Item.pElem->GetAccessibleProvider(&_pAccessibleProvider);
+                    auto _hr = _Item.pElem->GetAccessibleProvider(_pAccessibleProvider.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         return _hr;
                     

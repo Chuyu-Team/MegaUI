@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <memory>
+
 #include <Windows.h>
 #include <d2d1.h>
 #include <d2d1helper.h>
@@ -10,6 +12,8 @@
 #include "WindowElement.h"
 #include <Base/Containers/Array.h>
 #include <MegaUI/core/UIEvent.h>
+#include <Media/Graphics/DrawContext.h>
+#include <Base/Memory/UniquePtr.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -25,8 +29,8 @@ namespace YY
         protected:
             HWND hWnd;
             WindowElement* pHost;
-            Render* pRender;
-            D2D1_SIZE_U LastRenderSize;
+            UniquePtr<DrawContext> pDrawContext;   
+            Size LastRenderSize;
             uint32_t fTrackMouse;
             uint32_t bCapture;
             // TODO 需要更换为块式队列更友好。
@@ -108,7 +112,7 @@ namespace YY
             /// <returns></returns>
             bool __YYAPI IsInitialized() const;
 
-            _Ret_notnull_ Render* __YYAPI GetRender();
+            _Ret_notnull_ DrawContext* __YYAPI GetDrawContext();
             
             /// <summary>
             /// 设置键盘焦点。
@@ -149,10 +153,15 @@ namespace YY
 
             bool __YYAPI OnCreate();
 
-            HRESULT __YYAPI OnPaint();
+            /// <summary>
+            /// 窗口整体的绘制工作入口。
+            /// </summary>
+            /// <param name="oPaint"></param>
+            /// <returns></returns>
+            HRESULT __YYAPI OnPaint(_In_ const Rect& oPaint);
 
             HRESULT __YYAPI PaintElement(
-                _In_ Render* _pRender,
+                _In_ DrawContext* _pDrawContext,
                 _In_ Element* _pElement,
                 _In_ const Rect& _ParentBounds,
                 _In_ const Rect& _ParentPaintRect);

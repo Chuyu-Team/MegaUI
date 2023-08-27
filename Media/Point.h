@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include <Windows.h>
+#include <D2d1.h>
 
 #include <Base/YY.h>
+
 
 #pragma pack(push, __YY_PACKING)
 

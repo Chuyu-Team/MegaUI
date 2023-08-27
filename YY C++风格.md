@@ -44,6 +44,8 @@
 | 以 0 结尾的字符串  | sz        | `auto szName = "YY";` | `char*`，`wchar_t*` 统一。
 | 句柄等内核对象     | h         | `HANDLE hFile;`       |
 | 迭代器             | it        | `auto it = T.begin();`|
+| 数组               | arr       | `vector<int> arrData;`|
+| 其他类型（Other)   | o         | `Brush oBrush;`       | 当其他前置无法表示时可以考虑添加此前置。
 
 # 3. 编码风格
 ## 3.1. 总体要求

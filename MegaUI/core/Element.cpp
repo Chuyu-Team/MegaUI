@@ -643,80 +643,92 @@ namespace YY
                     // TODO：暂时没有做局部更新，统一刷新窗口
                     if (_uAddInvalidateMarks & (ElementRenderNode::InvalidatePosition | ElementRenderNode::InvalidateExtent))
                     {
-                        #if 1
+                        #if 0
                         if (pWindow)
                             pWindow->InvalidateRect(nullptr);
                         #else
                         Rect _InvalidateRectOld = RenderNode.Bounds;
-                        Rect _InvalidateRectNew(POINT {}, GetExtent());
-                        Window* _pWindow = nullptr;
-
-                        for (auto _pItem = this;;)
+                        Rect _InvalidateRectNew(Point(), GetExtent());
+                        Window* _pWindow = GetWindow();
+                        if (_pWindow)
                         {
-                            _pWindow = _pItem->TryCast<Window>();
-                            if (_pWindow)
-                                break;
-
-                            auto _pParent = _pItem->GetParent();
-                            if (!_pParent)
-                                break;
-
-                            if (_pParent->RenderNode.uInvalidateMarks)
-                                break;
-
-                            auto _Location = _pItem->GetLocation();
-
-                            _InvalidateRectNew.Left += _Location.x;
-                            _InvalidateRectNew.Right += _Location.x;
-                            _InvalidateRectNew.Top += _Location.y;
-                            _InvalidateRectNew.Bottom += _Location.y;
-
-                            Rect _ParentRect(POINT {}, _pParent->GetExtent());
-
-                            if (IntersectRect(&_InvalidateRectNew, &_InvalidateRectNew, &_ParentRect) == FALSE
-                                && IntersectRect(&_InvalidateRectOld, &_InvalidateRectOld, &_pParent->RenderNode.Bounds) == FALSE)
+                            bool _bEmpty = false;
+                            for (auto _pItem = this;;)
                             {
-                                // 显式区域为空，无需刷新 UI
-                                break;
+                                if (_pItem == _pWindow->GetHost())
+                                    break;
+                                    
+                                auto _pParent = _pItem->GetParent();
+                                if (!_pParent)
+                                    break;
+
+                                if (_pParent->RenderNode.uInvalidateMarks)
+                                    break;
+
+                                auto _Location = _pItem->GetLocation();
+
+                                _InvalidateRectNew.Left += _Location.X;
+                                _InvalidateRectNew.Right += _Location.X;
+                                _InvalidateRectNew.Top += _Location.Y;
+                                _InvalidateRectNew.Bottom += _Location.Y;
+
+                                Rect _ParentRect(Point(), _pParent->GetExtent());
+
+                                _InvalidateRectNew &= _ParentRect;
+                                _InvalidateRectOld &= _pParent->RenderNode.Bounds;
+
+                                if (_InvalidateRectNew.IsEmpty() && _InvalidateRectOld.IsEmpty())
+                                {
+                                    // 显式区域为空，无需刷新 UI
+                                    _bEmpty = true;
+                                    break;
+                                }
+
+                                _pItem = _pParent;
                             }
 
-                            _pItem = _pParent;
+                            if (!_bEmpty)
+                                _pWindow->InvalidateRect(_InvalidateRectOld | _InvalidateRectNew);
                         }
-
-                        if (_pWindow)
-                            _pWindow->InvalidateRect(_InvalidateRectOld | _InvalidateRectNew);
                         #endif
                     }
                     else if (_uAddInvalidateMarks & ElementRenderNode::InvalidateContent)
                     {
-                        #if 1
+                        #if 0
                         if (pWindow)
                             pWindow->InvalidateRect(nullptr);
                         #else
                         Rect _InvalidateRect = RenderNode.Bounds;
-                        Window* _pWindow = nullptr;
-                        for (Element* _pItem = this;;)
-                        {
-                            _pWindow = _pItem->TryCast<Window>();
-                            if (_pWindow)
-                                break;
-
-                            _pItem = _pItem->GetParent();
-                            if (!_pItem)
-                                break;
-
-                            if (_pItem->RenderNode.uInvalidateMarks)
-                                break;
-
-                            if (!IntersectRect(&_InvalidateRect, &_InvalidateRect, &_pItem->RenderNode.Bounds))
-                            {
-                                // 显式区域为空，无需刷新 UI
-                                break;
-                            }
-                        }
-
+                        Window* _pWindow = GetWindow();
                         if (_pWindow)
-                            _pWindow->InvalidateRect(_InvalidateRect);
+                        {
+                            bool _bEmpty = false;
+                            for (Element* _pItem = this;;)
+                            {
+                                // _pWindow = _pItem->TryCast<Window>();
+                                if (_pWindow->GetHost() == _pItem)
+                                    break;
+
+                                _pItem = _pItem->GetParent();
+                                if (!_pItem)
+                                    break;
+
+                                if (_pItem->RenderNode.uInvalidateMarks)
+                                    break;
+
+                                _InvalidateRect &= _pItem->RenderNode.Bounds;
+
+                                if (_InvalidateRect.IsEmpty())
+                                {
+                                    // 显式区域为空，无需刷新 UI
+                                    _bEmpty = true;
+                                    break;
+                                }
+                            }
+
+                            if (!_bEmpty)
+                                _pWindow->InvalidateRect(_InvalidateRect);
+                        }
                         #endif
                     }
 
@@ -976,13 +988,16 @@ namespace YY
             return S_OK;
         }
 
-        void Element::Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds)
+        void Element::Paint(DrawContext* _pDrawContext, const Rect& _Bounds)
         {
+            RenderNode.uInvalidateMarks = 0;
+            RenderNode.Bounds = _Bounds;
+
             Rect _PaintBounds = _Bounds;
             if (SpecBorderThickness.Left != 0 || SpecBorderThickness.Top != 0 || SpecBorderThickness.Right != 0 || SpecBorderThickness.Bottom != 0)
             {
                 PaintBorder(
-                    _pRenderTarget,
+                    _pDrawContext,
                     GetBorderStyle(),
                     ApplyFlowDirection(SpecBorderThickness),
                     GetBorderColor(),
@@ -990,7 +1005,7 @@ namespace YY
             }
 
             PaintBackground(
-                _pRenderTarget,
+                _pDrawContext,
                 GetValue(Element::g_ControlInfoData.BackgroundProp, PropertyIndicies::PI_Specified, false),
                 _PaintBounds);
 
@@ -1002,7 +1017,7 @@ namespace YY
                 && (SpecFocusThickness.Left != 0 || SpecFocusThickness.Top != 0 || SpecFocusThickness.Right != 0 || SpecFocusThickness.Bottom != 0))
             {
                 PaintBorder(
-                    _pRenderTarget,
+                    _pDrawContext,
                     GetFocusBorderStyle(),
                     ApplyFlowDirection(SpecFocusThickness),
                     GetFocusBorderColor(),
@@ -1010,7 +1025,7 @@ namespace YY
             }
 
             PaintContent(
-                _pRenderTarget,
+                _pDrawContext,
                 GetValue(Element::g_ControlInfoData.ContentProp),
                 SpecFont,
                 GetValue(Element::g_ControlInfoData.ForegroundProp).GetColor(),
@@ -1018,7 +1033,7 @@ namespace YY
                 fSpecContentAlign);
         }
 
-        void Element::PaintBorder(Render* _pRenderTarget, BorderStyle _eBorderStyle, const Rect& _BorderThickness, Color _BorderColor, Rect& _Bounds)
+        void Element::PaintBorder(DrawContext* _pDrawContext, BorderStyle _eBorderStyle, const Rect& _BorderThickness, Color _BorderColor, Rect& _Bounds)
         {
             if (_BorderThickness.Left == 0 && _BorderThickness.Top == 0 && _BorderThickness.Right == 0 && _BorderThickness.Bottom == 0)
                 return;
@@ -1032,22 +1047,15 @@ namespace YY
                 {
                 case BorderStyle::Solid:
                 {
-                    RefPtr<ID2D1SolidColorBrush> _BorderBrush;
-                    auto hr = _pRenderTarget->CreateSolidColorBrush(
-                        _BorderColor,
-                        &_BorderBrush);
-
-                    if (SUCCEEDED(hr))
-                    {
-                        // 左边
-                        _pRenderTarget->FillRectangle({_Bounds.Left, _NewBounds.Top, _NewBounds.Left, _NewBounds.Bottom}, _BorderBrush);
-                        // 上面
-                        _pRenderTarget->FillRectangle({_Bounds.Left, _Bounds.Top, _Bounds.Right, _NewBounds.Top}, _BorderBrush);
-                        // 右边
-                        _pRenderTarget->FillRectangle({_NewBounds.Right, _Bounds.Top, _Bounds.Right, _Bounds.Bottom}, _BorderBrush);
-                        // 下面
-                        _pRenderTarget->FillRectangle({_Bounds.Left, _NewBounds.Bottom, _Bounds.Right, _Bounds.Bottom}, _BorderBrush);
-                    }
+                    SolidColorBrush _BorderBrush(_BorderColor);
+                    // 左边
+                    _pDrawContext->DrawRectangle({_Bounds.Left, _NewBounds.Top, _NewBounds.Left, _NewBounds.Bottom}, nullptr, _BorderBrush);
+                    // 上面
+                    _pDrawContext->DrawRectangle({_Bounds.Left, _Bounds.Top, _Bounds.Right, _NewBounds.Top}, nullptr, _BorderBrush);
+                    // 右边
+                    _pDrawContext->DrawRectangle({_NewBounds.Right, _Bounds.Top, _Bounds.Right, _Bounds.Bottom}, nullptr, _BorderBrush);
+                    // 下面
+                    _pDrawContext->DrawRectangle({_Bounds.Left, _NewBounds.Bottom, _Bounds.Right, _Bounds.Bottom}, nullptr, _BorderBrush);
                     break;
                 }
                 case BorderStyle::Raised:
@@ -1056,51 +1064,35 @@ namespace YY
                     Rect _BoundsOutter = _Bounds;
                     _BoundsOutter.DeflateRect({_BorderThickness.Left / 2, _BorderThickness.Top / 2, _BorderThickness.Right / 2, _BorderThickness.Bottom / 2});
 
-                    RefPtr<ID2D1SolidColorBrush> hbOLT;       // Brush for outter Left and Top
-                    RefPtr<ID2D1SolidColorBrush> hbORB;       // Brush for outter Right and Bottom
-                    RefPtr<ID2D1SolidColorBrush> hbILT;       // Brush for inner Left Top
-                    RefPtr<ID2D1SolidColorBrush> hbIRB;       // Brush for inner Right and Bottom
+                    SolidColorBrush hbOLT;                    // Brush for outter Left and Top
+                    SolidColorBrush hbORB;                    // Brush for outter Right and Bottom
+                    SolidColorBrush hbILT;                    // Brush for inner Left Top
+                    SolidColorBrush hbIRB;                    // Brush for inner Right and Bottom
 
                     if (_eBorderStyle == BorderStyle::Raised)
                     {
-                        _pRenderTarget->CreateSolidColorBrush(
-                            _BorderColor,
-                            &hbOLT);
-                        _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BorderColor, VERYDARK),
-                            &hbORB);
-                        _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BorderColor, VERYLIGHT),
-                            &hbILT);
-                        _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BorderColor, DARK),
-                            &hbIRB);
+                        hbOLT = SolidColorBrush(_BorderColor);
+                        hbORB = SolidColorBrush(AdjustBrightness(_BorderColor, VERYDARK));
+                        hbILT = SolidColorBrush(AdjustBrightness(_BorderColor, VERYLIGHT));
+                        hbIRB = SolidColorBrush(AdjustBrightness(_BorderColor, DARK));
                     }
                     else
                     {
-                        _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BorderColor, VERYDARK),
-                            &hbOLT);
-                        _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BorderColor, VERYLIGHT),
-                            &hbORB);
-                        _pRenderTarget->CreateSolidColorBrush(
-                            AdjustBrightness(_BorderColor, DARK),
-                            &hbILT);
-                        _pRenderTarget->CreateSolidColorBrush(
-                            _BorderColor,
-                            &hbIRB);
+                        hbOLT = SolidColorBrush(AdjustBrightness(_BorderColor, VERYDARK));
+                        hbORB = SolidColorBrush(AdjustBrightness(_BorderColor, VERYLIGHT));
+                        hbILT = SolidColorBrush(AdjustBrightness(_BorderColor, DARK));
+                        hbIRB = SolidColorBrush(_BorderColor);
                     }
 
                     // Paint etches
-                    _pRenderTarget->FillRectangle({_Bounds.Left, _Bounds.Top, _BoundsOutter.Left, _BoundsOutter.Bottom}, hbOLT);            // Outter left
-                    _pRenderTarget->FillRectangle({_BoundsOutter.Left, _Bounds.Top, _BoundsOutter.Right, _BoundsOutter.Top}, hbOLT);        // Outter Top
-                    _pRenderTarget->FillRectangle({_BoundsOutter.Right, _Bounds.Top, _Bounds.Right, _Bounds.Bottom}, hbORB);                // Outter Right
-                    _pRenderTarget->FillRectangle({_Bounds.Left, _BoundsOutter.Bottom, _BoundsOutter.Right, _Bounds.Bottom}, hbORB);        // Outter Bottom
-                    _pRenderTarget->FillRectangle({_BoundsOutter.Left, _BoundsOutter.Top, _NewBounds.Left, _NewBounds.Bottom}, hbILT);      // Inner Left
-                    _pRenderTarget->FillRectangle({_NewBounds.Left, _BoundsOutter.Top, _NewBounds.Right, _NewBounds.Top}, hbILT);           // Inner Top
-                    _pRenderTarget->FillRectangle({_NewBounds.Right, _BoundsOutter.Top, _BoundsOutter.Right, _BoundsOutter.Bottom}, hbIRB); // Inner Right
-                    _pRenderTarget->FillRectangle({_BoundsOutter.Left, _NewBounds.Bottom, _NewBounds.Right, _BoundsOutter.Bottom}, hbIRB);  // Inner Bottom
+                    _pDrawContext->DrawRectangle({_Bounds.Left, _Bounds.Top, _BoundsOutter.Left, _BoundsOutter.Bottom}, nullptr, hbOLT);             // Outter left
+                    _pDrawContext->DrawRectangle({_BoundsOutter.Left, _Bounds.Top, _BoundsOutter.Right, _BoundsOutter.Top}, nullptr, hbOLT); // Outter Top
+                    _pDrawContext->DrawRectangle({_BoundsOutter.Right, _Bounds.Top, _Bounds.Right, _Bounds.Bottom}, nullptr, hbORB);                 // Outter Right
+                    _pDrawContext->DrawRectangle({_Bounds.Left, _BoundsOutter.Bottom, _BoundsOutter.Right, _Bounds.Bottom}, nullptr, hbORB); // Outter Bottom
+                    _pDrawContext->DrawRectangle({_BoundsOutter.Left, _BoundsOutter.Top, _NewBounds.Left, _NewBounds.Bottom}, nullptr, hbILT);       // Inner Left
+                    _pDrawContext->DrawRectangle({_NewBounds.Left, _BoundsOutter.Top, _NewBounds.Right, _NewBounds.Top}, nullptr, hbILT);      // Inner Top
+                    _pDrawContext->DrawRectangle({_NewBounds.Right, _BoundsOutter.Top, _BoundsOutter.Right, _BoundsOutter.Bottom}, nullptr, hbIRB);  // Inner Right
+                    _pDrawContext->DrawRectangle({_BoundsOutter.Left, _NewBounds.Bottom, _NewBounds.Right, _BoundsOutter.Bottom}, nullptr, hbIRB);  // Inner Bottom
                     break;
                 }
                 default:
@@ -1111,7 +1103,7 @@ namespace YY
             _Bounds = _NewBounds;
         }
 
-        void Element::PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds)
+        void Element::PaintBackground(DrawContext* _pDrawContext, const Value& _Background, const Rect& _Bounds)
         {
             if (_Background.GetType() == ValueType::Color)
             {
@@ -1119,20 +1111,13 @@ namespace YY
                 if (_BackgroundColor.Alpha == 0)
                     return;
 
-                RefPtr<ID2D1SolidColorBrush> _BackgroundBrush;
-                auto hr = _pRenderTarget->CreateSolidColorBrush(
-                    _Background.GetColor(),
-                    &_BackgroundBrush);
-
-                if (FAILED(hr))
-                    return;
-
-                _pRenderTarget->FillRectangle(_Bounds, _BackgroundBrush);
+                SolidColorBrush _BackgroundBrush(_Background.GetColor());
+                _pDrawContext->DrawRectangle(_Bounds, nullptr, _BackgroundBrush);
             }
         }
 
         void Element::PaintContent(
-            Render* _pRenderTarget,
+            DrawContext* _pDrawContext,
             const Value& _Content,
             const Font& _FontInfo,
             Color _ForegroundColor,
@@ -1142,7 +1127,7 @@ namespace YY
         {
             if (_Content.GetType() == ValueType::uString)
             {
-                _pRenderTarget->DrawString(_Content.GetString(), _FontInfo, _ForegroundColor, _Bounds, _fContentAlign);
+                _pDrawContext->DrawString(_Content.GetString(), _FontInfo, SolidColorBrush(_ForegroundColor), _Bounds, _fContentAlign);
             }
         }
 
@@ -1156,8 +1141,8 @@ namespace YY
             {
             case ValueType::uString:
             {
-                auto _pRender = pWindow->GetRender();
-                _pRender->MeasureString(_ContentValue.GetString(), SpecFont, _ConstraintSize, fSpecContentAlign, &_ContentSize);
+                auto _pDrawContext = pWindow->GetDrawContext();
+                _pDrawContext->MeasureString(_ContentValue.GetString(), SpecFont, _ConstraintSize, fSpecContentAlign, &_ContentSize);
                 break;
             }
             default:

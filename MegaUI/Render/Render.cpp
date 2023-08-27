@@ -1,24 +1,12 @@
 ﻿#include "pch.h"
 #include "Render.h"
-#include "D2D/D2D1.0Render.h"
-#include "D2D/D2D1.1Render.h"
-#include "GDI+/GdiPlusRender.h"
 
 #pragma warning(disable : 28251)
 
 namespace YY
 {
     namespace MegaUI
-    {
-        HRESULT __YYAPI CreateRender(HWND _hWnd, Render** _ppRender)
-        {
-            #if 0
-            return GdiPlusRender::CreateRender(_hWnd, _ppRender);
-            #else
-            return D2D1_1Render::CreateRender(_hWnd, _ppRender);
-            #endif
-        }
-        
+    {        
         float __YYAPI DevicePixelToPixel(float _iDevicePixel, int32_t _DPI)
         {
             return _iDevicePixel * float(_DPI) / 96.0f;

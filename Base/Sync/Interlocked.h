@@ -90,6 +90,12 @@ namespace YY
                 return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
             }
 
+            template<typename _Type>
+            __forceinline _Type* __YYAPI CompareExchangePoint(volatile _Type** _ppDestination, _Type* _pExchange, _Type* _pComparand)
+            {
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
+            }
+
             __forceinline int32_t __YYAPI Exchange(int32_t* _pDestination, int32_t _iExchange)
             {
                 return (int32_t)_InterlockedExchange(reinterpret_cast<long volatile*>(_pDestination), _iExchange);
@@ -106,6 +112,11 @@ namespace YY
                 return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)_pExchange);
             }
 
+            template<typename _Type>
+            __forceinline _Type* __YYAPI ExchangePoint(volatile _Type** _ppDestination, _Type* _pExchange)
+            {
+                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)_pExchange);
+            }
         } // namespace Sync
     } // namespace Base
 

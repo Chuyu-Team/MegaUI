@@ -27,6 +27,8 @@ LockBuffer 与 UnlockBuffer 必须成对出现！
 
 */
 
+#include <initializer_list>
+
 #include <Windows.h>
 
 #include <Base/YY.h>

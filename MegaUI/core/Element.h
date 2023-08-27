@@ -6,8 +6,9 @@
 #include "Property.h"
 #include "DeferCycle.h"
 #include "ControlInfo.h"
-#include <MegaUI/Render/Render.h>
+#include <Media/Graphics/DrawContext.h>
 #include <MegaUI/core/UIEvent.h>
+#include <MegaUI/Render/Render.h>
 
 // Global layout positions
 #define LP_None         -3
@@ -558,14 +559,14 @@ namespace YY
             /// <returns></returns>
             HRESULT __YYAPI DestroyAllChildren(_In_ bool _fDelayed = true);
 
-            virtual void __YYAPI Paint(_In_ Render* _pRenderTarget, _In_ const Rect& _Bounds);
+            virtual void __YYAPI Paint(_In_ DrawContext* _pDrawContext, _In_ const Rect& _Bounds);
 
-            void __YYAPI PaintBorder(_In_ Render* _pRenderTarget, _In_ BorderStyle _eBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
+            void __YYAPI PaintBorder(_In_ DrawContext* _pDrawContext, _In_ BorderStyle _eBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
 
-            void __YYAPI PaintBackground(_In_ Render* _pRenderTarget, const Value& _Background, _In_ const Rect& _Bounds);
+            void __YYAPI PaintBackground(_In_ DrawContext* _pDrawContext, const Value& _Background, _In_ const Rect& _Bounds);
             
             void __YYAPI PaintContent(
-                _In_ Render* _pRenderTarget,
+                _In_ DrawContext* _pDrawContext,
                 _In_ const Value& _Content,
                 _In_ const Font& _FontInfo,
                 _In_ Color _ForegroundColor,

@@ -62,18 +62,24 @@ namespace YY
                     return p;
                 }
 
-                inline void __YYAPI Attach(_In_opt_ _Type* _pOther)
+                inline void __YYAPI Attach(_In_opt_ _Type* _pOther) noexcept
                 {
                     if (p)
                         p->Release();
                     p = _pOther;
                 }
 
-                inline _Ret_maybenull_ _Type* __YYAPI Detach()
+                inline _Ret_maybenull_ _Type* __YYAPI Detach() noexcept
                 {
                     auto _p = p;
                     p = nullptr;
                     return _p;
+                }
+
+                inline _Ret_notnull_ _Type** __YYAPI ReleaseAndGetAddressOf() noexcept
+                {
+                    Attach(nullptr);
+                    return &p;
                 }
 
                 RefPtr& __YYAPI operator=(_In_opt_ _Type* _pOther)
@@ -85,6 +91,7 @@ namespace YY
 
                     return *this;
                 }
+
                 RefPtr& __YYAPI operator=(RefPtr _pOther)
                 {
                     Attach(_pOther.Detach());
@@ -102,17 +109,12 @@ namespace YY
                     return *this;
                 }
 
-                _Type** __YYAPI operator&()
-                {
-                    return &p;
-                }
-
-                __YYAPI operator _Type*() const
+                _Ret_maybenull_ __YYAPI operator _Type*() const
                 {
                     return p;
                 }
 
-                _Type* __YYAPI operator->() const
+                _Ret_maybenull_ _Type* __YYAPI operator->() const
                 {
                     return p;
                 }

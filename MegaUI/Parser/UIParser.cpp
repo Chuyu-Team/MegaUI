@@ -263,7 +263,7 @@ namespace YY
                         auto _pInheritAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("Inherit"), false);
                         if (_pInheritAttribute && _pInheritAttribute->value_size())
                         {
-                            GetStyleSheet(u8StringView((u8char_t*)_pInheritAttribute->value(), _pInheritAttribute->value_size()), &_pInherit);
+                            GetStyleSheet(u8StringView((u8char_t*)_pInheritAttribute->value(), _pInheritAttribute->value_size()), _pInherit.ReleaseAndGetAddressOf());
                         }
 
                         RefPtr<StyleSheet> _pStyleSheet;
@@ -1234,7 +1234,7 @@ namespace YY
                 return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
 
             RefPtr<StyleSheet> _pStyleSheet;
-            if(SUCCEEDED(GetStyleSheet(_pExprNode->szValue, &_pStyleSheet)))
+            if (SUCCEEDED(GetStyleSheet(_pExprNode->szValue, _pStyleSheet.ReleaseAndGetAddressOf())))
             {
                 auto _StyleSheetValue = Value::CreateStyleSheet(_pStyleSheet);
                 if (_StyleSheetValue == nullptr)

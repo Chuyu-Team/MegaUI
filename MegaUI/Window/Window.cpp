@@ -1,8 +1,14 @@
 ﻿#include "pch.h"
 
 #include "Window.h"
+
 #include "../core/ControlInfoImp.h"
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
+#include <Base/Memory/RefPtr.h>
+#include <Media/Graphics/DrawAsyncCommandContext.h>
+#include <Media/Graphics/D2D/D2D1_0DrawContext.h>
+#include <Media/Graphics/D2D/D2D1_1DrawContext.h>
+#include <Media/Graphics/GDIPlus/GDIPlusDrawContext.h>
 
 #pragma warning(disable : 28251)
 
@@ -15,7 +21,6 @@ namespace YY
         Window::Window(int32_t _DefaultDpi)
             : hWnd(nullptr)
             , pHost(nullptr)
-            , pRender(nullptr)
             , LastRenderSize {}
             , fTrackMouse(0u)
             , bCapture(false)
@@ -27,8 +32,7 @@ namespace YY
 
         Window::~Window()
         {
-            if (pRender)
-                HDelete(pRender);
+            pDrawContext = nullptr;
         }
 
         EXTERN_C extern IMAGE_DOS_HEADER __ImageBase;
@@ -86,7 +90,7 @@ namespace YY
             }
 
             hWnd = CreateWindowExW(
-                _fExStyle,
+                _fExStyle /*| WS_EX_NOREDIRECTIONBITMAP*/,
                 L"MegaUI",
                 _szTitle,
                 _fStyle | WS_CLIPCHILDREN,
@@ -186,7 +190,21 @@ namespace YY
         void Window::InvalidateRect(const Rect* _pRect)
         {
             if (hWnd)
-                ::InvalidateRect(hWnd, nullptr, FALSE);
+            {
+                if (_pRect)
+                {
+                    if (_pRect->IsEmpty())
+                        return;
+
+                    RECT _oInvalidateRect = {_pRect->Left, _pRect->Top, _pRect->Right, _pRect->Bottom};
+
+                    ::InvalidateRect(hWnd, &_oInvalidateRect, FALSE);
+                }
+                else
+                {
+                    ::InvalidateRect(hWnd, nullptr, FALSE);
+                }
+            }
         }
 
         HRESULT Window::PostDelayedDestroyElement(Element* _pElement)
@@ -261,7 +279,7 @@ namespace YY
             if ((fFindMarks & FindEnable) && pHost->IsEnabled() == false)
                 return nullptr;
 
-            Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
+            Rect _Bounds(Point(0, 0), LastRenderSize);
             Rect _VisibleBounds = _Bounds;
             
             if (!_VisibleBounds.PointInRect(_ptPoint))
@@ -336,16 +354,42 @@ namespace YY
             return hWnd != NULL;
         }
 
-        Render* Window::GetRender()
+        DrawContext* Window::GetDrawContext()
         {
-            if (!pRender)
+            if (!pDrawContext)
             {
-                auto _hr = CreateRender(hWnd, &pRender);
+                UniquePtr<DrawContext> _pDrawContext;
+                HRESULT _hr = E_FAIL;
+                if (FAILED(_hr))
+                {
+                    _hr = D2D1_1DrawContext::CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
+                }
+
+                if (FAILED(_hr))
+                {
+                    _hr = D2D1_0DrawContext::CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
+                }
+
+                if (FAILED(_hr))
+                {
+                    _hr = GDIPlusDrawContext::CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
+                }
+
                 if (FAILED(_hr))
                     throw Exception(_hr);
+
+#if 1
+                pDrawContext.Attach(_pDrawContext.Detach());
+#else
+                _hr = DrawAsyncCommandContext::CreateDrawTarget(std::move(_pDrawContext), pDrawContext.ReleaseAndGetAddressOf());
+                // 创建异步任务如果失败，则重新恢复到同步
+                if (FAILED(_hr))
+                    pDrawContext.Attach(_pDrawContext.Detach());
+#endif
             }
 
-            return pRender;
+            return pDrawContext;
+
         }
 
         bool Window::SetKeyboardFocus(Element* _pElement)
@@ -562,10 +606,14 @@ namespace YY
             case WM_DISPLAYCHANGE:
                 break;
             case WM_PAINT:
-                OnPaint();
+            {
+                RECT _oPaint;
+                GetUpdateRect(_hWnd, &_oPaint, FALSE);
                 ValidateRect(_hWnd, NULL);
+                OnPaint(_oPaint);
                 return 0;
                 break;
+            }
             case WM_SIZE:
                 // 非最小化时不刷新 Host大小
                 if (!IsMinimized())
@@ -673,35 +721,47 @@ namespace YY
             return true;
         }
 
-        HRESULT Window::OnPaint()
+        HRESULT Window::OnPaint(const Rect& oPaint)
         {
-            if (!pHost)
+            // 无效区域为空则不进行绘制。
+            if (oPaint.IsEmpty())
                 return S_FALSE;
 
-            if (!pRender)
+            if (!pHost)
+                return S_FALSE;
+            // PAINTSTRUCT ps;
+            // auto hDC = BeginPaint(hWnd, &ps);
+
+            auto _pDrawContext = GetDrawContext();
+
+            if (!_pDrawContext)
             {
-                auto hr = CreateRender(hWnd, &pRender);
-                if (FAILED(hr))
-                    return hr;
+                return E_UNEXPECTED;
             }
+            
+            _pDrawContext->SetPixelSize(LastRenderSize);
 
-             RECT Client;
-            ::GetClientRect(hWnd, &Client);
+            _pDrawContext->BeginDraw(&oPaint);
 
-            pRender->SetPixelSize(LastRenderSize);
+            // pDrawContext->DrawLine(SolidColorBrush(Color(0xFFu, 237, 28, 36)), Point(10, 10), Point(200, 300), 10);
+            // pDrawContext->FillRectangle(SolidColorBrush(Color(0xFFu, 237, 28, 36)), Rect(10, 10, 200, 300));
+            
+            /* Font FontInfo;
+            FontInfo.iSize = 20;
+            FontInfo.uWeight = 700;
+            FontInfo.szFace = L"微软雅黑";
+            pDrawContext->DrawString(L"123", FontInfo, Color(0xFFu, 237, 28, 36), Rect(10, 10, 200, 300), (Media::Graphics::ContentAlignStyle)0);*/
+            Rect _Bounds(Point(0, 0), LastRenderSize);
+            PaintElement(_pDrawContext, pHost, _Bounds, _Bounds);
 
-            Rect _NeedPaint;
-            auto _hr = pRender->BeginDraw(&_NeedPaint);
-            if (FAILED(_hr))
-                return _hr;
-            Rect _Bounds(0, 0, (float)LastRenderSize.width, (float)LastRenderSize.height);
-            PaintElement(pRender, pHost, _Bounds, _NeedPaint);
-            return pRender->EndDraw();
+            pDrawContext->EndDraw();
+
+            return 0;
         }
 
-        HRESULT Window::PaintElement(Render* _pRender, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
+        HRESULT Window::PaintElement(DrawContext* _pDrawContext, Element* _pElement, const Rect& _ParentBounds, const Rect& _ParentPaintRect)
         {
-            if (_pRender == nullptr || _pElement == nullptr)
+            if (_pDrawContext == nullptr || _pElement == nullptr)
                 return E_INVALIDARG;
 
             // 不显示就不用绘制
@@ -764,17 +824,17 @@ namespace YY
             const auto _bNeedClip = _PaintRect != _BoundsElement;
             if (_bNeedClip)
             {
-                _pRender->PushAxisAlignedClip(_PaintRect);
+                _pDrawContext->PushAxisAlignedClip(_PaintRect);
             }
 
-            _pElement->Paint(_pRender, _BoundsElement);
+            _pElement->Paint(_pDrawContext, _BoundsElement);
 
             if (_bNeedClip)
-                _pRender->PopAxisAlignedClip();
+                _pDrawContext->PopAxisAlignedClip();
 
             for (auto pItem : _pElement->GetChildren())
             {
-                PaintElement(_pRender, pItem, _BoundsElement, _PaintRect);
+                PaintElement(_pDrawContext, pItem, _BoundsElement, _PaintRect);
             }
 
             return S_OK;
@@ -782,8 +842,8 @@ namespace YY
 
         void Window::OnSize(UINT _uWidth, UINT _uHeight)
         {
-            LastRenderSize.width = _uWidth;
-            LastRenderSize.height = _uHeight;
+            LastRenderSize.Width = _uWidth;
+            LastRenderSize.Height = _uHeight;
 
             if (pHost)
             {
@@ -794,6 +854,8 @@ namespace YY
                 pHost->SetHeight((float)_uHeight);
 
                 pHost->EndDefer(_Cooike);
+                // D2D1.0 调用这个会发生抖动
+                // DwmFlush();
             }
         }
 

@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(ProjectDir);$(IntDir)Gen;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(ProjectDir);$(IntDir)Gen;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -101,6 +101,11 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <FxCompile>
+      <VariableName>g_%(Filename)</VariableName>
+      <HeaderFileOutput>$(IntDir)Gen\HLSL\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -130,12 +135,18 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
     <Link>
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <FxCompile>
+      <VariableName>g_%(Filename)</VariableName>
+      <HeaderFileOutput>$(IntDir)Gen\HLSL\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,24 +172,37 @@
     <ClInclude Include="..\Base\Containers\ConstructorPolicy.h" />
     <ClInclude Include="..\base\Containers\Array.h" />
     <ClInclude Include="..\Base\Containers\HashSet.h" />
+    <ClInclude Include="..\Base\Containers\Optional.h" />
     <ClInclude Include="..\base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
     <ClInclude Include="..\Base\Memory\RefPtr.h" />
+    <ClInclude Include="..\Base\Memory\UniquePtr.h" />
     <ClInclude Include="..\Base\SAL.h" />
     <ClInclude Include="..\Base\Strings\NString.h" />
     <ClInclude Include="..\Base\Strings\String.h" />
     <ClInclude Include="..\Base\Strings\StringTransform.h" />
     <ClInclude Include="..\Base\Strings\StringView.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
+    <ClInclude Include="..\Base\Sync\SingleLinkedList.h" />
     <ClInclude Include="..\base\tchar.h" />
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />
     <ClInclude Include="..\Base\Threading\TaskRunnerInterface.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\base\YY.h" />
+    <ClInclude Include="..\Media\Brushes\Brush.h" />
     <ClInclude Include="..\Media\Color.h" />
     <ClInclude Include="..\Media\Font.h" />
+    <ClInclude Include="..\Media\Graphics\D2D\D2D1_0DrawContext.h" />
+    <ClInclude Include="..\Media\Graphics\D2D\D2D1_1DrawContext.h" />
+    <ClInclude Include="..\Media\Graphics\D2D\DWriteHelper.h" />
+    <ClInclude Include="..\Media\Graphics\DrawAsyncCommandContext.h" />
+    <ClInclude Include="..\Media\Graphics\DrawContext.h" />
+    <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusHelper.h" />
+    <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.h" />
+    <ClInclude Include="..\Media\Pens\Pen.h" />
     <ClInclude Include="..\Media\Point.h" />
     <ClInclude Include="..\Media\Rect.h" />
+    <ClInclude Include="..\Media\Resource.h" />
     <ClInclude Include="..\Media\Size.h" />
     <ClInclude Include="Accessibility\UIAutomation\ElementPatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\PatternProviderImpl.h" />
@@ -204,12 +228,7 @@
     <ClInclude Include="Parser\UIParser.h" />
     <ClInclude Include="Parser\ValueParser.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Render\D2D\D2D1.1Render.h" />
-    <ClInclude Include="Render\D2D\D2D1.0Render.h" />
-    <ClInclude Include="Render\D2D\DWrite\DWriteHelper.h" />
     <ClInclude Include="Render\FontEnumMap.h" />
-    <ClInclude Include="Render\GDI+\Brush\D2D1SolidColorBrushForGdiPlus.h" />
-    <ClInclude Include="Render\GDI+\GdiPlusRender.h" />
     <ClInclude Include="Render\Render.h" />
     <ClInclude Include="Window\Window.h" />
     <ClInclude Include="Window\WindowElement.h" />
@@ -218,6 +237,11 @@
     <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
     <ClCompile Include="..\Media\Font.cpp" />
+    <ClCompile Include="..\Media\Graphics\D2D\D2D1_0DrawContext.cpp" />
+    <ClCompile Include="..\Media\Graphics\D2D\D2D1_1DrawContext.cpp" />
+    <ClCompile Include="..\Media\Graphics\D2D\DWriteHelper.cpp" />
+    <ClCompile Include="..\Media\Graphics\DrawAsyncCommandContext.cpp" />
+    <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp" />
