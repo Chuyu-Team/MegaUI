@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <d2d1_1.h>
 #include <d3d11.h>
+#include <d3d11_1.h>
 #include <dxgi1_2.h>
 #include <dcomp.h>
 
@@ -32,7 +33,8 @@ namespace YY
                 RefPtr<ID2D1DeviceContext> pDeviceContext;
                 RefPtr<ID2D1Device> pD2DDevice;
                 RefPtr<ID2D1Bitmap1> pD2DTargetBitmap;
-                // RefPtr<ID3D11DeviceContext> _pD3DDeviceContext;
+                RefPtr<ID3D11Device> pD3DDevice;
+                RefPtr<ID3D11DeviceContext> pD3DDeviceContext;
                 // RefPtr<ID2D1Bitmap> pD2DBitmapBackup;
                 RefPtr<IDXGISwapChain1> pSwapChain;
                 D3D_FEATURE_LEVEL FeatureLevel;
@@ -110,7 +112,7 @@ namespace YY
             private:
                 HRESULT __YYAPI TryInitializeRenderTarget();
                 
-                HRESULT __YYAPI UpdateTargetPixelSize(_Outptr_opt_ ID2D1Bitmap** _ppBackupBitmap);
+                HRESULT __YYAPI UpdateTargetPixelSize(bool _bCopyToNewTarget);
 
                 RefPtr<ID2D1Brush> __YYAPI GetNativeBrush(Brush _oBrush);
             };

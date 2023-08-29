@@ -117,8 +117,6 @@ namespace YY
                 };
 
                 // Create the DX11 API device object, and get a corresponding context.
-                RefPtr<ID3D11Device> _pD3DDevice;
-                
 #ifdef _DEBUG
                 constexpr DWORD _fD3D11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
 #else
@@ -134,16 +132,16 @@ namespace YY
                     _FeatureLevels,                   // list of feature levels this app can support
                     _countof(_FeatureLevels),         // number of possible feature levels
                     D3D11_SDK_VERSION,
-                    _pD3DDevice.ReleaseAndGetAddressOf(),       // returns the Direct3D device created
+                    pD3DDevice.ReleaseAndGetAddressOf(),        // returns the Direct3D device created
                     &FeatureLevel,                              // returns feature level of device created
-                    nullptr/*_pD3DDeviceContext.ReleaseAndGetAddressOf()*/ // returns the device immediate context
+                    pD3DDeviceContext.ReleaseAndGetAddressOf()  // returns the device immediate context
                     );
                 if (FAILED(_hr))
                     return _hr;
 
                 RefPtr<IDXGIDevice> _pDxgiDevice;
                 // Obtain the underlying DXGI device of the Direct3D11 device.
-                _hr = _pD3DDevice->QueryInterface(_pDxgiDevice.ReleaseAndGetAddressOf());
+                _hr = pD3DDevice->QueryInterface(_pDxgiDevice.ReleaseAndGetAddressOf());
                 if (FAILED(_hr))
                     return _hr;
 
@@ -205,7 +203,7 @@ namespace YY
 #else
                 _SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
                 _hr = _pDxgiFactory->CreateSwapChainForHwnd(
-                    _pD3DDevice,
+                    pD3DDevice,
                     hWnd,
                     &_SwapChainDesc,
                     nullptr,
@@ -224,7 +222,7 @@ namespace YY
 
                 D2D1_BITMAP_PROPERTIES1 _BitmapProperties = D2D1::BitmapProperties1(
                     D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-                    D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 0, 0);
+                    D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
 
                 // Get a D2D surface from the DXGI back buffer to use as the D2D render target.
                 _hr = pDeviceContext->CreateBitmapFromDxgiSurface(
@@ -251,11 +249,8 @@ namespace YY
                 return S_OK;
             }
 
-            HRESULT __YYAPI D2D1_1DrawContext::UpdateTargetPixelSize(ID2D1Bitmap** _ppBackupBitmap)
+            HRESULT __YYAPI D2D1_1DrawContext::UpdateTargetPixelSize(bool _bCopyToNewTarget)
             {
-                if (_ppBackupBitmap)
-                    *_ppBackupBitmap = nullptr;
-                
                 if (!pDeviceContext)
                     return S_OK;
 
@@ -263,65 +258,76 @@ namespace YY
                 if (_oPrevPixelSize.width == PixelSize.width && _oPrevPixelSize.height == PixelSize.height)
                     return S_OK;
                 bFirstPaint = true;
+                
+                const D2D1_SIZE_U _oCopyPixelSize = {min(_oPrevPixelSize.width, PixelSize.width), min(_oPrevPixelSize.height, PixelSize.height)};
+                const auto _oPixelFormat = pDeviceContext->GetPixelFormat();
 
-                RefPtr<ID2D1Bitmap> pD2DBitmapBackup;
-                D2D1_POINT_2U _oDestPoint = {};
-                D2D1_RECT_U _oSrcRect = {0, 0, min(_oPrevPixelSize.width, PixelSize.width), min(_oPrevPixelSize.height, PixelSize.height)};
-                            
+                RefPtr<ID3D11Texture2D> _pBackupTexture2D;
+      
                 do
                 {
-                    // 需要支持脏矩阵，临时保存原来的内容。
-                    auto _oPixelFormat = pDeviceContext->GetPixelFormat();
-
-                    if (_ppBackupBitmap)
+                    if (_bCopyToNewTarget)
                     {
-                        pDeviceContext->CreateBitmap(
-                            _oPrevPixelSize,
-                            D2D1::BitmapProperties(_oPixelFormat),
-                            pD2DBitmapBackup.ReleaseAndGetAddressOf());
+                        // 为了支持脏矩阵，临时保存前台缓冲区，增量绘制。
+                        RefPtr<ID3D11Texture2D> _pFrontTexture2D;
+                        auto _hr = pSwapChain->GetBuffer(uSwapChainBufferCount - 1, IID_PPV_ARGS(_pFrontTexture2D.ReleaseAndGetAddressOf()));
+                        if (FAILED(_hr))
+                            return _hr;
+                        D3D11_TEXTURE2D_DESC _SrcDesc;
+                        _pFrontTexture2D->GetDesc(&_SrcDesc);
+                        _SrcDesc.Width = _oCopyPixelSize.width;
+                        _SrcDesc.Height = _oCopyPixelSize.height;
+                        _SrcDesc.Usage = D3D11_USAGE_DEFAULT;
+                        _SrcDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+                        _SrcDesc.CPUAccessFlags = 0;
+                        _SrcDesc.MiscFlags = 0;
+                        _hr = pD3DDevice->CreateTexture2D(&_SrcDesc, NULL, _pBackupTexture2D.ReleaseAndGetAddressOf());
+                        if (FAILED(_hr))
+                            return _hr;
 
-                        if (__ENABLE_FLIP_SEQUENTIAL)
-                        {
-                            // RefPtr<IDXGISurface> pDxgiBackBuffer;
-                            // auto _hr = pSwapChain->GetBuffer(uSwapChainBufferCount - 1, IID_PPV_ARGS(pDxgiBackBuffer.ReleaseAndGetAddressOf()));
-                            // if (FAILED(_hr))
-                            //     return _hr;
-
-                            // D2D1_BITMAP_PROPERTIES1 _BitmapProperties = D2D1::BitmapProperties1(
-                            //     D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-                            //     D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 0, 0);
-                            // RefPtr<ID2D1Bitmap1> pD2DTargetBitmap;
-
-                            //// Get a D2D surface from the DXGI back buffer to use as the D2D render target.
-                            //_hr = pDeviceContext->CreateBitmapFromDxgiSurface(
-                            //    pDxgiBackBuffer,
-                            //    &_BitmapProperties,
-                            //    pD2DTargetBitmap.ReleaseAndGetAddressOf());
-
-                            pD2DBitmapBackup->CopyFromRenderTarget(&_oDestPoint, pDeviceContext, &_oSrcRect);
-                        }
-                        else
-                        {
-                            pD2DBitmapBackup->CopyFromBitmap(&_oDestPoint, pD2DTargetBitmap, &_oSrcRect);
-                        }
+                        D3D11_BOX _oIntersectBox;
+                        _oIntersectBox.left = 0;
+                        _oIntersectBox.top = 0;
+                        _oIntersectBox.front = 0;
+                        _oIntersectBox.right = _oCopyPixelSize.width;
+                        _oIntersectBox.bottom = _oCopyPixelSize.height;
+                        _oIntersectBox.back = 1;
+                        pD3DDeviceContext->CopySubresourceRegion(_pBackupTexture2D, 0, 0, 0, 0, _pFrontTexture2D, 0, &_oIntersectBox);
                     }
                     
                     pDeviceContext->SetTarget(nullptr);
                     pD2DTargetBitmap = nullptr;
 
-                    auto _hr = pSwapChain->ResizeBuffers(uSwapChainBufferCount, PixelSize.width, PixelSize.height, _oPixelFormat.format, 0);
+                    auto _hr = pSwapChain->ResizeBuffers(uSwapChainBufferCount, PixelSize.width, PixelSize.height, DXGI_FORMAT_UNKNOWN, 0);
                     if (FAILED(_hr))
                         return _hr;
 
-                    // Direct2D needs the dxgi version of the backbuffer surface pointer.
+                    RefPtr<ID3D11Texture2D> _pBackTexture2D;
                     RefPtr<IDXGISurface> pDxgiBackBuffer;
-                    _hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(pDxgiBackBuffer.ReleaseAndGetAddressOf()));
+                    _hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(_pBackTexture2D.ReleaseAndGetAddressOf()));
+                    if (FAILED(_hr))
+                        return _hr;
+
+                    if (_pBackupTexture2D)
+                    {
+                        D3D11_BOX _oIntersectBox;
+                        _oIntersectBox.left = 0;
+                        _oIntersectBox.top = 0;
+                        _oIntersectBox.front = 0;
+                        _oIntersectBox.right = _oCopyPixelSize.width;
+                        _oIntersectBox.bottom = _oCopyPixelSize.height;
+                        _oIntersectBox.back = 1;
+                        pD3DDeviceContext->CopySubresourceRegion(_pBackTexture2D, 0, 0, 0, 0, _pBackupTexture2D, 0, &_oIntersectBox);
+                    }
+
+                    // Direct2D needs the dxgi version of the backbuffer surface pointer.
+                    _hr = _pBackTexture2D->QueryInterface(pDxgiBackBuffer.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))
                         return _hr;
 
                     D2D1_BITMAP_PROPERTIES1 _BitmapProperties = D2D1::BitmapProperties1(
                         D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-                        _oPixelFormat, 0, 0);
+                        _oPixelFormat);
 
                     // Get a D2D surface from the DXGI back buffer to use as the D2D render target.
                     _hr = pDeviceContext->CreateBitmapFromDxgiSurface(
@@ -335,8 +341,6 @@ namespace YY
 
                 } while (false);
 
-                if (_ppBackupBitmap)
-                    *_ppBackupBitmap = pD2DBitmapBackup.Detach();
                 return S_OK;
             }
             
@@ -360,9 +364,7 @@ namespace YY
                 if (_pPaint && _pPaint->Left == 0 && _pPaint->Top == 0 && _pPaint->Left == PixelSize.width && _pPaint->Bottom == PixelSize.height)
                     _pPaint = nullptr;
 
-                
-                RefPtr<ID2D1Bitmap> _pD2DBitmapBackup;
-                auto _hr = UpdateTargetPixelSize(_pPaint && bFirstPaint == false ? _pD2DBitmapBackup.ReleaseAndGetAddressOf() : nullptr);
+                auto _hr = UpdateTargetPixelSize(_pPaint && bFirstPaint == false);
                 if (FAILED(_hr))
                     return _hr;
 
@@ -370,23 +372,12 @@ namespace YY
                 if (FAILED(_hr))
                     return _hr;
                 
-                pDeviceContext->BeginDraw();
-
-                if (_pD2DBitmapBackup)
-                {
-                    auto _oPixelSize = _pD2DBitmapBackup->GetPixelSize();
-                    D2D1_RECT_F _oBufferBitmapRectangle = {0, 0, _oPixelSize.width, _oPixelSize.height};
-                    pDeviceContext->DrawBitmap(_pD2DBitmapBackup, _oBufferBitmapRectangle, 1.0, D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR, _oBufferBitmapRectangle);
-                    _pD2DBitmapBackup = nullptr;
-                }
-
+                pDeviceContext->BeginDraw();                
                 if (_pPaint)
                 {
                     oPaint = RECT{(LONG)_pPaint->Left, (LONG)_pPaint->Top, (LONG)_pPaint->Right, (LONG)_pPaint->Bottom};
                     PushAxisAlignedClip(*_pPaint);
                 }
-
-
                 pDeviceContext->Clear();
                 return S_OK;
             }
@@ -422,6 +413,8 @@ namespace YY
                         pTarget = nullptr;
                         pDcompDevice = nullptr;
 #endif
+                        pD3DDevice = nullptr;
+                        pD3DDeviceContext = nullptr;
                     }
                     else
                     {

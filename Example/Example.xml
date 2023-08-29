@@ -42,7 +42,7 @@
         </StyleSheet>
     </StyleSheets>
     <Windows>
-        <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600dp" Width="800dp" Background="RGB(255, 0, 0)" Sheet="MyStyleSheet">
+        <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600dp" Width="800dp" Background="ARGB(128, 255, 0, 0)" Sheet="MyStyleSheet">
             <Element Class="FocusVisible" Active="Mouse | Keyboard" Accessible="true" AccName="大号文本" AccRole="Text"
                 LayoutPos="Absolute" X="100dp" Y="100dp" Width="300dp" Background="ARGB(128, 255, 255, 0)"
                      BorderStyle="Raised" BorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" BorderColor="ARGB(255, 163, 73, 164)"
