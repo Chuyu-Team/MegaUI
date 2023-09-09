@@ -93,6 +93,7 @@ namespace YY
                 , oPixelSize {}
                 , uThreadId(0)
                 , hDC(NULL)
+                , bFirstPaint(true)
             {    
             }
 
@@ -100,6 +101,22 @@ namespace YY
             {
                 oSurface.Reset();
                 oSurfaceBitmap.Reset();
+            }
+
+            DrawContextFactory* __YYAPI GDIPlusDrawContext::GetDrawContextFactory()
+            {
+                static DrawContextFactoryImpl<GDIPlusDrawContext> s_DrawContextFactory;
+                return &s_DrawContextFactory;
+            }
+
+            bool __YYAPI GDIPlusDrawContext::IsSupport()
+            {
+                return true;
+            }
+
+            bool __YYAPI GDIPlusDrawContext::IsMicrosoftCompositionEngineSupport()
+            {
+                return false;
             }
 
             HRESULT __YYAPI GDIPlusDrawContext::CreateDrawTarget(HWND _hWnd, DrawContext** _ppDrawContext)
@@ -137,6 +154,12 @@ namespace YY
 
             HRESULT __YYAPI GDIPlusDrawContext::BeginDraw(const Rect* _pPaint)
             {
+                if (bFirstPaint)
+                    _pPaint = nullptr;
+
+                if (_pPaint && _pPaint->Left <= 0 && _pPaint->Top <= 0 && _pPaint->Left >= oPixelSize.cx && _pPaint->Bottom >= oPixelSize.cy)
+                    _pPaint = nullptr;
+
                 oPaint.Left = 0;
                 oPaint.Top = 0;
                 oPaint.Right = oPixelSize.cx;
@@ -151,14 +174,7 @@ namespace YY
 
                 hDC = ::GetDC(hWnd);
 
-                if (!oSurfaceBitmap.IsNull())
-                {
-                    if (oSurfaceBitmap.GetWidth() < oPixelSize.cx || oSurfaceBitmap.GetHeight() < oPixelSize.cy)
-                    {
-                        oSurface.Reset();
-                        oSurfaceBitmap.Reset();
-                    }
-                }
+                UpdateTargetPixelSize(_pPaint != nullptr);
 
                 auto _pSurface = GetSurface();
                 if (!_pSurface)
@@ -180,12 +196,18 @@ namespace YY
             {
                 if (!hDC)
                     return E_FAIL;
+                
+                bFirstPaint = false;
+
                 {
                     Gdiplus::RectF PaintF(
                         Gdiplus::REAL(oPaint.Left),
                         Gdiplus::REAL(oPaint.Top),
                         Gdiplus::REAL(oPaint.GetWidth()),
                         Gdiplus::REAL(oPaint.GetHeight()));
+                    
+                    // ExcludeClipRect(hDC, oPaint.Left, oPaint.Top, oPaint.Right, oPaint.Bottom);
+
                     Gdiplus::Graphics DCSurface(hDC);
                     DCSurface.DrawImage(
                         &oSurfaceBitmap,
@@ -387,6 +409,49 @@ namespace YY
                 }
 
                 return &oSurface;
+            }
+
+            HRESULT __YYAPI GDIPlusDrawContext::UpdateTargetPixelSize(bool _bCopyToNewTarget)
+            {
+                if (oSurfaceBitmap.IsNull())
+                {
+                    return S_FALSE;
+                }
+
+                if (oSurfaceBitmap.GetWidth() >= oPixelSize.cx && oSurfaceBitmap.GetHeight() >= oPixelSize.cy)
+                {
+                    return S_FALSE;
+                }
+                
+                oSurface.Reset();
+
+#if 0
+                // GDI系统保留有副本，暂时不进行复制。
+                if (_bCopyToNewTarget)
+                {
+                    GdiplusStatic<Gdiplus::Bitmap> _oTmpBitmap(std::move(oSurfaceBitmap));
+
+                    auto _pSurface = GetSurface();
+
+                    Gdiplus::RectF PaintF(
+                        Gdiplus::REAL(0),
+                        Gdiplus::REAL(0),
+                        Gdiplus::REAL(oSurfaceBitmap.GetWidth()),
+                        Gdiplus::REAL(oSurfaceBitmap.GetHeight()));
+
+                    _pSurface->DrawImage(
+                        &_oTmpBitmap,
+                        PaintF,
+                        PaintF.X, PaintF.Y, PaintF.Width, PaintF.Height,
+                        Gdiplus::UnitPixel);
+
+                }
+                else
+#endif
+                {
+                    oSurfaceBitmap.Reset();
+                }
+                return S_OK;
             }
 
             RefPtr<GdiplusRef<Gdiplus::Brush>> __YYAPI GDIPlusDrawContext::GetNativeBrush(Brush _oBrush)

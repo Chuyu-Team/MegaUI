@@ -32,34 +32,46 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     //YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
-    std::vector<int> dd;
-    
     WindowElement::Register();
     Button::Register();
 
     StyleSheet::AddGlobalStyleSheet(GetUiResource(IDR_UI_COMMON));
 
     Window* _pTestWindow = HNew<Window>();
-    
+    Window* _pTestWindow2 = HNew<Window>();
+
     UIParser _Parser;
 
     _Parser.ParserByXmlString(GetUiResource(IDR_UI1));
 
-    YY::MegaUI::WindowElement* pWindowElement;
 
     UIParserPlayContext _Context;
     _Context.iDPI = 96;
-    intptr_t Cooike;
-    _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+    {
+        YY::MegaUI::WindowElement* pWindowElement;
+        intptr_t Cooike;
+        _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
 
-    _pTestWindow->SetHost(pWindowElement);
+        _pTestWindow->SetHost(pWindowElement);
 
-    _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
-    pWindowElement->EndDefer(Cooike);
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+        pWindowElement->EndDefer(Cooike);
 
-    _pTestWindow->ShowWindow(SW_SHOWNORMAL);
-    
+        _pTestWindow->ShowWindow(SW_SHOWNORMAL);
+    }
 
+    {
+        YY::MegaUI::WindowElement* pWindowElement;
+        intptr_t Cooike;
+        _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+
+        _pTestWindow2->SetHost(pWindowElement);
+
+        _pTestWindow2->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+        pWindowElement->EndDefer(Cooike);
+
+        _pTestWindow2->ShowWindow(SW_SHOWNORMAL);
+    }
 
     //YY::MegaUI::Element* p;
     //YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);

@@ -341,6 +341,9 @@
     <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp">
       <Filter>Media\Graphics\GDIPlus</Filter>
     </ClCompile>
+    <ClCompile Include="..\Media\Graphics\DrawContext.cpp">
+      <Filter>Media\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="MegaUI.natvis">

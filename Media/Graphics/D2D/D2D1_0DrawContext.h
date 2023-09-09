@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <d2d1.h>
 #include <dwrite.h>
+#include <d3d10_1.h>
 
 #include <Base/YY.h>
 #include <Media/Font.h>
@@ -25,17 +26,26 @@ namespace YY
                 HWND hWnd;
                 D2D1_SIZE_U PixelSize;
                 Optional<Rect> oPaint;
-                RefPtr<ID2D1HwndRenderTarget> pRenderTarget;
+                RefPtr<ID2D1RenderTarget> pRenderTarget;
+                RefPtr<ID3D10Device1> pD3DDevice;
+                RefPtr<IDXGISwapChain> pSwapChain;
+                RefPtr<ID3D10Texture2D> pBackBuffer;
+                bool bFirstPaint;
 
             private:
                 D2D1_0DrawContext()
                     : hWnd(NULL)
                     , PixelSize {}
+                    , bFirstPaint(true)
                 {
                 }
-    
-            public:
+
                 D2D1_0DrawContext(const D2D1_0DrawContext&) = delete;
+
+                D2D1_0DrawContext& operator=(const D2D1_0DrawContext&) = delete;
+
+            public:
+                static _Ret_maybenull_ DrawContextFactory* __YYAPI GetDrawContextFactory();
 
                 /// <summary>
                 /// 返回全局的 D2D 1.0 厂类。注意：该指针无需释放也不能释放！
@@ -43,7 +53,15 @@ namespace YY
                 /// <returns>失败返回 nullptr </returns>
                 static _Ret_maybenull_ ID2D1Factory* __YYAPI GetD2D1Factory();
 
+                static RefPtr<ID3D10Device1> __YYAPI GetD3D10DeviceCache();
+
+                static void __YYAPI InvalidD3D10DeviceCache(RefPtr<ID3D10Device1>&& _pD3D10Device1Cache);
+
                 static HRESULT __YYAPI CreateDrawTarget(_In_ HWND _hWnd, _Outptr_ DrawContext** _ppDrawContext);
+
+                static bool __YYAPI IsSupport();
+
+                static bool __YYAPI IsMicrosoftCompositionEngineSupport();
 
                 Size __YYAPI GetPixelSize() override;
 
@@ -92,7 +110,7 @@ namespace YY
             private:
                 HRESULT __YYAPI TryInitializeRenderTarget();
 
-                HRESULT __YYAPI UpdateTargetPixelSize(_Outptr_opt_ ID2D1Bitmap** _ppBackupBitmap);
+                HRESULT __YYAPI UpdateTargetPixelSize(_In_ bool _bCopyToNewTarget);
 
                 RefPtr<ID2D1Brush> __YYAPI GetNativeBrush(_In_ Brush _oBrush);
             };

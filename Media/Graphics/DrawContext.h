@@ -126,6 +126,36 @@ namespace YY
                     _Out_ Size* _pExtent) = 0;
             };
 
+            class DrawContextFactory
+            {
+            public:
+                static _Ret_notnull_ DrawContextFactory* __YYAPI GetDefaultDrawContextFactory();
+
+                /// <summary>
+                /// 判断微软组合引擎是否可用。
+                /// </summary>
+                /// <returns></returns>
+                virtual bool __YYAPI IsMicrosoftCompositionEngineSupport() = 0;
+
+                virtual HRESULT __YYAPI CreateDrawTarget(_In_ HWND _hWnd, _Outptr_ DrawContext** _ppDrawContext) = 0;
+            };
+
+
+            template<typename DrawContextType>
+            class DrawContextFactoryImpl : public DrawContextFactory
+            {
+            public:
+                bool __YYAPI IsMicrosoftCompositionEngineSupport() override
+                {
+                    return DrawContextType::IsMicrosoftCompositionEngineSupport();
+                }
+
+                HRESULT __YYAPI CreateDrawTarget(_In_ HWND _hWnd, _Outptr_ DrawContext** _ppDrawContext) override
+                {
+                    return DrawContextType::CreateDrawTarget(_hWnd, _ppDrawContext);
+                }
+            };
+
         } // namespace Graphics
     }     // namespace Media
 

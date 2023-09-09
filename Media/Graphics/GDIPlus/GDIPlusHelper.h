@@ -63,6 +63,14 @@ namespace YY
                 {
                 }
 
+                GdiplusStatic(GdiplusStatic&& _oOther) noexcept
+                    : GdiplusStatic()
+                {
+                    operator=(std::move(_oOther));
+                }
+
+                GdiplusStatic(const GdiplusStatic& _oOther) = delete;
+
                 bool IsNull() const
                 {
                     return nativeImage == nullptr;
@@ -74,6 +82,13 @@ namespace YY
                     this->~GdiplusStatic();
 
                     ::new (this) GdiplusStatic(_oArgs...);
+                }
+                
+                GdiplusStatic& operator=(GdiplusStatic&& _oOther) noexcept
+                {
+                    nativeImage = _oOther.nativeImage;
+                    _oOther.nativeImage = nullptr;
+                    return *this;
                 }
             };
 
@@ -94,9 +109,13 @@ namespace YY
                 {
                 }
 
-                ~GdiplusStatic()
+                GdiplusStatic(GdiplusStatic&& _oOther) noexcept
+                    : GdiplusStatic()
                 {
+                    operator=(std::move(_oOther));
                 }
+
+                GdiplusStatic(const GdiplusStatic& _oOther) = delete;
 
                 bool IsNull() const
                 {
@@ -109,6 +128,13 @@ namespace YY
                     this->~GdiplusStatic();
 
                     ::new (this) GdiplusStatic(_oArgs...);
+                }
+
+                GdiplusStatic& operator=(GdiplusStatic&& _oOther) noexcept
+                {
+                    nativeGraphics = _oOther.nativeGraphics;
+                    _oOther.nativeGraphics = nullptr;
+                    return *this;
                 }
             };
 

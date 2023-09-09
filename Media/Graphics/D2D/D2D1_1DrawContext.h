@@ -10,13 +10,9 @@
 #include <Base/Memory/RefPtr.h>
 #include <Media/Graphics/DrawContext.h>
 #include <Base/Containers/Optional.h>
+#include <Base/Sync/Interlocked.h>
 
 #pragma pack(push, __YY_PACKING)
-
-// 使用反转模型？
-#define __ENABLE_FLIP_SEQUENTIAL 0
-// 使用Windows组合层
-#define __ENABLE_COMPOSITION_ENGINE 0
 
 namespace YY
 {
@@ -26,43 +22,89 @@ namespace YY
         {
             class D2D1_1DrawContext : public DrawContext
             {
+            public:
+                class DirectDeviceCache
+                {
+                private:
+                    uint32_t uRef;
+
+                public:
+                    D3D_FEATURE_LEVEL FeatureLevel;
+                    RefPtr<ID3D11Device> pD3DDevice;
+                    RefPtr<ID3D11DeviceContext> pD3DDeviceContext;
+                    RefPtr<ID2D1Device> pD2DDevice;
+                    // 可选
+                    RefPtr<IDCompositionDevice> pDcompDevice;
+
+                    DirectDeviceCache()
+                        : uRef(1)
+                        , FeatureLevel((D3D_FEATURE_LEVEL)0)
+                    {
+                    }
+
+                    DirectDeviceCache(const DirectDeviceCache&) = delete;
+                    DirectDeviceCache& operator=(const DirectDeviceCache&) = delete;
+
+                    uint32_t AddRef()
+                    {
+                        return Sync::Increment(&uRef);
+                    }
+
+                    uint32_t Release()
+                    {
+                        auto _uNewRef = Sync::Decrement(&uRef);
+                        if (_uNewRef == 0)
+                            delete this;
+                        return _uNewRef;
+                    }
+                };
+
             private:
                 HWND hWnd;
                 D2D1_SIZE_U PixelSize;
                 Optional<RECT> oPaint;
                 RefPtr<ID2D1DeviceContext> pDeviceContext;
-                RefPtr<ID2D1Device> pD2DDevice;
+                RefPtr<DirectDeviceCache> pDirectDeviceCache;
                 RefPtr<ID2D1Bitmap1> pD2DTargetBitmap;
-                RefPtr<ID3D11Device> pD3DDevice;
-                RefPtr<ID3D11DeviceContext> pD3DDeviceContext;
-                // RefPtr<ID2D1Bitmap> pD2DBitmapBackup;
                 RefPtr<IDXGISwapChain1> pSwapChain;
-                D3D_FEATURE_LEVEL FeatureLevel;
                 DXGI_PRESENT_PARAMETERS PresentParameters;
-#if __ENABLE_COMPOSITION_ENGINE
-                RefPtr<IDCompositionDevice> pDcompDevice;
                 RefPtr<IDCompositionTarget> pTarget;
-#endif
+                uint32_t uSwapChainBufferCount;
+
                 bool bFirstPaint;
 
                 D2D1_1DrawContext(HWND _hWnd, const D2D1_SIZE_U& _oPixelSize)
                     : hWnd(_hWnd)
                     , PixelSize(_oPixelSize)
-                    , FeatureLevel(D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_10_0)
                     , PresentParameters {}
+                    , uSwapChainBufferCount(0)
                     , bFirstPaint(true)
                 {
                 }
 
-            public:
                 D2D1_1DrawContext(const D2D1_1DrawContext&) = delete;
+                D2D1_1DrawContext& operator=(const D2D1_1DrawContext&) = delete;
+
+            public:
+                static _Ret_maybenull_ DrawContextFactory* __YYAPI GetDrawContextFactory();
 
                 /// <summary>
                 /// 返回全局的 D2D 1.1 厂类。注意：该指针无需释放也不能释放！
                 /// </summary>
                 /// <returns>失败返回 nullptr </returns>
-                static _Ret_maybenull_ ID2D1Factory1* __YYAPI GetD2D1Factory1();
-                
+                static _Ret_maybenull_ ID2D1Factory1* __YYAPI GetD2D1Factory();            
+
+                static RefPtr<DirectDeviceCache> __YYAPI GetDirectDeviceCache();
+
+                /// <summary>
+                /// 将之前获取到的DirectDeviceCache无效处理。仅在设备需要重新创建时调用。
+                /// </summary>
+                static void __YYAPI InvalidDirectDeviceCache(RefPtr<DirectDeviceCache>&& _oD3DDeviceCache);
+
+                static bool __YYAPI IsSupport();
+
+                static bool __YYAPI IsMicrosoftCompositionEngineSupport();
+
                 static HRESULT __YYAPI CreateDrawTarget(_In_ HWND _hWnd, _Outptr_ DrawContext** _ppDrawContext);
                 
                 Size __YYAPI GetPixelSize() override;

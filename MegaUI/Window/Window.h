@@ -29,6 +29,7 @@ namespace YY
         protected:
             HWND hWnd;
             WindowElement* pHost;
+            DrawContextFactory* pDrawContextFactory;
             UniquePtr<DrawContext> pDrawContext;   
             Size LastRenderSize;
             uint32_t fTrackMouse;
@@ -50,7 +51,7 @@ namespace YY
             Window(_In_ int32_t _DefaultDpi = 96);
 
             Window(const Window&) = delete;
-            void operator=(const Window&) = delete;
+            Window& operator=(const Window&) = delete;
 
             virtual ~Window();
             
@@ -61,7 +62,8 @@ namespace YY
                 _In_ int _dY,
                 _In_ DWORD _fExStyle,
                 _In_ DWORD _fStyle,
-                _In_ UINT _nOptions
+                _In_ UINT _nOptions,
+                _In_ DrawContextFactory* _pDrawContextFactory = DrawContextFactory::GetDefaultDrawContextFactory()
                 );
 
             HRESULT __YYAPI SetHost(_In_ WindowElement* _pHost);

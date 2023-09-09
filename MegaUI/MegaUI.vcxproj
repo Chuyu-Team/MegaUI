@@ -31,6 +31,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -241,6 +242,7 @@
     <ClCompile Include="..\Media\Graphics\D2D\D2D1_1DrawContext.cpp" />
     <ClCompile Include="..\Media\Graphics\D2D\DWriteHelper.cpp" />
     <ClCompile Include="..\Media\Graphics\DrawAsyncCommandContext.cpp" />
+    <ClCompile Include="..\Media\Graphics\DrawContext.cpp" />
     <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp" />

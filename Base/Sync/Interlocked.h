@@ -85,13 +85,49 @@ namespace YY
             }
 
             template<typename _Type>
-            __forceinline _Type* __YYAPI CompareExchangePoint(_Type** _ppDestination, _Type* _pExchange, _Type* _pComparand)
+            __forceinline _Type* __YYAPI CompareExchangePoint(_Type** _ppDestination, _Type* _pExchange, const _Type* _pComparand)
+            {
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
+            }
+
+            template<typename _Type>
+            __forceinline _Type* __YYAPI CompareExchangePoint(_Type** _ppDestination, _Type* _pExchange, std::nullptr_t _pComparand)
+            {
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
+            }
+
+            template<typename _Type>
+            __forceinline _Type* __YYAPI CompareExchangePoint(_Type** _ppDestination, std::nullptr_t _pExchange, const _Type* _pComparand)
+            {
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
+            }
+
+            template<typename _Type>
+            __forceinline _Type* __YYAPI CompareExchangePoint(_Type** _ppDestination, std::nullptr_t _pExchange, std::nullptr_t _pComparand)
             {
                 return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
             }
 
             template<typename _Type>
             __forceinline _Type* __YYAPI CompareExchangePoint(volatile _Type** _ppDestination, _Type* _pExchange, _Type* _pComparand)
+            {
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
+            }
+
+            template<typename _Type>
+            __forceinline _Type* __YYAPI CompareExchangePoint(volatile _Type** _ppDestination, _Type* _pExchange, std::nullptr_t _pComparand)
+            {
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
+            }
+
+            template<typename _Type>
+            __forceinline _Type* __YYAPI CompareExchangePoint(volatile _Type** _ppDestination, std::nullptr_t _pExchange, _Type* _pComparand)
+            {
+                return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
+            }
+
+            template<typename _Type>
+            __forceinline _Type* __YYAPI CompareExchangePoint(volatile _Type** _ppDestination, std::nullptr_t _pExchange, std::nullptr_t _pComparand)
             {
                 return (_Type*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
             }
@@ -113,9 +149,21 @@ namespace YY
             }
 
             template<typename _Type>
+            __forceinline _Type* __YYAPI ExchangePoint(_Type** _ppDestination, std::nullptr_t)
+            {
+                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)0);
+            }
+
+            template<typename _Type>
             __forceinline _Type* __YYAPI ExchangePoint(volatile _Type** _ppDestination, _Type* _pExchange)
             {
                 return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)_pExchange);
+            }
+
+            template<typename _Type>
+            __forceinline _Type* __YYAPI ExchangePoint(volatile _Type** _ppDestination, std::nullptr_t)
+            {
+                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)0);
             }
         } // namespace Sync
     } // namespace Base

@@ -48,7 +48,7 @@ namespace YY
                 ~DrawAsyncCommandContext();
 
                 static HRESULT __YYAPI CreateDrawTarget(
-                    _In_ UniquePtr<DrawContext> _pTargetDrawContext,
+                    _In_ UniquePtr<DrawContext>&& _pTargetDrawContext,
                     _Outptr_ DrawContext** _ppDrawContext
                     );
 

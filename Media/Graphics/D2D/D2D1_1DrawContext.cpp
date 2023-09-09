@@ -3,18 +3,13 @@
 
 #include <Base/Sync/Interlocked.h>
 #include <Media/Graphics/D2D/DWriteHelper.h>
+#include <Base/Memory/UniquePtr.h>
 
 #pragma warning(disable : 28251)
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "D3D11.lib")
 #pragma comment(lib, "dcomp.lib")
-
-#if __ENABLE_FLIP_SEQUENTIAL
-constexpr UINT uSwapChainBufferCount = 2;
-#else
-constexpr UINT uSwapChainBufferCount = 1;
-#endif
 
 namespace YY
 {
@@ -26,7 +21,7 @@ namespace YY
 
             static ID2D1Factory1* s_pD2DFactory;
 
-            ID2D1Factory1* __YYAPI D2D1_1DrawContext::GetD2D1Factory1()
+            ID2D1Factory1* __YYAPI D2D1_1DrawContext::GetD2D1Factory()
             {
                 if (auto _pTmp = s_pD2DFactory)
                 {
@@ -35,9 +30,9 @@ namespace YY
 
                 ID2D1Factory1* _pD2DFactory = nullptr;
 #ifdef _DEBUG
-                auto _hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, D2D1_FACTORY_OPTIONS {D2D1_DEBUG_LEVEL_INFORMATION}, &_pD2DFactory);
+                auto _hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, D2D1_FACTORY_OPTIONS {D2D1_DEBUG_LEVEL_INFORMATION}, &_pD2DFactory);
 #else
-                auto _hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &_pD2DFactory);
+                auto _hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &_pD2DFactory);
 #endif
                 if (FAILED(_hr) || _pD2DFactory == nullptr)
                 {
@@ -63,6 +58,199 @@ namespace YY
                     });
 
                 return _pD2DFactory;
+            }
+         
+#define INVALID_DIRECT_DEVICE_CACHE_FACTORY (D2D1_1DrawContext::DirectDeviceCache*)-1
+            struct D3D11Device1Cache
+            {
+                SRWLOCK oLock;
+                D2D1_1DrawContext::DirectDeviceCache* pDirectDeviceCache;
+                bool bRegistExit;
+            };
+
+            static D3D11Device1Cache s_oDirectDeviceCache;
+
+            RefPtr<D2D1_1DrawContext::DirectDeviceCache> __YYAPI D2D1_1DrawContext::GetDirectDeviceCache()
+            {
+                RefPtr<D2D1_1DrawContext::DirectDeviceCache> _pTmp;
+
+                bool _bInit = false;
+                AcquireSRWLockShared(&s_oDirectDeviceCache.oLock);
+                if (auto p = s_oDirectDeviceCache.pDirectDeviceCache)
+                {
+                    if (p != INVALID_DIRECT_DEVICE_CACHE_FACTORY)
+                        _pTmp = p;
+
+                    _bInit = true;
+                }
+                ReleaseSRWLockShared(&s_oDirectDeviceCache.oLock);
+
+                if (_bInit)
+                {
+                    return _pTmp;
+                }
+
+                AcquireSRWLockExclusive(&s_oDirectDeviceCache.oLock);
+
+                do
+                {
+                    auto _pLastCache = Sync::CompareExchangePoint(&s_oDirectDeviceCache.pDirectDeviceCache, INVALID_DIRECT_DEVICE_CACHE_FACTORY, nullptr);
+                    if (_pLastCache)
+                    {
+                        if (_pLastCache != INVALID_DIRECT_DEVICE_CACHE_FACTORY)
+                        {
+                            _pTmp = _pLastCache;
+                        }
+                        break;
+                    }
+
+                    auto _pD2DFactory = GetD2D1Factory();
+                    if (!_pD2DFactory)
+                        break;
+
+                    // This array defines the set of DirectX hardware feature levels this app  supports.
+                    // The ordering is important and you should  preserve it.
+                    // Don't forget to declare your app's minimum required feature level in its
+                    // description.  All apps are assumed to support 9.1 unless otherwise stated.
+                    static const D3D_FEATURE_LEVEL _FeatureLevels[] =
+                    {
+                        D3D_FEATURE_LEVEL_11_1,
+                        D3D_FEATURE_LEVEL_11_0,
+                        D3D_FEATURE_LEVEL_10_1,
+                        D3D_FEATURE_LEVEL_10_0,
+                        D3D_FEATURE_LEVEL_9_3,
+                        D3D_FEATURE_LEVEL_9_2,
+                        D3D_FEATURE_LEVEL_9_1
+                    };
+
+                    // Create the DX11 API device object, and get a corresponding context.
+    #ifdef _DEBUG
+                    constexpr DWORD _fD3D11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
+    #else
+                    constexpr DWORD _fD3D11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+    #endif
+                    static constexpr D3D_DRIVER_TYPE _arrDriverTypes[] =
+                    {
+                        D3D_DRIVER_TYPE_HARDWARE,
+                        D3D_DRIVER_TYPE_WARP,
+                    };
+
+                    HRESULT _hr = E_FAIL;
+                    UniquePtr<D2D1_1DrawContext::DirectDeviceCache> _pTmpCache(new D2D1_1DrawContext::DirectDeviceCache());
+
+                    for (auto _eDriverType : _arrDriverTypes)
+                    {
+                        _hr = D3D11CreateDevice(
+                            nullptr, // specify null to use the default adapter
+                            _eDriverType,
+                            0,
+                            _fD3D11Flags,
+                            _FeatureLevels,           // list of feature levels this app can support
+                            _countof(_FeatureLevels), // number of possible feature levels
+                            D3D11_SDK_VERSION,
+                            _pTmpCache->pD3DDevice.ReleaseAndGetAddressOf(),        // returns the Direct3D device created
+                            &_pTmpCache->FeatureLevel,                            // returns feature level of device created
+                            _pTmpCache->pD3DDeviceContext.ReleaseAndGetAddressOf() // returns the device immediate context
+                        );
+                        if (SUCCEEDED(_hr))
+                            break;
+                    }
+
+                    if (FAILED(_hr))
+                        break;
+
+                    RefPtr<IDXGIDevice> _pDxgiDevice;
+                    // Obtain the underlying DXGI device of the Direct3D11 device.
+                    _hr = _pTmpCache->pD3DDevice->QueryInterface(_pDxgiDevice.ReleaseAndGetAddressOf());
+                    if (FAILED(_hr))
+                        break;
+
+                    // Obtain the Direct2D device for 2-D rendering.
+                    _hr = _pD2DFactory->CreateDevice(_pDxgiDevice, _pTmpCache->pD2DDevice.ReleaseAndGetAddressOf());
+                    if (FAILED(_hr))
+                        break;
+                     
+                    // 非关键错误，Windows 8或者更高平台支持
+                    DCompositionCreateDevice(_pDxgiDevice, IID_PPV_ARGS(_pTmpCache->pDcompDevice.ReleaseAndGetAddressOf()));
+
+                    _pTmp.Attach(_pTmpCache.Detach());
+                    s_oDirectDeviceCache.pDirectDeviceCache = _pTmp.Clone();
+
+                    if (!s_oDirectDeviceCache.bRegistExit)
+                    {
+                        s_oDirectDeviceCache.bRegistExit = true;
+
+                        atexit(
+                            []()
+                            {
+                                // 故意没有加锁。防止卡住。
+                                auto _pOld = Sync::ExchangePoint(&s_oDirectDeviceCache.pDirectDeviceCache, INVALID_DIRECT_DEVICE_CACHE_FACTORY);
+                                if (_pOld && _pOld != INVALID_DIRECT_DEVICE_CACHE_FACTORY)
+                                    _pOld->Release();
+                            });
+                    }                    
+                } while (false);
+
+                ReleaseSRWLockExclusive(&s_oDirectDeviceCache.oLock);
+
+                return _pTmp;
+            }
+
+            void __YYAPI D2D1_1DrawContext::InvalidDirectDeviceCache(RefPtr<D2D1_1DrawContext::DirectDeviceCache>&& _oD3DDeviceCache)
+            {
+                if (_oD3DDeviceCache)
+                {
+                    if (s_oDirectDeviceCache.pDirectDeviceCache == _oD3DDeviceCache)
+                    {
+                        AcquireSRWLockExclusive(&s_oDirectDeviceCache.oLock);
+
+                        auto _pOldDirectDeviceCache = Sync::CompareExchangePoint(&s_oDirectDeviceCache.pDirectDeviceCache, nullptr, _oD3DDeviceCache.Get());
+                        
+                        if (_pOldDirectDeviceCache == _oD3DDeviceCache.Get())
+                        {
+                            _pOldDirectDeviceCache->Release();
+                        }
+
+                        ReleaseSRWLockExclusive(&s_oDirectDeviceCache.oLock);
+                    }
+
+                    _oD3DDeviceCache.Reset();
+                }
+            }
+
+            bool __YYAPI D2D1_1DrawContext::IsSupport()
+            {
+                auto _pDWriteFactory = DWrite::GetDWriteFactory();
+                if (!_pDWriteFactory)
+                    return false;
+
+                auto _pD2D1Factory = D2D1_1DrawContext::GetD2D1Factory();
+                if (!_pD2D1Factory)
+                    return false;
+
+                auto _pDeviceCache = D2D1_1DrawContext::GetDirectDeviceCache();
+                if (!_pDeviceCache)
+                    return false;
+
+                return true;
+            }
+
+            bool __YYAPI D2D1_1DrawContext::IsMicrosoftCompositionEngineSupport()
+            {
+                auto _pDeviceCache = D2D1_1DrawContext::GetDirectDeviceCache();
+                if (!_pDeviceCache)
+                    return false;
+
+                return _pDeviceCache->pDcompDevice != nullptr;
+            }
+
+            DrawContextFactory* __YYAPI D2D1_1DrawContext::GetDrawContextFactory()
+            {
+                if (!D2D1_1DrawContext::IsSupport())
+                    return nullptr;
+
+                static DrawContextFactoryImpl<D2D1_1DrawContext> s_DrawContextFactory;
+                return &s_DrawContextFactory;
             }
 
             HRESULT __YYAPI D2D1_1DrawContext::CreateDrawTarget(HWND _hWnd, DrawContext** _ppDrawContext)
@@ -97,61 +285,16 @@ namespace YY
                 if (pDeviceContext && pD2DTargetBitmap)
                     return S_OK;
 
-                auto _pD2DFactory = GetD2D1Factory1();
-                if (!_pD2DFactory)
-                    return E_NOINTERFACE;
-
-                // This array defines the set of DirectX hardware feature levels this app  supports.
-                // The ordering is important and you should  preserve it.
-                // Don't forget to declare your app's minimum required feature level in its
-                // description.  All apps are assumed to support 9.1 unless otherwise stated.
-                static const D3D_FEATURE_LEVEL _FeatureLevels[] =
-                {
-                    D3D_FEATURE_LEVEL_11_1,
-                    D3D_FEATURE_LEVEL_11_0,
-                    D3D_FEATURE_LEVEL_10_1,
-                    D3D_FEATURE_LEVEL_10_0,
-                    D3D_FEATURE_LEVEL_9_3,
-                    D3D_FEATURE_LEVEL_9_2,
-                    D3D_FEATURE_LEVEL_9_1
-                };
-
-                // Create the DX11 API device object, and get a corresponding context.
-#ifdef _DEBUG
-                constexpr DWORD _fD3D11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
-#else
-                constexpr DWORD _fD3D11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#endif
-
-
-                auto _hr = D3D11CreateDevice(
-                    nullptr, // specify null to use the default adapter
-                    D3D_DRIVER_TYPE_HARDWARE,
-                    0,
-                    _fD3D11Flags,
-                    _FeatureLevels,                   // list of feature levels this app can support
-                    _countof(_FeatureLevels),         // number of possible feature levels
-                    D3D11_SDK_VERSION,
-                    pD3DDevice.ReleaseAndGetAddressOf(),        // returns the Direct3D device created
-                    &FeatureLevel,                              // returns feature level of device created
-                    pD3DDeviceContext.ReleaseAndGetAddressOf()  // returns the device immediate context
-                    );
-                if (FAILED(_hr))
-                    return _hr;
+                pDirectDeviceCache = GetDirectDeviceCache();
 
                 RefPtr<IDXGIDevice> _pDxgiDevice;
                 // Obtain the underlying DXGI device of the Direct3D11 device.
-                _hr = pD3DDevice->QueryInterface(_pDxgiDevice.ReleaseAndGetAddressOf());
-                if (FAILED(_hr))
-                    return _hr;
-
-                // Obtain the Direct2D device for 2-D rendering.
-                _hr = _pD2DFactory->CreateDevice(_pDxgiDevice, pD2DDevice.ReleaseAndGetAddressOf());
+                auto _hr = pDirectDeviceCache->pD3DDevice->QueryInterface(_pDxgiDevice.ReleaseAndGetAddressOf());
                 if (FAILED(_hr))
                     return _hr;
 
                 // Get Direct2D device's corresponding device context object.
-                _hr = pD2DDevice->CreateDeviceContext(
+                _hr = pDirectDeviceCache->pD2DDevice->CreateDeviceContext(
                     D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
                     pDeviceContext.ReleaseAndGetAddressOf());
                 if (FAILED(_hr))
@@ -188,28 +331,51 @@ namespace YY
                 _SwapChainDesc.SampleDesc.Count = 1;
                 _SwapChainDesc.SampleDesc.Quality = 0;
                 _SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-                _SwapChainDesc.BufferCount = uSwapChainBufferCount;
-#if __ENABLE_FLIP_SEQUENTIAL
-                _SwapChainDesc.Scaling = __ENABLE_COMPOSITION_ENGINE ? DXGI_SCALING_STRETCH : DXGI_SCALING_NONE;
-                _SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-#else
                 _SwapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-                _SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
-#endif
+                if (pDirectDeviceCache->pDcompDevice)
+                {
+                    uSwapChainBufferCount = 2;
+                    _SwapChainDesc.BufferCount = 2;
+                    _SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;            
+                    _SwapChainDesc.AlphaMode = /*DXGI_ALPHA_MODE_PREMULTIPLIED*/ DXGI_ALPHA_MODE_UNSPECIFIED;
 
-#if __ENABLE_COMPOSITION_ENGINE
-                _SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
-                _hr = _pDxgiFactory->CreateSwapChainForComposition(_pDxgiDevice, &_SwapChainDesc, nullptr, pSwapChain.ReleaseAndGetAddressOf());
-#else
-                _SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-                _hr = _pDxgiFactory->CreateSwapChainForHwnd(
-                    pD3DDevice,
-                    hWnd,
-                    &_SwapChainDesc,
-                    nullptr,
-                    nullptr,
-                    pSwapChain.ReleaseAndGetAddressOf());
-#endif
+                    _hr = _pDxgiFactory->CreateSwapChainForComposition(_pDxgiDevice, &_SwapChainDesc, nullptr, pSwapChain.ReleaseAndGetAddressOf());
+
+                    _hr = pDirectDeviceCache->pDcompDevice->CreateTargetForHwnd(hWnd, TRUE, pTarget.ReleaseAndGetAddressOf());
+                    if (FAILED(_hr))
+                        return _hr;
+
+                    RefPtr<IDCompositionVisual> _pVisual;
+                    _hr = pDirectDeviceCache->pDcompDevice->CreateVisual(_pVisual.ReleaseAndGetAddressOf());
+                    if (FAILED(_hr))
+                        return _hr;
+
+                    _hr = _pVisual->SetContent(pSwapChain);
+                    if (FAILED(_hr))
+                        return _hr;
+                    _hr = pTarget->SetRoot(_pVisual);
+                    if (FAILED(_hr))
+                        return _hr;
+
+                    _hr = pDirectDeviceCache->pDcompDevice->Commit();
+                    if (FAILED(_hr))
+                        return _hr;
+                }
+                else
+                {
+                    uSwapChainBufferCount = 1;
+                    _SwapChainDesc.BufferCount = 1;
+                    _SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
+                    _SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+
+                    _hr = _pDxgiFactory->CreateSwapChainForHwnd(
+                        pDirectDeviceCache->pD3DDevice,
+                        hWnd,
+                        &_SwapChainDesc,
+                        nullptr,
+                        nullptr,
+                        pSwapChain.ReleaseAndGetAddressOf());
+                }
 
                 if (FAILED(_hr))
                     return _hr;
@@ -234,29 +400,18 @@ namespace YY
 
                 pDeviceContext->SetTarget(pD2DTargetBitmap);
                 
-#if __ENABLE_COMPOSITION_ENGINE
-                _hr = DCompositionCreateDevice(_pDxgiDevice, IID_PPV_ARGS(pDcompDevice.ReleaseAndGetAddressOf()));
-                if (FAILED(_hr))
-                    return _hr;
-
-                pDcompDevice->CreateTargetForHwnd(hWnd, TRUE, pTarget.ReleaseAndGetAddressOf());
-                RefPtr<IDCompositionVisual> _pVisual;
-                pDcompDevice->CreateVisual(_pVisual.ReleaseAndGetAddressOf());
-                _pVisual->SetContent(pSwapChain);
-                pTarget->SetRoot(_pVisual);
-                pDcompDevice->Commit();
-#endif
                 return S_OK;
             }
 
             HRESULT __YYAPI D2D1_1DrawContext::UpdateTargetPixelSize(bool _bCopyToNewTarget)
             {
                 if (!pDeviceContext)
-                    return S_OK;
+                    return S_FALSE;
 
                 auto _oPrevPixelSize = pDeviceContext->GetPixelSize();
                 if (_oPrevPixelSize.width == PixelSize.width && _oPrevPixelSize.height == PixelSize.height)
-                    return S_OK;
+                    return S_FALSE;
+
                 bFirstPaint = true;
                 
                 const D2D1_SIZE_U _oCopyPixelSize = {min(_oPrevPixelSize.width, PixelSize.width), min(_oPrevPixelSize.height, PixelSize.height)};
@@ -281,7 +436,7 @@ namespace YY
                         _SrcDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
                         _SrcDesc.CPUAccessFlags = 0;
                         _SrcDesc.MiscFlags = 0;
-                        _hr = pD3DDevice->CreateTexture2D(&_SrcDesc, NULL, _pBackupTexture2D.ReleaseAndGetAddressOf());
+                        _hr = pDirectDeviceCache->pD3DDevice->CreateTexture2D(&_SrcDesc, NULL, _pBackupTexture2D.ReleaseAndGetAddressOf());
                         if (FAILED(_hr))
                             return _hr;
 
@@ -292,7 +447,7 @@ namespace YY
                         _oIntersectBox.right = _oCopyPixelSize.width;
                         _oIntersectBox.bottom = _oCopyPixelSize.height;
                         _oIntersectBox.back = 1;
-                        pD3DDeviceContext->CopySubresourceRegion(_pBackupTexture2D, 0, 0, 0, 0, _pFrontTexture2D, 0, &_oIntersectBox);
+                        pDirectDeviceCache->pD3DDeviceContext->CopySubresourceRegion(_pBackupTexture2D, 0, 0, 0, 0, _pFrontTexture2D, 0, &_oIntersectBox);
                     }
                     
                     pDeviceContext->SetTarget(nullptr);
@@ -317,7 +472,7 @@ namespace YY
                         _oIntersectBox.right = _oCopyPixelSize.width;
                         _oIntersectBox.bottom = _oCopyPixelSize.height;
                         _oIntersectBox.back = 1;
-                        pD3DDeviceContext->CopySubresourceRegion(_pBackTexture2D, 0, 0, 0, 0, _pBackupTexture2D, 0, &_oIntersectBox);
+                        pDirectDeviceCache->pD3DDeviceContext->CopySubresourceRegion(_pBackTexture2D, 0, 0, 0, 0, _pBackupTexture2D, 0, &_oIntersectBox);
                     }
 
                     // Direct2D needs the dxgi version of the backbuffer surface pointer.
@@ -358,13 +513,14 @@ namespace YY
 
             HRESULT __YYAPI D2D1_1DrawContext::BeginDraw(const Rect* _pPaint)
             {
-                oPaint.Reset();
-
-                // 无效区域恰好为绘制区域大小其实跟没有无效区域是一样的
-                if (_pPaint && _pPaint->Left == 0 && _pPaint->Top == 0 && _pPaint->Left == PixelSize.width && _pPaint->Bottom == PixelSize.height)
+                if (bFirstPaint)
                     _pPaint = nullptr;
 
-                auto _hr = UpdateTargetPixelSize(_pPaint && bFirstPaint == false);
+                // 无效区域恰好为绘制区域大小其实跟没有无效区域是一样的
+                if (_pPaint && _pPaint->Left <= 0 && _pPaint->Top <= 0 && _pPaint->Left >= PixelSize.width && _pPaint->Bottom >= PixelSize.height)
+                    _pPaint = nullptr;
+
+                auto _hr = UpdateTargetPixelSize(_pPaint != nullptr);
                 if (FAILED(_hr))
                     return _hr;
 
@@ -406,29 +562,26 @@ namespace YY
                     if (_hr == D2DERR_RECREATE_TARGET)
                     {
                         pDeviceContext = nullptr;
-                        pD2DDevice = nullptr;
                         pD2DTargetBitmap = nullptr;
                         pSwapChain = nullptr;
-#if __ENABLE_COMPOSITION_ENGINE
                         pTarget = nullptr;
-                        pDcompDevice = nullptr;
-#endif
-                        pD3DDevice = nullptr;
-                        pD3DDeviceContext = nullptr;
+                        InvalidDirectDeviceCache(std::move(pDirectDeviceCache));
                     }
                     else
                     {
                         pDeviceContext->Flush();
                     }
-
-                    return _hr;
                 }
-
-                _hr = pSwapChain->Present1(0, 0, &_oPresentParameters);
-                if (SUCCEEDED(_hr))
+                else
                 {
-                    bFirstPaint = false;
+                    _hr = pSwapChain->Present1(0, 0, &_oPresentParameters);
+                    if (SUCCEEDED(_hr))
+                    {
+                        bFirstPaint = false;
+                    }
                 }
+
+                oPaint.Reset();
                 return _hr;
             }
 

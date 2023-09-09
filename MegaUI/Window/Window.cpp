@@ -6,9 +6,6 @@
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 #include <Base/Memory/RefPtr.h>
 #include <Media/Graphics/DrawAsyncCommandContext.h>
-#include <Media/Graphics/D2D/D2D1_0DrawContext.h>
-#include <Media/Graphics/D2D/D2D1_1DrawContext.h>
-#include <Media/Graphics/GDIPlus/GDIPlusDrawContext.h>
 
 #pragma warning(disable : 28251)
 
@@ -16,11 +13,14 @@ namespace YY
 {
     namespace MegaUI
     {
+        thread_local size_t s_uWindowCount = 0;
+
         Element* Window::g_pLastKeyboardFocusedElement = nullptr;
 
         Window::Window(int32_t _DefaultDpi)
             : hWnd(nullptr)
             , pHost(nullptr)
+            , pDrawContextFactory(nullptr)
             , LastRenderSize {}
             , fTrackMouse(0u)
             , bCapture(false)
@@ -37,8 +37,22 @@ namespace YY
 
         EXTERN_C extern IMAGE_DOS_HEADER __ImageBase;
 
-        HRESULT Window::Initialize(HWND _hWndParent, HICON _hIcon, int _dX, int _dY, DWORD _fExStyle, DWORD _fStyle, UINT _nOptions)
+        HRESULT Window::Initialize(
+            HWND _hWndParent,
+            HICON _hIcon,
+            int _dX,
+            int _dY,
+            DWORD _fExStyle,
+            DWORD _fStyle,
+            UINT _nOptions,
+            DrawContextFactory* _pDrawContextFactory
+            )
         {
+            if (!_pDrawContextFactory)
+                return E_INVALIDARG;
+
+            pDrawContextFactory = _pDrawContextFactory;
+
             WNDCLASSEXW wcex;
 
             // Register host window class, if needed
@@ -54,7 +68,7 @@ namespace YY
                 wcex.hInstance = (HINSTANCE)&__ImageBase;
                 wcex.hIcon = _hIcon;
                 wcex.hCursor = LoadCursorW(NULL, (LPWSTR)IDC_ARROW);
-                wcex.hbrBackground = (HBRUSH)GetStockObject(HOLLOW_BRUSH);
+                wcex.hbrBackground = NULL;
                 wcex.lpszClassName = L"MegaUI";
                 wcex.lpfnWndProc = Window::StaticWndProc;
 
@@ -89,6 +103,11 @@ namespace YY
                     _fStyle |= WS_DISABLED;
             }
 
+            if (pDrawContextFactory->IsMicrosoftCompositionEngineSupport())
+            {
+                _fExStyle |= WS_EX_NOREDIRECTIONBITMAP;
+            }
+
             hWnd = CreateWindowExW(
                 _fExStyle /*| WS_EX_NOREDIRECTIONBITMAP*/,
                 L"MegaUI",
@@ -110,6 +129,7 @@ namespace YY
             //if (!_hWndParent)
              //   SendMessage(hWnd, WM_CHANGEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEACCEL | UISF_HIDEFOCUS), 0);
 
+            ++s_uWindowCount;
             return S_OK;
         }
 
@@ -359,26 +379,11 @@ namespace YY
             if (!pDrawContext)
             {
                 UniquePtr<DrawContext> _pDrawContext;
-                HRESULT _hr = E_FAIL;
-                if (FAILED(_hr))
-                {
-                    _hr = D2D1_1DrawContext::CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
-                }
-
-                if (FAILED(_hr))
-                {
-                    _hr = D2D1_0DrawContext::CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
-                }
-
-                if (FAILED(_hr))
-                {
-                    _hr = GDIPlusDrawContext::CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
-                }
-
+                HRESULT _hr = pDrawContextFactory->CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
                 if (FAILED(_hr))
                     throw Exception(_hr);
 
-#if 1
+#if 0
                 pDrawContext.Attach(_pDrawContext.Detach());
 #else
                 _hr = DrawAsyncCommandContext::CreateDrawTarget(std::move(_pDrawContext), pDrawContext.ReleaseAndGetAddressOf());
@@ -577,7 +582,11 @@ namespace YY
                 return 0;
                 break;
             case WM_DESTROY:
-                PostQuitMessage(0);
+                pDrawContext = nullptr;
+                --s_uWindowCount;  
+                if (s_uWindowCount == 0)
+                    PostQuitMessage(0);
+
                 SetWindowLongPtrW(_hWnd, GWLP_USERDATA, NULL);
                 hWnd = NULL;
                 HDelete(this);

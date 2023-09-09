@@ -34,21 +34,18 @@ namespace YY
                 RefPtr(_Type* _pOther)
                     : p(_pOther)
                 {
-                    if (_pOther)
-                        _pOther->AddRef();
-                }
-
-                RefPtr(const RefPtr& _Other)
-                    : p(_Other.p)
-                {
                     if (p)
                         p->AddRef();
                 }
 
-                RefPtr(RefPtr&& _Other) noexcept
-                    : p(_Other.p)
+                RefPtr(const RefPtr& _Other)
+                    : p(_Other.Clone())
                 {
-                    _Other.p = nullptr;
+                }
+
+                RefPtr(RefPtr&& _Other) noexcept
+                    : p(_Other.Detach())
+                {
                 }
 
                 ~RefPtr()
@@ -57,7 +54,7 @@ namespace YY
                         p->Release();
                 }
 
-                _Type* __YYAPI Get()
+                _Type* __YYAPI Get() const
                 {
                     return p;
                 }
@@ -76,10 +73,22 @@ namespace YY
                     return _p;
                 }
 
+                inline _Ret_maybenull_ _Type* __YYAPI Clone() const noexcept
+                {
+                    if (p)
+                        p->AddRef();
+                    return p;
+                }
+
                 inline _Ret_notnull_ _Type** __YYAPI ReleaseAndGetAddressOf() noexcept
                 {
                     Attach(nullptr);
                     return &p;
+                }
+
+                inline void Reset(_In_opt_ _Type* _pOther = nullptr) noexcept
+                {
+                    Attach(_pOther);
                 }
 
                 RefPtr& __YYAPI operator=(_In_opt_ _Type* _pOther)
@@ -92,20 +101,15 @@ namespace YY
                     return *this;
                 }
 
-                RefPtr& __YYAPI operator=(RefPtr _pOther)
+                RefPtr& __YYAPI operator=(const RefPtr& _Other) noexcept
                 {
-                    Attach(_pOther.Detach());
-
+                    Attach(_Other.Clone());
                     return *this;
                 }
 
                 RefPtr& __YYAPI operator=(RefPtr&& _Other) noexcept
                 {
-                    if (p != _Other.p)
-                    {
-                        Attach(_Other.Detach());
-                    }
-
+                    Attach(_Other.Detach());
                     return *this;
                 }
 

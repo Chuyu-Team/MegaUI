@@ -127,7 +127,7 @@ namespace YY
             }
 
             HRESULT DrawAsyncCommandContext::CreateDrawTarget(
-                UniquePtr<DrawContext> _pTargetDrawContext,
+                UniquePtr<DrawContext>&& _pTargetDrawContext,
                 DrawContext** _ppDrawContext)
             {
                 if (!_ppDrawContext)
@@ -342,23 +342,45 @@ namespace YY
                     if (!_bRet)
                         continue;
 
-                    auto _pLast = oCommandList.Flush();
-                    if (!_pLast)
+                    auto _pLastPaint = oCommandList.Flush();
+                    if (!_pLastPaint)
                         continue;
 
-                    if (!_pLast->PixelSize.IsEmpty())
-                        pTargetDrawContext->SetPixelSize(_pLast->PixelSize);
-
-                    pTargetDrawContext->BeginDraw(_pLast->oPaint.GetValuePtr());
-
-                    YY::Base::Containers::ArrayView<const byte> _CommandDataView(_pLast->oCommandData.GetData(), _pLast->oCommandData.GetSize());
-
-                    while (_CommandDataView.GetSize() != 0)
+                    // 搜索顶层或者全屏刷新的命令
+                    DrawCommandEntry* _pFirstPaint = nullptr;
+                    for (auto _pItem = _pLastPaint;;)
                     {
-                        if (_CommandDataView.GetSize() < sizeof(DrawCommandData<CommandType::Unknow>))
+                        auto _pNext = _pItem->pNext;
+                        _pItem->pNext = _pFirstPaint;
+                        _pFirstPaint = _pItem;
+                        _pItem = _pNext;
+                        
+                        if (_pItem == nullptr || _pFirstPaint->oPaint.HasValue() == false)
                         {
-                            abort();
+                            _pLastPaint->pNext = _pItem;
+                            break;
                         }
+                    }
+
+                    if (!_pLastPaint->PixelSize.IsEmpty())
+                    {
+                        pTargetDrawContext->SetPixelSize(_pLastPaint->PixelSize);
+                    }
+
+                    for (auto _pItem = _pFirstPaint; _pItem; _pItem = _pItem->pNext)
+                    {
+                        auto _hr = pTargetDrawContext->BeginDraw(_pItem->oPaint.GetValuePtr());
+
+                        pTargetDrawContext->PushAxisAlignedClip(Rect(0, 0, _pItem->PixelSize.Width, _pItem->PixelSize.Height));
+
+                        YY::Base::Containers::ArrayView<const byte> _CommandDataView(_pItem->oCommandData.GetData(), _pItem->oCommandData.GetSize());
+
+                        while (_CommandDataView.GetSize() != 0)
+                        {
+                            if (_CommandDataView.GetSize() < sizeof(DrawCommandData<CommandType::Unknow>))
+                            {
+                                abort();
+                            }
 
 #define __APPLY_DRAWING_COMMAND_ID(_Id, ...)                            \
     case CommandType::_Id:                                              \
@@ -372,20 +394,27 @@ namespace YY
         break;                                                          \
     }
 
-                        auto _pUnknowCommandData = (DrawCommandData<CommandType::Unknow>*)_CommandDataView.GetData();
-                        switch (_pUnknowCommandData->eCommandType)
-                        {
-                            __DRAWING_COMMAND_ID_TABLE(__APPLY_DRAWING_COMMAND_ID, _pCommandData);
-                        default:
-                            // 未知的Id，理论上不应该出现，所以立即终止程序
-                            abort();
-                            break;
+                            auto _pUnknowCommandData = (DrawCommandData<CommandType::Unknow>*)_CommandDataView.GetData();
+                            switch (_pUnknowCommandData->eCommandType)
+                            {
+                                __DRAWING_COMMAND_ID_TABLE(__APPLY_DRAWING_COMMAND_ID, _pCommandData);
+                            default:
+                                // 未知的Id，理论上不应该出现，所以立即终止程序
+                                abort();
+                                break;
+                            }
                         }
+
+                        pTargetDrawContext->PopAxisAlignedClip();
+                        _hr = pTargetDrawContext->EndDraw();
+
+                        if (_pItem == _pLastPaint)
+                            break;
                     }
 
-                    pTargetDrawContext->EndDraw();
-
-                    FreeDrawingCommand(_pLast);
+                    // 绘制期间仅可能不做非绘制相关，减少呈现延迟
+                    // 因此将一些清理工作放结束
+                    FreeDrawingCommand(_pFirstPaint);
                 }
 
                 bCancel = true;

@@ -30,11 +30,18 @@ namespace YY
                 GdiplusStatic<Gdiplus::Bitmap> oSurfaceBitmap;
                 GdiplusStatic<Gdiplus::Graphics> oSurface;
                 Array<Gdiplus::RectF, AllocPolicy::SOO> vecClip;
+                bool bFirstPaint;
 
                 GDIPlusDrawContext();
 
             public:
                 ~GDIPlusDrawContext();
+
+                static _Ret_notnull_ DrawContextFactory* __YYAPI GetDrawContextFactory();
+
+                static bool __YYAPI IsSupport();
+
+                static bool __YYAPI IsMicrosoftCompositionEngineSupport();
 
                 static HRESULT __YYAPI CreateDrawTarget(_In_ HWND _hWnd, _Outptr_ DrawContext** _ppDrawContext);      
 
@@ -84,6 +91,8 @@ namespace YY
                 
             private:
                 _Ret_notnull_ Gdiplus::Graphics* __YYAPI GetSurface();
+
+                HRESULT __YYAPI UpdateTargetPixelSize(bool _bCopyToNewTarget);
 
                 static RefPtr<GdiplusRef<Gdiplus::Brush>> __YYAPI GetNativeBrush(_In_ Brush _oBrush);
 
