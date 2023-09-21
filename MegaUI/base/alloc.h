@@ -81,7 +81,7 @@ namespace YY
         public:
             _Ty* allocate(const size_t _Count)
             {
-                return HAlloc(_Count * sizeof(_Ty));
+                return (_Ty*)HAlloc(_Count * sizeof(_Ty));
             }
 
             void deallocate(_Ty* const _Ptr, const size_t _Count)

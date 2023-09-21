@@ -20,7 +20,7 @@ namespace YY
                     {
                         for (; _pFirst != _pLast; ++_pFirst)
                         {
-                            new (_pFirst) _Type {};
+                            new (_pFirst) _Type ();
                         }
                     }
                 }

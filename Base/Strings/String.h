@@ -160,12 +160,12 @@ namespace YY
                 _Field_z_ char_t* szString;
 
             public:
-                StringBase() noexcept
+                explicit StringBase() noexcept
                     : szString(StringData::GetEmtpyStringData()->GetStringBuffer())
                 {
                 }
 
-                StringBase(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
+                explicit StringBase(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
                     : szString(StringData::GetEmtpyStringData()->GetStringBuffer())
                 {
                     auto _hr = SetString(_szSrc, _cchSrc);
@@ -596,6 +596,14 @@ namespace YY
                         throw Exception(_S("AppendChar失败！"), _hr);
 
                     return *this;
+                }
+                
+                bool __YYAPI operator==(const StringBase& _szSrc) const
+                {
+                    if (this->GetSize() != _szSrc.GetSize())
+                        return false;
+
+                    return memcmp(this->GetConstString(), _szSrc.GetConstString(), this->GetSize() * sizeof(char_t)) == 0;
                 }
 
                 bool __YYAPI operator==(const StringView_t& _szSrc) const

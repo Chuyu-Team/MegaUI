@@ -29,13 +29,13 @@ namespace YY
                 constexpr static Encoding eEncoding = _eEncoding;
 
             public:
-                StringView()
+                explicit StringView()
                     : szString(nullptr)
                     , cchString(0)
                 {
                 }
 
-                StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
+                explicit StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
                     : szString(_szSrc)
                     , cchString(_szSrc ? _cchSrc : 0)
                 {
@@ -159,14 +159,14 @@ namespace YY
                 Encoding eEncoding;
 
             public:
-                StringView()
+                explicit StringView()
                     : szString(nullptr)
                     , cchString(0)
                     , eEncoding(Encoding::ANSI)
                 {
                 }
 
-                StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc, _In_ Encoding _eEncoding = Encoding::ANSI)
+                explicit StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc, _In_ Encoding _eEncoding = Encoding::ANSI)
                     : szString(_szSrc)
                     , cchString(_cchSrc)
                     , eEncoding(_eEncoding)

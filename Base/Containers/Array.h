@@ -235,13 +235,13 @@ namespace YY
                         ConstructorPolicy<_Type>::Destructor(GetData(), uSize);
                     }
 
-                    constexpr static _Ret_notnull_ SharedData* __YYAPI _GetEmptySharedData()
+                    static _Ret_notnull_ SharedData* __YYAPI _GetEmptySharedData()
                     {
                         static const SharedData s_Empty = {0, int_max};
                         return const_cast<SharedData*>(&s_Empty);
                     }
 
-                    constexpr static _Ret_notnull_ SharedData* __YYAPI GetEmptySharedData()
+                    static _Ret_notnull_ SharedData* __YYAPI GetEmptySharedData()
                     {
                         // 为了将其他特化后的类型使用同一份数据，所以再次强制转换一次。
                         return reinterpret_cast<SharedData*>(AllocPolicyArray<int, AllocPolicy::COW, 0>::SharedData::_GetEmptySharedData());
@@ -598,7 +598,68 @@ namespace YY
                         return _uCapacityNeed;
                 }
             };
-                
+            
+            template<typename _Type>
+            struct AllocPolicyArraySOOLargeHeader
+            {
+                // 数组的起始指针
+                _Type* pData;
+                // 实际有效的元素个数
+                size_t uSize;
+                // 当前缓冲区的容量上限
+                size_t uCapacity;
+                // 表示内存锁定次数。
+                size_t uLockCount;
+            };
+
+            template<typename _Type, unsigned _uInsideBufferSize>
+            struct AllocPolicyArraySOOSmallHeader
+            {
+                using LargeHeader = AllocPolicyArraySOOLargeHeader<_Type>;
+
+                // 为 0，则表示使用 SmallHeader，为 1则使用 LargeHeader
+                size_t bSmallHeader : 1;
+                size_t uLockCount : YY_bitsizeof(size_t) - 1;
+                // StaticBuffer中实际使用的元素个数
+                size_t uSize;
+
+                byte_t InsideBuffer[sizeof(LargeHeader) + sizeof(_Type) * _uInsideBufferSize - sizeof(size_t) * 2];
+
+                _Type* GetData() const
+                {
+                    return reinterpret_cast<_Type*>(const_cast<byte_t*>(InsideBuffer));
+                }
+
+                static constexpr size_t GetCapacity()
+                {
+                    return sizeof(InsideBuffer) / sizeof(_Type);
+                }
+            };
+
+            template<typename _Type>
+            struct AllocPolicyArraySOOSmallHeader<_Type, 0>
+            {
+                using LargeHeader = AllocPolicyArraySOOLargeHeader<_Type>;
+
+                // 为 0，则表示使用 SmallHeader，为 1则使用 LargeHeader
+                size_t bSmallHeader : 1;
+                size_t uLockCount : YY_bitsizeof(size_t) - 1;
+                // StaticBuffer中实际使用的元素个数
+                size_t uSize;
+
+                byte_t InsideBuffer[sizeof(LargeHeader) - sizeof(size_t) * 2];
+
+                _Type* GetData() const
+                {
+                    return reinterpret_cast<_Type*>(const_cast<byte_t*>(InsideBuffer));
+                }
+
+                static constexpr size_t GetCapacity()
+                {
+                    return sizeof(InsideBuffer) / sizeof(_Type);
+                }
+            };
+
             // Small Object Optimization优化的数组策略
             template<typename _Type, uint32_t _uInsideBufferSize>
             class AllocPolicyArray<_Type, AllocPolicy::SOO, _uInsideBufferSize>
@@ -606,64 +667,10 @@ namespace YY
             protected:
                 union InternalData
                 {
-                    struct LargeHeader
-                    {
-                        // 数组的起始指针
-                        _Type* pData;
-                        // 实际有效的元素个数
-                        size_t uSize;
-                        // 当前缓冲区的容量上限
-                        size_t uCapacity;
-                        // 表示内存锁定次数。
-                        size_t uLockCount;
-                    };
-
-                    template<unsigned _uInsideBufferSize>
-                    struct SmallHeader
-                    {
-                        // 为 0，则表示使用 SmallHeader，为 1则使用 LargeHeader
-                        size_t bSmallHeader : 1;
-                        size_t uLockCount : YY_bitsizeof(size_t) - 1;
-                        // StaticBuffer中实际使用的元素个数
-                        size_t uSize;
-
-                        byte_t InsideBuffer[sizeof(LargeHeader) + sizeof(_Type) * _uInsideBufferSize - sizeof(size_t) * 2];
-            
-                        _Type* GetData() const
-                        {
-                            return reinterpret_cast<_Type*>(const_cast<byte_t*>(InsideBuffer));
-                        }
-
-                        static constexpr size_t GetCapacity()
-                        {
-                            return sizeof(InsideBuffer) / sizeof(_Type);
-                        }
-                    };
-
-                    template<>
-                    struct SmallHeader<0>
-                    {
-                        // 为 0，则表示使用 SmallHeader，为 1则使用 LargeHeader
-                        size_t bSmallHeader : 1;
-                        size_t uLockCount : YY_bitsizeof(size_t) - 1;
-                        // StaticBuffer中实际使用的元素个数
-                        size_t uSize;
-
-                        byte_t InsideBuffer[sizeof(LargeHeader) - sizeof(size_t) * 2];
-
-                        _Type* GetData() const
-                        {
-                            return reinterpret_cast<_Type*>(const_cast<byte_t*>(InsideBuffer));
-                        }
-
-                        static constexpr size_t GetCapacity()
-                        {
-                            return sizeof(InsideBuffer) / sizeof(_Type);
-                        }
-
-                    };
+                    using LargeHeader = AllocPolicyArraySOOLargeHeader<_Type>;
+                    using SmallHeader = AllocPolicyArraySOOSmallHeader<_Type, _uInsideBufferSize>;
                         
-                    SmallHeader<_uInsideBufferSize> Small;
+                    SmallHeader Small;
                     LargeHeader Large;
                     struct
                     {
@@ -1048,9 +1055,9 @@ namespace YY
             {
             public:
                 using Type = _Type;
-                using AllocPolicyArray = AllocPolicyArray<_Type, _eAllocPolicy, _uInsideBufferSize>;
-                using _ReadPoint = typename AllocPolicyArray::_ReadPoint;
-                using _ReadType = typename AllocPolicyArray::_ReadType;
+                using CurrentAllocPolicyArray = AllocPolicyArray<_Type, _eAllocPolicy, _uInsideBufferSize>;
+                using _ReadPoint = typename CurrentAllocPolicyArray::_ReadPoint;
+                using _ReadType = typename CurrentAllocPolicyArray::_ReadType;
                 static constexpr AllocPolicy eAllocPolicy = _eAllocPolicy;
                 
                 constexpr static size_t uInvalidIndex = uint_max;
@@ -1061,21 +1068,21 @@ namespace YY
 
                 Array(const Array& _Other)
                 {
-                    auto _hr = AllocPolicyArray::SetArray(_Other);
+                    auto _hr = CurrentAllocPolicyArray::SetArray(_Other);
                     if(FAILED(_hr))
                         throw Exception(_S("DynamicArray构造失败！"), _hr);
                 }
 
                 Array(Array&& _Other) noexcept
                 {
-                    auto _hr = AllocPolicyArray::SetArray(std::move(_Other));
+                    auto _hr = CurrentAllocPolicyArray::SetArray(std::move(_Other));
                     if(FAILED(_hr))
                         abort();
                 }
 
                 Array(std::initializer_list<_Type> _List)
                 {
-                    auto _hr = SetArray(_List.begin(), _List.size());
+                    auto _hr = CurrentAllocPolicyArray::SetArray(_List.begin(), _List.size());
 
                     if (FAILED(_hr))
                         throw Exception(_S("SharedArray构造失败！"), _hr);
@@ -1087,7 +1094,7 @@ namespace YY
             
                 HRESULT __YYAPI Reserve(size_t _uCapacity)
                 {
-                    auto _pInternalData = AllocPolicyArray::LockInternalData(_uCapacity);
+                    auto _pInternalData = CurrentAllocPolicyArray::LockInternalData(_uCapacity);
                     if (!_pInternalData)
                         return E_OUTOFMEMORY;
 
@@ -1099,7 +1106,7 @@ namespace YY
                 {
                     if (_uNewSize == 0)
                     {
-                        AllocPolicyArray::Clear();
+                        CurrentAllocPolicyArray::Clear();
                         return S_OK;
                     }
 
@@ -1113,7 +1120,7 @@ namespace YY
         
                 _Ret_maybenull_ _Type* __YYAPI LockBufferAndSetSize(size_t _uNewSize)
                 {
-                    auto _pInternalData = AllocPolicyArray::LockInternalData(_uNewSize);
+                    auto _pInternalData = CurrentAllocPolicyArray::LockInternalData(_uNewSize);
                     if (!_pInternalData)
                         return nullptr;
 
@@ -1141,7 +1148,7 @@ namespace YY
 
                 void __YYAPI UnlockBuffer()
                 {
-                    auto _pInternalData = AllocPolicyArray::GetInternalData();
+                    auto _pInternalData = CurrentAllocPolicyArray::GetInternalData();
                     if (_pInternalData->IsLocked() == false)
                     {
                         throw Exception(szUnlockBufferFunctionCouldNotBeCalledBecauseBufferNotLocked);
@@ -1153,26 +1160,26 @@ namespace YY
 
                 _Ret_maybenull_ _ReadPoint __YYAPI GetItemPtr(size_t _uIndex)
                 {
-                    if (AllocPolicyArray::GetSize() <= _uIndex)
+                    if (CurrentAllocPolicyArray::GetSize() <= _uIndex)
                         return nullptr;
 
-                    return AllocPolicyArray::GetData() + _uIndex;
+                    return CurrentAllocPolicyArray::GetData() + _uIndex;
                 }
 
                 _Ret_maybenull_ const _Type* __YYAPI GetItemPtr(size_t _uIndex) const
                 {
-                    if (AllocPolicyArray::GetSize() <= _uIndex)
+                    if (CurrentAllocPolicyArray::GetSize() <= _uIndex)
                         return nullptr;
 
-                    return AllocPolicyArray::GetData() + _uIndex;
+                    return CurrentAllocPolicyArray::GetData() + _uIndex;
                 }
 
                 HRESULT __YYAPI SetItem(size_t _uIndex, const _Type& _NewItem)
                 {
-                    if (AllocPolicyArray::GetSize() <= _uIndex)
+                    if (CurrentAllocPolicyArray::GetSize() <= _uIndex)
                         return E_BOUNDS;
 
-                    auto _pInternalData = AllocPolicyArray::LockInternalDataIncrement(0);
+                    auto _pInternalData = CurrentAllocPolicyArray::LockInternalDataIncrement(0);
                     if (!_pInternalData)
                         return E_OUTOFMEMORY;
 
@@ -1183,8 +1190,8 @@ namespace YY
 
                 size_t __YYAPI GetItemIndex(const _Type* _pItem) const
                 {
-                    size_t _uIndex =  _pItem - AllocPolicyArray::GetData();
-                    if (_uIndex < AllocPolicyArray::GetSize())
+                    size_t _uIndex = _pItem - CurrentAllocPolicyArray::GetData();
+                    if (_uIndex < CurrentAllocPolicyArray::GetSize())
                         return _uIndex;
 
                     return uInvalidIndex;
@@ -1195,7 +1202,7 @@ namespace YY
                     for (const auto& _Current : *this)
                     {
                         if (_Current == _Item)
-                            return &_Current - AllocPolicyArray::GetData();
+                            return &_Current - CurrentAllocPolicyArray::GetData();
                     }
 
                     return uInvalidIndex;
@@ -1215,7 +1222,7 @@ namespace YY
                     if (!_pSrc)
                         return E_INVALIDARG;
 
-                    auto _pInternalData = AllocPolicyArray::LockInternalDataIncrement(_uCount);
+                    auto _pInternalData = CurrentAllocPolicyArray::LockInternalDataIncrement(_uCount);
                     if (!_pInternalData)
                         return E_OUTOFMEMORY;
 
@@ -1228,7 +1235,7 @@ namespace YY
                 template<typename... Args>
                 _Type* __YYAPI EmplacePtr(Args... args)
                 {
-                    auto _pInternalData = AllocPolicyArray::LockInternalDataIncrement(1);
+                    auto _pInternalData = CurrentAllocPolicyArray::LockInternalDataIncrement(1);
                     if (!_pInternalData)
                         return nullptr;
 
@@ -1241,12 +1248,12 @@ namespace YY
 
                 HRESULT __YYAPI Insert(uint_t _uIndex, const _Type& _NewItem)
                 {
-                    const auto _uSize = AllocPolicyArray::GetSize();
+                    const auto _uSize = CurrentAllocPolicyArray::GetSize();
 
                     if (_uIndex > _uSize)
                         return E_BOUNDS;
             
-                    auto _pInternalData = AllocPolicyArray::LockInternalDataIncrement(1);
+                    auto _pInternalData = CurrentAllocPolicyArray::LockInternalDataIncrement(1);
                     if (!_pInternalData)
                         return E_OUTOFMEMORY;
 
@@ -1276,7 +1283,7 @@ namespace YY
                     if (_uCount == 0)
                         return S_OK;
 
-                    const auto _uSize = AllocPolicyArray::GetSize();
+                    const auto _uSize = CurrentAllocPolicyArray::GetSize();
                     if (_uSize <= _uIndex)
                         return S_OK;
 
@@ -1286,11 +1293,11 @@ namespace YY
 
                     if (_uRemoveCount == _uSize)
                     {
-                        AllocPolicyArray::Clear();
+                        CurrentAllocPolicyArray::Clear();
                         return S_OK;
                     }
 
-                    auto _pInternalData = AllocPolicyArray::LockInternalDataIncrement(0);
+                    auto _pInternalData = CurrentAllocPolicyArray::LockInternalDataIncrement(0);
                     if (!_pInternalData)
                         return E_OUTOFMEMORY;
 
@@ -1307,11 +1314,11 @@ namespace YY
 
                 HRESULT __YYAPI Sort(int(* _pFuncCompare)(const _Type* _pLeft, const _Type* _pRigth))
                 {
-                    auto _pInternalData = AllocPolicyArray::GetInternalData();
+                    auto _pInternalData = CurrentAllocPolicyArray::GetInternalData();
                     if (_pInternalData->GetSize() <= 1)
                         return S_FALSE;
 
-                    _pInternalData = AllocPolicyArray::LockInternalData(0);
+                    _pInternalData = CurrentAllocPolicyArray::LockInternalData(0);
                     if (!_pInternalData)
                         return E_OUTOFMEMORY;
 
@@ -1323,74 +1330,74 @@ namespace YY
 
                 _ReadType& __YYAPI operator[](_In_ uint_t _uIndex)
                 {
-                    if (_uIndex >= AllocPolicyArray::GetSize())
+                    if (_uIndex >= CurrentAllocPolicyArray::GetSize())
                         throw Exception();
 
-                    return AllocPolicyArray::GetData()[_uIndex];
+                    return CurrentAllocPolicyArray::GetData()[_uIndex];
                 }
 
                 const _ReadType& __YYAPI operator[](_In_ uint_t _uIndex) const
                 {
-                    if (_uIndex >= AllocPolicyArray::GetSize())
+                    if (_uIndex >= CurrentAllocPolicyArray::GetSize())
                         throw Exception();
 
-                    return AllocPolicyArray::GetData()[_uIndex];
+                    return CurrentAllocPolicyArray::GetData()[_uIndex];
                 }
 
                 _ReadPoint __YYAPI begin() noexcept
                 {
-                    return AllocPolicyArray::GetData();
+                    return CurrentAllocPolicyArray::GetData();
                 }
 
                 _ReadPoint __YYAPI end() noexcept
                 {
-                    auto _pInternalData = AllocPolicyArray::GetInternalData();
+                    auto _pInternalData = CurrentAllocPolicyArray::GetInternalData();
                     return _pInternalData->GetLast();
                 }
 
                 const _Type* __YYAPI begin() const noexcept
                 {
-                    return AllocPolicyArray::GetData();
+                    return CurrentAllocPolicyArray::GetData();
                 }
 
                 const _Type* __YYAPI end() const noexcept
                 {
-                    auto _pInternalData = AllocPolicyArray::GetInternalData();
+                    auto _pInternalData = CurrentAllocPolicyArray::GetInternalData();
                     return _pInternalData->GetLast();
                 }
             
                 _ReadPoint __YYAPI _Unchecked_begin() noexcept
                 {
-                    return AllocPolicyArray::GetData();
+                    return CurrentAllocPolicyArray::GetData();
                 }
 
                 _ReadPoint __YYAPI _Unchecked_end() noexcept
                 {
-                    auto _pInternalData = AllocPolicyArray::GetInternalData();
+                    auto _pInternalData = CurrentAllocPolicyArray::GetInternalData();
                     return _pInternalData->GetLast();
                 }
 
                 const _Type* __YYAPI _Unchecked_begin() const noexcept
                 {
-                    return AllocPolicyArray::GetData();
+                    return CurrentAllocPolicyArray::GetData();
                 }
 
                 const _Type* __YYAPI _Unchecked_end() const noexcept
                 {
-                    auto _pInternalData = AllocPolicyArray::GetInternalData();
+                    auto _pInternalData = CurrentAllocPolicyArray::GetInternalData();
                     return _pInternalData->GetLast();
                 }
             
                 bool __YYAPI operator==(const Array& _Array) const
                 {
-                    auto _Size = AllocPolicyArray::GetSize();
+                    auto _Size = CurrentAllocPolicyArray::GetSize();
 
                     if (_Size != _Array.GetSize())
                         return false;
 
                     for (size_t i = 0; i != _Size; ++i)
                     {
-                        if (AllocPolicyArray::GetData()[i] != _Array.GetData()[i])
+                        if (CurrentAllocPolicyArray::GetData()[i] != _Array.GetData()[i])
                             return false;
                     }
 
@@ -1399,7 +1406,7 @@ namespace YY
 
                 Array& __YYAPI operator=(const Array& _Array)
                 {
-                    auto _hr = AllocPolicyArray::SetArray(_Array);
+                    auto _hr = CurrentAllocPolicyArray::SetArray(_Array);
                     if (FAILED(_hr))
                         throw Exception();
 
@@ -1408,7 +1415,7 @@ namespace YY
 
                 Array& __YYAPI operator=(Array&& _Array) noexcept
                 {
-                    auto _hr = AllocPolicyArray::SetArray(std::move(_Array));
+                    auto _hr = CurrentAllocPolicyArray::SetArray(std::move(_Array));
                     if (FAILED(_hr))
                         abort();
 
