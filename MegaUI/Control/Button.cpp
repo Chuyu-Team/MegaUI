@@ -4,7 +4,7 @@
 #include <MegaUI/core/ControlInfoImp.h>
 #include <MegaUI/Window/Window.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {

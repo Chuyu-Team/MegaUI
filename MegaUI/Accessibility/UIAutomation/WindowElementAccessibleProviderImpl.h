@@ -12,7 +12,7 @@ namespace YY
             , public IRawElementProviderFragmentRoot
         {
         public:
-            WindowElementAccessibleProvider(Element* _pElement, ThreadTaskRunner _TaskRunner);
+            WindowElementAccessibleProvider(Element* _pElement, RefPtr<ThreadTaskRunner> _pTaskRunner);
 
             // IUnknown
 

@@ -21,11 +21,13 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 
 #pragma once
 
+#include <stdlib.h>
+
 #include <Base/Strings/StringView.h>
 #include <Base/Encoding.h>
 #include <Base/Exception.h>
 #include <Base/YY.h>
-#include <MegaUI/base/ErrorCode.h>
+#include <MegaUI/Base/ErrorCode.h>
 #include <Base/Sync/Interlocked.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -74,7 +76,7 @@ namespace YY
                     }
                 }
 
-                HRESULT __cdecl AppendFormat(
+                HRESULT AppendFormat(
                     _In_z_ _Printf_format_string_ const char_t* _szFormat,
                     ...)
                 {
@@ -105,7 +107,7 @@ namespace YY
                     return AppendFormatV(_szFormat, _args);
                 }
 
-                HRESULT __cdecl Format(
+                HRESULT Format(
                     _In_z_ _Printf_format_string_ const char_t* _szFormat,
                     ...)
                 {
@@ -148,7 +150,6 @@ namespace YY
             public:
                 using char_t = _char_t;
                 using StringView_t = StringView<char_t, _eEncoding>;
-                using Encoding = Encoding;
 
             private:
                 constexpr static Encoding eEncoding = _eEncoding;
@@ -303,7 +304,7 @@ namespace YY
                             return;
                         }
 
-                        _ASSERTE(_uNewSize <= _pInternalStringData->uCapacity);
+                        assert(_uNewSize <= _pInternalStringData->uCapacity);
 
                         if (_pInternalStringData->uCapacity < _uNewSize)
                             _uNewSize = _pInternalStringData->uCapacity;
@@ -536,7 +537,7 @@ namespace YY
 
                 char_t __YYAPI operator[](_In_ size_t _uIndex) const
                 {
-                    _ASSERTE(_uIndex < GetSize());
+                    assert(_uIndex < GetSize());
 
                     return szString[_uIndex];
                 }
@@ -565,7 +566,7 @@ namespace YY
                     if (FAILED(_hr))
                     {
                         // move 失败
-                        std::abort();
+                        abort();
                     }
                     return *this;
                 }
@@ -729,7 +730,7 @@ namespace YY
                         return _pNewStringData;
                     }
 
-                    constexpr static _Ret_notnull_ StringData* __YYAPI GetEmtpyStringData()
+                    static _Ret_notnull_ StringData* __YYAPI GetEmtpyStringData()
                     {
                         struct StaticStringData
                         {
@@ -738,8 +739,9 @@ namespace YY
                         };
 
                         const static StaticStringData g_EmptyStringData =
-                            {
-                                {{0, uint16_t(_eEncoding), int32_max}, 0, 0}};
+                        {
+                            {{0, uint16_t(_eEncoding), int32_max}, 0, 0}
+                        };
                         return const_cast<StringData*>(&g_EmptyStringData.Base);
                     }
 

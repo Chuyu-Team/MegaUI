@@ -2,6 +2,8 @@
 
 #include <Base/Sync/Interlocked.h>
 
+#pragma pack(push, __YY_PACKING)
+
 namespace YY
 {
     namespace Base
@@ -14,8 +16,11 @@ namespace YY
                 Entry* pNext = nullptr;
             };
 
+            template<class Entry, ProducerType eProducer = ProducerType::Multi, ConsumerType eConsumer = ConsumerType::Single>
+            class SingleLinkedList;
+
             template<class Entry>
-            class SingleLinkedList
+            class SingleLinkedList<Entry, ProducerType::Multi, ConsumerType::Single>
             {
             public:
                 // 一般不应该直接操作此成员
@@ -80,11 +85,11 @@ namespace YY
                 
                 /// <summary>
                 /// 从链表弹出一个元素。
-                /// <para/>警告：PopUnsafe不能并行调用，这可能导致内存非法访问。
-                /// <para/>警告：PopUnsafe不能与Flush并行调用，这可能导致内存非法访问。
+                /// <para/>警告：Pop不能并行调用，这可能导致内存非法访问。
+                /// <para/>警告：Pop不能与Flush并行调用，这可能导致内存非法访问。
                 /// </summary>
                 /// <returns>返回当前List头部元素。</returns>
-                Entry* PopUnsafe()
+                Entry* Pop()
                 {
                     auto _pEntry = (Entry*)pHead;
                     for (;;)
@@ -109,7 +114,7 @@ namespace YY
 
                 /// <summary>
                 /// 清空当前列表，并返回之前链表的首个元素。
-                /// <para/>警告：Flush不能与PopUnsafe并行调用，这可能导致内存非法访问。
+                /// <para/>警告：Flush不能与Pop并行调用，这可能导致内存非法访问。
                 /// </summary>
                 /// <returns>链表的首个元素地址。</returns>
                 Entry* Flush()
@@ -122,3 +127,5 @@ namespace YY
         using namespace YY::Base::Sync;
     } // namespace Base
 } // namespace YY
+
+#pragma pack(pop)

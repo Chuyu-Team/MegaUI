@@ -5,7 +5,7 @@
 
 #include <MegaUI/Accessibility/UIAutomation/WindowElementAccessibleProviderImpl.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {
@@ -40,7 +40,7 @@ namespace YY
 
             if (!pAccessibleProvider)
             {
-                pAccessibleProvider = new (std::nothrow) WindowElementAccessibleProvider(this, ThreadTaskRunner::GetCurrentThreadTaskRunner());
+                pAccessibleProvider = new (std::nothrow) WindowElementAccessibleProvider(this, ThreadTaskRunner::GetCurrent());
                 if (!pAccessibleProvider)
                     return E_OUTOFMEMORY;
             }

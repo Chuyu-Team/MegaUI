@@ -5,14 +5,14 @@
 #include <MegaUI/Accessibility/UIAutomation/WindowElementPatternProviderImpl.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {
     namespace MegaUI
     {
-        WindowElementAccessibleProvider::WindowElementAccessibleProvider(Element* _pElement, ThreadTaskRunner _TaskRunner)
-            : ElementAccessibleProvider(_pElement, _TaskRunner)
+        WindowElementAccessibleProvider::WindowElementAccessibleProvider(Element* _pElement, RefPtr<ThreadTaskRunner> _pTaskRunner)
+            : ElementAccessibleProvider(_pElement, std::move(_pTaskRunner))
         {
         }
 
@@ -51,7 +51,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     if (_iPatternId == UIA_TransformPatternId || _iPatternId == UIA_TransformPattern2Id)
@@ -87,7 +87,7 @@ namespace YY
 
             RECT _Rect;
             if (!::GetWindowRect(pElement->GetWindow()->GetWnd(), &_Rect))
-                return __HRESULT_FROM_WIN32(GetLastError());
+                return HRESULT_From_LSTATUS(GetLastError());
             
             _pRetVal->left = _Rect.left;
             _pRetVal->top = _Rect.top;
@@ -108,7 +108,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     Point _Point((float)_X, (float)_Y);
@@ -148,7 +148,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     auto _pFocus = pElement->GetWindow()->GetFocus();

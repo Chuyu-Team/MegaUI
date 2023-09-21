@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
-
 #include "Element.h"
+
+#include <stdlib.h>
 
 #include "Property.h"
 #include "value.h"
@@ -15,7 +16,7 @@
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 #pragma warning(disable : 26812)
 
 namespace YY
@@ -237,7 +238,7 @@ namespace YY
                 return S_OK;
 
             if (_bCanCancel && OnPropertyChanging(_Prop, PropertyIndicies::PI_Local, _pvOld, _Value) == false)
-                return __HRESULT_FROM_WIN32(ERROR_CANCELLED);
+                return HRESULT_From_LSTATUS(ERROR_CANCELLED);
 
             PreSourceChange(_Prop, PropertyIndicies::PI_Local, _pvOld, _Value);
 
@@ -1612,7 +1613,7 @@ namespace YY
 
             if(!pAccessibleProvider)
             {
-                pAccessibleProvider = new (std::nothrow) ElementAccessibleProvider(this, ThreadTaskRunner::GetCurrentThreadTaskRunner());
+                pAccessibleProvider = new (std::nothrow) ElementAccessibleProvider(this, ThreadTaskRunner::GetCurrent());
                 if (!pAccessibleProvider)
                     return E_OUTOFMEMORY;
             }
@@ -2220,7 +2221,7 @@ namespace YY
                 case PropertyIndicies::PI_Specified:
                     return GetGeneralSpecifiedValue((GetValueHandleData*)_pHandleData);
                 default:
-                    std::abort();
+                    abort();
                     return false;
                 }
             case CustomPropertyHandleType::SetValue:
@@ -2231,7 +2232,7 @@ namespace YY
                 case PropertyIndicies::PI_Specified:
                     return SetGeneralSpecifiedValue((SetValueHandleData*)_pHandleData);
                 default:
-                    std::abort();
+                    abort();
                     return false;
                 }
             case CustomPropertyHandleType::FastSpecValueCompare:
@@ -2399,7 +2400,7 @@ namespace YY
                 if (_uOffsetToHasCache == 0)
                 {
                     // 不应该设置 Unset
-                    std::abort();
+                    abort();
                     return true;
                 }
 
@@ -2508,7 +2509,7 @@ namespace YY
                     break;
                 }
                 default:
-                    std::abort();
+                    abort();
                     break;
                 }
             }
@@ -2735,7 +2736,7 @@ namespace YY
             }
             else
             {
-                std::abort();
+                abort();
             }
             return false;
         }

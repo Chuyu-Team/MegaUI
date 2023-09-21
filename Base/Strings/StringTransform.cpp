@@ -2,9 +2,13 @@
 
 #include <Base/Strings/StringTransform.h>
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
-#pragma warning(disable : 28251)
+#include <MegaUI/Base/ErrorCode.h>
+
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {
@@ -12,14 +16,22 @@ namespace YY
     {
         namespace Strings
         {
-            __forceinline u16char_t __YYAPI byteswap(u16char_t _ch)
+            inline u16char_t __YYAPI byteswap(u16char_t _ch)
             {
+#ifdef _WIN32
                 return _byteswap_ushort(_ch);
+#else
+                return __builtin_bswap16(_ch);
+#endif
             }
 
-            __forceinline u32char_t __YYAPI byteswap(u32char_t _ch)
+            inline u32char_t __YYAPI byteswap(u32char_t _ch)
             {
+#ifdef _WIN32
                 return _byteswap_ulong(_ch);
+#else
+                return __builtin_bswap32(_ch);
+#endif
             }
 
             class EndianHelper
@@ -83,7 +95,7 @@ namespace YY
 
                         _szSrc.UnlockBuffer(_cchDst);
 
-                        auto _pStringData = reinterpret_cast<StringB::StringData*>(_szSrc.Detach());
+                        auto _pStringData = reinterpret_cast<typename StringB::StringData*>(_szSrc.Detach());
                         _pStringData->eEncoding = uint16_t(StringB::eEncoding);
                         _pszDst->Attach(_pStringData);
                         _pStringData->Release();
@@ -140,6 +152,7 @@ namespace YY
                 return Transform(std::move(_szTmp), _pszDst);
             }
 
+#ifdef _WIN32
             HRESULT __YYAPI Transform(const u16StringLEView& _szSrc, aString* _pszDst)
             {
                 if (!_pszDst)
@@ -191,7 +204,7 @@ namespace YY
 
                     if (ERROR_INSUFFICIENT_BUFFER != _ls)
                     {
-                        return __HRESULT_FROM_WIN32(_ls);
+                        return HRESULT_From_LSTATUS(_ls);
                     }
 
                     _cchDstBuffer *= 2;
@@ -199,6 +212,7 @@ namespace YY
 
                 return S_OK;
             }
+#endif
 
             HRESULT __YYAPI Transform(const u16StringBEView& _szSrc, aString* _pszDst)
             {
@@ -271,6 +285,7 @@ namespace YY
                 return _pszDst->AppendString(_szSrc);
             }
         
+#ifdef _WIN32
             HRESULT __YYAPI Transform(const aStringView& _szStr, u16StringLE* _pszDst)
             {
                 if (!_pszDst)
@@ -297,6 +312,7 @@ namespace YY
                 _pszDst->UnlockBuffer(_cchOldDst + _cchDst);
                 return S_OK;
             }
+#endif
 
             HRESULT __YYAPI Transform(const aStringView& _szSrc, u16StringBE* _pszDst)
             {
@@ -386,10 +402,10 @@ namespace YY
                         {
                             uint32_t _uTmp = ((_szSrcBuffer[0] & 0x7) << 18) | ((_szSrcBuffer[1] & 0x3F) << 12) | ((_szSrcBuffer[2] & 0x3F) << 6) | ((_szSrcBuffer[3] & 0x3F) << 0);
 
-                            _uTmp -= 0x1'00'00;
+                            _uTmp -= 0x010000;
 
-                            *_szDstLast++ = (_uTmp >> 10) + 0xD8'00u;
-                            *_szDstLast++ = (_uTmp & 0x3'FF) + 0xDC'00u;
+                            *_szDstLast++ = u16char_t((_uTmp >> 10) + 0xD800u);
+                            *_szDstLast++ = u16char_t((_uTmp & 0x03FF) + 0xDC00u);
                             _szSrcBuffer += 4;
                         }
                         else
@@ -407,7 +423,7 @@ namespace YY
 
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
                         {
-                            *_szDstLast++ = ((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0);
+                            *_szDstLast++ = u16char_t(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0));
                             _szSrcBuffer += 3;
                         }
                         else
@@ -424,7 +440,7 @@ namespace YY
 
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u)
                         {
-                            *_szDstLast++ = ((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0);
+                            *_szDstLast++ = u16char_t(((_szSrcBuffer[0] & 0x1Fu) << 6) | ((_szSrcBuffer[1] & 0x3Fu) << 0));
                             _szSrcBuffer += 2;
                         }
                         else
@@ -481,7 +497,7 @@ namespace YY
                     if (_ch >= 0xF8u)
                     {
                         // 理论上，目前的UTF8是不可能出现这样的情况的，也转不了UTF16
-                        *_szDstLast++ = _byteswap_ushort('?');
+                        *_szDstLast++ = byteswap((u16char_t)'?');
                         ++_szSrcBuffer;
                     }
                     else if (_ch >= 0xF0u)
@@ -494,15 +510,15 @@ namespace YY
                         {
                             uint32_t _uTmp = ((_szSrcBuffer[0] & 0x7) << 18) | ((_szSrcBuffer[1] & 0x3F) << 12) | ((_szSrcBuffer[2] & 0x3F) << 6) | ((_szSrcBuffer[3] & 0x3F) << 0);
 
-                            _uTmp -= 0x1'00'00;
+                            _uTmp -= 0x010000;
 
-                            *_szDstLast++ = _byteswap_ushort((_uTmp >> 10) + 0xD8'00u);
-                            *_szDstLast++ = _byteswap_ushort((_uTmp & 0x3'FF) + 0xDC'00u);
+                            *_szDstLast++ = byteswap((u16char_t)((_uTmp >> 10) + 0xD800u));
+                            *_szDstLast++ = byteswap((u16char_t)((_uTmp & 0x3FF) + 0xDC00u));
                             _szSrcBuffer += 4;
                         }
                         else
                         {
-                            *_szDstLast++ = '?';
+                            *_szDstLast++ = byteswap((u16char_t)'?');
                             ++_szSrcBuffer;
                         }
 
@@ -515,12 +531,12 @@ namespace YY
 
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
                         {
-                            *_szDstLast++ = _byteswap_ushort(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0));
+                            *_szDstLast++ = byteswap((u16char_t)(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0)));
                             _szSrcBuffer += 3;
                         }
                         else
                         {
-                            *_szDstLast++ = '?';
+                            *_szDstLast++ = byteswap((u16char_t)'?');
                             ++_szSrcBuffer;
                         }
                     }
@@ -532,31 +548,31 @@ namespace YY
 
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u)
                         {
-                            *_szDstLast++ = _byteswap_ushort(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0));
+                            *_szDstLast++ = byteswap((u16char_t)(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0)));
                             _szSrcBuffer += 2;
                         }
                         else
                         {
-                            *_szDstLast++ = _byteswap_ushort('?');
+                            *_szDstLast++ = byteswap((u16char_t)'?');
                             ++_szSrcBuffer;
                         }
                     }
                     else if (_ch >= 0x80u)
                     {
                         // 理论上，这是UTF8的中间字符，不应该出现。
-                        *_szDstLast++ = _byteswap_ushort('?');
+                        *_szDstLast++ = byteswap((u16char_t)'?');
                         ++_szSrcBuffer;
                     }
                     else
                     {
                         // 1个字节
-                        *_szDstLast++ = _byteswap_ushort(_ch);
+                        *_szDstLast++ = byteswap((u16char_t)_ch);
                         ++_szSrcBuffer;
                     }
                 }
 
                 if (_szSrcBuffer != _szSrcEnd)
-                    *_szDstLast++ = _byteswap_ushort('?');
+                    *_szDstLast++ = byteswap((u16char_t)'?');
 
                 _pszDst->UnlockBuffer(_szDstLast - _szDstBuffer);
                 return S_OK;
@@ -728,7 +744,7 @@ namespace YY
                     if (_ch >= 0xFEu)
                     {
                         // 无效的UTF8编码
-                        *_szDstLast++ = _byteswap_ulong('?');
+                        *_szDstLast++ = byteswap((u32char_t)'?');
                         ++_szSrcBuffer;
                     }
                     else if (_ch >= 0xFCu)
@@ -740,7 +756,7 @@ namespace YY
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u && (_szSrcBuffer[4] & 0xC0u) == 0x80u && (_szSrcBuffer[5] & 0xC0u) == 0x80u)
                         {
                             uint32_t _uTmp = ((_szSrcBuffer[0] & 0x1) << 30) | ((_szSrcBuffer[1] & 0x3F) << 24) | ((_szSrcBuffer[2] & 0x3F) << 18) | ((_szSrcBuffer[3] & 0x3F) << 12) | ((_szSrcBuffer[4] & 0x3F) << 6) | ((_szSrcBuffer[5] & 0x3F) << 0);
-                            *_szDstLast++ = _byteswap_ulong(_uTmp);
+                            *_szDstLast++ = byteswap((u32char_t)(_uTmp));
                             _szSrcBuffer += 6;
                         }
                         else
@@ -758,12 +774,12 @@ namespace YY
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u && (_szSrcBuffer[4] & 0xC0u) == 0x80u)
                         {
                             uint32_t _uTmp = ((_szSrcBuffer[0] & 0x3) << 24) | ((_szSrcBuffer[1] & 0x3F) << 18) | ((_szSrcBuffer[2] & 0x3F) << 12) | ((_szSrcBuffer[3] & 0x3F) << 6) | ((_szSrcBuffer[4] & 0x3F) << 0);
-                            *_szDstLast++ = _byteswap_ulong(_uTmp);
+                            *_szDstLast++ = byteswap((u32char_t)(_uTmp));
                             _szSrcBuffer += 5;
                         }
                         else
                         {
-                            *_szDstLast++ = _byteswap_ulong('?');
+                            *_szDstLast++ = byteswap((u32char_t)('?'));
                             ++_szSrcBuffer;
                         }
                     }
@@ -776,12 +792,12 @@ namespace YY
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u && (_szSrcBuffer[3] & 0xC0u) == 0x80u)
                         {
                             uint32_t _uTmp = ((_szSrcBuffer[0] & 0x7) << 18) | ((_szSrcBuffer[1] & 0x3F) << 12) | ((_szSrcBuffer[2] & 0x3F) << 6) | ((_szSrcBuffer[3] & 0x3F) << 0);
-                            *_szDstLast++ = _byteswap_ulong(_uTmp);
+                            *_szDstLast++ = byteswap((u32char_t)(_uTmp));
                             _szSrcBuffer += 4;
                         }
                         else
                         {
-                            *_szDstLast++ = _byteswap_ulong('?');
+                            *_szDstLast++ = byteswap((u32char_t)('?'));
                             ++_szSrcBuffer;
                         }
                     }
@@ -793,12 +809,12 @@ namespace YY
 
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u && (_szSrcBuffer[2] & 0xC0u) == 0x80u)
                         {
-                            *_szDstLast++ = _byteswap_ulong(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0));
+                            *_szDstLast++ = byteswap((u32char_t)(((_szSrcBuffer[0] & 0xF) << 12) | ((_szSrcBuffer[1] & 0x3F) << 6) | ((_szSrcBuffer[2] & 0x3F) << 0)));
                             _szSrcBuffer += 3;
                         }
                         else
                         {
-                            *_szDstLast++ = _byteswap_ulong('?');
+                            *_szDstLast++ = byteswap((u32char_t)('?'));
                             ++_szSrcBuffer;
                         }
                     }
@@ -810,25 +826,25 @@ namespace YY
 
                         if ((_szSrcBuffer[1] & 0xC0u) == 0x80u)
                         {
-                            *_szDstLast++ = _byteswap_ulong(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0));
+                            *_szDstLast++ = byteswap((u32char_t)(((_szSrcBuffer[0] & 0x1F) << 6) | ((_szSrcBuffer[1] & 0x3F) << 0)));
                             _szSrcBuffer += 2;
                         }
                         else
                         {
-                            *_szDstLast++ = _byteswap_ulong('?');
+                            *_szDstLast++ = byteswap((u32char_t)('?'));
                             ++_szSrcBuffer;
                         }
                     }
                     else if (_ch >= 0x80u)
                     {
                         // 理论上，这是UTF8的中间字符，不应该出现。
-                        *_szDstLast++ = _byteswap_ulong('?');
+                        *_szDstLast++ = byteswap((u32char_t)('?'));
                         ++_szSrcBuffer;
                     }
                     else
                     {
                         // 1个字节
-                        *_szDstLast++ = _byteswap_ulong(_ch);
+                        *_szDstLast++ = byteswap((u32char_t)(_ch));
                         ++_szSrcBuffer;
                     }
                 }
@@ -880,15 +896,15 @@ namespace YY
 
                     if (_uLastChar)
                     {
-                        if (_ch >= 0xDC'00u && _ch < 0xE0'00u)
+                        if (_ch >= 0xDC00u && _ch < 0xE000u)
                         {
-                            _ch = ((_uLastChar - 0xD8'00u) << 10 | (_ch - 0xDC'00u)) + 0x1'00'00u;
+                            _ch = ((_uLastChar - 0xD800u) << 10 | (_ch - 0xDC00u)) + 0x010000u;
                             _uLastChar = 0;
 
-                            _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x07) | 0xF0;
-                            _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                            _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                            _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x07) | 0xF0);
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                             continue;
                         }
 
@@ -900,18 +916,18 @@ namespace YY
 
                     if (_ch < 0x80u)
                     {
-                        _szDstBuffer[_cchDst++] = _ch;
+                        _szDstBuffer[_cchDst++] = u8char_t(_ch);
                     }
-                    else if (_ch < 0x8'00u)
+                    else if (_ch < 0x0800u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 6) & 0x1F) | 0xC0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 0) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 6) & 0x1F) | 0xC0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 0) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0xD8'00u || _ch > 0xE0'00u)
+                    else if (_ch < 0xD800u || _ch > 0xE000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x0F) | 0xE0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x0F) | 0xE0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
                     else
                     {
@@ -963,9 +979,9 @@ namespace YY
                 {
                     if (_uLastChar)
                     {
-                        if (_ch >= 0xDC'00u && _ch < 0xE0'00u)
+                        if (_ch >= 0xDC00u && _ch < 0xE000u)
                         {
-                            _ch = ((_uLastChar - 0xD8'00u) << 10 | (_ch - 0xDC'00u)) + 0x1'00'00u;
+                            _ch = ((_uLastChar - 0xD800u) << 10 | (_ch - 0xDC00u)) + 0x010000u;
                             _uLastChar = 0;
 
                             *pszDstOut++ = _ch;
@@ -977,7 +993,7 @@ namespace YY
                         _uLastChar = 0;
                     }
 
-                    if(_ch >= 0xD8'00u && _ch <= 0xE0'00u)
+                    if(_ch >= 0xD800u && _ch <= 0xE000u)
                     {
                         // 进入辅助平面，第二次才能顺利转换
                         _uLastChar = _ch;
@@ -1039,7 +1055,7 @@ namespace YY
 
                 for (uint32_t _ch : _szSrc)
                 {
-                    _ch = _byteswap_ushort(_ch);
+                    _ch = byteswap((u16char_t)_ch);
 
                     const auto cchDstNewMax = _cchDst + 4;
                     if (cchDstNewMax > _cchDstBuffer)
@@ -1054,15 +1070,15 @@ namespace YY
 
                     if (_uLastChar)
                     {
-                        if (_ch >= 0xDC'00u && _ch < 0xE0'00u)
+                        if (_ch >= 0xDC00u && _ch < 0xE000u)
                         {
-                            _ch = ((_uLastChar - 0xD8'00u) << 10 | (_ch - 0xDC'00u)) + 0x1'00'00u;
+                            _ch = ((_uLastChar - 0xD800u) << 10 | (_ch - 0xDC00u)) + 0x010000u;
                             _uLastChar = 0;
 
-                            _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x07) | 0xF0;
-                            _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                            _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                            _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x07) | 0xF0);
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                            _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                             continue;
                         }
 
@@ -1074,18 +1090,18 @@ namespace YY
 
                     if (_ch < 0x80u)
                     {
-                        _szDstBuffer[_cchDst++] = _ch;
+                        _szDstBuffer[_cchDst++] = u8char_t(_ch);
                     }
-                    else if (_ch < 0x8'00u)
+                    else if (_ch < 0x0800u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 6) & 0x1F) | 0xC0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 0) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 6) & 0x1F) | 0xC0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 0) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0xD8'00u || _ch > 0xE0'00u)
+                    else if (_ch < 0xD800u || _ch > 0xE000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x0F) | 0xE0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x0F) | 0xE0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
                     else
                     {
@@ -1169,13 +1185,13 @@ namespace YY
 
                 for (uint32_t _ch : _szSrc)
                 {
-                    _ch = _byteswap_ushort(_ch);
+                    _ch = byteswap((u16char_t)_ch);
 
                     if (_uLastChar)
                     {
-                        if (_ch >= 0xDC'00u && _ch < 0xE0'00u)
+                        if (_ch >= 0xDC00u && _ch < 0xE000u)
                         {
-                            _ch = ((_uLastChar - 0xD8'00u) << 10 | (_ch - 0xDC'00u)) + 0x1'00'00u;
+                            _ch = ((_uLastChar - 0xD800u) << 10 | (_ch - 0xDC00u)) + 0x010000u;
                             _uLastChar = 0;
 
                             *pszDstOut++ = _ch;
@@ -1187,7 +1203,7 @@ namespace YY
                         _uLastChar = 0;
                     }
 
-                    if (_ch >= 0xD8'00u && _ch <= 0xE0'00u)
+                    if (_ch >= 0xD800u && _ch <= 0xE000u)
                     {
                         // 进入辅助平面，第二次才能顺利转换
                         _uLastChar = _ch;
@@ -1229,38 +1245,38 @@ namespace YY
 
                 for (uint32_t _ch : _szSrc)
                 {
-                    _ch = _byteswap_ushort(_ch);
+                    _ch = byteswap((u16char_t)_ch);
 
                     if (_uLastChar)
                     {
-                        if (_ch >= 0xDC'00u && _ch < 0xE0'00u)
+                        if (_ch >= 0xDC00u && _ch < 0xE000u)
                         {
-                            _ch = ((_uLastChar - 0xD8'00u) << 10 | (_ch - 0xDC'00u)) + 0x1'00'00u;
+                            _ch = ((_uLastChar - 0xD800u) << 10 | (_ch - 0xDC00u)) + 0x010000u;
                             _uLastChar = 0;
 
-                            *pszDstOut++ = _byteswap_ulong(_ch);
+                            *pszDstOut++ = byteswap((u32char_t)(_ch));
                             continue;
                         }
 
                         // 上一个字符是未知的，直接输出一个 ?
-                        *pszDstOut++ = _byteswap_ulong('?');
+                        *pszDstOut++ = byteswap((u32char_t)('?'));
                         _uLastChar = 0;
                     }
 
-                    if (_ch >= 0xD8'00u && _ch <= 0xE0'00u)
+                    if (_ch >= 0xD800u && _ch <= 0xE000u)
                     {
                         // 进入辅助平面，第二次才能顺利转换
                         _uLastChar = _ch;
                     }
                     else
                     {
-                        *pszDstOut++ = _byteswap_ulong(_ch);
+                        *pszDstOut++ = byteswap((u32char_t)(_ch));
                     }
                 }
 
                 // 还存在一个不完整的字符
                 if (_uLastChar)
-                    *pszDstOut++ = _byteswap_ulong('?');
+                    *pszDstOut++ = byteswap((u32char_t)('?'));
 
                 _pszDst->UnlockBuffer(pszDstOut - _szDstBuffer);
 
@@ -1317,44 +1333,44 @@ namespace YY
                     }
 
                     // UTF8目前最多使用 4个字节，但是为了算法的连续性，目前直接实现到 6个字节。
-                    if (_ch < 0x00'00'00'80u)
+                    if (_ch < 0x80u)
                     {
-                        _szDstBuffer[_cchDst++] = _ch;
+                        _szDstBuffer[_cchDst++] = u8char_t(_ch);
                     }
-                    else if (_ch < 0x00'00'08'00u)
+                    else if (_ch < 0x0800u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 6) & 0x1F) | 0xC0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 0) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 6) & 0x1F) | 0xC0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 0) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x00'01'00'00u)
+                    else if (_ch < 0x010000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x0F) | 0xE0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x0F) | 0xE0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x00'20'00'00u)
+                    else if (_ch < 0x200000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x07) | 0xF0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x07) | 0xF0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x04'00'00'00u)
+                    else if (_ch < 0x04000000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 24) & 0x03) | 0xF8;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 24) & 0x03) | 0xF8);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x80'00'00'00u)
+                    else if (_ch < 0x80000000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 30) & 0x01) | 0xFC;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 24) & 0x3F) | 0xF0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 30) & 0x01) | 0xFC);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 24) & 0x3F) | 0xF0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
                     else
                     {
@@ -1403,16 +1419,16 @@ namespace YY
                         _cchDstBuffer = _pszDst->GetCapacity();
                     }
 
-                    if (_ch < 0x00'01'00'00u)
+                    if (_ch < 0x00010000u)
                     {
-                        _szDstBuffer[_cchDst++] = _ch;
+                        _szDstBuffer[_cchDst++] = u16char_t(_ch);
                     }
-                    else if (_ch < 0x00'11'00'00u)
+                    else if (_ch < 0x00110000u)
                     {
-                        _ch -= 0x1'00'00u;
+                        _ch -= 0x10000u;
 
-                        _szDstBuffer[_cchDst++] = (_ch >> 10) + 0xD8'00u;
-                        _szDstBuffer[_cchDst++] = (_ch & 0x3'FFu) + 0xDC'00u;
+                        _szDstBuffer[_cchDst++] = u8char_t((_ch >> 10) + 0xD800u);
+                        _szDstBuffer[_cchDst++] = u8char_t((_ch & 0x03FFu) + 0xDC00u);
                     }
                     else
                     {
@@ -1462,21 +1478,21 @@ namespace YY
                         _cchDstBuffer = _pszDst->GetCapacity();
                     }
 
-                    if (_ch < 0x00'01'00'00u)
+                    if (_ch < 0x00010000u)
                     {
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort(_ch);
+                        _szDstBuffer[_cchDst++] = byteswap((u16char_t)_ch);
                     }
-                    else if (_ch < 0x00'11'00'00u)
+                    else if (_ch < 0x00110000u)
                     {
-                        _ch -= 0x1'00'00u;
+                        _ch -= 0x010000u;
 
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort((_ch >> 10) + 0xD8'00u);
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort((_ch & 0x3'FFu) + 0xDC'00u);
+                        _szDstBuffer[_cchDst++] = byteswap((u16char_t)((_ch >> 10) + 0xD800u));
+                        _szDstBuffer[_cchDst++] = byteswap((u16char_t)((_ch & 0x03FFu) + 0xDC00u));
                     }
                     else
                     {
                         // UTF32 不可能出现这样的情况
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort('?');
+                        _szDstBuffer[_cchDst++] = '?';
                     }
                 }
 
@@ -1539,7 +1555,7 @@ namespace YY
 
                 for (uint32_t _ch : _szSrc)
                 {
-                    _ch = _byteswap_ulong(_ch);
+                    _ch = byteswap((u32char_t)(_ch));
 
                     const auto cchDstNewMax = _cchDst + 6;
                     if (cchDstNewMax > _cchDstBuffer)
@@ -1552,44 +1568,44 @@ namespace YY
                     }
 
                     // UTF8目前最多使用 4个字节，但是为了算法的连续性，目前直接实现到 6个字节。
-                    if (_ch < 0x00'00'00'80u)
+                    if (_ch < 0x00000080u)
                     {
-                        _szDstBuffer[_cchDst++] = _ch;
+                        _szDstBuffer[_cchDst++] = u8char_t(_ch);
                     }
-                    else if (_ch < 0x00'00'08'00u)
+                    else if (_ch < 0x00000800u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 6) & 0x1F) | 0xC0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 0) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 6) & 0x1F) | 0xC0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 0) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x00'01'00'00u)
+                    else if (_ch < 0x00010000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x0F) | 0xE0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x0F) | 0xE0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x00'20'00'00u)
+                    else if (_ch < 0x00200000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x07) | 0xF0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x07) | 0xF0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x04'00'00'00u)
+                    else if (_ch < 0x04000000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 24) & 0x03) | 0xF8;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 24) & 0x03) | 0xF8);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
-                    else if (_ch < 0x80'00'00'00u)
+                    else if (_ch < 0x80000000u)
                     {
-                        _szDstBuffer[_cchDst++] = ((_ch >> 30) & 0x01) | 0xFC;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 24) & 0x3F) | 0xF0;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 18) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 12) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 06) & 0x3F) | 0x80;
-                        _szDstBuffer[_cchDst++] = ((_ch >> 00) & 0x3F) | 0x80;
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 30) & 0x01) | 0xFC);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 24) & 0x3F) | 0xF0);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 18) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 12) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 06) & 0x3F) | 0x80);
+                        _szDstBuffer[_cchDst++] = u8char_t(((_ch >> 00) & 0x3F) | 0x80);
                     }
                     else
                     {
@@ -1628,7 +1644,7 @@ namespace YY
 
                 for (uint32_t _ch : _szSrc)
                 {
-                    _ch = _byteswap_ulong(_ch);
+                    _ch = byteswap((u32char_t)(_ch));
 
                     const auto cchDstNewMax = _cchDst + 2;
                     if (cchDstNewMax > _cchDstBuffer)
@@ -1640,16 +1656,16 @@ namespace YY
                         _cchDstBuffer = _pszDst->GetCapacity();
                     }
 
-                    if (_ch < 0x00'01'00'00u)
+                    if (_ch < 0x00010000u)
                     {
-                        _szDstBuffer[_cchDst++] = _ch;
+                        _szDstBuffer[_cchDst++] = u16char_t(_ch);
                     }
-                    else if (_ch < 0x00'11'00'00u)
+                    else if (_ch < 0x00110000u)
                     {
-                        _ch -= 0x1'00'00u;
+                        _ch -= 0x010000u;
 
-                        _szDstBuffer[_cchDst++] = (_ch >> 10) + 0xD8'00u;
-                        _szDstBuffer[_cchDst++] = (_ch & 0x3'FFu) + 0xDC'00u;
+                        _szDstBuffer[_cchDst++] = u16char_t((_ch >> 10) + 0xD800u);
+                        _szDstBuffer[_cchDst++] = u16char_t((_ch & 0x03FFu) + 0xDC00u);
                     }
                     else
                     {
@@ -1689,7 +1705,7 @@ namespace YY
 
                 for (uint32_t _ch : _szSrc)
                 {
-                    _ch = _byteswap_ulong(_ch);
+                    _ch = byteswap((u32char_t)(_ch));
 
                     const auto cchDstNewMax = _cchDst + 2;
                     if (cchDstNewMax > _cchDstBuffer)
@@ -1701,21 +1717,21 @@ namespace YY
                         _cchDstBuffer = _pszDst->GetCapacity();
                     }
 
-                    if (_ch < 0x00'01'00'00u)
+                    if (_ch < 0x00010000u)
                     {
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort(_ch);
+                        _szDstBuffer[_cchDst++] = byteswap((u16char_t)_ch);
                     }
-                    else if (_ch < 0x00'11'00'00u)
+                    else if (_ch < 0x00110000u)
                     {
-                        _ch -= 0x1'00'00u;
+                        _ch -= 0x010000u;
 
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort((_ch >> 10) + 0xD8'00u);
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort((_ch & 0x3'FFu) + 0xDC'00u);
+                        _szDstBuffer[_cchDst++] = byteswap((u16char_t)((_ch >> 10) + 0xD800u));
+                        _szDstBuffer[_cchDst++] = byteswap((u16char_t)((_ch & 0x03FFu) + 0xDC00u));
                     }
                     else
                     {
                         // UTF32 不可能出现这样的情况
-                        _szDstBuffer[_cchDst++] = _byteswap_ushort('?');
+                        _szDstBuffer[_cchDst++] = byteswap((u16char_t)'?');
                     }
                 }
 

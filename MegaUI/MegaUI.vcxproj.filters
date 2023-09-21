@@ -186,9 +186,6 @@
     <ClInclude Include="..\Base\Threading\TaskRunner.h">
       <Filter>Base\Threading</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunnerInterface.h">
-      <Filter>Base\Threading</Filter>
-    </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h">
       <Filter>Base\Threading</Filter>
     </ClInclude>
@@ -270,6 +267,21 @@
     <ClInclude Include="..\Base\Containers\Optional.h">
       <Filter>Base\Containers</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Sync\InterlockedQueue.h">
+      <Filter>Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Sync\Sync.h">
+      <Filter>Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\ProcessThreads.h">
+      <Filter>Base\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h">
+      <Filter>Base\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h">
+      <Filter>Base\Threading</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -343,6 +355,15 @@
     </ClCompile>
     <ClCompile Include="..\Media\Graphics\DrawContext.cpp">
       <Filter>Media\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp">
+      <Filter>Base\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp">
+      <Filter>Base\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp">
+      <Filter>Base\Threading</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

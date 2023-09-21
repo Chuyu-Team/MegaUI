@@ -94,7 +94,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -102,11 +102,6 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <FxCompile>
-      <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>$(IntDir)Gen\HLSL\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput />
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -117,7 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -134,7 +129,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
@@ -143,11 +138,6 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <FxCompile>
-      <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>$(IntDir)Gen\HLSL\%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput />
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -158,7 +148,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -184,10 +174,14 @@
     <ClInclude Include="..\Base\Strings\StringTransform.h" />
     <ClInclude Include="..\Base\Strings\StringView.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
+    <ClInclude Include="..\Base\Sync\InterlockedQueue.h" />
     <ClInclude Include="..\Base\Sync\SingleLinkedList.h" />
+    <ClInclude Include="..\Base\Sync\Sync.h" />
     <ClInclude Include="..\base\tchar.h" />
+    <ClInclude Include="..\Base\Threading\ProcessThreads.h" />
+    <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />
-    <ClInclude Include="..\Base\Threading\TaskRunnerInterface.h" />
+    <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\base\YY.h" />
     <ClInclude Include="..\Media\Brushes\Brush.h" />
@@ -236,14 +230,27 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
+    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
-    <ClCompile Include="..\Media\Font.cpp" />
-    <ClCompile Include="..\Media\Graphics\D2D\D2D1_0DrawContext.cpp" />
-    <ClCompile Include="..\Media\Graphics\D2D\D2D1_1DrawContext.cpp" />
-    <ClCompile Include="..\Media\Graphics\D2D\DWriteHelper.cpp" />
+    <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp" />
+    <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp" />
+    <ClCompile Include="..\Media\Font.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\D2D\D2D1_0DrawContext.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\D2D\D2D1_1DrawContext.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Media\Graphics\D2D\DWriteHelper.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\Media\Graphics\DrawAsyncCommandContext.cpp" />
     <ClCompile Include="..\Media\Graphics\DrawContext.cpp" />
-    <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp" />
+    <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp" />
     <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp" />

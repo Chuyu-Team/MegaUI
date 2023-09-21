@@ -1,6 +1,19 @@
 #pragma once
+#include <type_traits>
+#include <functional>
 
-#include <Base/Threading/TaskRunnerInterface.h>
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
+#include <Base/YY.h>
+#include <Base/Memory/RefPtr.h>
+
+#pragma pack(push, __YY_PACKING)
+
+#ifndef DECLSPEC_NOVTABLE
+#define DECLSPEC_NOVTABLE
+#endif
 
 namespace YY
 {
@@ -8,204 +21,109 @@ namespace YY
     {
         namespace Threading
         {
-            class TaskRunner
+            typedef void(__YYAPI* TaskRunnerSimpleCallback)(void* _pUserData);
+
+            enum class TaskRunnerStyle
             {
-            protected:
-                union
-                {
-                    ITaskRunner* pTaskRunner;
+                None = 0,
+                // 串行，没有此标志则代表并行。
+                Sequenced = 0x00000001,
+                // 拥有固定线程，没有此标准表示实际指向线程可能随时变化。
+                FixedThread = 0x00000002,
+            };
 
-                    ISequencedTaskRunner* pSequencedTaskRunner;
+            YY_APPLY_ENUM_CALSS_BIT_OPERATOR(TaskRunnerStyle);
 
-                    IThreadTaskRunner* pThreadTaskRunner;
-
-                    IParallelTaskRunner* pParallelTaskRunner;
-                };
-                
-                TaskRunner(ITaskRunner* _pTask)
-                    : pTaskRunner(_pTask)
-                {
-                    if (pTaskRunner)
-                        pTaskRunner->AddRef();
-                }
-
+            class DECLSPEC_NOVTABLE TaskRunner
+            {
             public:
-                TaskRunner()
-                    : pTaskRunner(nullptr)
+#ifndef _MSC_VER
+                virtual ~TaskRunner()
                 {
                 }
+#endif
 
-                TaskRunner(const TaskRunner& _Other)
-                    : pTaskRunner(_Other.pTaskRunner)
-                {
-                    if (pTaskRunner)
-                        pTaskRunner->AddRef();
-                }
+                virtual uint32_t __YYAPI AddRef() = 0;
 
-                TaskRunner(TaskRunner && _Other) noexcept
-                    : pTaskRunner(_Other.pTaskRunner)
-                {
-                    _Other.pTaskRunner = nullptr;
-                }
+                virtual uint32_t __YYAPI Release() = 0;
 
-                ~TaskRunner()
-                {
-                    if (pTaskRunner)
-                        pTaskRunner->Release();
-                }
+                /// <summary>
+                /// 返回 TaskRunner 的唯一Id，注意，这不是线程Id。
+                /// </summary>
+                /// <returns></returns>
+                virtual uint32_t __YYAPI GetId() = 0;
 
-                uint32_t __YYAPI GetId() const
-                {
-                    return pTaskRunner ? pTaskRunner->GetId() : 0;
-                }
-
-                TaskRunnerStyle __YYAPI GetStyle() const
-                {
-                    return pTaskRunner ? pTaskRunner->GetStyle() : TaskRunnerStyle::None;
-                }
+                virtual TaskRunnerStyle __YYAPI GetStyle() = 0;
 
                 /// <summary>
                 /// 将任务异步执行。
                 /// </summary>
-                /// <param name="_pCallback"></param>
+                /// <param name="_pfnCallback"></param>
                 /// <param name="_pUserData"></param>
                 /// <returns></returns>
-                HRESULT __YYAPI Async(_In_ TaskRunnerCallback _pCallback, _In_opt_ void* _pUserData) const
-                {
-                    if (!pTaskRunner)
-                        return E_NOTIMPL;
+                virtual HRESULT __YYAPI Async(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData) = 0;
 
-                    return pTaskRunner->Async(_pCallback, _pUserData);
-                }
+                /// <summary>
+                /// 将任务异步执行。
+                /// </summary>
+                /// <param name="pfnLambdaCallback">需要异步执行的Lambda表达式。</param>
+                /// <returns></returns>
+                virtual HRESULT __YYAPI Async(_In_ std::function<void()>&& _pfnLambdaCallback) = 0;
 
                 /// <summary>
                 /// 将任务同步执行。
                 /// </summary>
-                /// <param name="_pCallback"></param>
+                /// <param name="_pfnCallback"></param>
                 /// <param name="_pUserData"></param>
                 /// <returns></returns>
-                HRESULT __YYAPI Sync(_In_ TaskRunnerCallback _pCallback, _In_opt_ void* _pUserData) const
-                {
-                    if (!pTaskRunner)
-                        return E_NOTIMPL;
-
-                    return pTaskRunner->Sync(_pCallback, _pUserData);
-                }
-
+                virtual HRESULT __YYAPI Sync(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData) = 0;
+                
                 template<class _FunType>
-                HRESULT __YYAPI Sync(_FunType&& _Fun) const
+                HRESULT __YYAPI Sync(_FunType&& _Fun)
                 {
-                    return Sync([](void* _pUserData)
+                    return Sync(
+                        [](void* _pUserData)
                         {
                             auto& _Fun = *(_FunType*)_pUserData;
                             _Fun();
-                        }, (void*)&_Fun);
-                }
-
-
-                TaskRunner& operator=(const TaskRunner& _Other)
-                {
-                    if (pTaskRunner != _Other.pTaskRunner)
-                    {
-                        if (pTaskRunner)
-                            pTaskRunner->Release();
-
-                        pTaskRunner = _Other.pTaskRunner;
-                        if (pTaskRunner)
-                            pTaskRunner->AddRef();
-                    }
-
-                    return *this;
+                        },
+                        (void*)&_Fun);
                 }
             };
 
-            class SequencedTaskRunner : public TaskRunner
+            // 按顺序执行的Task（不一定绑定固定物理线程，只保证任务串行）
+            class DECLSPEC_NOVTABLE SequencedTaskRunner : public TaskRunner
             {
-            protected:
-                SequencedTaskRunner(ISequencedTaskRunner* _pSequencedTask)
-                    : TaskRunner(_pSequencedTask)
-                {
-                }
-
             public:
-                SequencedTaskRunner()
-                {
-                }
-
-                SequencedTaskRunner(const TaskRunner& _Other)
-                {
-                    if (HasFlags(_Other.GetStyle(), TaskRunnerStyle::Sequenced))
-                        TaskRunner::operator=(_Other);
-                }
-
-                SequencedTaskRunner(const SequencedTaskRunner& _Other)
-                    : TaskRunner(_Other.pSequencedTaskRunner)
-                {         
-                }
-
-                SequencedTaskRunner(SequencedTaskRunner&& _Other) noexcept
-                    : TaskRunner(std::move(_Other))
-                {
-                }
-
-                SequencedTaskRunner& operator=(const SequencedTaskRunner& _Other)
-                {
-                    TaskRunner::operator=(_Other);
-
-                    return *this;
-                }
+                // 从线程池创建一个 TaskRunner，注意任务执行时只保证不保证始终是同一个线程，仅保证任务串行。
+                static RefPtr<SequencedTaskRunner> __YYAPI Create();
             };
 
-            class ThreadTaskRunner : public SequencedTaskRunner
+            // 拥有固定线程的Task
+            class DECLSPEC_NOVTABLE ThreadTaskRunner : public SequencedTaskRunner
             {
-            protected:
-                ThreadTaskRunner(IThreadTaskRunner* _pThreadTask)
-                    : SequencedTaskRunner(_pThreadTask)
-                {
-                }
-
             public:
-                ThreadTaskRunner()
-                {
-                }
-
-                ThreadTaskRunner(const TaskRunner& _Other)
-                {
-                    if (HasFlags(_Other.GetStyle(), TaskRunnerStyle::FixedThread))
-                        TaskRunner::operator=(_Other);
-                }
-
-                ThreadTaskRunner(const ThreadTaskRunner& _Other)
-                    : SequencedTaskRunner(_Other)
-                {
-                }
-
-                ThreadTaskRunner(ThreadTaskRunner&& _Other) noexcept
-                    : SequencedTaskRunner(std::move(_Other))
-                {
-                }
-
-                uint32_t __YYAPI GetThreadId()
-                {
-                    return pThreadTaskRunner ? pThreadTaskRunner->GetThreadId() : 0;
-                }
+                static RefPtr<ThreadTaskRunner> __YYAPI GetCurrent();
 
                 /// <summary>
-                /// 从当前线程获取 ThreadTaskRunner，严重警告：仅支持 来自 CreateThreadTaskRunner的线程 或者 自带消息循环的线程。
+                /// 获取绑定的线程Id。
                 /// </summary>
                 /// <returns></returns>
-                static ThreadTaskRunner __YYAPI GetCurrentThreadTaskRunner();
+                virtual uint32_t __YYAPI GetThreadId() = 0;
 
-                /// <summary>
-                /// 创建一个新线程并获取 ThreadTaskRunner
-                /// </summary>
-                /// <returns></returns>
-                // static ThreadTaskRunner __YYAPI CreateThreadTaskRunner();
+                virtual uintptr_t __YYAPI RunMessageLoop() = 0;
             };
- 
-        }
-    } // namespace Base
+
+            // 并行执行的Task，不保证任务按顺序执行
+            class DECLSPEC_NOVTABLE ParallelTaskRunner : public TaskRunner
+            {
+            public:
+            };
+
+        } // namespace Threading
+    }     // namespace Base
 
     using namespace YY::Base::Threading;
 } // namespace YY
 
+#pragma pack(push, pop)

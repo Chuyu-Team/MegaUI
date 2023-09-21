@@ -1,7 +1,9 @@
 ﻿#pragma once
+#ifdef _WIN32
 #include <Windows.h>
 #include <d2d1.h>
 #include <GdiPlus.h>
+#endif
 
 #include <Base/YY.h>
 #include <Media/Size.h>
@@ -45,6 +47,7 @@ namespace YY
             {
             }
 
+#ifdef _WIN32
             __inline constexpr Rect(const RECT& _Other)
                 : Left((float)_Other.left)
                 , Top((float)_Other.top)
@@ -52,6 +55,7 @@ namespace YY
                 , Bottom((float)_Other.bottom)
             {
             }
+#endif
 
             __inline constexpr Rect(const Point& _Point, const Size& _Size)
                 : Left(_Point.X)
@@ -239,6 +243,7 @@ namespace YY
                 return Point(Left + GetWidth() / 2, Top + GetHeight() / 2);
             }
 
+#ifdef _WIN32
             __YYAPI operator D2D_RECT_F&() const
             {
                 return *(D2D_RECT_F*)this;
@@ -249,6 +254,7 @@ namespace YY
                 Gdiplus::RectF _Rect(Left, Top, GetWidth(), GetHeight());
                 return _Rect;
             }
+#endif
         };
 
 

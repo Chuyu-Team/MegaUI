@@ -23,6 +23,7 @@ namespace YY
                 Optional()
                     : bHasValue(false)
                 {
+                    __YY_IGNORE_UNINITIALIZED_VARIABLE(oBuffer);
                 }
 
                 ~Optional()

@@ -1,12 +1,13 @@
 ﻿#include "pch.h"
-
 #include "value.h"
+
+#include <stdlib.h>
 
 #include "StyleSheet.h"
 #include "Element.h"
 #include <MegaUI/base/alloc.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {
@@ -25,7 +26,7 @@ namespace YY
                 return UpdatePixel(_iValue, _iOldDpi, _iNewDpi);
                 break;
             default:
-                std::abort();
+                abort();
                 break;
             }
         }

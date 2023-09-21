@@ -4,7 +4,7 @@
 #include <Base/Sync/Interlocked.h>
 #include <Base/Memory/RefPtr.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 #pragma comment(lib, "dwrite.lib")
 

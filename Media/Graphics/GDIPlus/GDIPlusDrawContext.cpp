@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "GDIPlusDrawContext.h"
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 #pragma comment(lib, "gdiplus.lib")
 
@@ -127,7 +127,7 @@ namespace YY
 
                 RECT _ClientRect;
                 if (!GetClientRect(_hWnd, &_ClientRect))
-                    return __HRESULT_FROM_WIN32(GetLastError());
+                    return HRESULT_From_LSTATUS(GetLastError());
 
                 auto _pDrawContext = new (std::nothrow) GDIPlusDrawContext();
                 if (!_pDrawContext)

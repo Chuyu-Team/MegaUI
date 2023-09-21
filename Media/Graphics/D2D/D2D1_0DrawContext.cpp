@@ -5,7 +5,7 @@
 
 #include <Media/Graphics/D2D/DWriteHelper.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "D3D10_1.lib")
@@ -210,7 +210,7 @@ namespace YY
 
                 RECT _ClientRect;
                 if (!GetClientRect(_hWnd, &_ClientRect))
-                    return __HRESULT_FROM_WIN32(GetLastError());
+                    return HRESULT_From_LSTATUS(GetLastError());
 
                 std::unique_ptr<D2D1_0DrawContext> _pDrawContext(new (std::nothrow) D2D1_0DrawContext());
                 if (!_pDrawContext.get())
@@ -501,12 +501,15 @@ namespace YY
                 bFirstPaint = true;
                 const D2D1_SIZE_U _oCopyPixelSize = {min(_oPrevPixelSize.width, PixelSize.width), min(_oPrevPixelSize.height, PixelSize.height)};
                 const auto _oPixelFormat = pRenderTarget->GetPixelFormat();
-
+                
+                RefPtr<ID3D10Multithread> _pD3DMultithread;
                 RefPtr<ID3D10Texture2D> _pBackupTexture2D;
                 HRESULT _hr;
 
                 if (_bCopyToNewTarget)
                 {
+                    pD3DDevice->QueryInterface(_pD3DMultithread.ReleaseAndGetAddressOf());
+
                     D3D10_TEXTURE2D_DESC _SrcDesc;
                     pBackBuffer->GetDesc(&_SrcDesc);
                     _SrcDesc.Width = _oCopyPixelSize.width;
@@ -526,8 +529,11 @@ namespace YY
                     _oIntersectBox.right = _oCopyPixelSize.width;
                     _oIntersectBox.bottom = _oCopyPixelSize.height;
                     _oIntersectBox.back = 1;
-
+                    if (_pD3DMultithread)
+                        _pD3DMultithread->Enter();
                     pD3DDevice->CopySubresourceRegion(_pBackupTexture2D, 0, 0, 0, 0, pBackBuffer, 0, &_oIntersectBox);
+                    if (_pD3DMultithread)
+                        _pD3DMultithread->Leave();
                 }
 
                 pBackBuffer = nullptr;
@@ -551,8 +557,13 @@ namespace YY
                     _oIntersectBox.right = _oCopyPixelSize.width;
                     _oIntersectBox.bottom = _oCopyPixelSize.height;
                     _oIntersectBox.back = 1;
-
+                    // RefPtr<ID3D10Multithread> _pD3DMultithread;
+                    // pD3DDevice->QueryInterface(_pD3DMultithread.ReleaseAndGetAddressOf());
+                    if (_pD3DMultithread)
+                        _pD3DMultithread->Enter();
                     pD3DDevice->CopySubresourceRegion(pBackBuffer, 0, 0, 0, 0, _pBackupTexture2D, 0, &_oIntersectBox);
+                    if (_pD3DMultithread)
+                        _pD3DMultithread->Leave();
                 }
 
                 RefPtr<IDXGISurface> _pDxgiBackBuffer;
@@ -563,7 +574,7 @@ namespace YY
                 const auto _pD2D1Factory = GetD2D1Factory();
                 _hr = _pD2D1Factory->CreateDxgiSurfaceRenderTarget(
                     _pDxgiBackBuffer,
-                    D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE), 96.0f, 96.0f),
+                    D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT, _oPixelFormat, 96.0f, 96.0f),
                     pRenderTarget.ReleaseAndGetAddressOf());
 
                 return _hr;

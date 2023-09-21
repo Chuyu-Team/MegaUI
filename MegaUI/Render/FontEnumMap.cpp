@@ -4,8 +4,7 @@
 #include <Media/Font.h>
 #include <MegaUI/core/Property.h>
 
-// 批注不一致警告
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {

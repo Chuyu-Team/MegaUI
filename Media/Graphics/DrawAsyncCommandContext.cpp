@@ -1,11 +1,11 @@
 ﻿#include "pch.h"
 #include "DrawAsyncCommandContext.h"
 
-#include <process.h>
+// #include <process.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
-#pragma comment(lib, "Synchronization.lib")
+// #pragma comment(lib, "Synchronization.lib")
 
 #define __DRAWING_COMMAND_ID_TABLE(_APPLY, _pCommandData)                                   \
     _APPLY(PushAxisAlignedClip, _pCommandData->oClipRect)                                   \
@@ -103,27 +103,28 @@ namespace YY
                 : pTargetDrawContext()
                 , pCurrentCommandEntry(nullptr)
                 , PixelSize {}
-                , hThread(NULL)
                 , bCancel(false)
             {
             }
 
             DrawAsyncCommandContext::~DrawAsyncCommandContext()
             {
-                if (hThread)
-                {
-                    bCancel = true;
-                    WakeByAddressSingle(&oCommandList.pHead);
-                    WaitForSingleObject(hThread, INFINITE);
-                    CloseHandle(hThread);
-                    hThread = NULL;
-                }
+                bCancel = true;
                 FreeDrawingCommand(pCurrentCommandEntry);
                 pCurrentCommandEntry = nullptr;
 
-                FreeDrawingCommand(oCommandList.Flush());
+                if (pSequencedTaskRunner)
+                {
+                    // TODO:尽可能减少同步
+                    pSequencedTaskRunner->Sync(
+                        [&]()
+                        {
 
-                pTargetDrawContext = nullptr;
+                        });
+                }
+
+                FreeDrawingCommand(oCommandList.Flush());
+                pTargetDrawContext = nullptr;                
             }
 
             HRESULT DrawAsyncCommandContext::CreateDrawTarget(
@@ -140,22 +141,6 @@ namespace YY
                 if (!_pDrawAsyncCommandContext)
                     return E_OUTOFMEMORY;
                  
-                auto _hThread = (HANDLE)_beginthreadex(
-                    nullptr, 0,
-                    [](void* _pUserData) -> unsigned
-                    {
-                        auto _pDrawContext = (DrawAsyncCommandContext*)_pUserData;        
-                        return _pDrawContext->RunLoop();
-                    },
-                    _pDrawAsyncCommandContext.Get(),
-                    0,
-                    nullptr);
-                if (_hThread == NULL)
-                {
-                    return __HRESULT_FROM_WIN32(GetLastError());
-                }
-
-                _pDrawAsyncCommandContext->hThread = _hThread;
                 _pDrawAsyncCommandContext->pTargetDrawContext.Attach(_pTargetDrawContext.Detach());
                 *_ppDrawContext = _pDrawAsyncCommandContext.Detach();
                 return S_OK;
@@ -166,24 +151,16 @@ namespace YY
                 if (bCancel)
                     return E_ABORT;
 
-                if (hThread == NULL)
-                {
-                    /*hThread = (HANDLE)_beginthreadex(
-                        nullptr, 0,
-                        [](void* _pUserData) -> unsigned
-                        {
-                            auto _pDrawCommandContext = (DrawAsyncCommandContext*)_pUserData;
-                            return _pDrawCommandContext->RunLoop();
-                        },
-                        this, 0, nullptr);
-
-                    if (!hThread)*/
-                    abort();
-                }
-
                 // 只能 BeginDraw - EndDraw必须成对
                 if (pCurrentCommandEntry)
                     abort();
+
+                if (!pSequencedTaskRunner)
+                {
+                    pSequencedTaskRunner = SequencedTaskRunner::Create();
+                    if (!pSequencedTaskRunner)
+                        return E_OUTOFMEMORY;
+                }
 
                 pCurrentCommandEntry = new(std::nothrow) DrawCommandEntry;
                 if (!pCurrentCommandEntry)
@@ -213,9 +190,15 @@ namespace YY
                 }
                 oCommandList.Push(pCurrentCommandEntry);
                 pCurrentCommandEntry = nullptr;
-                // 唤醒异步绘制队列
-                WakeByAddressSingle(&oCommandList.pHead);
 
+                pSequencedTaskRunner->Async(
+                    [](void* _pUserData)
+                    {
+                        auto _pAsyncCommandContext = (DrawAsyncCommandContext*)_pUserData;
+                        _pAsyncCommandContext->RunLoop();
+                    }, this);
+
+                // 唤醒异步绘制队列
                 return S_OK;
             }
 
@@ -289,7 +272,7 @@ namespace YY
                 {
                     auto _pNext = _pEntry->pNext;
 
-                    YY::Base::Containers::ArrayView<const byte> _CommandDataView(_pEntry->oCommandData.GetData(), _pEntry->oCommandData.GetSize());
+                    YY::Base::Containers::ArrayView<const byte_t> _CommandDataView(_pEntry->oCommandData.GetData(), _pEntry->oCommandData.GetSize());
 
                     while (_CommandDataView.GetSize() != 0)
                     {
@@ -334,17 +317,9 @@ namespace YY
 
                 for (;;)
                 {
-                    static const void* _pEmptyHeader = nullptr;
-                    auto _bRet = WaitOnAddress(&oCommandList.pHead, &_pEmptyHeader, sizeof(_pEmptyHeader), INFINITE);
-                    if (bCancel)
-                        break;
-
-                    if (!_bRet)
-                        continue;
-
                     auto _pLastPaint = oCommandList.Flush();
                     if (!_pLastPaint)
-                        continue;
+                        break;
 
                     // 搜索顶层或者全屏刷新的命令
                     DrawCommandEntry* _pFirstPaint = nullptr;
@@ -369,14 +344,20 @@ namespace YY
 
                     for (auto _pItem = _pFirstPaint; _pItem; _pItem = _pItem->pNext)
                     {
+                        if (bCancel)
+                            break;
+
                         auto _hr = pTargetDrawContext->BeginDraw(_pItem->oPaint.GetValuePtr());
 
                         pTargetDrawContext->PushAxisAlignedClip(Rect(0, 0, _pItem->PixelSize.Width, _pItem->PixelSize.Height));
 
-                        YY::Base::Containers::ArrayView<const byte> _CommandDataView(_pItem->oCommandData.GetData(), _pItem->oCommandData.GetSize());
+                        YY::Base::Containers::ArrayView<const byte_t> _CommandDataView(_pItem->oCommandData.GetData(), _pItem->oCommandData.GetSize());
 
                         while (_CommandDataView.GetSize() != 0)
                         {
+                            if (bCancel)
+                                break;
+
                             if (_CommandDataView.GetSize() < sizeof(DrawCommandData<CommandType::Unknow>))
                             {
                                 abort();
@@ -416,8 +397,6 @@ namespace YY
                     // 因此将一些清理工作放结束
                     FreeDrawingCommand(_pFirstPaint);
                 }
-
-                bCancel = true;
                 return _hr;
             }
         } // namespace Graphics

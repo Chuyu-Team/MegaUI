@@ -28,13 +28,15 @@ LockBuffer 与 UnlockBuffer 必须成对出现！
 */
 
 #include <initializer_list>
+#include <stdlib.h>
 
-#include <Windows.h>
+// #include <Windows.h>
 
 #include <Base/YY.h>
 #include <Base/Exception.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Containers/ConstructorPolicy.h>
+#include <MegaUI/Base/ErrorCode.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -55,7 +57,7 @@ namespace YY
                 SOO,
             };
 
-            template<typename _Type, AllocPolicy _eAllocPolicy, unsigned _uInsideBufferSize>
+            template<typename _Type, AllocPolicy _eAllocPolicy, uint32_t _uInsideBufferSize>
             class AllocPolicyArray;
 
             // Copy On Wirte优化的数组策略
@@ -66,7 +68,8 @@ namespace YY
                 _Type* pData;
 
             public:
-                typedef const typename _Type* _ReadPoint;
+                typedef const _Type* _ReadPoint;
+                typedef const _Type _ReadType;
 
                 constexpr AllocPolicyArray()
                     : pData(SharedData::GetEmptySharedData()->GetData())
@@ -582,7 +585,7 @@ namespace YY
                 /// <param name="_uCapacity">现有容量</param>
                 /// <param name="_uCapacityNeed">实际请求的容量</param>
                 /// <returns>返回需要开辟的容量</returns>
-                __forceinline static size_t __YYAPI GetNewCapacity(size_t _uCapacity, size_t _uCapacityNeed)
+                inline static size_t __YYAPI GetNewCapacity(size_t _uCapacity, size_t _uCapacityNeed)
                 {
                     if (_uCapacity >= _uCapacityNeed)
                         return _uCapacity;
@@ -597,7 +600,7 @@ namespace YY
             };
                 
             // Small Object Optimization优化的数组策略
-            template<typename _Type, unsigned _uInsideBufferSize>
+            template<typename _Type, uint32_t _uInsideBufferSize>
             class AllocPolicyArray<_Type, AllocPolicy::SOO, _uInsideBufferSize>
             {
             protected:
@@ -681,14 +684,14 @@ namespace YY
                         if (bSmallHeader)
                         {
                             if(Small.uLockCount)
-                                std::abort();
+                                abort();
 
                             ConstructorPolicy<_Type>::Destructor(Small.GetData(), uSize);
                         }
                         else
                         {
                             if(Large.uLockCount)
-                                std::abort();
+                                abort();
 
                             ConstructorPolicy<_Type>::Destructor(Large.pData, uSize);
                             free(Large.pData);
@@ -853,8 +856,9 @@ namespace YY
                 InternalData Header;
         
             public:
-                typedef typename _Type* _ReadPoint;
-        
+                typedef _Type* _ReadPoint;
+                typedef _Type _ReadType;
+
                 constexpr AllocPolicyArray()
                 {
                 }
@@ -981,7 +985,7 @@ namespace YY
                 /// <param name="_uCapacity">现有容量</param>
                 /// <param name="_uCapacityNeed">实际请求的容量</param>
                 /// <returns>返回需要开辟的容量</returns>
-                __forceinline static size_t __YYAPI GetNewCapacity(size_t _uCapacity, size_t _uCapacityNeed)
+                inline static size_t __YYAPI GetNewCapacity(size_t _uCapacity, size_t _uCapacityNeed)
                 {
                     if (_uCapacity >= _uCapacityNeed)
                         return _uCapacity;
@@ -1039,13 +1043,14 @@ namespace YY
 
              };
 
-            template<typename _Type, AllocPolicy _eAllocPolicy = AllocPolicy::COW, unsigned _uInsideBufferSize = 0>
+            template<typename _Type, AllocPolicy _eAllocPolicy = AllocPolicy::COW, uint32_t _uInsideBufferSize = 0>
             class Array : public AllocPolicyArray<_Type, _eAllocPolicy, _uInsideBufferSize>
             {
             public:
-                using Type = typename _Type;
+                using Type = _Type;
                 using AllocPolicyArray = AllocPolicyArray<_Type, _eAllocPolicy, _uInsideBufferSize>;
                 using _ReadPoint = typename AllocPolicyArray::_ReadPoint;
+                using _ReadType = typename AllocPolicyArray::_ReadType;
                 static constexpr AllocPolicy eAllocPolicy = _eAllocPolicy;
                 
                 constexpr static size_t uInvalidIndex = uint_max;
@@ -1065,7 +1070,7 @@ namespace YY
                 {
                     auto _hr = AllocPolicyArray::SetArray(std::move(_Other));
                     if(FAILED(_hr))
-                        std::abort();
+                        abort();
                 }
 
                 Array(std::initializer_list<_Type> _List)
@@ -1300,7 +1305,7 @@ namespace YY
                     return S_OK;
                 }
 
-                HRESULT __YYAPI Sort(int(__cdecl* _pFuncCompare)(const _Type* _pLeft, const _Type* _pRigth))
+                HRESULT __YYAPI Sort(int(* _pFuncCompare)(const _Type* _pLeft, const _Type* _pRigth))
                 {
                     auto _pInternalData = AllocPolicyArray::GetInternalData();
                     if (_pInternalData->GetSize() <= 1)
@@ -1310,13 +1315,13 @@ namespace YY
                     if (!_pInternalData)
                         return E_OUTOFMEMORY;
 
-                    qsort(_pInternalData->GetData(), _pInternalData->GetSize(), sizeof(_Type), (_CoreCrtNonSecureSearchSortCompareFunction)_pFuncCompare);
+                    qsort(_pInternalData->GetData(), _pInternalData->GetSize(), sizeof(_Type), (int (*)(const void*, const void*))_pFuncCompare);
 
                     _pInternalData->Unlock();
                     return S_OK;
                 }
 
-                auto& __YYAPI operator[](_In_ uint_t _uIndex)
+                _ReadType& __YYAPI operator[](_In_ uint_t _uIndex)
                 {
                     if (_uIndex >= AllocPolicyArray::GetSize())
                         throw Exception();
@@ -1324,7 +1329,7 @@ namespace YY
                     return AllocPolicyArray::GetData()[_uIndex];
                 }
 
-                auto& __YYAPI operator[](_In_ uint_t _uIndex) const
+                const _ReadType& __YYAPI operator[](_In_ uint_t _uIndex) const
                 {
                     if (_uIndex >= AllocPolicyArray::GetSize())
                         throw Exception();
@@ -1405,7 +1410,7 @@ namespace YY
                 {
                     auto _hr = AllocPolicyArray::SetArray(std::move(_Array));
                     if (FAILED(_hr))
-                        std::abort();
+                        abort();
 
                     return *this;
                 }

@@ -183,7 +183,7 @@ namespace YY
             : public ComUnknowImpl<ElementAccessibleProvider, IRawElementProviderSimple3, IRawElementProviderFragment, IRawElementProviderAdviseEvents>
         {
         protected:
-            ThreadTaskRunner TaskRunner;
+            RefPtr<ThreadTaskRunner> pTaskRunner;
             Element* pElement;
             // GetPatternProvider 接口的缓存
             IUnknown* PatternProviderCache[UIA_LastPatternId - UIA_FirstPatternId + 1];
@@ -198,13 +198,13 @@ namespace YY
                 __YY_QUERY_ENTRY(IRawElementProviderAdviseEvents)
             __YY_END_COM_QUERY_MAP();
 
-            ElementAccessibleProvider(Element* _pElement, ThreadTaskRunner _TaskRunner);
+            ElementAccessibleProvider(Element* _pElement, RefPtr<YY::Base::Threading::ThreadTaskRunner> _pTaskRunner);
 
             virtual ~ElementAccessibleProvider();
 
             Element* __YYAPI GetElement();
 
-            ThreadTaskRunner __YYAPI GetTaskRunner();
+            RefPtr<ThreadTaskRunner> __YYAPI GetTaskRunner();
 
             static int32_t __YYAPI AccessibleRoleToControlType(AccessibleRole _eRole);
 

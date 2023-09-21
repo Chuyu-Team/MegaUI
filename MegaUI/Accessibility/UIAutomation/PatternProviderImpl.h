@@ -5,6 +5,7 @@
 #include <MegaUI/base/ComUnknowImpl.h>
 #include <Base/Threading/TaskRunner.h>
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
+#include <Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -21,12 +22,12 @@ namespace YY
         {
         protected:
             _ElementType* pElement;
-            ThreadTaskRunner TaskRunner;
+            RefPtr<ThreadTaskRunner> pTaskRunner;
 
         public:
             PatternProviderBase(_In_ ElementAccessibleProvider* _pProvider)
                 : pElement((_ElementType*)_pProvider->GetElement())
-                , TaskRunner(_pProvider->GetTaskRunner())
+                , pTaskRunner(_pProvider->GetTaskRunner())
             {
             }
 

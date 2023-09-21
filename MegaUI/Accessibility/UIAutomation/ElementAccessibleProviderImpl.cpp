@@ -1,11 +1,13 @@
 ﻿#include "pch.h"
 #include "ElementAccessibleProviderImpl.h"
 
+#include <stdlib.h>
+
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
 #include <MegaUI/Accessibility/UIAutomation/ElementPatternProviderImpl.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 #pragma comment(lib, "Uiautomationcore.lib")
 
@@ -13,8 +15,8 @@ namespace YY
 {
     namespace MegaUI
     {
-        ElementAccessibleProvider::ElementAccessibleProvider(Element* _pElement, ThreadTaskRunner _TaskRunner)
-            : TaskRunner(std::move(_TaskRunner))
+        ElementAccessibleProvider::ElementAccessibleProvider(Element* _pElement, RefPtr<ThreadTaskRunner> _pTaskRunner)
+            : pTaskRunner(std::move(_pTaskRunner))
             , pElement(_pElement)
             , PatternProviderCache {}
         {
@@ -34,9 +36,9 @@ namespace YY
             return pElement;
         }
 
-        ThreadTaskRunner ElementAccessibleProvider::GetTaskRunner()
+        RefPtr<ThreadTaskRunner> ElementAccessibleProvider::GetTaskRunner()
         {
-            return TaskRunner;
+            return pTaskRunner;
         }
 
         int32_t ElementAccessibleProvider::AccessibleRoleToControlType(AccessibleRole _eRole)
@@ -85,7 +87,7 @@ namespace YY
 
                 if (_cchBuffer < size_t(_iResultLength) + 3)
                 {
-                    std::abort();
+                    abort();
                 }
 
                 memcpy(_szBuffer, _StaticString, _iResultLength * sizeof(_szBuffer[0]));
@@ -99,7 +101,7 @@ namespace YY
 
             if (_cchBuffer < 3 + 3)
             {
-                std::abort();
+                abort();
             }
 
             *_szBuffer++ = 'A';
@@ -174,7 +176,7 @@ namespace YY
                 if (_pChild->IsAccessible())
                 {
                     if (!_pCallback(_pChild, _pUserData))
-                        return __HRESULT_FROM_WIN32(ERROR_CANCELLED);
+                        return HRESULT_From_LSTATUS(ERROR_CANCELLED);
                 }
                 else
                 {
@@ -212,7 +214,7 @@ namespace YY
                 return E_NOINTERFACE;
 
             HRESULT _hr = E_NOINTERFACE;
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     switch (_iPatternId)
@@ -240,7 +242,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     _hr = S_OK;
@@ -467,7 +469,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     auto _BoundingRectangle = GetBoundingRectangle();
@@ -499,7 +501,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     _hr = S_OK;
@@ -609,7 +611,7 @@ namespace YY
         {
             HRESULT _hr = E_FAIL;
 
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     pElement->SetKeyboardFocus();
@@ -626,7 +628,7 @@ namespace YY
             *_pRetVal = nullptr;
 
             HRESULT _hr = E_FAIL;
-            TaskRunner.Sync(
+            pTaskRunner->Sync(
                 [=, &_hr]()
                 {
                     auto _pHost = pElement->GetWindow()->GetHost();

@@ -1,6 +1,8 @@
 ﻿#pragma once
+#ifdef _WIN32
 #include <Windows.h>
 #include <D2d1.h>
+#endif
 
 #include <Base/YY.h>
 
@@ -35,11 +37,13 @@ namespace YY
             {
             }
 
+#ifdef _WIN32
             inline constexpr Point(POINTS _Other)
                 : X((float)_Other.x)
                 , Y((float)_Other.y)
             {
             }
+#endif
 
             inline bool operator==(Point _Other) const
             {
@@ -51,10 +55,12 @@ namespace YY
                 return X != _Other.X || Y != _Other.Y;
             }
 
+#ifdef _WIN32
             __YYAPI operator D2D1_POINT_2F&() const
             {
                 return *(D2D1_POINT_2F*)this;
             }
+#endif
         };
     } // namespace Media
 

@@ -188,7 +188,7 @@ namespace YY
                 Context.szEnd = _szString.GetConstString() + _szString.GetSize();
 
                 auto _hr = ParseWorker(&Context, _pExprNode);
-                if (SUCCEEDED(_hr) || _hr != __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
+                if (SUCCEEDED(_hr) || _hr != HRESULT_From_LSTATUS(ERROR_BAD_FORMAT))
                 {
                     return _hr;
                 }
@@ -303,13 +303,13 @@ namespace YY
                         _pContext->SkipWhiteSpace();
 
                         if (_pContext->HasError())
-                            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                         if (_pContext->IsTerminate())
                             break;
 
                         if (_pContext->Current() != ',')
-                            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                         _pContext->Next();
                     }
@@ -334,7 +334,7 @@ namespace YY
                         _pContext->SkipWhiteSpace();
 
                         if (_pContext->HasError())
-                            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                         auto _ch = _pContext->Current();
                         if (_pContext->IsTerminate() || _ch == '|')
@@ -359,11 +359,11 @@ namespace YY
                             _pContext->SkipWhiteSpace();
 
                             if (_pContext->HasError())
-                                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         }
                         else
                         {
-                            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         }
                     }
                     else if (_Type == ValueParserType::ParserOtherChar)
@@ -383,22 +383,22 @@ namespace YY
                             _pContext->SkipWhiteSpace();
 
                             if (_pContext->HasError())
-                                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         }
                         else
                         {
-                            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         }
                     }
                     else
                     {
-                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     }
                     if (_pContext->IsTerminate())
                         break;
 
                     if (_pContext->Current() != '|')
-                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                     _pContext->Next();
                 }

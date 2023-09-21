@@ -48,7 +48,7 @@ namespace YY
 
             if (!SystemParametersInfoW(SystemFontIndexInfo.uiAction, SystemFontIndexInfo.uSizeOfBuffer, &FontInfoBuffer, 0))
             {
-                return __HRESULT_FROM_WIN32(GetLastError());
+                return HRESULT_From_LSTATUS(GetLastError());
             }
             
             auto& Font = *(LOGFONTW*)(FontInfoBuffer.Buffer + SystemFontIndexInfo.uOffsetToData);

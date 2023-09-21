@@ -1,10 +1,11 @@
 #include "pch.h"
-#include <Base/Threading/TaskRunner.h>
+#include "TaskRunner.h"
 
+#include <Base/Exception.h>
 #include <Base/Threading/ThreadTaskRunnerImpl.h>
+#include <Base/Threading/SequencedTaskRunnerImpl.h>
 
-
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {
@@ -12,13 +13,17 @@ namespace YY
     {
         namespace Threading
         {
-            ThreadTaskRunner ThreadTaskRunner::GetCurrentThreadTaskRunner()
+            RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::GetCurrent()
             {
-                auto _pThreadTaskRunner = ThreadTaskRunnerImpl::GetCurrentThreadTaskRunner();
-                ThreadTaskRunner _Tmp(_pThreadTaskRunner);
-                _pThreadTaskRunner->Release();
-                return _Tmp;
+                return ThreadTaskRunnerImpl::GetCurrent();
             }
-        }
+
+            RefPtr<SequencedTaskRunner> __YYAPI SequencedTaskRunner::Create()
+            {
+                RefPtr<SequencedTaskRunner> _pSequencedTaskRunner;
+                _pSequencedTaskRunner.Attach(new SequencedTaskRunnerImpl());
+                return _pSequencedTaskRunner;
+            }
+        } // namespace Threading
     }
 } // namespace YY

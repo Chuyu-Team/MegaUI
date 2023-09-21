@@ -11,6 +11,7 @@
 #include <Media/Graphics/DrawContext.h>
 #include <Base/Memory/UniquePtr.h>
 #include <Base/Containers/Optional.h>
+#include <Base/Threading/TaskRunner.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -20,7 +21,7 @@ namespace YY
     {
         namespace Graphics
         {
-            typedef YY::Base::Containers::Array<byte, AllocPolicy::COW> DrawCommand;
+            typedef YY::Base::Containers::Array<byte_t, AllocPolicy::COW> DrawCommand;
             // typedef std::function<HRESULT(DrawContext** _ppTargetDrawContext)> CreateTargetDrawContext;
 
             class DrawAsyncCommandContext : public DrawContext
@@ -38,7 +39,8 @@ namespace YY
                 SingleLinkedList<DrawCommandEntry> oCommandList;
                 DrawCommandEntry* pCurrentCommandEntry;
                 Size PixelSize;
-                HANDLE hThread;
+                RefPtr<SequencedTaskRunner> pSequencedTaskRunner;
+
                 // 如果线程退出或者对象准备销毁时将为 true
                 volatile bool bCancel;
 

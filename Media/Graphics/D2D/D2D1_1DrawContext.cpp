@@ -5,7 +5,7 @@
 #include <Media/Graphics/D2D/DWriteHelper.h>
 #include <Base/Memory/UniquePtr.h>
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "D3D11.lib")
@@ -261,7 +261,7 @@ namespace YY
 
                 RECT _ClientRect;
                 if (!GetClientRect(_hWnd, &_ClientRect))
-                    return __HRESULT_FROM_WIN32(GetLastError());
+                    return HRESULT_From_LSTATUS(GetLastError());
 
                 const D2D1_SIZE_U _oPixelSize = {_ClientRect.right - _ClientRect.left, _ClientRect.bottom - _ClientRect.top};
 
@@ -472,7 +472,14 @@ namespace YY
                         _oIntersectBox.right = _oCopyPixelSize.width;
                         _oIntersectBox.bottom = _oCopyPixelSize.height;
                         _oIntersectBox.back = 1;
+
+                        RefPtr<ID2D1Multithread> _pD2DMultithread;
+                        GetD2D1Factory()->QueryInterface(_pD2DMultithread.ReleaseAndGetAddressOf());
+                        if (_pD2DMultithread)
+                            _pD2DMultithread->Enter();
                         pDirectDeviceCache->pD3DDeviceContext->CopySubresourceRegion(_pBackTexture2D, 0, 0, 0, 0, _pBackupTexture2D, 0, &_oIntersectBox);
+                        if (_pD2DMultithread)
+                            _pD2DMultithread->Leave();
                     }
 
                     // Direct2D needs the dxgi version of the backbuffer surface pointer.

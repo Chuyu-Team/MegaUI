@@ -8,6 +8,7 @@
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Parser/UIParser.h>
 #include <MegaUI/Control/Button.h>
+#include <Base/Threading/TaskRunner.h>
 
 using namespace YY;
 using namespace YY::MegaUI;
@@ -22,6 +23,8 @@ static u8String GetUiResource(DWORD _uResourceId)
 
     return u8String();
 }
+
+#pragma comment(lib, "Synchronization.lib")
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -171,12 +174,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     //_pWindows->ShowWindow(SW_SHOW);
     #endif
-    MSG _Msg;
-    while (GetMessageW(&_Msg, nullptr, 0, 0))
-    {
-        TranslateMessage(&_Msg);
-        DispatchMessage(&_Msg);
-    }
-
-    return (int)_Msg.wParam;
+    auto _oThreadTaskRunner = YY::Base::Threading::ThreadTaskRunner::GetCurrent();
+    return _oThreadTaskRunner->RunMessageLoop();
 }

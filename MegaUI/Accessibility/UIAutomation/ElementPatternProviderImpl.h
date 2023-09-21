@@ -193,7 +193,7 @@ namespace YY
                 _pRetVal->vt = VT_EMPTY;
 
                 HRESULT _hr = E_FAIL;
-                TaskRunner.Sync(
+                pTaskRunner->Sync(
                     [=, &_hr]()
                     {
                         switch (_iAttributeId)
@@ -420,7 +420,7 @@ namespace YY
                     return E_INVALIDARG;
                 *_ppRetVal = nullptr;
                 HRESULT _hr = E_FAIL;
-                TaskRunner.Sync(
+                pTaskRunner->Sync(
                     [=, &_hr]()
                     {
                         auto _szDisplayed = pElement->GetContentStringAsDisplayed();
@@ -512,7 +512,7 @@ namespace YY
 
             virtual HRESULT STDMETHODCALLTYPE Invoke() override
             {
-                TaskRunner.Async(
+                pTaskRunner->Async(
                     [](void* _pUserData)
                     {
                         auto _pElement = (Element*)_pUserData;

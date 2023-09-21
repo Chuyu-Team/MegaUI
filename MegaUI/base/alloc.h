@@ -10,33 +10,33 @@ namespace YY
     {
         _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
         _CRTALLOCATOR
-        inline void* __cdecl HAlloc(_In_ size_t _Size)
+        inline void* HAlloc(_In_ size_t _Size)
         {
             return malloc(_Size);
         }
 
         _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
         _CRTALLOCATOR
-        inline void* __cdecl HAllocAndZero(_In_ size_t _Size)
+        inline void* HAllocAndZero(_In_ size_t _Size)
         {
             return calloc(1, _Size);
         }
 
         _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
         _CRTALLOCATOR
-        inline void* __cdecl HReAlloc(_Pre_maybenull_ _Post_invalid_ void* _Block, _In_ size_t _Size)
+        inline void* HReAlloc(_Pre_maybenull_ _Post_invalid_ void* _Block, _In_ size_t _Size)
         {
             return realloc(_Block, _Size);
         }
         
         _Success_(return != NULL) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(_Size)
         _CRTALLOCATOR
-        inline void* __cdecl HReAllocAndZero(_Pre_maybenull_ _Post_invalid_ void* _Block, _In_ size_t _Size)
+        inline void* HReAllocAndZero(_Pre_maybenull_ _Post_invalid_ void* _Block, _In_ size_t _Size)
         {
             return _recalloc(_Block, 1, _Size);
         }
 
-        inline void __cdecl HFree(_Pre_maybenull_ _Post_invalid_ void* _Block)
+        inline void HFree(_Pre_maybenull_ _Post_invalid_ void* _Block)
         {
             free(_Block);
         }
@@ -56,7 +56,7 @@ namespace YY
         template<typename T, typename... Args>
         _Success_(return != NULL) _Check_return_ _Ret_maybenull_
         _CRTALLOCATOR
-        inline T* __cdecl HNewAndZero(Args... args)
+        inline T* HNewAndZero(Args... args)
         {
             T* _p = (T*)HAllocAndZero(sizeof(T));
             if (_p)
@@ -66,7 +66,7 @@ namespace YY
         }
 
         template<typename T>
-        inline void __cdecl HDelete(_Pre_maybenull_ _Post_invalid_ T* _p)
+        inline void HDelete(_Pre_maybenull_ _Post_invalid_ T* _p)
         {
             if (_p)
             {
@@ -79,12 +79,12 @@ namespace YY
         class allocator : public std::allocator<_Ty>
         {
         public:
-            _Ty* __cdecl allocate(const size_t _Count)
+            _Ty* allocate(const size_t _Count)
             {
                 return HAlloc(_Count * sizeof(_Ty));
             }
 
-            void __cdecl deallocate(_Ty* const _Ptr, const size_t _Count)
+            void deallocate(_Ty* const _Ptr, const size_t _Count)
             {
                 HFree(_Ptr);
             }

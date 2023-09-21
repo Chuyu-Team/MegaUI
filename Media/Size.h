@@ -1,6 +1,9 @@
 ﻿#pragma once
+#ifdef _WIN32
 #include <Windows.h>
 #include <d2d1.h>
+#include <GdiPlus.h>
+#endif
 
 #include <Base/YY.h>
 
@@ -17,8 +20,8 @@ namespace YY
             float Height;
 
             constexpr Size()
-                : Width(0)
-                , Height(0)
+                : Width(0.0f)
+                , Height(0.0f)
             {
             }
             
@@ -28,18 +31,20 @@ namespace YY
             {
             }
 
+#ifdef _WIN32
             Size(const SIZE& _Size)
                 : Width((float)_Size.cx)
                 , Height((float)_Size.cy)
             {
             }
+#endif
 
             inline bool __YYAPI IsEmpty() const
             {
-                return Width == 0 || Height == 0;
+                return Width == 0.0f || Height == 0.0f;
             }
 
-            inline bool __YYAPI operator == (Size _Other) const
+            inline bool __YYAPI operator==(Size _Other) const
             {
                 return Width == _Other.Width && Height == _Other.Height;
             }
@@ -49,10 +54,12 @@ namespace YY
                 return Width != _Other.Width || Height != _Other.Height;
             }
 
+#ifdef _WIN32
             __YYAPI operator Gdiplus::SizeF&() const
             {
                 return *(Gdiplus::SizeF*)this;
             }
+#endif
         };
     } // namespace Media
 

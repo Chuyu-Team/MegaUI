@@ -16,7 +16,7 @@
 
 #define _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_NODE, _STR) (_NODE->name_size() == (std::size(_STR) - 1) && _stricmp(_NODE->name(), _STR) == 0)
 
-#pragma warning(disable : 28251)
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY
 {
@@ -232,12 +232,12 @@ namespace YY
                 _XmlDocument.parse<rapidxml::parse_default>(_pStringBuffer);
             } catch (const rapidxml::parse_error&)
             {
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
             }
 
             auto _pRoot = _XmlDocument.first_node(_RAPAIDXML_STAATIC_STRING("MegaUI"), false);
             if (!_pRoot)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             HRESULT _hr = S_OK;
 
@@ -255,7 +255,7 @@ namespace YY
                         auto _pResourceIDAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResourceID"), false);
                         if (!_pResourceIDAttribute)
                         {
-                            _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                            _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                             break;
                         }
 
@@ -316,7 +316,7 @@ namespace YY
                         auto _pResID = _pNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResourceID"), false);
                         if (!_pResID)
                         {
-                            _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                            _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                             break;
                         }
 
@@ -370,12 +370,12 @@ namespace YY
                 if (_ByteCode.GetSize() <= sizeof(ByteCodeBegin) + sizeof(ByteCodeEnd))
                 {
                     // 一个有效的格式总应该包含 ByteCodeBegin + ByteCodeEnd；
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                 }
 
                 auto _pByteCodeBegin = (ByteCodeBegin*)_ByteCode.GetData();
                 if (_pByteCodeBegin->Type != ByteCodeBase::ByteCodeBegin || _pByteCodeBegin->cbData < sizeof(ByteCodeBegin))
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _ByteCode.Slice(_pByteCodeBegin->cbData);
 
@@ -410,7 +410,7 @@ namespace YY
                         }
                     }
 
-                    _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                 }
                 
                 for (auto _pItem : _ElementList)
@@ -512,7 +512,7 @@ namespace YY
             uint32_t _uIndex;
             auto _pControlInfo = FindControlInfo(_pNote->name(), &_uIndex);
             if (!_pControlInfo)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
             _CreateElement.uIndexOfElementName = _uIndex;
 
             auto _hr = _pRecorder->ByteCode.Add((uint8_t*)&_CreateElement, sizeof(_CreateElement));
@@ -574,7 +574,7 @@ namespace YY
             auto _pProp = GetPropertyByName(_pControlInfo, _pAttribute->name());
 
             if (!_pProp)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
             
             Value _Value;
             auto _hr = ParserValue(_pControlInfo, _pProp, u8StringView((u8char_t*)_pAttribute->value(), _pAttribute->value_size()), &_Value);
@@ -619,7 +619,7 @@ namespace YY
             *_pValue = nullptr;
 
             if (!_pProp)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             if (!_pProp->ppValidValues)
                 return E_UNEXPECTED;
@@ -674,7 +674,7 @@ namespace YY
                 }
 
                 // 格式不支持，
-                if (_hr == __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
+                if (_hr == HRESULT_From_LSTATUS(ERROR_BAD_FORMAT))
                     continue;
 
                 if (FAILED(_hr))
@@ -736,7 +736,7 @@ namespace YY
                     }
                     else
                     {
-                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     }
                 }
             }
@@ -759,7 +759,7 @@ namespace YY
                     }
                     else
                     {
-                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     }
                 }
 
@@ -776,7 +776,7 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
@@ -786,7 +786,7 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Or)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                 
                 int32_t _iValueOr = 0;
                 for (auto& Expr : _pExprNode->ChildExprNode)
@@ -795,7 +795,7 @@ namespace YY
                     if (FAILED(_hr))
                         return _hr;
                     if (_pValue->uRawView != 0)
-                        return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                     _iValueOr |= _pValue->iNumber;
                 }
@@ -806,7 +806,7 @@ namespace YY
             {
                 auto szValue = _pExprNode->szValue;
                 if (szValue.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                 
                 if (SUCCEEDED(ParserInt32Value(_pExprNode->szValue, _pValue)))
                     return S_OK;
@@ -842,7 +842,7 @@ namespace YY
                         break;
                     }
 
-                    if (_hr != __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
+                    if (_hr != HRESULT_From_LSTATUS(ERROR_BAD_FORMAT))
                     {
                         return _hr;
                     }
@@ -857,7 +857,7 @@ namespace YY
                         break;
                     }
 
-                    if (_hr != __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
+                    if (_hr != HRESULT_From_LSTATUS(ERROR_BAD_FORMAT))
                     {
                         return _hr;
                     }
@@ -879,7 +879,7 @@ namespace YY
                 return S_OK;
             }
             
-            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
         }
         
         HRESULT __YYAPI UIParser::ParserStringValue(ExprNode* _pExprNode, uString* _pValue)
@@ -889,7 +889,7 @@ namespace YY
                 if (_pExprNode->ChildExprNode.GetSize() != 0)
                 {
                     auto _hr = ParserStringValue(_pExprNode->ChildExprNode.GetData(), _pValue);
-                    if (SUCCEEDED(_hr) || _hr != __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
+                    if (SUCCEEDED(_hr) || _hr != HRESULT_From_LSTATUS(ERROR_BAD_FORMAT))
                         return _hr;
                 }
 
@@ -919,7 +919,7 @@ namespace YY
                 } while (false);
             }
             
-            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
         }
 
         HRESULT __YYAPI UIParser::ParserInt32Value(const EnumMap* pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
@@ -930,7 +930,7 @@ namespace YY
                 return _hr;
 
             if (_iValue.uRawView != 0)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT); 
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT); 
 
             auto _Value = Value::CreateInt32(_iValue.iNumber);
             if (_Value == nullptr)
@@ -983,7 +983,7 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
@@ -1002,7 +1002,7 @@ namespace YY
                 }
             }
 
-            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
         }
         
         HRESULT __YYAPI UIParser::ParserStringValue(ExprNode* _pExprNode, Value* _pValue)
@@ -1022,13 +1022,13 @@ namespace YY
         HRESULT __YYAPI UIParser::ParserFunction(aStringView _szFunctionName, ExprNode* _pExprNode, ParsedArg* _pArgs, uint_t _uArgsCount)
         {
             if (_pExprNode->Type != ExprNodeType::Funcall)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             if (_pExprNode->szValue.GetSize() != _szFunctionName.GetSize() || _strnicmp((char*)_pExprNode->szValue.GetConstString(), _szFunctionName.GetConstString(), _szFunctionName.GetSize()) != 0)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             if (_pExprNode->ChildExprNode.GetSize() != _uArgsCount)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             HRESULT _hr = S_OK;
 
@@ -1043,7 +1043,7 @@ namespace YY
                     _hr = ParserInt32Value(&ExprNode, _pArgs);
                     // 整形不支持缩放后缀
                     if (_pArgs->uRawView)
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     break;
                 case ParsedArgType::float_t:
                     _hr = ParserFloatValue(&ExprNode, _pArgs);
@@ -1076,7 +1076,7 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
@@ -1100,7 +1100,7 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
@@ -1129,7 +1129,7 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
@@ -1184,7 +1184,7 @@ namespace YY
             {
                 _Color = Color::MakeARGB(_Arg[0].iNumber, _Arg[1].iNumber, _Arg[2].iNumber, _Arg[3].iNumber);
             }
-            else if (_hr == __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT))
+            else if (_hr == HRESULT_From_LSTATUS(ERROR_BAD_FORMAT))
             {
                 _hr = ParserFunction("RGB", _pExprNode, _Arg, 3);
                 if (SUCCEEDED(_hr))
@@ -1203,7 +1203,7 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
@@ -1225,13 +1225,13 @@ namespace YY
             if (_pExprNode->Type == ExprNodeType::Root)
             {
                 if (_pExprNode->ChildExprNode.GetSize() == 0)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
             if (_pExprNode->Type != ExprNodeType::BaseIdentifier)
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             RefPtr<StyleSheet> _pStyleSheet;
             if (SUCCEEDED(GetStyleSheet(_pExprNode->szValue, _pStyleSheet.ReleaseAndGetAddressOf())))
@@ -1243,7 +1243,7 @@ namespace YY
                 return S_OK;
             }
 
-            return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+            return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
         }
         
         HRESULT __YYAPI UIParser::Play(ArrayView<const uint8_t>& _ByteCode, UIParserPlayContext* _pContext, Element* _pTopLevel, intptr_t* _pCooike, Array<Element*, AllocPolicy::SOO>* _pElementArray)
@@ -1252,13 +1252,13 @@ namespace YY
                 *_pCooike = 0;
 
             Element* _pCurrentElement = nullptr;
-            HRESULT _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+            HRESULT _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             for (;;)
             {
                 if (_ByteCode.GetSize() == 0)
                 {
-                    _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     break;
                 }
 
@@ -1266,7 +1266,7 @@ namespace YY
 
                 if (_ByteCode.GetSize() < sizeof(ByteCodeBase) || _pByteCodeBase->cbData > _ByteCode.GetSize() || _pByteCodeBase->cbData < sizeof(ByteCodeBase))
                 {
-                    _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     break;
                 }
 
@@ -1274,7 +1274,7 @@ namespace YY
                 {
                     if (_pCurrentElement == nullptr || _pByteCodeBase->cbData < sizeof(ChildElementBegin))
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
                     _ByteCode.Slice(_pByteCodeBase->cbData);
@@ -1293,14 +1293,14 @@ namespace YY
                 {
                     if (_pByteCodeBase->cbData < sizeof(ChildElementEnd))
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
                     _ByteCode.Slice(_pByteCodeBase->cbData);
 
                     if (_ByteCode.GetSize() == 0)
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
 
@@ -1310,14 +1310,14 @@ namespace YY
                 {
                     if (_pByteCodeBase->cbData < sizeof(ByteCodeEnd))
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
                     _ByteCode.Slice(_pByteCodeBase->cbData);
 
                     if (_ByteCode.GetSize() != 0)
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
 
@@ -1327,7 +1327,7 @@ namespace YY
                 {
                     if (_pByteCodeBase->cbData < sizeof(CreateElement))
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
                     _ByteCode.Slice(_pByteCodeBase->cbData);
@@ -1337,7 +1337,7 @@ namespace YY
 
                     if (!_ppClass)
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
                     auto _pClass = *_ppClass;
@@ -1363,7 +1363,7 @@ namespace YY
                 {
                     if (_pCurrentElement == nullptr || _pByteCodeBase->cbData < sizeof(SetProperty))
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
                     _ByteCode.Slice(_pByteCodeBase->cbData);
@@ -1373,7 +1373,7 @@ namespace YY
                     auto _ppValue = LocalValueCache.GetItemPtr(_pSetProperty->uIndexOfPropertyValue);
                     if (!_ppValue)
                     {
-                        _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                        _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                         break;
                     }
 
@@ -1382,7 +1382,7 @@ namespace YY
                 }
                 else
                 {
-                    _hr = __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     break;
                 }
             }
@@ -1506,7 +1506,7 @@ namespace YY
             auto _pControlInfo = FindControlInfo(_pElementValueNode->name(), &_uIndex);
             if (!_pControlInfo)
             {
-                return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
             }
 
             // 首先将匹配条件 _XmlOption 转换 到 StyleSheet::Cond
@@ -1522,7 +1522,7 @@ namespace YY
             {
                 auto _pProp = GetPropertyByName(_pControlInfo, (raw_const_astring_t)_XmlOptionItem.szPropName.GetConstString());
                 if (!_pProp)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 Value _Value;
                 auto _hr = ParserValue(_pControlInfo, _pProp, _XmlOptionItem.szPropValue, &_Value);
@@ -1544,7 +1544,7 @@ namespace YY
             {
                 auto _pProp = GetPropertyByName(_pControlInfo, _pPropXml->name());
                 if (!_pProp)
-                    return __HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 Value _Value;
                 auto _hr = ParserValue(_pControlInfo, _pProp, u8StringView((u8char_t*)_pPropXml->value(), _pPropXml->value_size()), &_Value);

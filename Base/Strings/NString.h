@@ -869,7 +869,7 @@ namespace YY
                 }
 
                 template<class string_t>
-                __forceinline HRESULT __YYAPI AppendStringT(const string_t& _szSrc)
+                inline HRESULT __YYAPI AppendStringT(const string_t& _szSrc)
                 {
                     if (_szSrc.GetSize() == 0)
                         return S_OK;

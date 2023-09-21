@@ -2,11 +2,12 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
-#include <crtdbg.h>
+#include <assert.h>
 
 #include <Base/YY.h>
 #include <Base/Encoding.h>
 #include <Base/tchar.h>
+#include <MegaUI/Base/ErrorCode.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -68,30 +69,30 @@ namespace YY
                     return eEncoding;
                 }
 
-                __forceinline size_t __YYAPI GetSize() const
+                inline size_t __YYAPI GetSize() const
                 {
                     return cchString;
                 }
 
-                __forceinline _Ret_notnull_ _Post_readable_size_(cchString)
+                inline _Ret_notnull_ _Post_readable_size_(cchString)
                     const char_t* __YYAPI GetConstString() const
                 {
                     return szString;
                 }
 
-                __forceinline char_t __YYAPI operator[](_In_ size_t _uIndex) const
+                inline char_t __YYAPI operator[](_In_ size_t _uIndex) const
                 {
-                    _ASSERTE(_uIndex < GetSize());
+                    assert(_uIndex < GetSize());
 
                     return szString[_uIndex];
                 }
 
-                __forceinline const char_t* __YYAPI begin() const
+                inline const char_t* __YYAPI begin() const
                 {
                     return this->GetConstString();
                 }
 
-                __forceinline const char_t* __YYAPI end() const
+                inline const char_t* __YYAPI end() const
                 {
                     return this->GetConstString() + this->GetSize();
                 }
@@ -151,7 +152,6 @@ namespace YY
             {
             public:
                 using char_t = YY::Base::achar_t;
-                using Encoding = Encoding;
 
             private:
                 _Field_size_(cchString) const char_t* szString;
@@ -188,35 +188,35 @@ namespace YY
                 {
                 }
 
-                __forceinline Encoding __YYAPI GetEncoding() const
+                inline Encoding __YYAPI GetEncoding() const
                 {
                     return eEncoding;
                 }
 
-                __forceinline size_t __YYAPI GetSize() const
+                inline size_t __YYAPI GetSize() const
                 {
                     return cchString;
                 }
 
-                __forceinline _Ret_notnull_ _Post_readable_size_(cchString)
+                inline _Ret_notnull_ _Post_readable_size_(cchString)
                     const char_t* __YYAPI GetConstString() const
                 {
                     return szString;
                 }
 
-                __forceinline char_t __YYAPI operator[](_In_ size_t _uIndex) const
+                inline char_t __YYAPI operator[](_In_ size_t _uIndex) const
                 {
-                    _ASSERTE(_uIndex < GetSize());
+                    assert(_uIndex < GetSize());
 
                     return szString[_uIndex];
                 }
 
-                __forceinline const char_t* __YYAPI begin() const
+                inline const char_t* __YYAPI begin() const
                 {
                     return this->GetConstString();
                 }
 
-                __forceinline const char_t* __YYAPI end() const
+                inline const char_t* __YYAPI end() const
                 {
                     return this->GetConstString() + this->GetSize();
                 }

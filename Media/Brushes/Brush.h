@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <stdlib.h>
+
 #include <Media/Resource.h>
 #include <Media/Color.h>
 

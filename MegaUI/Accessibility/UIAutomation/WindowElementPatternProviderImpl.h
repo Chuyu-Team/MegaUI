@@ -59,7 +59,7 @@ namespace YY
                 if (_bRet)
                     return S_OK;
 
-                return __HRESULT_FROM_WIN32(GetLastError());
+                return HRESULT_From_LSTATUS(GetLastError());
             }
 
             virtual HRESULT STDMETHODCALLTYPE Resize(
@@ -85,7 +85,7 @@ namespace YY
                 if (_bRet)
                     return S_OK;
 
-                return __HRESULT_FROM_WIN32(GetLastError());
+                return HRESULT_From_LSTATUS(GetLastError());
             }
 
             virtual HRESULT STDMETHODCALLTYPE Rotate(

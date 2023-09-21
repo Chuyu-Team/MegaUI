@@ -83,7 +83,7 @@ namespace YY
                 hWnd = _hWnd;
                 RECT _Client;
                 if (!::GetClientRect(_hWnd, &_Client))
-                    return __HRESULT_FROM_WIN32(GetLastError());
+                    return HRESULT_From_LSTATUS(GetLastError());
 
                 PixelSize.Width = _Client.right - _Client.left;
                 PixelSize.Height = _Client.bottom - _Client.top;

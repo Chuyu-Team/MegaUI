@@ -1,7 +1,9 @@
 ﻿#pragma once
+#ifdef _WIN32
 #include <Windows.h>
 #include <d2d1.h>
 #include <GdiPlus.h>
+#endif
 
 #include <Base/YY.h>
 
@@ -21,9 +23,9 @@ namespace YY
                 uint8_t Alpha;
             };
 
-            COLORREF ColorRGBA;
+            uint32_t ColorRGBA;
 
-            COLORREF ColorRGB : 24;
+            uint32_t ColorRGB : 24;
 
             constexpr static Color __YYAPI MakeARGB(_In_ uint8_t _Alpha, _In_ uint8_t _Red, _In_ uint8_t _Green, _In_ uint8_t _Blue)
             {
@@ -49,13 +51,16 @@ namespace YY
                 , Blue(_Blue)
                 , Alpha(_Alpha)
             {
+                __YY_IGNORE_UNINITIALIZED_VARIABLE(ColorRGBA);
+                __YY_IGNORE_UNINITIALIZED_VARIABLE(ColorRGB);
             }
 
-            constexpr Color(_In_ COLORREF _ColorRGBA = 0u)
+            constexpr Color(_In_ uint32_t _ColorRGBA = 0u)
                 : ColorRGBA(_ColorRGBA)
             {
             }
 
+#ifdef _WIN32
             __YYAPI operator DXGI_RGBA() const
             {
                 DXGI_RGBA _Color;
@@ -65,12 +70,14 @@ namespace YY
                 _Color.a = float(Alpha) / 255.0f;
                 return _Color;
             }
+#endif
 
+#ifdef _WIN32
             __YYAPI operator Gdiplus::Color() const
             {
                 return Gdiplus::Color(Alpha, Red, Green, Blue);
             }
-
+#endif
             bool __YYAPI operator==(Color _Other) const
             {
                 return ColorRGBA == _Other.ColorRGBA;

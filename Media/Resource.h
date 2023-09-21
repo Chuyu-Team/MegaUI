@@ -132,6 +132,8 @@ namespace YY
                     pSharedData->Release();
                     pSharedData = nullptr;
                 }
+
+                return *this;
             }
 
             Resource& operator=(const Resource& _oOther) noexcept
