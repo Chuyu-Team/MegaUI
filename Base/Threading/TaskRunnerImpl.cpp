@@ -13,7 +13,7 @@ namespace YY
     {
         namespace Threading
         {
-            thread_local SequencedTaskRunner* g_pTaskRunner;
+            thread_local SequencedTaskRunner* g_pTaskRunner = nullptr;
 
             uint32_t __YYAPI GenerateNewTaskRunnerId()
             {

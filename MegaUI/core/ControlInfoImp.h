@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include "MegaUI/base/MegaUITypeInt.h"
-#include "ControlInfo.h"
-#include "MegaUI/base/alloc.h"
-#include "Element.h"
+#include <Base/YY.h>
+#include <MegaUI/Core/ControlInfo.h>
+#include <Base/Memory/Alloc.h>
+#include <MegaUI/Core/Element.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -45,7 +45,7 @@ namespace YY
                 return _uNewRef;
             }
 
-            virtual raw_const_astring_t __YYAPI GetName() override
+            virtual raw_const_u8string_t __YYAPI GetName() override
             {
                 return _Class::g_ControlInfoData.szControlName;
             }
@@ -70,19 +70,19 @@ namespace YY
 
             static constexpr uint32_t GetPropertyInfoCount()
             {
-                return _Class::StaticControlInfo::uPropsCount + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
+                return _Class::StaticControlInfo::uPropsCount + ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
             }
 
             static const PropertyInfo* __YYAPI EnumPropertyInfoImp(uint32_t _uIndex)
             {
-                constexpr auto _uBasePropCount = ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
+                constexpr auto _uBasePropCount = ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount();
 
                 if (_uIndex >= _uBasePropCount)
                 {
                     return &_Class::g_ControlInfoData.Props[_uIndex - _uBasePropCount];
                 }
 
-                return ControlInfoImp<_Class::StaticControlInfo::BaseControl>::EnumPropertyInfoImp(_uIndex);
+                return ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::EnumPropertyInfoImp(_uIndex);
             }
 
             virtual const PropertyInfo* __YYAPI EnumPropertyInfo(uint32_t _uIndex) override
@@ -123,11 +123,11 @@ namespace YY
 
                 if (_uIndex >= _Class::StaticControlInfo::uPropsCount)
                 {
-                    return ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoIndexImp(_Prop);
+                    return ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoIndexImp(_Prop);
                 }
 
                 static_assert(ControlInfoImp<_Class>::GetPropertyInfoCount() < int32_max, "");
-                return int32_t(_uIndex + ControlInfoImp<_Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount());
+                return int32_t(_uIndex + ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount());
             }
 
             virtual int32_t __YYAPI GetPropertyInfoIndex(const PropertyInfo& _Prop) override
@@ -163,7 +163,7 @@ namespace YY
                 else
                 {
                     // 这里不会增加引用计数
-                    auto _pTmp = HNewAndZero<_Class::StaticControlInfo::ControlInfoType>();
+                    auto _pTmp = HNewAndZero<typename _Class::StaticControlInfo::ControlInfoType>();
                     if (!_pTmp)
                         return E_OUTOFMEMORY;
 
@@ -241,7 +241,7 @@ namespace YY
                 return _uNewRef;
             }
 
-            virtual raw_const_astring_t __YYAPI GetName() override
+            virtual raw_const_u8string_t __YYAPI GetName() override
             {
                 return Element::StaticControlInfo::szControlName;
             }

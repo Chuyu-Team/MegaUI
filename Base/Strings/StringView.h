@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <algorithm>
 
 #include <Base/YY.h>
 #include <Base/Encoding.h>
@@ -97,7 +98,7 @@ namespace YY
                     return this->GetConstString() + this->GetSize();
                 }
 
-                bool __YYAPI operator==(StringView _Other)
+                bool __YYAPI operator==(StringView _Other) const
                 {
                     if (cchString != _Other.cchString)
                         return false;
@@ -105,12 +106,12 @@ namespace YY
                     return memcmp(szString, _Other.szString, cchString * sizeof(szString[0])) == 0;
                 }
 
-                bool __YYAPI operator==(_In_z_ const char_t* _Other)
+                bool __YYAPI operator==(_In_z_ const char_t* _Other) const
                 {
                     return Compare(_Other) == 0;
                 }
 
-                int __YYAPI Compare(_In_z_ const char_t* _Other)
+                int __YYAPI Compare(_In_z_ const char_t* _Other) const
                 {
                     if (_Other == nullptr)
                     {
@@ -128,7 +129,33 @@ namespace YY
                     return char_t('\0') - _Other[_uIndex];
                 }
 
-                int32_t __YYAPI CompareI(_In_z_ const char_t* _Other)
+                int __YYAPI Compare(_In_ StringView _szOther) const
+                {
+                    const auto _uMinSize = (std::min)(GetSize(), _szOther.GetSize());
+
+                    uint_t _uIndex = 0;
+                    for (; _uIndex != _uMinSize; ++_uIndex)
+                    {
+                        auto _result = szString[_uIndex] - _szOther[_uIndex];
+                        if (_result != 0)
+                            return _result;
+                    }
+
+                    if (GetSize() > _szOther.GetSize())
+                    {
+                        return 1;
+                    }
+                    else if (GetSize() < _szOther.GetSize())
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+
+                int32_t __YYAPI CompareI(_In_z_ const char_t* _Other) const
                 {
                     if (_Other == nullptr)
                     {
@@ -144,6 +171,32 @@ namespace YY
                     }
 
                     return char_t('\0') - _Other[_uIndex];
+                }
+
+                int32_t __YYAPI CompareI(_In_ StringView _szOther) const
+                {
+                    const auto _uMinSize = (std::min)(GetSize(), _szOther.GetSize());
+
+                    uint_t _uIndex = 0;
+                    for (; _uIndex != _uMinSize; ++_uIndex)
+                    {
+                        auto _result = CharUpperAsASCII(szString[_uIndex]) - CharUpperAsASCII(_szOther[_uIndex]);
+                        if (_result != 0)
+                            return _result;
+                    }
+
+                    if (GetSize() > _szOther.GetSize())
+                    {
+                        return 1;
+                    }
+                    else if (GetSize() < _szOther.GetSize())
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
             };
 

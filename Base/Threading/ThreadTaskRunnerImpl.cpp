@@ -15,7 +15,7 @@ namespace YY
         {
             // RunUIMessageLoop 进入的次数。
             // 对于 ThreadTaskRunner 来说必须保证消息循环在才能正常工作。
-            static thread_local uint32_t s_uUIMessageLoopEnterCount;
+            static thread_local uint32_t s_uUIMessageLoopEnterCount = 0u;
 
             ThreadTaskRunnerImpl::ThreadTaskRunnerImpl()
                 : uRef(1)

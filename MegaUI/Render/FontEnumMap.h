@@ -1,6 +1,6 @@
 #pragma once
 
-#include <MegaUI/base/MegaUITypeInt.h>
+#include <Base/YY.h>
 
 #pragma pack(push, __YY_PACKING)
 

@@ -2,9 +2,11 @@
 
 #include <stdint.h>
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
-#include <MegaUI/base/MegaUITypeInt.h>
+#include <Base/YY.h>
 #include <Base/Containers/Array.h>
 #include <Base/Strings/String.h>
 #include <Media/Color.h>
@@ -25,6 +27,11 @@ namespace YY
         class Layout;
         class StyleSheet;
         class UIParser;
+
+#ifndef _WIN32
+        typedef uint16_t ATOM;
+        typedef void* HCURSOR;
+#endif
 
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
         _APPLY(int32_t,     int32_t,             int32Value) \
@@ -138,7 +145,7 @@ namespace YY
         _MEGA_UI_VALUE_TPYE_MAP(_APPLY)
 #undef _APPLY
 
-#define _DEFINE_CONST_VALUE(_VAR, _eTYPE, ...) static constexpr const ValueTypeToType<_eTYPE>::SharedData _VAR = {(uint_t)_eTYPE, 1, uint_t(-1), __VA_ARGS__}
+#define _DEFINE_CONST_VALUE(_VAR, _eTYPE, ...) static constexpr const ValueTypeToType<_eTYPE>::SharedData _VAR = {(int_t)_eTYPE, uint_t(1), uint_t(-1), __VA_ARGS__}
 
 #define _RETUNR_CONST_VALUE(_eTYPE, ...)               \
         _DEFINE_CONST_VALUE(Ret, _eTYPE, __VA_ARGS__); \

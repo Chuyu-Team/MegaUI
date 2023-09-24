@@ -12,7 +12,7 @@ namespace YY
             {
                 static void Constructor(_Type* _pFirst, _Type* _pLast)
                 {
-                    if /*constexpr*/ (std::is_trivially_constructible<_Type>::value)
+                    if constexpr (std::is_trivially_constructible<_Type>::value)
                     {
                         memset(_pFirst, 0, (_pLast - _pFirst) * sizeof(*_pFirst));
                     }
@@ -27,7 +27,7 @@ namespace YY
 
                 static void MoveConstructor(_Type* _pDst, _Type* _pFirst, _Type* _pLast)
                 {
-                    if /*constexpr*/ (std::is_trivially_constructible<_Type>::value)
+                    if constexpr (std::is_trivially_constructible<_Type>::value)
                     {
                         memcpy(_pDst, _pFirst, (_pLast - _pFirst) * sizeof(*_pFirst));
                     }
@@ -47,7 +47,7 @@ namespace YY
 
                 static void CopyConstructor(_Type* _pDst, const _Type* _pFirst, const _Type* _pLast)
                 {
-                    if /*constexpr*/ (std::is_trivially_constructible<_Type>::value)
+                    if constexpr (std::is_trivially_constructible<_Type>::value)
                     {
                         memcpy(_pDst, _pFirst, (_pLast - _pFirst) * sizeof(*_pFirst));
                     }
@@ -67,7 +67,7 @@ namespace YY
 
                 static void Destructor(_Type* _pFirst, _Type* _pLast)
                 {
-                    if /*constexpr*/ (std::is_trivially_destructible<_Type>::value)
+                    if constexpr (std::is_trivially_destructible<_Type>::value)
                     {
                         // 如果是平坦的，那么什么也不做
                         return;
@@ -88,7 +88,7 @@ namespace YY
 
                 static void Copy(_Type* _pDst, const _Type* _pFirst, const _Type* _pLast)
                 {
-                    if /*constexpr*/ (std::is_trivially_copyable<_Type>::value)
+                    if constexpr (std::is_trivially_copyable<_Type>::value)
                     {
                         memcpy(_pDst, _pFirst, (_pLast - _pFirst) * sizeof(*_pFirst));
                     }
@@ -108,7 +108,7 @@ namespace YY
 
                 static void Move(_Type* _pDst, _Type* _pFirst, _Type* _pLast)
                 {
-                    if /*constexpr*/ (std::is_trivially_copyable<_Type>::value)
+                    if constexpr (std::is_trivially_copyable<_Type>::value)
                     {
                         memmove(_pDst, _pFirst, (_pLast - _pFirst) * sizeof(*_pFirst));
                     }

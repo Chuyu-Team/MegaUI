@@ -1,11 +1,11 @@
 ﻿#include "pch.h"
-#include "value.h"
+#include "Value.h"
 
 #include <stdlib.h>
 
-#include "StyleSheet.h"
-#include "Element.h"
-#include <MegaUI/base/alloc.h>
+#include <MegaUI/Core/StyleSheet.h>
+#include <MegaUI/Core/Element.h>
+#include <Base/Memory/Alloc.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -53,7 +53,7 @@ namespace YY
                 return;
 
             // 因为开头 7 位是eType 与 bSkipFree，所以每次对 cRef +1，等效于 uRawData + 0x80
-            _InterlockedExchangeAdd(&uRawType, uint_t(0x80u));
+            Sync::Add(&uRawType, uint_t(0x80u));
         }
 
         void __YYAPI Value::SharedData::Release()
@@ -61,9 +61,8 @@ namespace YY
             if (IsReadOnly())
                 return;
 
-            // 等效于 cRef >= 2
-            // 0x100 = 0x80 * 2
-            if (_InterlockedExchangeAdd(&uRawType, uint_t(-int_t(0x80))) >= uint_t(0x100u))
+            // 等效于 --cRef >= 1
+            if (Sync::Subtract(&uRawType, uint_t(0x80)) >= uint_t(0x80))
                 return;
 
             // 引用计数归零
@@ -77,10 +76,12 @@ namespace YY
                 case ValueType::ElementList:
                     ListVal.~ElementList();
                     break;
+#ifdef _WIN32
                 case ValueType::ATOM:
                     if (uAtomVal)
                         DeleteAtom(uAtomVal);
                     break;
+#endif
                 case ValueType::StyleSheet:
                     if (pStyleSheet)
                         pStyleSheet->Release();
@@ -201,7 +202,7 @@ namespace YY
 
         Value __YYAPI Value::CreateDefaultFontFamily()
         {
-            return Value::CreateString(L"Arial");
+            return Value::CreateString(_S("Arial"));
         }
 
         Value __YYAPI Value::CreateColorTransparant()
@@ -416,6 +417,7 @@ namespace YY
             return Value(pValue);
         }
 
+#ifdef _WIN32
         Value __YYAPI Value::CreateAtom(raw_const_ustring_t _szValue)
         {
             return Value::CreateAtom(AddAtomW(_szValue));
@@ -461,7 +463,8 @@ namespace YY
             }
             return Value(pValue);
         }
-        
+#endif
+
         Value __YYAPI Value::CreateColor(Color _Color)
         {
             auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));

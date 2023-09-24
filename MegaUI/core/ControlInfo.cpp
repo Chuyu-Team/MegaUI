@@ -1,11 +1,11 @@
 ﻿#include "pch.h"
 #include "ControlInfo.h"
 
-#include <unordered_map>
+#include <map>
 
 #include <Base/Containers/Array.h>
 
-#include <MegaUI/base/alloc.h>
+#include <Base/Memory/Alloc.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -13,22 +13,18 @@ namespace YY
 {
     namespace MegaUI
     {
-        struct hash_raw_const_string
+        struct RegisterControlInfoLess
         {
-            size_t operator()(raw_const_astring_t _Keyval) const noexcept
+            bool operator()(const u8StringView& _Left, const u8StringView& _Right) const
             {
-                return std::_Hash_array_representation(_Keyval, strlen(_Keyval));
+                if (_Left.GetSize() == _Right.GetSize())
+                {
+                    return memcmp(_Left.GetConstString(), _Right.GetConstString(), _Left.GetSize() * sizeof(_Left[0])) < 0;
+                }
+
+                return _Left.GetSize() < _Right.GetSize();
             }
         };
-
-        struct equal_to_raw_const_string
-        {
-            bool operator()(raw_const_astring_t _Left, raw_const_astring_t _Right) const
-            {
-                return strcmp(_Left, _Right) == 0;
-            }
-        };
-
 
         struct RegisterControlInfo
         {
@@ -36,19 +32,15 @@ namespace YY
             uint32_t uRef;
         };
 
-        typedef std::unordered_map<raw_const_astring_t, RegisterControlInfo, hash_raw_const_string, equal_to_raw_const_string, YY::MegaUI::allocator<std::pair<const raw_const_astring_t, RegisterControlInfo>>> RegisterClassInfoHashMap;
-
-        static RegisterClassInfoHashMap g_ControlInfoMap;
-
-
+        static std::map<u8StringView, RegisterControlInfo, RegisterControlInfoLess> g_ControlInfoMap;
 
         HRESULT __YYAPI IControlInfo::RegisterControlInternal(bool _bExplicitRegister)
         {
-            std::pair<RegisterClassInfoHashMap::iterator, bool> _itInsert;
+            std::pair<std::map<u8StringView, RegisterControlInfo>::iterator, bool> _itInsert;
 
             try
             {
-                _itInsert = g_ControlInfoMap.insert(std::make_pair(GetName(), RegisterControlInfo{this}));
+                _itInsert = g_ControlInfoMap.insert(std::make_pair(u8StringView(GetName()), RegisterControlInfo {this}));
             }
             catch (const std::exception&)
             {
@@ -96,9 +88,9 @@ namespace YY
             return S_OK;
         }
         
-        IControlInfo* __YYAPI GetRegisterControlInfo(raw_const_astring_t _szControlName)
+        IControlInfo* __YYAPI GetRegisterControlInfo(u8StringView _szControlName)
         {
-            if (!_szControlName)
+            if (_szControlName.GetSize() == 0)
                 return nullptr;
 
             auto _it = g_ControlInfoMap.find(_szControlName);

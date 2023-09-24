@@ -1,9 +1,12 @@
 ﻿#include "pch.h"
 #include "WindowElement.h"
-#include "MegaUI/core/ControlInfoImp.h"
-#include "Window.h"
 
+#include <MegaUI/Core/ControlInfoImp.h>
+#include <MegaUI/Window/Window.h>
+
+#ifdef _WIN32
 #include <MegaUI/Accessibility/UIAutomation/WindowElementAccessibleProviderImpl.h>
+#endif
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -29,6 +32,7 @@ namespace YY
             return _TitleValue.GetString();
         }
 
+#ifdef _WIN32
         HRESULT WindowElement::GetAccessibleProvider(ElementAccessibleProvider** _ppAccessibleProvider)
         {
             if (!_ppAccessibleProvider)
@@ -49,6 +53,7 @@ namespace YY
             *_ppAccessibleProvider = pAccessibleProvider;
             return S_OK;
         }
+#endif
 
         bool WindowElement::OnVisiblePropChanged(OnPropertyChangedHandleData* _pHandle)
         {

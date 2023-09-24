@@ -1,8 +1,6 @@
 ﻿#pragma once
-#include <Windows.h>
-
-#include "..\base\MegaUITypeInt.h"
-#include "Property.h"
+#include <Base/YY.h>
+#include <MegaUI/Core/Property.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -16,7 +14,7 @@ public:                                                                         
         using ControlInfoType = _CONTROL_INFO_TYPE;                                                   \
         using BaseControl = _BASE_CONTROL;                                                          \
         constexpr static uint32_t fDefaultCreate = _DEFAULT_CREATE_FLAGS;                         \
-        constexpr static raw_const_astring_t szControlName = #_CONTROL_NAME;                          \
+        constexpr static raw_const_u8string_t szControlName = u8## #_CONTROL_NAME;                          \
         constexpr static uint32_t uPropsCount = 0 _PROPERTY_TABLE(_APPLY_MEGA_UI_PROPERTY_COUNT); \
                                                                                                   \
         ControlInfoType* pControlInfoPtr;                                                             \
@@ -105,7 +103,7 @@ namespace YY
             virtual uint32_t __YYAPI AddRef() = 0;
             virtual uint32_t __YYAPI Release() = 0;
 
-            virtual _Ret_z_ raw_const_astring_t __YYAPI GetName() = 0;
+            virtual _Ret_z_ raw_const_u8string_t __YYAPI GetName() = 0;
 
             virtual _Ret_maybenull_ IControlInfo* __YYAPI GetBaseControlInfo() = 0;
 
@@ -142,7 +140,7 @@ namespace YY
         template<typename _Class>
         class ControlInfoImp;
 
-        _Ret_maybenull_ IControlInfo* __YYAPI GetRegisterControlInfo(_In_z_ raw_const_astring_t _szControlName);
+        _Ret_maybenull_ IControlInfo* __YYAPI GetRegisterControlInfo(_In_z_ u8StringView _szControlName);
 
         HRESULT __YYAPI UnRegisterAllControls();
 

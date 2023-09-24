@@ -1,5 +1,9 @@
 ﻿#pragma once
-#include <MegaUI/base/MegaUITypeInt.h>
+#include <Base/YY.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 #pragma pack(push, __YY_PACKING)
 
@@ -57,6 +61,7 @@ namespace YY
         {
             EventModifier _Modifier = EventModifier::None;
 
+#ifdef _WIN32
             if (_fWin32EventModifier & MK_CONTROL)
                 _Modifier |= EventModifier::Control;
             
@@ -77,7 +82,7 @@ namespace YY
 
             if (_fWin32EventModifier & MK_XBUTTON2)
                 _Modifier |= EventModifier::XButton2;
-
+#endif
             return _Modifier;
         }
 
@@ -93,6 +98,7 @@ namespace YY
             static EventModifier __YYAPI GetEventModifier()
             {
                 EventModifier _fModifiers = EventModifier::None;
+#ifdef _WIN32
                 BYTE bKeys[256];
                 if (GetKeyboardState(bKeys))
                 {
@@ -119,7 +125,7 @@ namespace YY
                     if (bKeys[VK_RMENU] & 0x80)
                         _fModifiers |= EventModifier::RightAlt;
                 }
-
+#endif
                 return _fModifiers;
             }
         };
@@ -131,6 +137,7 @@ namespace YY
             uint16_t uRepeatCount;
             uint16_t fFlags;
 
+#ifdef _WIN32
             KeyboardEvent(Element* _pTarget, WPARAM _wParam, LPARAM _lParam, EventModifier _fModifiers = EventModifier::None)
                 : BaseEvent {_pTarget, EventId::KeyboardEvent, _fModifiers}
                 , vKey(LOWORD(_wParam))
@@ -138,6 +145,7 @@ namespace YY
                 , fFlags(HIWORD(_lParam))
             {
             }
+#endif
         };
         
         enum class NavigatingStyle
@@ -169,24 +177,24 @@ namespace YY
         
         inline constexpr NavigatingType& operator&=(NavigatingType& _eLeft, NavigatingStyle _eRight)
         {
-            using _LeftType = std::_Underlying_type<NavigatingType>::type;
-            using _RigthType = std::_Underlying_type<NavigatingStyle>::type;
+            using _LeftType = std::underlying_type<NavigatingType>::type;
+            using _RigthType = std::underlying_type<NavigatingStyle>::type;
             (_LeftType&)_eLeft &= _LeftType((_RigthType)_eRight);
             return _eLeft;
         }
 
         inline constexpr NavigatingType& operator^=(NavigatingType& _eLeft, NavigatingStyle _eRight)
         {
-            using _LeftType = std::_Underlying_type<NavigatingType>::type;
-            using _RigthType = std::_Underlying_type<NavigatingStyle>::type;
+            using _LeftType = std::underlying_type<NavigatingType>::type;
+            using _RigthType = std::underlying_type<NavigatingStyle>::type;
             (_LeftType&)_eLeft ^= _LeftType((_RigthType)_eRight);
             return _eLeft;
         }
 
         inline constexpr bool HasFlags(NavigatingType _eLeft, NavigatingStyle _eRight)
         {
-            using _LeftType = std::_Underlying_type<NavigatingType>::type;
-            using _RigthType = std::_Underlying_type<NavigatingStyle>::type;
+            using _LeftType = std::underlying_type<NavigatingType>::type;
+            using _RigthType = std::underlying_type<NavigatingStyle>::type;
             return (_LeftType)_eLeft & (_RigthType)_eRight;
         }
 

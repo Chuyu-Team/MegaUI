@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "..\base\MegaUITypeInt.h"
-#include "Element.h"
+#include <Base/YY.h>
+#include <MegaUI/Core/Element.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -38,7 +38,7 @@ namespace YY
             virtual void __YYAPI DoLayout(Element*, Size);
 
             // 1
-            virtual SIZE __YYAPI UpdateDesiredSize(Element*, int, int);
+            virtual Size __YYAPI UpdateDesiredSize(Element*, int, int);
             // 2
             virtual void __YYAPI OnAdd(Element*, Element** ppElem, unsigned int uCountOfElement);
             // 3

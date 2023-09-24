@@ -1,13 +1,13 @@
 ﻿#pragma once
 
-#include <MegaUI/base/MegaUITypeInt.h>
+#include <Base/YY.h>
 #include <MegaUI/Window/WindowElement.h>
 #include <Base/Containers/Array.h>
 #include <Base/Containers/ArrayView.h>
 #include <Base/Memory/RefPtr.h>
 
-#include <MegaUI/core/Property.h>
-#include <MegaUI/core/StyleSheet.h>
+#include <MegaUI/Core/Property.h>
+#include <MegaUI/Core/StyleSheet.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -90,17 +90,17 @@ namespace YY
 
         protected:
 
-            IControlInfo* __YYAPI FindControlInfo(_In_ raw_const_astring_t _szControlName, _Out_opt_ uint32_t* _pIndex = nullptr);
+            IControlInfo* __YYAPI FindControlInfo(_In_ u8StringView _szControlName, _Out_opt_ uint32_t* _pIndex = nullptr);
 
-            const PropertyInfo* __YYAPI GetPropertyByName(_In_ IControlInfo* _pControlInfo, _In_ raw_const_astring_t _szPropName);
+            const PropertyInfo* __YYAPI GetPropertyByName(_In_ IControlInfo* _pControlInfo, _In_ u8StringView _szPropName);
 
-            HRESULT __YYAPI ParserElementNode(_In_ rapidxml::xml_node<char>* _pNote, _Inout_ UIParserRecorder* _pRecorder);
+            HRESULT __YYAPI ParserElementNode(_In_ rapidxml::xml_node<u8char_t>* _pNote, _Inout_ UIParserRecorder* _pRecorder);
 
-            HRESULT __YYAPI ParserElementProperty(_In_ rapidxml::xml_attribute<char>* _pAttribute, _In_ IControlInfo* _pControlInfo, _Inout_ UIParserRecorder* _pRecorder);
+            HRESULT __YYAPI ParserElementProperty(_In_ rapidxml::xml_attribute<u8char_t>* _pAttribute, _In_ IControlInfo* _pControlInfo, _Inout_ UIParserRecorder* _pRecorder);
 
             HRESULT __YYAPI ParserValue(_In_ IControlInfo* _pControlInfo, _In_ const PropertyInfo* _pProp, _In_ u8StringView _szExpr, _Out_ Value* _pValue);
 
-            static HRESULT __YYAPI ParserInt32Value(_In_ const u8StringView& _szValue, _Out_ ParsedArg* _pValue);
+            static HRESULT __YYAPI ParserInt32Value(_In_ u8StringView _szValue, _Out_ ParsedArg* _pValue);
 
             static HRESULT __YYAPI ParserInt32Value(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
 
@@ -116,10 +116,10 @@ namespace YY
 
             static HRESULT __YYAPI ParserStringValue(ExprNode* _pExprNode, Value* _pValue);
             
-            static HRESULT __YYAPI ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
+            static HRESULT __YYAPI ParserFunction(_In_ u8StringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_cap_(_uArgCount) ParsedArg* _pArg, _In_ uint_t _uArgCount);
             
             template<uint_t _uArgCount>
-            __inline static HRESULT ParserFunction(_In_ aStringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_ ParsedArg (&_Arg)[_uArgCount])
+            __inline static HRESULT ParserFunction(_In_ u8StringView _szFunctionName, _In_ ExprNode* _pExprNode, _Inout_ ParsedArg (&_Arg)[_uArgCount])
             {
                 return ParserFunction(_szFunctionName, _pExprNode, _Arg, _uArgCount);
             }
@@ -162,9 +162,9 @@ namespace YY
             /// <param name="_XmlOption"></param>
             /// <param name="_pStyleSheet"></param>
             /// <returns>如果样式表是空的，那么返回 S_False。如果</returns>
-            HRESULT __YYAPI ParserStyleSheetNode(_In_ rapidxml::xml_node<char>* _StyleSheetNode, Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
+            HRESULT __YYAPI ParserStyleSheetNode(_In_ rapidxml::xml_node<u8char_t>* _StyleSheetNode, Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
             
-            HRESULT __YYAPI ParserStyleSheetElementNode(_In_ rapidxml::xml_node<char>* _pElementValueNode, const Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
+            HRESULT __YYAPI ParserStyleSheetElementNode(_In_ rapidxml::xml_node<u8char_t>* _pElementValueNode, const Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, _Inout_ StyleSheet* _pStyleSheet);
 
         };
     }

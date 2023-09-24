@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include <dwrite.h>
+// #include <dwrite.h>
 
-#include <MegaUI/base/MegaUITypeInt.h>
+#include <Base/YY.h>
 #include <Media/Rect.h>
 #include <Media/Color.h>
 #include <Base/Strings/StringView.h>

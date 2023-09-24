@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "../base/MegaUITypeInt.h"
-#include "../core/Element.h"
+#include <Base/YY.h>
+#include <MegaUI/Core/Element.h>
 #include <Base/Containers/Array.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -106,7 +106,7 @@ namespace YY
             const u8char_t* szStart = nullptr;
             const u8char_t* szEnd = nullptr;
             const u8char_t* szCurrent = nullptr;
-            aStringView TerminateChars;
+            u8StringView TerminateChars;
 
             const u8char_t* __YYAPI SkipWhiteSpace()
             {
@@ -125,7 +125,7 @@ namespace YY
             /// 设置新的结束符。只支持纯ASCII字符。
             /// </summary>
             /// <returns>返回上一次的结果。</returns>
-            aStringView __YYAPI SetTerminateChars(aStringView _NewTerminateChars)
+            u8StringView __YYAPI SetTerminateChars(u8StringView _NewTerminateChars)
             {
                 auto _Tmp = TerminateChars;
                 TerminateChars = _NewTerminateChars;
@@ -262,10 +262,10 @@ namespace YY
                     {
                         auto _ch = *_pContext->szCurrent;
 
-                        if (!(_ch >= 'A' && _ch <= 'Z'
-                            || _ch >= 'a' && _ch <= 'z'
-                            || _ch >= '0' && _ch <= '9'
-                            || _ch == '_'))
+                        if (!((_ch >= 'A' && _ch <= 'Z')
+                            || (_ch >= 'a' && _ch <= 'z')
+                            || (_ch >= '0' && _ch <= '9')
+                            || (_ch == '_')))
                         {
                             break;
                         }
@@ -287,14 +287,14 @@ namespace YY
 
             HRESULT __YYAPI ParseFuncall(ValueParserContext* _pContext, ExprNode* _pExprNode)
             {
-                auto _OldTerminateChars = _pContext->SetTerminateChars(")");
+                auto _OldTerminateChars = _pContext->SetTerminateChars(u8")");
 
                 _pContext->SkipWhiteSpace();
                 if (!_pContext->IsTerminate())
                 {
                     for (;;)
                     {
-                        auto _OldTerminateChars = _pContext->SetTerminateChars(",)");
+                        auto _OldTerminateChars = _pContext->SetTerminateChars(u8",)");
                         auto _hr = ParseWorker(_pContext, _pExprNode);
                         _pContext->SetTerminateChars(_OldTerminateChars);
                         if (FAILED(_hr))
@@ -372,7 +372,7 @@ namespace YY
                         {
                             _pContext->Next();
 
-                            auto _OldTerminateChars = _pContext->SetTerminateChars(")");
+                            auto _OldTerminateChars = _pContext->SetTerminateChars(u8")");
                             auto _hr = ParseWorker(_pContext, _pExprNode);
                             _pContext->SetTerminateChars(_OldTerminateChars);
 

@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "..\base\MegaUITypeInt.h"
+#include <Base/YY.h>
 #include <Base/Strings/String.h>
-#include "value.h"
+#include <MegaUI/Core/Value.h>
 #include <Base/Containers/Array.h>
 #include <Base/Containers/ArrayView.h>
 
@@ -24,7 +24,7 @@ namespace YY
             // 0
             const PropertyInfo* pProp = nullptr;
             // 4
-            Value Value;
+            Value oValue;
         };
 
         struct Cond
@@ -36,7 +36,7 @@ namespace YY
             ValueCmpOperation OperationType = ValueCmpOperation::Invalid;
 
             // 0x8 表达式的值
-            Value Value;
+            Value CondValue;
             // 0xC
         };
         
@@ -180,7 +180,7 @@ namespace YY
             {
             }
 
-            PropertyData* __YYAPI GetPropertyData(_In_ const PropertyInfo* _pRefProp)
+            _Ret_maybenull_ PropertyData* __YYAPI GetPropertyData(_In_ const PropertyInfo* _pRefProp)
             {
                 if (!_pRefProp)
                     return nullptr;
@@ -194,7 +194,7 @@ namespace YY
                 return nullptr;
             }
 
-            HRESULT __thiscall AddPropertyData(_Outptr_ PropertyData** _ppPropertyData, _In_ const PropertyInfo* _pProp)
+            HRESULT __YYAPI AddPropertyData(_Outptr_ PropertyData** _ppPropertyData, _In_ const PropertyInfo* _pProp)
             {
                 if (!_ppPropertyData)
                     return E_INVALIDARG;

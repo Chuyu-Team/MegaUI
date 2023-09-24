@@ -3,21 +3,22 @@
 
 #include <stdlib.h>
 
-#include "Property.h"
-#include "value.h"
-#include "ControlInfoImp.h"
-#include "Layout.h"
+#include <MegaUI/Core/Property.h>
+#include <MegaUI/Core/Value.h>
+#include <MegaUI/Core/ControlInfoImp.h>
+#include <MegaUI/Core/Layout.h>
 #include <MegaUI/Window/Window.h>
-#include "StyleSheet.h"
+#include <MegaUI/Core/StyleSheet.h>
 #include <Base/Memory/RefPtr.h>
 
 #include <Media/Font.h>
 
+#ifdef _WIN32
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 #include <MegaUI/Accessibility/UIAutomation/AccessibleEventManager.h>
+#endif
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
-#pragma warning(disable : 26812)
 
 namespace YY
 {
@@ -25,82 +26,82 @@ namespace YY
 	{
         static const EnumMap LayoutPosEnumMap[] =
         {
-            { "None", LP_None },
-            { "Absolute", LP_Absolute },
-            { "Auto", LP_Auto },
+            { u8"None", LP_None },
+            { u8"Absolute", LP_Absolute },
+            { u8"Auto", LP_Auto },
             { }
         };
 
         static const EnumMap BorderStyleEnumMap[] =
         {
-            { "Solid",   int32_t(BorderStyle::Solid) },
-            { "Raised",  int32_t(BorderStyle::Raised) },
-            { "Sunken",  int32_t(BorderStyle::Sunken) },
-            { "Rounded", int32_t(BorderStyle::Rounded) },
+            { u8"Solid",   int32_t(BorderStyle::Solid) },
+            { u8"Raised",  int32_t(BorderStyle::Raised) },
+            { u8"Sunken",  int32_t(BorderStyle::Sunken) },
+            { u8"Rounded", int32_t(BorderStyle::Rounded) },
             { }
         };
 
         static const EnumMap FlowDirectionEnumMap[] =
         {
-            { "LeftToRight", (int32_t)FlowDirection::LeftToRight },
-            { "RightToLeft", (int32_t)FlowDirection::RightToLeft },
+            { u8"LeftToRight", (int32_t)FlowDirection::LeftToRight },
+            { u8"RightToLeft", (int32_t)FlowDirection::RightToLeft },
             { }
         };
         
         static const EnumMap ActiveEnumMap[] =
         {
-            { "None", int32_t(ActiveStyle::None) },
-            { "Mouse", int32_t(ActiveStyle::Mouse) },
-            { "Keyboard", int32_t(ActiveStyle::Keyboard) },
+            { u8"None", int32_t(ActiveStyle::None) },
+            { u8"Mouse", int32_t(ActiveStyle::Mouse) },
+            { u8"Keyboard", int32_t(ActiveStyle::Keyboard) },
             { }
         };
 
         static const EnumMap ContentAlignEnumMap[] =
         {
-            { "Left", (int32_t)ContentAlignStyle::Left },
-            { "Center", (int32_t)ContentAlignStyle::Center },
-            { "Right", (int32_t)ContentAlignStyle::Right },
-            { "Top", (int32_t)ContentAlignStyle::Top },
-            { "Middle", (int32_t)ContentAlignStyle::Middle },
-            { "Bottom", (int32_t)ContentAlignStyle::Bottom },
-            { "Wrap", (int32_t)ContentAlignStyle::Wrap },
-            { "EndEllipsis", (int32_t)ContentAlignStyle::EndEllipsis },
+            { u8"Left", (int32_t)ContentAlignStyle::Left },
+            { u8"Center", (int32_t)ContentAlignStyle::Center },
+            { u8"Right", (int32_t)ContentAlignStyle::Right },
+            { u8"Top", (int32_t)ContentAlignStyle::Top },
+            { u8"Middle", (int32_t)ContentAlignStyle::Middle },
+            { u8"Bottom", (int32_t)ContentAlignStyle::Bottom },
+            { u8"Wrap", (int32_t)ContentAlignStyle::Wrap },
+            { u8"EndEllipsis", (int32_t)ContentAlignStyle::EndEllipsis },
             { }
         };
 
         static constexpr const EnumMap FontWeightEnumMaps[] =
         {
-            {"Thin", FontWeight::Thin},
-            {"ExtraLight", FontWeight::ExtraLight},
-            {"UltraLight", FontWeight::UltraLight},
-            {"Light", FontWeight::Light},
-            {"SemiLight", FontWeight::SemiLight},
-            {"Normal", FontWeight::Normal},
-            {"Regular", FontWeight::Regular},
-            {"Medium", FontWeight::Medium},
-            {"DemiBold", FontWeight::DemiBold},
-            {"SemiBold", FontWeight::SemiBold},
-            {"Bold", FontWeight::Bold},
-            {"ExtraBold", FontWeight::ExtraBold},
-            {"UltraBold", FontWeight::UltraBold},
-            {"Black", FontWeight::Black},
-            {"Heavy", FontWeight::Heavy},
-            {"ExtraBlack", FontWeight::ExtraBlack},
-            {"UltraBlack", FontWeight::UltraBlack},
+            { u8"Thin", FontWeight::Thin},
+            { u8"ExtraLight", FontWeight::ExtraLight},
+            { u8"UltraLight", FontWeight::UltraLight},
+            { u8"Light", FontWeight::Light},
+            { u8"SemiLight", FontWeight::SemiLight},
+            { u8"Normal", FontWeight::Normal},
+            { u8"Regular", FontWeight::Regular},
+            { u8"Medium", FontWeight::Medium},
+            { u8"DemiBold", FontWeight::DemiBold},
+            { u8"SemiBold", FontWeight::SemiBold},
+            { u8"Bold", FontWeight::Bold},
+            { u8"ExtraBold", FontWeight::ExtraBold},
+            { u8"UltraBold", FontWeight::UltraBold},
+            { u8"Black", FontWeight::Black},
+            { u8"Heavy", FontWeight::Heavy},
+            { u8"ExtraBlack", FontWeight::ExtraBlack},
+            { u8"UltraBlack", FontWeight::UltraBlack},
             { },
         };
 
         static constexpr const EnumMap FontStyleEnumMap[] =
         {
-            {"None", (int32_t)FontStyle::None},
-            {"Italic", (int32_t)FontStyle::Italic},
-            {"Underline", (int32_t)FontStyle::Underline},
-            {"StrikeOut", (int32_t)FontStyle::StrikeOut},
+            { u8"None", (int32_t)FontStyle::None},
+            { u8"Italic", (int32_t)FontStyle::Italic},
+            { u8"Underline", (int32_t)FontStyle::Underline},
+            { u8"StrikeOut", (int32_t)FontStyle::StrikeOut},
             {},
         };
 
 
-#define __APPLY_ENUM_ITEM(_NAME, ...) { #_NAME, (int32_t)_ENUM_TYPE::_NAME },
+#define __APPLY_ENUM_ITEM(_NAME, ...) {u8## #_NAME, (int32_t)_ENUM_TYPE::_NAME},
 
 #define __APPLY_ENUM_MAP(_ENUM_NAME)                   \
         static constexpr const EnumMap _ENUM_NAME[] =  \
@@ -851,7 +852,7 @@ namespace YY
 
             if (_Cookie != 0x12345)
 			{
-				throw std::exception("Cookie Error", 0);
+                throw Exception(_S("Cookie Error"));
 				return;
 			}
 
@@ -927,7 +928,9 @@ namespace YY
                     break;
                 }
 
+#ifdef _WIN32
                 AccessibleEventManager::CommitPropertyChanges(this);
+#endif
             }
 
             --_pDeferCycle->uEnter;
@@ -1148,7 +1151,6 @@ namespace YY
             }
             default:
                 return _ConstraintSize;
-                __debugbreak();
                 break;
             }
             return _ContentSize;
@@ -1157,7 +1159,7 @@ namespace YY
         Size Element::SelfLayoutUpdateDesiredSize(Size _ConstraintSize)
         {
             // 仅给子类留一个口，什么也不用做
-            return SIZE{};
+            return Size();
         }
 
         void Element::SelfLayoutDoLayout(Size _ConstraintSize)
@@ -1240,7 +1242,7 @@ namespace YY
             if (_NewParentValue == nullptr)
                 return E_OUTOFMEMORY;
 
-            HREFTYPE hr = S_OK;
+            HRESULT hr = S_OK;
 
             do
             {
@@ -1602,6 +1604,7 @@ namespace YY
             return pWindow;
         }
 
+#ifdef _WIN32
         HRESULT Element::GetAccessibleProvider(ElementAccessibleProvider** _ppAccessibleProvider)
         {
             if (!_ppAccessibleProvider)
@@ -1622,6 +1625,7 @@ namespace YY
             *_ppAccessibleProvider = pAccessibleProvider;
             return S_OK;
         }
+#endif
 
         HRESULT Element::DefaultAction()
         {
@@ -1655,8 +1659,9 @@ namespace YY
             if (_pOldValue == nullptr || _pNewValue == nullptr)
                 return E_INVALIDARG;
 
+#ifdef _WIN32
             AccessibleEventManager::NotifyPropertyChanging(this, _Prop, _eIndicies, _pOldValue);
-
+#endif
             auto _pDeferObject = GetDeferObject();
 
             if (!_pDeferObject)
@@ -1720,9 +1725,9 @@ namespace YY
                     auto p2a = -1;
 
                     auto pValue = pc->pElement->GetValue(*pc->pProp, pc->iIndex, false);
-                    
+#ifdef _WIN32                    
                     AccessibleEventManager::NotifyPropertyChanging(pc->pElement, *pc->pProp, pc->iIndex, pValue);
-
+#endif
                     auto j = pc->pElement->_iPCTail;
 
                     PCRecord* pctmp = nullptr;
@@ -1826,9 +1831,9 @@ namespace YY
                         {
                             bSuccess = SetGroupChanges(pPCRecord->pElement, pPCRecord->pProp->fGroups, pDeferObject) == 0;
                         }
-
+#ifdef _WIN32
                         AccessibleEventManager::NotifyPropertyChanged(pPCRecord->pElement, *pPCRecord->pProp, pPCRecord->iIndex, pPCRecord->pOldValue, pPCRecord->pNewValue);
-
+#endif
                         pPCRecord->pElement->OnPropertyChanged(*pPCRecord->pProp, pPCRecord->iIndex, pPCRecord->pOldValue, pPCRecord->pNewValue);
                         
                         pPCRecord = pDeferObject->vecPropertyChanged.GetItemPtr(pDeferObject->uPropertyChangedFireCount);
@@ -2283,7 +2288,7 @@ namespace YY
             case ValueType::uString:
                 return Value::CreateString(*(uString*)_pCache);
             default:
-                __debugbreak();
+                assert(0);
                 return Value::CreateUnavailable();
             }
         }
@@ -3075,12 +3080,12 @@ namespace YY
 
                 if (sizeDesired.Height < SpecMinSize.Width)
                 {
-                    sizeDesired.Width = min(_ConstraintSize.Width, SpecMinSize.Width);
+                    sizeDesired.Width = (std::min)(_ConstraintSize.Width, SpecMinSize.Width);
                 }
 
                 if (sizeDesired.Height < SpecMinSize.Height)
                 {
-                    sizeDesired.Height = min(_ConstraintSize.Height, SpecMinSize.Height);
+                    sizeDesired.Height = (std::min)(_ConstraintSize.Height, SpecMinSize.Height);
                 }
 
                 auto pSizeOld = Value::CreateSize(LocDesiredSize);
@@ -3875,6 +3880,7 @@ namespace YY
             return GetAdjacentChild(nullptr, _eNavigate, _pnr, _bKeyableOnly);
         }
 
+#ifdef _WIN32
         bool Element::OnKeyDown(const KeyboardEvent& _KeyEvent)
         {
             NavigatingType _NavigateType;
@@ -3906,12 +3912,14 @@ namespace YY
             
             return OnKeyboardNavigate(KeyboardNavigateEvent(_KeyEvent.pTarget, _NavigateType));
         }
+#endif
 
         bool Element::OnKeyUp(const KeyboardEvent& _KeyEvent)
         {
             return false;
         }
 
+#ifdef _WIN32
         bool Element::OnChar(const KeyboardEvent& _KeyEvent)
         {
             if (_KeyEvent.vKey == VK_TAB)
@@ -3921,6 +3929,7 @@ namespace YY
             }
             return false;
         }
+#endif
         
         bool Element::OnKeyboardNavigate(const KeyboardNavigateEvent& _KeyEvent)
         {

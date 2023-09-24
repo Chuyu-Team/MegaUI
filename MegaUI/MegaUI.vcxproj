@@ -94,7 +94,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -113,7 +112,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -131,7 +129,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <SupportJustMyCode>false</SupportJustMyCode>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -151,7 +148,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions Condition="'$(TargetPlatformIdentifier)' == 'Windows'">/Zc:char8_t %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -163,15 +159,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\base\Containers\ArrayView.h" />
+    <ClInclude Include="..\Base\Containers\ArrayView.h" />
     <ClInclude Include="..\Base\Containers\ConstructorPolicy.h" />
-    <ClInclude Include="..\base\Containers\Array.h" />
+    <ClInclude Include="..\Base\Containers\Array.h" />
     <ClInclude Include="..\Base\Containers\HashSet.h" />
     <ClInclude Include="..\Base\Containers\Optional.h" />
-    <ClInclude Include="..\base\Encoding.h" />
+    <ClInclude Include="..\Base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
+    <ClInclude Include="..\Base\Memory\Alloc.h" />
     <ClInclude Include="..\Base\Memory\RefPtr.h" />
     <ClInclude Include="..\Base\Memory\UniquePtr.h" />
+    <ClInclude Include="..\Base\SafeCast.h" />
     <ClInclude Include="..\Base\SAL.h" />
     <ClInclude Include="..\Base\Strings\NString.h" />
     <ClInclude Include="..\Base\Strings\String.h" />
@@ -181,13 +179,13 @@
     <ClInclude Include="..\Base\Sync\InterlockedQueue.h" />
     <ClInclude Include="..\Base\Sync\SingleLinkedList.h" />
     <ClInclude Include="..\Base\Sync\Sync.h" />
-    <ClInclude Include="..\base\tchar.h" />
+    <ClInclude Include="..\Base\tchar.h" />
     <ClInclude Include="..\Base\Threading\ProcessThreads.h" />
     <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />
     <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
-    <ClInclude Include="..\base\YY.h" />
+    <ClInclude Include="..\Base\YY.h" />
     <ClInclude Include="..\Media\Brushes\Brush.h" />
     <ClInclude Include="..\Media\Color.h" />
     <ClInclude Include="..\Media\Font.h" />
@@ -209,20 +207,19 @@
     <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h" />
-    <ClInclude Include="base\alloc.h" />
-    <ClInclude Include="base\ComUnknowImpl.h" />
-    <ClInclude Include="base\ErrorCode.h" />
-    <ClInclude Include="base\MegaUITypeInt.h" />
+    <ClInclude Include="Base\ComUnknowImpl.h" />
+    <ClInclude Include="Base\ErrorCode.h" />
+    <ClInclude Include="Base\MegaUITypeInt.h" />
     <ClInclude Include="Control\Button.h" />
-    <ClInclude Include="core\ControlInfo.h" />
-    <ClInclude Include="core\ControlInfoImp.h" />
-    <ClInclude Include="core\DeferCycle.h" />
-    <ClInclude Include="core\Element.h" />
-    <ClInclude Include="core\Layout.h" />
-    <ClInclude Include="core\Property.h" />
-    <ClInclude Include="core\StyleSheet.h" />
-    <ClInclude Include="core\UIEvent.h" />
-    <ClInclude Include="core\value.h" />
+    <ClInclude Include="Core\ControlInfo.h" />
+    <ClInclude Include="Core\ControlInfoImp.h" />
+    <ClInclude Include="Core\DeferCycle.h" />
+    <ClInclude Include="Core\Element.h" />
+    <ClInclude Include="Core\Layout.h" />
+    <ClInclude Include="Core\Property.h" />
+    <ClInclude Include="Core\StyleSheet.h" />
+    <ClInclude Include="Core\UIEvent.h" />
+    <ClInclude Include="Core\Value.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Parser\UIParser.h" />
     <ClInclude Include="Parser\ValueParser.h" />
@@ -255,14 +252,20 @@
     <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp">
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp" />
-    <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp" />
-    <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp" />
+    <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Control\Button.cpp" />
-    <ClCompile Include="core\ControlInfo.cpp" />
-    <ClCompile Include="core\Element.cpp" />
-    <ClCompile Include="core\StyleSheet.cpp" />
-    <ClCompile Include="core\value.cpp" />
+    <ClCompile Include="Core\ControlInfo.cpp" />
+    <ClCompile Include="Core\Element.cpp" />
+    <ClCompile Include="Core\StyleSheet.cpp" />
+    <ClCompile Include="Core\Value.cpp" />
     <ClCompile Include="MegaUI.cpp" />
     <ClCompile Include="Parser\UIParser.cpp" />
     <ClCompile Include="pch.cpp">

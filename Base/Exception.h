@@ -33,12 +33,12 @@ namespace YY
             {
             }
 
-            HRESULT __YYAPI GetErrorCode()
+            HRESULT __YYAPI GetErrorCode() const
             {
                 return hr;
             }
 
-            const uchar_t* __YYAPI GetErrorMessage()
+            const uchar_t* __YYAPI GetErrorMessage() const
             {
                 return szErrorMessage ? szErrorMessage : _S("");
             }

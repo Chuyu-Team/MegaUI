@@ -3,7 +3,7 @@
 #include <Base/Containers/Array.h>
 #include <Base/Containers/HashSet.h>
 
-#include <MegaUI/base/alloc.h>
+#include <Base/Memory/Alloc.h>
 
 #pragma pack(push, __YY_PACKING)
 

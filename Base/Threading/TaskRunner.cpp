@@ -4,6 +4,7 @@
 #include <Base/Exception.h>
 #include <Base/Threading/ThreadTaskRunnerImpl.h>
 #include <Base/Threading/SequencedTaskRunnerImpl.h>
+#include <Base/Sync/Sync.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -26,6 +27,13 @@ namespace YY
 
             using SimpleWorkThreadWorkEntry = ThreadWorkEntryImpl<SimpleWorkType>;
 
+            ThreadWorkEntry::ThreadWorkEntry(ThreadWorkEntryStyle _eStyle)
+                : uRef(1u)
+                , fStyle(_eStyle)
+                , hr(E_PENDING)
+            {
+            }
+
             uint32_t ThreadWorkEntry::AddRef()
             {
                 return Sync::Increment(&uRef);
@@ -47,8 +55,14 @@ namespace YY
                 hr = _hrCode;
                 if (HasFlags(fStyle, ThreadWorkEntryStyle::Sync))
                 {
-                    WakeByAddressSingle(&hr);
+                    WakeByAddressAll(&hr);
                 }
+            }
+
+            bool __YYAPI ThreadWorkEntry::Wait(uint32_t _uMilliseconds)
+            {
+                HRESULT _hrTarget = E_PENDING;
+                return WaitOnAddress(&hr, &_hrTarget, sizeof(_hrTarget), _uMilliseconds);
             }
 
             RefPtr<SequencedTaskRunner> __YYAPI SequencedTaskRunner::GetCurrent()
@@ -88,8 +102,7 @@ namespace YY
                 {
                     return _hr;
                 }
-                HRESULT _hrTarget = E_PENDING;
-                WaitOnAddress(&_oWorkEntry.hr, &_hrTarget, sizeof(_hrTarget), uint32_max);
+                _oWorkEntry.Wait();
                 return _oWorkEntry.hr;
             }
 

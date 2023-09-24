@@ -131,6 +131,7 @@ namespace YY
             public:
                 static _Ret_notnull_ DrawContextFactory* __YYAPI GetDefaultDrawContextFactory();
 
+#ifdef _WIN32
                 /// <summary>
                 /// 判断微软组合引擎是否可用。
                 /// </summary>
@@ -138,6 +139,7 @@ namespace YY
                 virtual bool __YYAPI IsMicrosoftCompositionEngineSupport() = 0;
 
                 virtual HRESULT __YYAPI CreateDrawTarget(_In_ HWND _hWnd, _Outptr_ DrawContext** _ppDrawContext) = 0;
+#endif
             };
 
 
@@ -145,6 +147,7 @@ namespace YY
             class DrawContextFactoryImpl : public DrawContextFactory
             {
             public:
+#ifdef _WIN32
                 bool __YYAPI IsMicrosoftCompositionEngineSupport() override
                 {
                     return DrawContextType::IsMicrosoftCompositionEngineSupport();
@@ -154,6 +157,7 @@ namespace YY
                 {
                     return DrawContextType::CreateDrawTarget(_hWnd, _ppDrawContext);
                 }
+#endif
             };
 
         } // namespace Graphics

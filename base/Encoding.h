@@ -60,7 +60,7 @@ namespace YY
             static constexpr Encoding eEncoding = Encoding::UTF32;
         };
 
-        __inline bool __YYAPI IsANSI(Encoding _eEncoding)
+        inline bool __YYAPI IsANSI(Encoding _eEncoding)
         {
             switch (_eEncoding)
             {

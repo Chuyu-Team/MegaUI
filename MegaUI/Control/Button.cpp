@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "Button.h"
 
-#include <MegaUI/core/ControlInfoImp.h>
+#include <MegaUI/Core/ControlInfoImp.h>
 #include <MegaUI/Window/Window.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
@@ -27,6 +27,7 @@ namespace YY
             return S_OK;
         }
 
+#ifdef _WIN32
         bool Button::OnKeyDown(const KeyboardEvent& _KeyEvent)
         {
             if (HasFlags(_KeyEvent.fModifiers, EventModifier::LeftButton) == false)
@@ -51,7 +52,8 @@ namespace YY
 
             return Element::OnKeyDown(_KeyEvent);
         }
-
+#endif
+#ifdef _WIN32
         bool Button::OnKeyUp(const KeyboardEvent& _KeyEvent)
         {
             if (_KeyEvent.vKey == VK_SPACE)
@@ -66,7 +68,6 @@ namespace YY
 
             return Element::OnKeyUp(_KeyEvent);
         }
-
-
+#endif
     } // namespace MegaUI
 } // namespace YY

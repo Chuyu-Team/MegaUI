@@ -93,9 +93,23 @@ namespace YY
 #endif
             }
 
+            inline int64_t __YYAPI Add(int64_t* _pAddend, int64_t _iAdd)
+            {
+#ifdef _MSC_VER
+                return InterlockedAdd64((volatile LONG64*)_pAddend, _iAdd);
+#else
+                return __sync_add_and_fetch(_pAddend, _iAdd);
+#endif
+            }
+
             inline uint32_t __YYAPI Add(uint32_t* _pAddend, uint32_t _uAdd)
             {
                 return (uint32_t)Add((int32_t*)_pAddend, (int32_t)_uAdd);
+            }
+
+            inline uint64_t __YYAPI Add(uint64_t* _pAddend, uint64_t _iAdd)
+            {
+                return (uint64_t)Add((int64_t*)_pAddend, (int64_t)_iAdd);
             }
 
             inline int32_t __YYAPI Subtract(int32_t* _pAddend, int32_t _iAdd)
@@ -103,9 +117,19 @@ namespace YY
                 return Add(_pAddend, -_iAdd);
             }
 
+            inline int64_t __YYAPI Subtract(int64_t* _pAddend, int64_t _iAdd)
+            {
+                return Add(_pAddend, -_iAdd);
+            }
+
             inline uint32_t __YYAPI Subtract(uint32_t* _pAddend, uint32_t _uAdd)
             {
                 return (uint32_t)Add((int32_t*)_pAddend, -(int32_t)_uAdd);
+            }
+
+            inline uint64_t __YYAPI Subtract(uint64_t* _pAddend, uint64_t _uAdd)
+            {
+                return (uint64_t)Add((int64_t*)_pAddend, -(int64_t)_uAdd);
             }
 
             /// <summary>

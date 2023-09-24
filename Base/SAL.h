@@ -16,6 +16,9 @@
 #define __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 #endif
 
+#ifndef _CRTALLOCATOR
+#define _CRTALLOCATOR
+#endif
 
 // SAL Downlevel
 #ifndef _Return_type_success_
@@ -62,12 +65,20 @@
 #define _Out_
 #endif
 
+#ifndef _Out_opt_
+#define _Out_opt_ _Out_
+#endif
+
 #ifndef _Out_writes_
 #define _Out_writes_(size) _Out_
 #endif
 
 #ifndef _Outptr_
 #define _Outptr_ _Out_
+#endif
+
+#ifndef _Inout_cap_
+#define _Inout_cap_(size)
 #endif
 
 #ifndef _Always_
@@ -117,3 +128,20 @@
 #ifndef _Translates_Win32_to_HRESULT_
 #define _Translates_Win32_to_HRESULT_(errorCode)
 #endif
+
+#ifndef _Check_return_
+#define _Check_return_
+#endif
+
+#ifndef _Pre_maybenull_
+#define _Pre_maybenull_
+#endif
+
+#ifndef _Post_invalid_
+#define _Post_invalid_
+#endif
+
+#ifndef _Post_writable_byte_size_
+#define _Post_writable_byte_size_(size)
+#endif
+

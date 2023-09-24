@@ -30,9 +30,11 @@ namespace YY
         constexpr HRESULT E_FAIL = 5;
         constexpr HRESULT E_PENDING = 5;
         constexpr HRESULT E_ABORT = 5;
-        
+        constexpr HRESULT E_NOT_SET = 5;
+       
         constexpr LSTATUS ERROR_SUCCESS = 0;
         constexpr LSTATUS ERROR_CANCELLED = 5;
+        constexpr LSTATUS ERROR_BAD_FORMAT = 5;
 #endif
         constexpr inline _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_From_LSTATUS(_In_ LSTATUS _lStatus)
         {

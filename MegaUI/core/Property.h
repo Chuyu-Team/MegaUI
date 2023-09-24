@@ -1,9 +1,6 @@
 ﻿#pragma once
-#include <vcruntime.h>
-#include <Windows.h>
-
-#include <MegaUI/base/MegaUITypeInt.h>
-#include <MegaUI/core/value.h>
+#include <Base/YY.h>
+#include <MegaUI/Core/Value.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -21,7 +18,7 @@ namespace YY
 
 		struct EnumMap
 		{
-			raw_const_astring_t pszEnum;
+            raw_const_u8string_t pszEnum;
 			int32_t nEnum;
 		};
 
@@ -224,7 +221,7 @@ namespace YY
         struct PropertyInfo
         {
             // 属性的名称，给XML解析器使用
-            raw_const_astring_t pszName;
+            raw_const_u8string_t pszName;
             // PropertyFlag标记组合
             uint32_t fFlags;
             // PropertyGroup标记组合
@@ -357,20 +354,20 @@ namespace YY
 #define _MEGA_UI_PROP_BIND_CUSTOM(_FUN) (__GetMegaUICallback<uint64_t>(_FUN))
 
 
-//#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _ENUM, ...) static PropertyInfo _CRT_CONCATENATE(_PRO_NAME, Prop);
-#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) const PropertyInfo _CRT_CONCATENATE(_PRO_NAME, Prop);
-#define _APPLY_MEGA_UI_PROPERTY_COUNT(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) +1
-		//		PropertyInfo _CLASS::_CRT_CONCATENATE(_PRO_NAME, Prop) =                                                
+//#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _ENUM, ...) static PropertyInfo _YY_CONCATENATE(_PRO_NAME, Prop);
+#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) const PropertyInfo _YY_CONCATENATE(_PRO_NAME, Prop);
+#define _APPLY_MEGA_UI_PROPERTY_COUNT(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) + 1
+		//		PropertyInfo _CLASS::_YY_CONCATENATE(_PRO_NAME, Prop) =                                                
 
 #define _APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) \
-		static constexpr const ValueType _CRT_CONCATENATE(vv, _PRO_NAME)[] = { __VA_ARGS__, ValueType::Null };
+		static constexpr const ValueType _YY_CONCATENATE(vv, _PRO_NAME)[] = {__VA_ARGS__, ValueType::Null};
 
 #define _APPLY_MEGA_UI_PROPERTY(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) \
 		{                                                                                                         \
-			# _PRO_NAME,                                                                                          \
+			u8## #_PRO_NAME,                                                                                          \
 			_FLAGS | __GetMegaUIDefaultValueFlag(_DEF_VALUE_FUN),                                                 \
 			_GROUPS,                                                                                              \
-			_CRT_CONCATENATE(vv, _PRO_NAME),                                                                      \
+			_YY_CONCATENATE(vv, _PRO_NAME),                                                                       \
 			_ENUM,                                                                                                \
 			{ __GetMegaUICallback<uintptr_t>(_DEF_VALUE_FUN) },                                                   \
 			__GetMegaUICallback<FunTypeCustomPropertyHandle>(_CUSTOM_PRO_HANDLE),                                 \
@@ -382,7 +379,7 @@ namespace YY
 #define _APPLY_MEGA_UI_BITMAP_NAME(_BIT_NAME, _BIT_COUNT) uint32_t _BIT_NAME : _BIT_COUNT;
 
 #define _APPLY_MEGA_UI_BITMAP_TABLE(_BITMAP_NAME, _BITMAP_TABLE) \
-        struct _CRT_CONCATENATE(_BITMAP_NAME, BitInfo)           \
+        struct _YY_CONCATENATE(_BITMAP_NAME, BitInfo)            \
         {                                                        \
             _BITMAP_TABLE(_APPLY_MEGA_UI_BITMAP_INFO)            \
         };                                                       \
@@ -395,7 +392,7 @@ namespace YY
             uint8_t _BITMAP_NAME[1];                             \
         };
 
-        #define UFIELD_BITMAP_OFFSET(_TYPE, _FIELD, _BIT_NAME) (UFIELD_OFFSET(_TYPE, _FIELD) * 8 + UFIELD_OFFSET(_TYPE::_CRT_CONCATENATE(_FIELD, BitInfo), _BIT_NAME))
+        #define UFIELD_BITMAP_OFFSET(_TYPE, _FIELD, _BIT_NAME) (YY_UFIELD_OFFSET(_TYPE, _FIELD) * 8 + YY_UFIELD_OFFSET(_TYPE::_YY_CONCATENATE(_FIELD, BitInfo), _BIT_NAME))
 	} //namespace MegaUI
 }//namespace YY
 

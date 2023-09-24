@@ -11,6 +11,7 @@
 #include <Base/Memory/RefPtr.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Exception.h>
+#include <MegaUI/Base/ErrorCode.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -54,12 +55,7 @@ namespace YY
                 // 操作结果，任务可能被取消。
                 HRESULT hr;
 
-                ThreadWorkEntry(ThreadWorkEntryStyle _eStyle)
-                    : uRef(1u)
-                    , fStyle(_eStyle)
-                    , hr(E_PENDING)
-                {
-                }
+                ThreadWorkEntry(ThreadWorkEntryStyle _eStyle);
 
                 virtual ~ThreadWorkEntry() = default;
 
@@ -75,6 +71,13 @@ namespace YY
                 /// <param name="_hrCode">任务退出代码。</param>
                 /// <returns></returns>
                 void __YYAPI Wakeup(_In_ HRESULT _hrCode);
+
+                /// <summary>
+                /// 等待此任务完成。
+                /// </summary>
+                /// <param name="_uMilliseconds">需要等待的毫秒数。</param>
+                /// <returns></returns>
+                bool __YYAPI Wait(_In_ uint32_t _uMilliseconds = uint32_max);
             };
 
             template<typename WorkEntryType>

@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "StyleSheet.h"
 
-#include "Element.h"
+#include <MegaUI/Core/Element.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Memory/RefPtr.h>
 
@@ -104,7 +104,7 @@ namespace YY
 
                 if (pPropertyData)
                 {
-                    if (FAILED(pPropertyData->AddCondMapping(_CondArray, _uSpecifId, _DeclItem.Value)))
+                    if (FAILED(pPropertyData->AddCondMapping(_CondArray, _uSpecifId, _DeclItem.oValue)))
                         bFaild = true;
                 }
             }
@@ -192,14 +192,14 @@ namespace YY
                             PropertyFlagMapToMaxPropertyIndicies(PropertyFlag(pCond->pProp->fFlags & PropertyFlag::PF_TypeBits)),
                             false);
 
-                        if (_ElementValue.GetType() != pCond->Value.GetType())
+                        if (_ElementValue.GetType() != pCond->CondValue.GetType())
                         {
                             if (pCond->OperationType != ValueCmpOperation::NotEqual)
                                 break;
                         }
                         else
                         {
-                            if (!_ElementValue.CmpValue(pCond->Value, pCond->OperationType, false))
+                            if (!_ElementValue.CmpValue(pCond->CondValue, pCond->OperationType, false))
                                 break;
                         }
                     }
@@ -385,7 +385,7 @@ namespace YY
             if (_uWeight > uint16_max)
                 _uWeight = uint16_max;
 
-            return MAKELONG(_uRuleId, _uWeight);
+            return _uRuleId | (_uWeight << 16);
         }
     } // namespace MegaUI
 } // namespace YY

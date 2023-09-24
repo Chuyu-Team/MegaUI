@@ -1,11 +1,12 @@
 ﻿#include "pch.h"
 #include "UIParser.h"
 
-#include <MegaUI/base/alloc.h>
+#include <Base/Memory/Alloc.h>
 #include <Base/Strings/StringTransform.h>
-#include "ValueParser.h"
-#include <MegaUI/core/StyleSheet.h>
+#include <MegaUI/Parser/ValueParser.h>
+#include <MegaUI/Core/StyleSheet.h>
 #include <MegaUI/Render/FontEnumMap.h>
+#include <Base/SafeCast.h>
 
 #define RAPIDXML_STATIC_POOL_SIZE 4 * 1024
 
@@ -14,7 +15,7 @@
 
 #define _RAPAIDXML_STAATIC_STRING(_STR) _STR, (std::size(_STR) - 1)
 
-#define _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_NODE, _STR) (_NODE->name_size() == (std::size(_STR) - 1) && _stricmp(_NODE->name(), _STR) == 0)
+#define _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_NODE, _STR) (_NODE->name_size() == (std::size(_STR) - 1) && StringCompareIgnoreAsASCII(_NODE->name(), _STR, std::size(_STR) - 1) == 0)
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -219,13 +220,13 @@ namespace YY
             if (_szXmlString.GetSize() == 0)
                 return E_INVALIDARG;
 
-            auto _pStringBuffer = (char*) _szXmlString.LockBuffer();
+            auto _pStringBuffer = _szXmlString.LockBuffer();
             if (!_pStringBuffer)
                 return E_OUTOFMEMORY;
             _szXmlString.UnlockBuffer();
 
             // 为了从兼容性考虑，这里直接用 char 代表 u8char_t，注意上下文。
-            rapidxml::xml_document<char> _XmlDocument;
+            rapidxml::xml_document<u8char_t> _XmlDocument;
             _XmlDocument.set_allocator(rapidxml_alloc, rapidxml_free);
             try
             {
@@ -235,7 +236,7 @@ namespace YY
                 return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
             }
 
-            auto _pRoot = _XmlDocument.first_node(_RAPAIDXML_STAATIC_STRING("MegaUI"), false);
+            auto _pRoot = _XmlDocument.first_node(_RAPAIDXML_STAATIC_STRING(u8"MegaUI"), false);
             if (!_pRoot)
                 return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
@@ -244,15 +245,15 @@ namespace YY
             do
             {
                 // Windows的解析过程依赖样式表，所以样式表优先检测
-                auto _pStyleSheetsNode = _pRoot->first_node(_RAPAIDXML_STAATIC_STRING("StyleSheets"), false);
+                auto _pStyleSheetsNode = _pRoot->first_node(_RAPAIDXML_STAATIC_STRING(u8"StyleSheets"), false);
                 if (_pStyleSheetsNode)
                 {
-                    for (auto _pStyleSheetNote = _pStyleSheetsNode->first_node(_RAPAIDXML_STAATIC_STRING("StyleSheet"), false); _pStyleSheetNote; _pStyleSheetNote = _pStyleSheetNote->next_sibling(_RAPAIDXML_STAATIC_STRING("StyleSheet"), false))
+                    for (auto _pStyleSheetNote = _pStyleSheetsNode->first_node(_RAPAIDXML_STAATIC_STRING(u8"StyleSheet"), false); _pStyleSheetNote; _pStyleSheetNote = _pStyleSheetNote->next_sibling(_RAPAIDXML_STAATIC_STRING(u8"StyleSheet"), false))
                     {
                         if (_pStyleSheetNote->type() != rapidxml::node_element)
                             continue;
 
-                        auto _pResourceIDAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResourceID"), false);
+                        auto _pResourceIDAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING(u8"ResourceID"), false);
                         if (!_pResourceIDAttribute)
                         {
                             _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
@@ -260,7 +261,7 @@ namespace YY
                         }
 
                         RefPtr<StyleSheet> _pInherit;
-                        auto _pInheritAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING("Inherit"), false);
+                        auto _pInheritAttribute = _pStyleSheetNote->first_attribute(_RAPAIDXML_STAATIC_STRING(u8"Inherit"), false);
                         if (_pInheritAttribute && _pInheritAttribute->value_size())
                         {
                             GetStyleSheet(u8StringView((u8char_t*)_pInheritAttribute->value(), _pInheritAttribute->value_size()), _pInherit.ReleaseAndGetAddressOf());
@@ -305,7 +306,7 @@ namespace YY
                         break;
                 }
 
-                auto _pWindowsNode = _pRoot->first_node(_RAPAIDXML_STAATIC_STRING("Windows"), false);
+                auto _pWindowsNode = _pRoot->first_node(_RAPAIDXML_STAATIC_STRING(u8"Windows"), false);
                 if (_pWindowsNode)
                 {
                     for (auto _pNote = _pWindowsNode->first_node(); _pNote; _pNote = _pNote->next_sibling())
@@ -313,7 +314,7 @@ namespace YY
                         if (_pNote->type() != rapidxml::node_element)
                             continue;
 
-                        auto _pResID = _pNote->first_attribute(_RAPAIDXML_STAATIC_STRING("ResourceID"), false);
+                        auto _pResID = _pNote->first_attribute(_RAPAIDXML_STAATIC_STRING(u8"ResourceID"), false);
                         if (!_pResID)
                         {
                             _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
@@ -447,12 +448,12 @@ namespace YY
             return StyleSheets;
         }
 
-        IControlInfo* __YYAPI UIParser::FindControlInfo(raw_const_astring_t _szControlName, uint32_t* _pIndex)
+        IControlInfo* __YYAPI UIParser::FindControlInfo(u8StringView _szControlName, uint32_t* _pIndex)
         {
             if (_pIndex)
                 *_pIndex = uint32_max;
 
-            if (_szControlName == nullptr || *_szControlName == '\0')
+            if (_szControlName.GetSize() == 0)
                 return nullptr;
 
             auto _uSize = ControlInfoArray.GetSize();
@@ -465,7 +466,7 @@ namespace YY
             {
                 auto _pControlInfo = _pData[_uIndex];
 
-                if (_strcmpi(_pControlInfo->GetName(), _szControlName) == 0)
+                if (_szControlName.CompareI(_pControlInfo->GetName()) == 0)
                 {
                     if (_pIndex)
                         *_pIndex = (uint32_t)_uIndex;
@@ -491,13 +492,13 @@ namespace YY
             return _pControlInfo;
         }
 
-        const PropertyInfo* __YYAPI UIParser::GetPropertyByName(IControlInfo* _pControlInfo, raw_const_astring_t _szPropName)
+        const PropertyInfo* __YYAPI UIParser::GetPropertyByName(IControlInfo* _pControlInfo, u8StringView _szPropName)
         {
             const PropertyInfo* _pProp = nullptr;
             // 搜索 PropertyInfo
             for (uint32_t _uIndex = 0; _pProp = _pControlInfo->EnumPropertyInfo(_uIndex); ++_uIndex)
             {
-                if (_strcmpi(_pProp->pszName, _szPropName) == 0)
+                if (_szPropName.CompareI(_pProp->pszName) == 0)
                 {
                     break;
                 }
@@ -506,14 +507,15 @@ namespace YY
             return _pProp;
         }
         
-        HRESULT __YYAPI UIParser::ParserElementNode(rapidxml::xml_node<char>* _pNote, UIParserRecorder* _pRecorder)
+        HRESULT __YYAPI UIParser::ParserElementNode(rapidxml::xml_node<u8char_t>* _pNote, UIParserRecorder* _pRecorder)
         {
             CreateElement _CreateElement;
             uint32_t _uIndex;
             auto _pControlInfo = FindControlInfo(_pNote->name(), &_uIndex);
             if (!_pControlInfo)
                 return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
-            _CreateElement.uIndexOfElementName = _uIndex;
+            if (!SafeCast(_uIndex, &_CreateElement.uIndexOfElementName))
+                return E_FAIL;
 
             auto _hr = _pRecorder->ByteCode.Add((uint8_t*)&_CreateElement, sizeof(_CreateElement));
             if (FAILED(_hr))
@@ -529,8 +531,8 @@ namespace YY
             // Note内容转换为 Content
             if (_pNote->value_size())
             {
-                rapidxml::xml_attribute<char> _ContentAttribute;
-                _ContentAttribute.name(_RAPAIDXML_STAATIC_STRING("Content"));
+                rapidxml::xml_attribute<u8char_t> _ContentAttribute;
+                _ContentAttribute.name(_RAPAIDXML_STAATIC_STRING(u8"Content"));
                 _ContentAttribute.value(_pNote->value(), _pNote->value_size());
                 _hr = ParserElementProperty(&_ContentAttribute, _pControlInfo, _pRecorder);
                 if (FAILED(_hr))
@@ -569,7 +571,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __YYAPI UIParser::ParserElementProperty(rapidxml::xml_attribute<char>* _pAttribute, IControlInfo* _pControlInfo, UIParserRecorder* _pRecorder)
+        HRESULT __YYAPI UIParser::ParserElementProperty(rapidxml::xml_attribute<u8char_t>* _pAttribute, IControlInfo* _pControlInfo, UIParserRecorder* _pRecorder)
         {
             auto _pProp = GetPropertyByName(_pControlInfo, _pAttribute->name());
 
@@ -687,7 +689,7 @@ namespace YY
             return _hr;
         }
 
-        HRESULT __YYAPI UIParser::ParserInt32Value(const u8StringView& _szValue, ParsedArg* _pValue)
+        HRESULT __YYAPI UIParser::ParserInt32Value(u8StringView _szValue, ParsedArg* _pValue)
         {
             auto _cchValue = _szValue.GetSize();
             _pValue->uRawView = 0;
@@ -832,7 +834,7 @@ namespace YY
                 do
                 {
                     Font _Font;
-                    auto _hr = ParserFunction("GetSystemFontSize", _pExprNode, Args);
+                    auto _hr = ParserFunction(u8"GetSystemFontSize", _pExprNode, Args);
                     if (SUCCEEDED(_hr))
                     {
                         _hr = GetSystemFont((SystemFont)Args[0].iNumber, &_Font);
@@ -847,7 +849,7 @@ namespace YY
                         return _hr;
                     }
 
-                    _hr = ParserFunction("GetSystemFontWeight", _pExprNode, Args);
+                    _hr = ParserFunction(u8"GetSystemFontWeight", _pExprNode, Args);
                     if (SUCCEEDED(_hr))
                     {
                         _hr = GetSystemFont((SystemFont)Args[0].iNumber, &_Font);
@@ -862,7 +864,7 @@ namespace YY
                         return _hr;
                     }
 
-                    _hr = ParserFunction("GetSystemFontStyle", _pExprNode, Args);
+                    _hr = ParserFunction(u8"GetSystemFontStyle", _pExprNode, Args);
                     if (SUCCEEDED(_hr))
                     {
                         _hr = GetSystemFont((SystemFont)Args[0].iNumber, &_Font);
@@ -907,7 +909,7 @@ namespace YY
                 do
                 {
                     Font _Font;
-                    auto _hr = ParserFunction("GetSystemFontFamily", _pExprNode, Args);
+                    auto _hr = ParserFunction(u8"GetSystemFontFamily", _pExprNode, Args);
                     if (SUCCEEDED(_hr))
                     {
                         _hr = GetSystemFont((SystemFont)Args[0].iNumber, &_Font);
@@ -1019,12 +1021,12 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __YYAPI UIParser::ParserFunction(aStringView _szFunctionName, ExprNode* _pExprNode, ParsedArg* _pArgs, uint_t _uArgsCount)
+        HRESULT __YYAPI UIParser::ParserFunction(u8StringView _szFunctionName, ExprNode* _pExprNode, ParsedArg* _pArgs, uint_t _uArgsCount)
         {
             if (_pExprNode->Type != ExprNodeType::Funcall)
                 return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
-            if (_pExprNode->szValue.GetSize() != _szFunctionName.GetSize() || _strnicmp((char*)_pExprNode->szValue.GetConstString(), _szFunctionName.GetConstString(), _szFunctionName.GetSize()) != 0)
+            if (_pExprNode->szValue.GetSize() != _szFunctionName.GetSize() && _pExprNode->szValue.CompareI(_szFunctionName) != 0)
                 return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
             if (_pExprNode->ChildExprNode.GetSize() != _uArgsCount)
@@ -1083,7 +1085,7 @@ namespace YY
 
             ParsedArg _Arg[2] = {ParsedArgType::int32_t, ParsedArgType::int32_t};
 
-            auto _hr = ParserFunction("Point", _pExprNode, _Arg, std::size(_Arg));
+            auto _hr = ParserFunction(u8"Point", _pExprNode, _Arg, std::size(_Arg));
             if (FAILED(_hr))
                 return _hr;
 
@@ -1107,7 +1109,7 @@ namespace YY
 
             ParsedArg _Args[] = {ParsedArgType::float_t, ParsedArgType::float_t};
 
-            auto _hr = ParserFunction("Size", _pExprNode, _Args);
+            auto _hr = ParserFunction(u8"Size", _pExprNode, _Args);
             if (FAILED(_hr))
                 return _hr;
 
@@ -1142,7 +1144,7 @@ namespace YY
                 ParsedArgType::float_t,
             };
 
-            auto _hr = ParserFunction("Rect", _pExprNode, _Args);
+            auto _hr = ParserFunction(u8"Rect", _pExprNode, _Args);
             if (FAILED(_hr))
                 return _hr;
 
@@ -1179,16 +1181,30 @@ namespace YY
             Color _Color;
 
             ParsedArg _Arg[] = {ParsedArgType::int32_t, ParsedArgType::int32_t, ParsedArgType::int32_t, ParsedArgType::int32_t};
-            auto _hr = ParserFunction("ARGB", _pExprNode, _Arg);
+            auto _hr = ParserFunction(u8"ARGB", _pExprNode, _Arg);
             if (SUCCEEDED(_hr))
             {
-                _Color = Color::MakeARGB(_Arg[0].iNumber, _Arg[1].iNumber, _Arg[2].iNumber, _Arg[3].iNumber);
+                try
+                {
+                    _Color = Color::MakeARGB(SafeCast<uint8_t>(_Arg[0].iNumber), SafeCast<uint8_t>(_Arg[1].iNumber), SafeCast<uint8_t>(_Arg[2].iNumber), SafeCast<uint8_t>(_Arg[3].iNumber));
+                } catch (const Exception& _ex)
+                {
+                    return _ex.GetErrorCode();
+                }
             }
             else if (_hr == HRESULT_From_LSTATUS(ERROR_BAD_FORMAT))
             {
-                _hr = ParserFunction("RGB", _pExprNode, _Arg, 3);
+                _hr = ParserFunction(u8"RGB", _pExprNode, _Arg, 3);
                 if (SUCCEEDED(_hr))
-                    _Color = Color::MakeRGB(_Arg[0].iNumber, _Arg[1].iNumber, _Arg[2].iNumber);
+                {
+                    try
+                    {
+                        _Color = Color::MakeRGB(SafeCast<uint8_t>(_Arg[0].iNumber), SafeCast<uint8_t>(_Arg[1].iNumber), SafeCast<uint8_t>(_Arg[2].iNumber));
+                    } catch (const Exception& _ex)
+                    {
+                        return _ex.GetErrorCode();
+                    }
+                }
             }
 
             if (FAILED(_hr))
@@ -1398,7 +1414,7 @@ namespace YY
         }
         
         static ValueCmpOperation __YYAPI TryParserStyleSheetOptionXmlType(
-            _In_ rapidxml::xml_node<char>* _OptionNode,
+            _In_ rapidxml::xml_node<u8char_t>* _OptionNode,
             _Out_ u8StringView* _pszValue
             )
         {
@@ -1411,27 +1427,29 @@ namespace YY
 
             do
             {
-                if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "Equal") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "EQU"))
+                // u8StringView szAttrName(_pAttr->name(), _pAttr->name_size());
+
+                if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"Equal") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"EQU"))
                 {
                     _Operation = ValueCmpOperation::Equal;
                 }
-                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "GreaterThan") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "GTR"))
+                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"GreaterThan") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"GTR"))
                 {
                     _Operation = ValueCmpOperation::GreaterThan;
                 }
-                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "GreaterThanOrEqual") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "GEQ"))
+                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"GreaterThanOrEqual") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"GEQ"))
                 {
                     _Operation = ValueCmpOperation::GreaterThanOrEqual;
                 }
-                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "LessThan") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "LSS"))
+                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"LessThan") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"LSS"))
                 {
                     _Operation = ValueCmpOperation::LessThan;
                 }
-                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "LessThanOrEqual") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "LEQ"))
+                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"LessThanOrEqual") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"LEQ"))
                 {
                     _Operation = ValueCmpOperation::LessThanOrEqual;
                 }
-                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "NotEqual") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, "NEQ"))
+                else if (_RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"NotEqual") || _RAPAIDXML_NODE_NAME_EQUAL_STATIC_STRING(_pAttr, u8"NEQ"))
                 {
                     _Operation = ValueCmpOperation::NotEqual;
                 }
@@ -1441,16 +1459,16 @@ namespace YY
                 }
             } while (false);
             
-            _pszValue->SetString((u8char_t*)_pAttr->value(), _pAttr->value_size());
+            _pszValue->SetString(_pAttr->value(), _pAttr->value_size());
             return _Operation;
         }
 
-        HRESULT __YYAPI UIParser::ParserStyleSheetNode(rapidxml::xml_node<char>* _StyleSheetNode, Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, StyleSheet* _pStyleSheet)
+        HRESULT __YYAPI UIParser::ParserStyleSheetNode(rapidxml::xml_node<u8char_t>* _StyleSheetNode, Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, StyleSheet* _pStyleSheet)
         {
             auto _uOldlOptionSize = _XmlOption.GetSize();
 
             // Default 是备选值，当其他条件无法命中时，它将生效。
-            auto _pDefaultNode = _StyleSheetNode->first_node(_RAPAIDXML_STAATIC_STRING("Default"), false);
+            auto _pDefaultNode = _StyleSheetNode->first_node(_RAPAIDXML_STAATIC_STRING(u8"Default"), false);
             if (_pDefaultNode)
             {                
                 auto _hr = ParserStyleSheetNode(_pDefaultNode, _XmlOption, _pStyleSheet);
@@ -1499,7 +1517,7 @@ namespace YY
             return S_OK;
         }
         
-        HRESULT __YYAPI UIParser::ParserStyleSheetElementNode(rapidxml::xml_node<char>* _pElementValueNode, const Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, StyleSheet* _pStyleSheet)
+        HRESULT __YYAPI UIParser::ParserStyleSheetElementNode(rapidxml::xml_node<u8char_t>* _pElementValueNode, const Array<StyleSheetXmlOption, AllocPolicy::SOO>& _XmlOption, StyleSheet* _pStyleSheet)
         {
             uint32_t _uIndex;
 
@@ -1520,7 +1538,7 @@ namespace YY
 
             for (auto& _XmlOptionItem : _XmlOption)
             {
-                auto _pProp = GetPropertyByName(_pControlInfo, (raw_const_astring_t)_XmlOptionItem.szPropName.GetConstString());
+                auto _pProp = GetPropertyByName(_pControlInfo, _XmlOptionItem.szPropName);
                 if (!_pProp)
                     return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
@@ -1535,7 +1553,7 @@ namespace YY
 
                 _pCond->pProp = _pProp;
                 _pCond->OperationType = _XmlOptionItem.Type;
-                _pCond->Value = std::move(_Value);
+                _pCond->CondValue = std::move(_Value);
             }
 
             // 属性转换到 _DeclArray，作为样式表的值
@@ -1547,7 +1565,7 @@ namespace YY
                     return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 
                 Value _Value;
-                auto _hr = ParserValue(_pControlInfo, _pProp, u8StringView((u8char_t*)_pPropXml->value(), _pPropXml->value_size()), &_Value);
+                auto _hr = ParserValue(_pControlInfo, _pProp, u8StringView(_pPropXml->value(), _pPropXml->value_size()), &_Value);
                 if (FAILED(_hr))
                     return _hr;
 
@@ -1556,7 +1574,7 @@ namespace YY
                     return E_OUTOFMEMORY;
 
                 _pDecl->pProp = _pProp;
-                _pDecl->Value = std::move(_Value);
+                _pDecl->oValue = std::move(_Value);
             }
 
             return _pStyleSheet->AddRule(uString(), _pControlInfo, CondArray, ArrayView<Decl>(_DeclArray.GetData(), _DeclArray.GetSize()));

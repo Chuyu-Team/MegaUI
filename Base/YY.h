@@ -20,12 +20,25 @@
 #endif // _WIN32
 #endif // !__YYAPI
 
-#define YY_UFIELD_OFFSET(type, field)    ((size_t)&(((type *)0)->field))
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_offsetof)
+#define YY_UFIELD_OFFSET(type, field) ((size_t)__builtin_offsetof(type, field))
+#endif // __has_builtin(__builtin_offsetof)
+#endif // defined(__has_builtin)
+
+#ifndef YY_UFIELD_OFFSET
+#define YY_UFIELD_OFFSET(type, field) ((size_t)&(((type *)0)->field))
+#endif
 
 #define YY_FIELD_SIZE(type, field) (sizeof(((type *)0)->field))
 
 #define YY_SIZEOF_THROUGH_FIELD(type, field) \
     (YY_UFIELD_OFFSET(type, field) + YY_FIELD_SIZE(type, field))
+
+
+#define _YY_CONCATENATE_(a, b) a##b
+#define _YY_CONCATENATE(a, b) _YY_CONCATENATE_(a, b)
+
 
 
 #define YY_APPLY_ENUM_CALSS_BIT_OPERATOR(_ENUM)                      \

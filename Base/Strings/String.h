@@ -22,6 +22,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 #pragma once
 
 #include <stdlib.h>
+#include <algorithm>
 
 #include <Base/Strings/StringView.h>
 #include <Base/Encoding.h>
@@ -29,6 +30,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 #include <Base/YY.h>
 #include <MegaUI/Base/ErrorCode.h>
 #include <Base/Sync/Interlocked.h>
+#include <Base/Memory/Alloc.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -628,7 +630,7 @@ namespace YY
                 {
                     auto _iLeftSize = GetSize();
                     auto _iRightSize = _Other.GetSize();
-                    auto _iMinSize = min(_iLeftSize, _iRightSize);
+                    auto _iMinSize = (std::min)(_iLeftSize, _iRightSize);
 
                     uint_t _uIndex = 0;
                     for (; _uIndex != _iMinSize; ++_uIndex)
@@ -703,7 +705,7 @@ namespace YY
 
                         const auto _cbStringDataBuffer = sizeof(StringData) + _uNewCapacity * sizeof(char_t);
 
-                        auto _pNewStringData = (StringData*)realloc(_pOldStringData, _cbStringDataBuffer);
+                        auto _pNewStringData = (StringData*)HReAlloc(_pOldStringData, _cbStringDataBuffer);
                         if (!_pNewStringData)
                             return nullptr;
 
@@ -723,7 +725,7 @@ namespace YY
 
                         const auto _cbNewStringData = sizeof(StringData) + _uAllocLength * sizeof(char_t);
 
-                        auto _pNewStringData = (StringData*)malloc(_cbNewStringData);
+                        auto _pNewStringData = (StringData*)HAlloc(_cbNewStringData);
                         if (!_pNewStringData)
                             return nullptr;
 

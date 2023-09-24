@@ -307,7 +307,7 @@ namespace YY
                         return _hr = VariantSetString(_pRetVal, _szBuffer);
                     }
                     case UIA_ClassNamePropertyId:
-                        return _hr = VariantSetStringASCII(_pRetVal, pElement->GetControlInfo()->GetName());
+                        return _hr = VariantSetStringASCII(_pRetVal, (const char*)pElement->GetControlInfo()->GetName());
                     case UIA_HelpTextPropertyId:
                     {
                         auto _szHelpText = pElement->GetAccHelp();

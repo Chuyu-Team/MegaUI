@@ -2,10 +2,13 @@
 
 #include "Window.h"
 
-#include "../core/ControlInfoImp.h"
-#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
+#include <MegaUI/Core/ControlInfoImp.h>
 #include <Base/Memory/RefPtr.h>
 #include <Media/Graphics/DrawAsyncCommandContext.h>
+
+#ifdef _WIN32
+#include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
+#endif
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -18,8 +21,12 @@ namespace YY
         Element* Window::g_pLastKeyboardFocusedElement = nullptr;
 
         Window::Window(int32_t _DefaultDpi)
-            : hWnd(nullptr)
-            , pHost(nullptr)
+            : 
+#ifdef _WIN32
+            hWnd(nullptr)
+            ,
+#endif
+            pHost(nullptr)
             , pDrawContextFactory(nullptr)
             , LastRenderSize {}
             , fTrackMouse(0u)
@@ -35,6 +42,7 @@ namespace YY
             pDrawContext = nullptr;
         }
 
+#ifdef _WIN32
         EXTERN_C extern IMAGE_DOS_HEADER __ImageBase;
 
         HRESULT Window::Initialize(
@@ -132,6 +140,7 @@ namespace YY
             ++s_uWindowCount;
             return S_OK;
         }
+#endif
 
         HRESULT Window::SetHost(WindowElement* _pHost)
         {
@@ -163,6 +172,7 @@ namespace YY
             return pHost;
         }
 
+#ifdef _WIN32
         UINT Window::AsyncDestroyMsg()
         {
             static UINT g_AsyncDestroyMsg = 0;
@@ -174,39 +184,51 @@ namespace YY
 
             return g_AsyncDestroyMsg;
         }
-
+#endif
+#ifdef _WIN32
         void Window::DestroyWindow()
         {
             if (hWnd)
                 ::PostMessageW(hWnd, AsyncDestroyMsg(), 0, 0);
         }
+#endif
 
+#ifdef _WIN32
         bool Window::IsMinimized() const
         {
             return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
         }
+#endif
 
+#ifdef _WIN32
         bool Window::CanMinimize() const
         {
             return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MINIMIZEBOX) != 0;
         }
+#endif
 
+#ifdef _WIN32
         bool Window::IsTopmost() const
         {
             return hWnd && (GetWindowLongPtrW(hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
         }
-
+#endif
+#ifdef _WIN32
         bool Window::CanMaximize() const
         {
             return hWnd && (GetWindowLongPtrW(hWnd, GWL_STYLE) & WS_MAXIMIZEBOX) != 0;
         }
+#endif
 
+#ifdef _WIN32
         void Window::ShowWindow(int _iCmdShow)
         {
             if (hWnd)
                 ::ShowWindow(hWnd, _iCmdShow);
         }
+#endif
 
+#ifdef _WIN32
         void Window::InvalidateRect(const Rect* _pRect)
         {
             if (hWnd)
@@ -226,6 +248,7 @@ namespace YY
                 }
             }
         }
+#endif
 
         HRESULT Window::PostDelayedDestroyElement(Element* _pElement)
         {
@@ -242,6 +265,7 @@ namespace YY
             return S_OK;
         }
 
+#ifdef _WIN32
         bool Window::HandleVisiblePropChanged(OnPropertyChangedHandleData* _pHandle)
         {
             if (_pHandle->eIndicies == PropertyIndicies::PI_Computed && hWnd)
@@ -287,6 +311,7 @@ namespace YY
             
             return true;
         }
+#endif
 
         Element* Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fFindMarks)
         {
@@ -369,11 +394,14 @@ namespace YY
             return iDpi;
         }
 
+#ifdef _WIN32
         bool Window::IsInitialized() const
         {
             return hWnd != NULL;
         }
+#endif
 
+#ifdef _WIN32
         DrawContext* Window::GetDrawContext()
         {
             if (!pDrawContext)
@@ -382,7 +410,6 @@ namespace YY
                 HRESULT _hr = pDrawContextFactory->CreateDrawTarget(hWnd, _pDrawContext.ReleaseAndGetAddressOf());
                 if (FAILED(_hr))
                     throw Exception(_hr);
-
 #if 0
                 pDrawContext.Attach(_pDrawContext.Detach());
 #else
@@ -396,6 +423,7 @@ namespace YY
             return pDrawContext;
 
         }
+#endif
 
         bool Window::SetKeyboardFocus(Element* _pElement)
         {
@@ -458,6 +486,7 @@ namespace YY
             return pLastFocusedElement;
         }
 
+#ifdef _WIN32
         void Window::ClientToScreen(Rect* _Bounds)
         {
             POINT _Point = {};
@@ -468,7 +497,9 @@ namespace YY
             _Bounds->Top += _Point.y;
             _Bounds->Bottom += _Point.y;
         }
+#endif
 
+#ifdef _WIN32
         void Window::ClientToScreen(Point* _pPoint)
         {
             POINT _Point = {};
@@ -476,7 +507,9 @@ namespace YY
             _pPoint->X += _Point.x;
             _pPoint->Y += _Point.y;
         }
+#endif
 
+#ifdef _WIN32
         void Window::ScreenToClient(Rect* _Bounds)
         {
             POINT _Point = {};
@@ -487,9 +520,12 @@ namespace YY
             _Bounds->Top += _Point.y;
             _Bounds->Bottom += _Point.y;
         }
+#endif
 
+#ifdef _WIN32
         void Window::ScreenToClient(Point* _pPoint)
         {
+
             POINT _Point = {};
             ::ScreenToClient(hWnd, &_Point);
 
@@ -501,12 +537,14 @@ namespace YY
         {
             return hWnd;
         }
+#endif
 
         Element* Window::GetPressed()
         {
             return pLastPressedElement;
         }
 
+#ifdef _WIN32
         void Window::SetPressed(Element* _pElement)
         {
             if (bCapture && _pElement == nullptr)
@@ -538,7 +576,9 @@ namespace YY
 
             pHost->EndDefer(_Cooike);
         }
+#endif
 
+#ifdef _WIN32
         LRESULT Window::StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam)
         {
             if (_uMsg == Window::AsyncDestroyMsg())
@@ -691,7 +731,9 @@ namespace YY
 
             return DefWindowProcW(_hWnd, _uMsg, _wParam, _lParam);
         }
+#endif
 
+#ifdef _WIN32
         bool Window::OnCreate()
         {
             //Rect Client2;
@@ -729,6 +771,7 @@ namespace YY
 
             return true;
         }
+#endif
 
         HRESULT Window::OnPaint(const Rect& oPaint)
         {
@@ -849,7 +892,7 @@ namespace YY
             return S_OK;
         }
 
-        void Window::OnSize(UINT _uWidth, UINT _uHeight)
+        void Window::OnSize(float _uWidth, float _uHeight)
         {
             LastRenderSize.Width = _uWidth;
             LastRenderSize.Height = _uHeight;
@@ -859,8 +902,8 @@ namespace YY
                 intptr_t _Cooike;
                 pHost->StartDefer(&_Cooike);
 
-                pHost->SetWidth((float)_uWidth);
-                pHost->SetHeight((float)_uHeight);
+                pHost->SetWidth(_uWidth);
+                pHost->SetHeight(_uHeight);
 
                 pHost->EndDefer(_Cooike);
                 // D2D1.0 调用这个会发生抖动
@@ -878,6 +921,7 @@ namespace YY
             }
         }
 
+#ifdef _WIN32
         void Window::UpdateStyles(uint32_t _uOld, uint32_t _uNew)
         {
             if (!pHost)
@@ -887,6 +931,7 @@ namespace YY
             if (_uStyleDiff & WS_VISIBLE)
                 pHost->SetVisible(_uNew & WS_VISIBLE);
         }
+#endif
 
         void Window::OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect)
         {
@@ -953,6 +998,7 @@ namespace YY
             return S_OK;
         }
         
+#ifdef _WIN32
         void Window::OnUpdateUiState(uint16_t _eType, uint16_t _fState)
         {
             auto _fOldUIState = fUIState;
@@ -969,7 +1015,9 @@ namespace YY
                 break;
             }
         }
-        
+#endif
+
+#ifdef _WIN32
         void Window::OnMouseMove(Point _MousePoint, uint32_t _fFlags)
         {
             if ((_fFlags & MK_LBUTTON) == 0)
@@ -999,7 +1047,8 @@ namespace YY
                 }
             }
         }
-        
+#endif
+
         void Window::OnMouseFocusMoved(Element* _pFrom, Element* _pTo)
         {
             if (_pFrom == _pTo)
@@ -1024,6 +1073,7 @@ namespace YY
             pHost->EndDefer(_Cooike);
         }
 
+#ifdef _WIN32
         bool Window::OnLeftButtonDown(const MouseEvent& _Event)
         {
             SetPressed(_Event.pTarget);
@@ -1041,6 +1091,7 @@ namespace YY
 
             return true;
         }
+#endif
 
         bool Window::OnLeftButtonUp(const MouseEvent& _Event)
         {
@@ -1075,6 +1126,7 @@ namespace YY
             return _KeyEvent.pTarget->OnChar(_KeyEvent);
         }
 
+#ifdef _WIN32
         bool Window::OnGetObject(uint32_t _fFlags, int32_t _uObjectId, LRESULT* _plResult)
         {
             if (_uObjectId != UiaRootObjectId)
@@ -1092,6 +1144,6 @@ namespace YY
 
             return true;
         }
-
+#endif
     } // namespace MegaUI
 } // namespace YY

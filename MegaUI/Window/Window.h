@@ -2,16 +2,14 @@
 
 #include <memory>
 
+#ifdef _WIN32
 #include <Windows.h>
-#include <d2d1.h>
-#include <d2d1helper.h>
-#include <dwrite.h>
-#include <wincodec.h>
+#endif
 
-#include <MegaUI/base/MegaUITypeInt.h>
-#include "WindowElement.h"
+#include <Base/YY.h>
+#include <MegaUI/Window/WindowElement.h>
 #include <Base/Containers/Array.h>
-#include <MegaUI/core/UIEvent.h>
+#include <MegaUI/Core/UIEvent.h>
 #include <Media/Graphics/DrawContext.h>
 #include <Base/Memory/UniquePtr.h>
 
@@ -27,7 +25,9 @@ namespace YY
         class Window
         {
         protected:
+#ifdef _WIN32
             HWND hWnd;
+#endif
             WindowElement* pHost;
             DrawContextFactory* pDrawContextFactory;
             UniquePtr<DrawContext> pDrawContext;   
@@ -55,6 +55,7 @@ namespace YY
 
             virtual ~Window();
             
+#ifdef _WIN32
             HRESULT __YYAPI Initialize(
                 _In_opt_ HWND _hWndParent,
                 _In_opt_ HICON _hIcon,
@@ -65,12 +66,16 @@ namespace YY
                 _In_ UINT _nOptions,
                 _In_ DrawContextFactory* _pDrawContextFactory = DrawContextFactory::GetDefaultDrawContextFactory()
                 );
+            
+            static UINT __YYAPI AsyncDestroyMsg();
+
+            HWND __YYAPI GetWnd();
+#endif
 
             HRESULT __YYAPI SetHost(_In_ WindowElement* _pHost);
 
             WindowElement* __YYAPI GetHost();
 
-            static UINT __YYAPI AsyncDestroyMsg();
 
             void __YYAPI DestroyWindow();
             
@@ -142,16 +147,16 @@ namespace YY
             
             void __YYAPI ScreenToClient(_Inout_ Point* _pPoint);
 
-            HWND __YYAPI GetWnd();
-
             Element* __YYAPI GetPressed();
 
             void __YYAPI SetPressed(Element* _pElement);
 
         protected:
+#ifdef _WIN32
             static LRESULT CALLBACK StaticWndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
 
             virtual LRESULT __thiscall WndProc(HWND _hWnd, UINT _uMsg, WPARAM _wParam, LPARAM _lParam);
+#endif
 
             bool __YYAPI OnCreate();
 
@@ -168,7 +173,7 @@ namespace YY
                 _In_ const Rect& _ParentBounds,
                 _In_ const Rect& _ParentPaintRect);
 
-            void __YYAPI OnSize(UINT _uWidth, UINT _uHeight);
+            void __YYAPI OnSize(float _uWidth, float _uHeight);
 
             void __YYAPI ClearDelayedDestroyList();
 
@@ -194,7 +199,9 @@ namespace YY
            
             bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
 
+#ifdef _WIN32
             bool __YYAPI OnGetObject(uint32_t _fFlags, int32_t _uObjectId, LRESULT* _plResult);
+#endif
         };
     }
 } // namespace YY

@@ -67,7 +67,7 @@ namespace YY
                             return S_FALSE;
                     }
 
-                    auto pNewEntry = (HashSetEntry*)malloc(sizeof(HashSetEntry));
+                    auto pNewEntry = (HashSetEntry*)HAlloc(sizeof(HashSetEntry));
                     if (!pNewEntry)
                         return E_OUTOFMEMORY;
 
