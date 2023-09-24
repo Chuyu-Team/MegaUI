@@ -51,7 +51,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     if (_iPatternId == UIA_TransformPatternId || _iPatternId == UIA_TransformPattern2Id)
@@ -108,7 +108,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     Point _Point((float)_X, (float)_Y);
@@ -148,7 +148,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     auto _pFocus = pElement->GetWindow()->GetFocus();

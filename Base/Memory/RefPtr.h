@@ -43,8 +43,9 @@ namespace YY
                 {
                 }
 
-                RefPtr(RefPtr&& _Other) noexcept
-                    : p(_Other.Detach())
+                template<typename _TypeSource>
+                RefPtr(RefPtr<_TypeSource>&& _Other) noexcept
+                    : p(static_cast<_Type*>(_Other.Detach()))
                 {
                 }
 
@@ -121,6 +122,14 @@ namespace YY
                 _Ret_maybenull_ _Type* __YYAPI operator->() const
                 {
                     return p;
+                }
+                
+                template<typename... Args>
+                static RefPtr __YYAPI Create(Args&&... _args)
+                {
+                    RefPtr _p;
+                    _p.Attach(new(std::nothrow) _Type(std::forward<Args>(_args)...));
+                    return _p;
                 }
             };
         } // namespace Memory

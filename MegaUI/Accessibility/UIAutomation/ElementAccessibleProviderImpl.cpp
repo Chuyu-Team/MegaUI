@@ -214,7 +214,7 @@ namespace YY
                 return E_NOINTERFACE;
 
             HRESULT _hr = E_NOINTERFACE;
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     switch (_iPatternId)
@@ -242,7 +242,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     _hr = S_OK;
@@ -469,7 +469,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     auto _BoundingRectangle = GetBoundingRectangle();
@@ -501,7 +501,7 @@ namespace YY
 
             HRESULT _hr = E_FAIL;
 
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     _hr = S_OK;
@@ -611,7 +611,7 @@ namespace YY
         {
             HRESULT _hr = E_FAIL;
 
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     pElement->SetKeyboardFocus();
@@ -628,7 +628,7 @@ namespace YY
             *_pRetVal = nullptr;
 
             HRESULT _hr = E_FAIL;
-            pTaskRunner->Sync(
+            pTaskRunner->SendTask(
                 [=, &_hr]()
                 {
                     auto _pHost = pElement->GetWindow()->GetHost();

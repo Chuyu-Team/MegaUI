@@ -116,7 +116,7 @@ namespace YY
                 if (pSequencedTaskRunner)
                 {
                     // TODO:尽可能减少同步
-                    pSequencedTaskRunner->Sync(
+                    pSequencedTaskRunner->SendTask(
                         [&]()
                         {
 
@@ -191,7 +191,7 @@ namespace YY
                 oCommandList.Push(pCurrentCommandEntry);
                 pCurrentCommandEntry = nullptr;
 
-                pSequencedTaskRunner->Async(
+                pSequencedTaskRunner->PostTask(
                     [](void* _pUserData)
                     {
                         auto _pAsyncCommandContext = (DrawAsyncCommandContext*)_pUserData;

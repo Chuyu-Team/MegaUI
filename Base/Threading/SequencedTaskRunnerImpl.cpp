@@ -17,10 +17,8 @@ namespace YY
                 : uRef(1u)
                 , uTaskRunnerId(GenerateNewTaskRunnerId())
                 , uThreadId(0u)
-                , uPushLock(0u)
-                , uWeakCount(0u)
+                , uWeakupCountAndPushLock(0u)
             {
-                __YY_IGNORE_UNINITIALIZED_VARIABLE(&uWeakCountAndPushLock);
             }
 
             uint32_t __YYAPI SequencedTaskRunnerImpl::AddRef()
@@ -46,50 +44,24 @@ namespace YY
 
             TaskRunnerStyle __YYAPI SequencedTaskRunnerImpl::GetStyle()
             {
-                return TaskRunnerStyle::Sequenced;
-            }
-
-            HRESULT __YYAPI SequencedTaskRunnerImpl::Async(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
-            {
-                auto _pWorkEntry = new (std::nothrow) ThreadWorkEntry(_pfnCallback, _pUserData, false);
-                if (!_pWorkEntry)
-                    return E_OUTOFMEMORY;
-
-                PushThreadWorkEntry(_pWorkEntry);
-                return S_OK;
-            }
-
-            HRESULT __YYAPI SequencedTaskRunnerImpl::Async(std::function<void()>&& _pfnLambdaCallback)
-            {
-                auto _pWorkEntry = new (std::nothrow) ThreadWorkEntry(std::move(_pfnLambdaCallback), false);
-                if (!_pWorkEntry)
-                    return E_OUTOFMEMORY;
-                PushThreadWorkEntry(_pWorkEntry);
-                return S_OK;
-            }
-
-            HRESULT __YYAPI SequencedTaskRunnerImpl::Sync(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
-            {
-                // 同一个线程时直接调用 _pfnCallback，避免各种等待以及任务投递。
-                if (GetCurrentThreadId() == uThreadId)
-                {
-                    _pfnCallback(_pUserData);
-                    return S_OK;
-                }
-
-                ThreadWorkEntry _oWorkEntry(_pfnCallback, _pUserData, true);
-                PushThreadWorkEntry(&_oWorkEntry);
-                HRESULT _hrTarget = E_PENDING;
-                WaitOnAddress(&_oWorkEntry.hr, &_hrTarget, sizeof(_hrTarget), uint32_max);
-                return _oWorkEntry.hr;
+                return TaskRunnerStyle::None;
             }
 
 #ifdef _WIN32
-            void __YYAPI SequencedTaskRunnerImpl::PushThreadWorkEntry(ThreadWorkEntry* _pWorkEntry)
+            HRESULT __YYAPI SequencedTaskRunnerImpl::PushThreadWorkEntry(ThreadWorkEntry* _pWorkEntry)
             {
+                if (bStopWeakup)
+                {
+                    _pWorkEntry->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                    return E_FAIL;
+                }
+
+                _pWorkEntry->AddRef();
+                AddRef();
+
                 for (;;)
                 {
-                    if (!Sync::BitSet(&uWeakCountAndPushLock, 0u))
+                    if (!Sync::BitSet(&uWeakupCountAndPushLock, LockedQueuePushBitIndex))
                     {
                         oThreadWorkList.Push(_pWorkEntry);
                         break;
@@ -97,41 +69,84 @@ namespace YY
                 }
 
                 // 我们 解除锁定，uPushLock = 0 并且将 uWeakCount += 1
-                // 因为刚才 uWeakCountAndPushLock 已经将第一个标记位设置位 1
-                // 所以我们再 uWeakCountAndPushLock += 1即可。
-                // uWeakCount + 1 <==> uWeakCountAndPushLock + 2 <==> (uWeakCountAndPushLock | 1) + 1
-                if (Sync::Increment(&uWeakCountAndPushLock) == 2u)
+                // 因为刚才 uWeakupCountAndPushLock 已经将第一个标记位设置位 1
+                // 所以我们再 uWeakupCountAndPushLock += 1即可。
+                // uWeakCount + 1 <==> uWeakupCountAndPushLock + 2 <==> (uWeakupCountAndPushLock | 1) + 1
+                if (Sync::Add(&uWeakupCountAndPushLock, UnlockQueuePushLockBitAndWeakupOnceRaw) < WeakupOnceRaw * 2u)
                 {
-                    // 为 1 是说明当前正在等待输入消息，并且未主动唤醒
                     auto _bRet = TrySubmitThreadpoolCallback(
                         [](_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) -> void
                         {
-                            ((SequencedTaskRunnerImpl*)Context)->DoWorkList();
+                            auto pSequencedTaskRunner = ((SequencedTaskRunnerImpl*)Context);
+                            
+                            pSequencedTaskRunner->DoWorkList();
                         },
                         this,
                         nullptr);
+
+                    if (!_bRet)
+                    {
+                        // 阻止后续再唤醒线程
+                        Sync::BitSet(&uWeakupCountAndPushLock, StopWeakupBitIndex);
+                        auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
+                        CleanupWorkEntryQueue();
+                        return _hr;
+                    }
                 }
+
+                return S_OK;
             }
 #endif
 
             void __YYAPI SequencedTaskRunnerImpl::DoWorkList()
             {
+                AddRef();
+
                 uThreadId = GetCurrentThreadId();
+                g_pTaskRunner = this;
 
                 for (;;)
                 {
                     auto _pWorkEntry = oThreadWorkList.Pop();
                     if (_pWorkEntry)
                     {
-                        _pWorkEntry->DoWorkThenFree();
+                        _pWorkEntry->DoWork();
+                        _pWorkEntry->Wakeup(S_OK);
+                        _pWorkEntry->Release();
+                        Release();
                     }
 
-                    if (Sync::Subtract(&uWeakCountAndPushLock, 2u) < 2u)
+                    if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
                     {
                         break;
                     }
                 }
+                g_pTaskRunner = nullptr;
                 uThreadId = 0;
+                Release();
+                return;
+            }
+            
+            void __YYAPI SequencedTaskRunnerImpl::CleanupWorkEntryQueue()
+            {
+                AddRef();
+
+                for (;;)
+                {
+                    auto _pWorkEntry = oThreadWorkList.Pop();
+                    if (_pWorkEntry)
+                    {
+                        _pWorkEntry->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                        _pWorkEntry->Release();
+                        Release();
+                    }
+
+                    if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
+                    {
+                        break;
+                    }
+                }
+                Release();
                 return;
             }
         }

@@ -21,16 +21,25 @@ namespace YY
                 uint32_t uRef;
                 uint32_t uTaskRunnerId;
                 uint32_t uThreadId;
-                // uWeakCount    uPushLock
-                // [31  ~  1]       0
+                // |uWeakCount| bStopWeakup | bPushLock |
+                // | 31  ~  2 |     1       |    0      |
                 union
                 {
+                    uint32_t uWeakupCountAndPushLock;
                     struct
                     {
-                        uint32_t uPushLock : 1;
-                        uint32_t uWeakCount : 31;
+                        uint32_t bPushLock : 1;
+                        uint32_t bStopWeakup : 1;
+                        uint32_t uWeakupCount : 31;
                     };
-                    uint32_t uWeakCountAndPushLock;
+                };
+                enum : uint32_t
+                {
+                    LockedQueuePushBitIndex = 0,
+                    StopWeakupBitIndex,
+                    WeakupCountStartBitIndex,
+                    WeakupOnceRaw = 1 << WeakupCountStartBitIndex,
+                    UnlockQueuePushLockBitAndWeakupOnceRaw = WeakupOnceRaw - (1u << LockedQueuePushBitIndex),
                 };
                 InterlockedQueue<ThreadWorkEntry> oThreadWorkList;
 
@@ -43,10 +52,8 @@ namespace YY
 
                 ThreadTaskRunnerImpl& operator=(const ThreadTaskRunnerImpl&) = delete;
 
-                static RefPtr<ThreadTaskRunner> __YYAPI GetCurrent();
-
                 /////////////////////////////////////////////////////
-                // TaskRunner
+                // SequencedTaskRunner
 
                 virtual uint32_t __YYAPI AddRef() override;
 
@@ -55,22 +62,20 @@ namespace YY
                 virtual uint32_t __YYAPI GetId() override;
 
                 virtual TaskRunnerStyle __YYAPI GetStyle() override;
-
-                virtual HRESULT __YYAPI Async(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData) override;
-
-                virtual HRESULT __YYAPI Async(_In_ std::function<void()>&& _pfnLambdaCallback) override;
-
-                virtual HRESULT __YYAPI Sync(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData) override;
                 
                 /////////////////////////////////////////////////////
                 // ThreadTaskRunner
 
                 virtual uint32_t __YYAPI GetThreadId() override;
                 
-                virtual uintptr_t __YYAPI RunMessageLoop() override;
+                uintptr_t __YYAPI RunUIMessageLoop(_In_opt_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
                 
+                void __YYAPI EnableWeakup(_In_ bool _bEnable);
+
             private:
-                void __YYAPI PushThreadWorkEntry(ThreadWorkEntry* _pWorkEntry);
+                HRESULT __YYAPI PushThreadWorkEntry(ThreadWorkEntry* _pWorkEntry) override;
+
+                void __YYAPI CleanupWorkEntryQueue();
             };
         }
     } // namespace Base

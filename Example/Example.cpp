@@ -3,7 +3,12 @@
 
 #include "framework.h"
 #include "Example.h"
+
 #include <vector>
+#include <coroutine>
+#include <iostream>
+#include <stdexcept>
+#include <memory>
 
 #include <MegaUI/Window/Window.h>
 #include <MegaUI/Parser/UIParser.h>
@@ -26,59 +31,111 @@ static u8String GetUiResource(DWORD _uResourceId)
 
 #pragma comment(lib, "Synchronization.lib")
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+struct Task
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    //YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
-    WindowElement::Register();
-    Button::Register();
-
-    StyleSheet::AddGlobalStyleSheet(GetUiResource(IDR_UI_COMMON));
-
-    Window* _pTestWindow = HNew<Window>();
-    Window* _pTestWindow2 = HNew<Window>();
-
-    UIParser _Parser;
-
-    _Parser.ParserByXmlString(GetUiResource(IDR_UI1));
-
-
-    UIParserPlayContext _Context;
-    _Context.iDPI = 96;
+    struct promise_type
     {
-        YY::MegaUI::WindowElement* pWindowElement;
-        intptr_t Cooike;
-        _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+        Task get_return_object() noexcept
+        {
+            return {};
+        }
+        std::suspend_never initial_suspend() noexcept
+        {
+            return {};
+        }
 
-        _pTestWindow->SetHost(pWindowElement);
+        std::suspend_never final_suspend() noexcept
+        {
+            return {};
+        }
 
-        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
-        pWindowElement->EndDefer(Cooike);
+        void return_void() noexcept
+        {
+        }
+        void unhandled_exception()
+        {
+        }
+    };
+};
 
-        _pTestWindow->ShowWindow(SW_SHOWNORMAL);
-    }
 
-    {
-        YY::MegaUI::WindowElement* pWindowElement;
-        intptr_t Cooike;
-        _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+Task TestCoroutine()
+{
+    std::cout << "TID : " << GetCurrentThreadId() << " 我是 TestAsync，开始模拟耗时任务\n"; 
+    aString _szOutString;
+    auto _pTaskRunner = YY::Base::Threading::SequencedTaskRunner::Create();
+    co_await _pTaskRunner->AsyncTask(
+        [&_szOutString]()
+        {
+            for (int i = 0; i != 5; ++i)
+            {
+                std::cout << ">>>>>>>> TID : " << GetCurrentThreadId() << " 我正在处理数据，处理了" << i << "秒，\n";
+                Sleep(1000);
+            }     
+            std::cout << ">>>>>>>> TID : " << GetCurrentThreadId() << " 假装处理数据结束，向主线程摊牌。\n";
 
-        _pTestWindow2->SetHost(pWindowElement);
+            _szOutString = "给主线程的字符串。";
+        });
+    std::cout << "!!!!!!! TID : " << GetCurrentThreadId() << " TestAsync 结束, _szOutString：" << _szOutString << "\n";
+    co_return;
+}
 
-        _pTestWindow2->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
-        pWindowElement->EndDefer(Cooike);
+int wmain()
+{
+    return YY::Base::Threading::ThreadTaskRunner::RunUIMessageLoop(
+        [&]()
+        {
+            std::cout << std::endl;
+            std::cout << "TID : " << GetCurrentThreadId() << " 测试进程启动，我是主线程。\n";
 
-        _pTestWindow2->ShowWindow(SW_SHOWNORMAL);
-    }
+            TestCoroutine();
 
-    //YY::MegaUI::Element* p;
-    //YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);
-    #if 0
+            std::cout << "TID : " << GetCurrentThreadId() << " 开始创建窗口。\n";
+
+            // YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
+            WindowElement::Register();
+            Button::Register();
+
+            StyleSheet::AddGlobalStyleSheet(GetUiResource(IDR_UI_COMMON));
+
+            Window* _pTestWindow = HNew<Window>();
+            Window* _pTestWindow2 = HNew<Window>();
+
+            UIParser _Parser;
+
+            _Parser.ParserByXmlString(GetUiResource(IDR_UI1));
+
+            UIParserPlayContext _Context;
+            _Context.iDPI = 96;
+            {
+                YY::MegaUI::WindowElement* pWindowElement;
+                intptr_t Cooike;
+                _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+
+                _pTestWindow->SetHost(pWindowElement);
+
+                _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+                pWindowElement->EndDefer(Cooike);
+
+                _pTestWindow->ShowWindow(SW_SHOWNORMAL);
+            }
+
+            {
+                YY::MegaUI::WindowElement* pWindowElement;
+                intptr_t Cooike;
+                _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+
+                _pTestWindow2->SetHost(pWindowElement);
+
+                _pTestWindow2->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+                pWindowElement->EndDefer(Cooike);
+
+                _pTestWindow2->ShowWindow(SW_SHOWNORMAL);
+            }
+
+// YY::MegaUI::Element* p;
+// YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);
+#if 0
     {
         intptr_t Cooike;
         YY::MegaUI::Element* p2;
@@ -96,7 +153,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         p2->SetValue(YY::MegaUI::Element::g_ClassInfoData.LayoutPosProp, YY::MegaUI::PropertyIndicies::PI_Local, YY::MegaUI::Value::CreateInt32(LP_Absolute));
         p2->EndDefer(Cooike);
     }
-    #if 1
+#if 1
     {
         intptr_t Cooike;
         YY::MegaUI::Element* p2;
@@ -173,7 +230,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _pWindows->InitializeWindow(L"YY Mega DirectUI Test", nullptr, nullptr, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
 
     //_pWindows->ShowWindow(SW_SHOW);
-    #endif
-    auto _oThreadTaskRunner = YY::Base::Threading::ThreadTaskRunner::GetCurrent();
-    return _oThreadTaskRunner->RunMessageLoop();
+#endif
+        });
 }

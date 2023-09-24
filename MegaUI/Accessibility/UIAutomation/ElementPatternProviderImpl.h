@@ -512,7 +512,7 @@ namespace YY
 
             virtual HRESULT STDMETHODCALLTYPE Invoke() override
             {
-                pTaskRunner->Async(
+                pTaskRunner->PostTask(
                     [](void* _pUserData)
                     {
                         auto _pElement = (Element*)_pUserData;
