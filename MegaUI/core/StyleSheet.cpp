@@ -44,34 +44,10 @@ namespace YY
         }
 
         StyleSheet::StyleSheet(StyleSheet* _pInheritStyle)
-            : uRef(1u)
-            , uRuleId(0u)
+            : uRuleId(0u)
             , pInheritStyle(_pInheritStyle)
             , bMakeImmutable(false)
         {
-            if (_pInheritStyle)
-                _pInheritStyle->AddRef();
-        }
-        
-        StyleSheet::~StyleSheet()
-        {
-            if (pInheritStyle)
-                pInheritStyle->Release();
-        }
-
-        uint32_t __YYAPI StyleSheet::AddRef()
-        {
-            return Sync::Increment(&uRef);
-        }
-        
-        uint32_t __YYAPI StyleSheet::Release()
-        {
-            auto _uNewRef = Sync::Decrement(&uRef);
-            if (_uNewRef == 0)
-            {
-                HFree(this);
-            }
-            return _uNewRef;
         }
 
         HRESULT __YYAPI StyleSheet::AddRule(uString _szRule, IControlInfo* _pControlInfo, Array<Cond> _CondArray, const ArrayView<Decl>& _DeclArray)

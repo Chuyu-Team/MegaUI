@@ -214,63 +214,16 @@ namespace YY
         {
             _RETUNR_CONST_VALUE(ValueType::StyleSheet, nullptr);
         }
-        
-        Value& __YYAPI Value::operator=(const Value& _Other)
-        {
-            if (pSharedData != _Other.pSharedData)
-            {
-                if (pSharedData)
-                    pSharedData->Release();
-
-                pSharedData = _Other.pSharedData;
-
-                if (pSharedData)
-                    pSharedData->AddRef();
-            }
-
-            return *this;
-        }
-
-        Value& __YYAPI Value::operator=(Value&& _Other) noexcept
-        {
-            if (this != &_Other)
-            {
-                if (pSharedData)
-                    pSharedData->Release();
-
-                pSharedData = _Other.pSharedData;
-                _Other.pSharedData = nullptr;
-            }
-
-            return *this;
-        }
 
         Value& __YYAPI Value::operator=(std::nullptr_t)
         {
-            if (pSharedData)
-                pSharedData->Release();
             pSharedData = nullptr;
             return *this;
-        }
-
-        bool __YYAPI Value::operator==(const Value& _Other) const
-        {
-            return CmpValue(_Other, ValueCmpOperation::Equal);
-        }
-
-        bool __YYAPI Value::operator!=(const Value& _Other) const
-        {
-            return operator==(_Other) == false;
         }
 
         bool __YYAPI Value::operator==(std::nullptr_t) const
         {
             return pSharedData == nullptr;
-        }
-
-        bool __YYAPI Value::operator!=(std::nullptr_t) const
-        {
-            return pSharedData != nullptr;
         }
 
         ValueType __YYAPI Value::GetType() const

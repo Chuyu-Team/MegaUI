@@ -18,8 +18,7 @@ namespace YY
             static thread_local uint32_t s_uUIMessageLoopEnterCount = 0u;
 
             ThreadTaskRunnerImpl::ThreadTaskRunnerImpl()
-                : uRef(1)
-                , uTaskRunnerId(GenerateNewTaskRunnerId())
+                : uTaskRunnerId(GenerateNewTaskRunnerId())
                 , uThreadId(GetCurrentThreadId())
                 , uWeakupCountAndPushLock(WeakupOnceRaw)
             {
@@ -27,22 +26,6 @@ namespace YY
 
             ThreadTaskRunnerImpl::~ThreadTaskRunnerImpl()
             {
-            }
-            
-            uint32_t __YYAPI ThreadTaskRunnerImpl::AddRef()
-            {
-                return Sync::Increment(&uRef);
-            }
-
-            uint32_t __YYAPI ThreadTaskRunnerImpl::Release()
-            {
-                auto _uOldRef = Sync::Decrement(&uRef);
-                if (_uOldRef == 0)
-                {
-                    delete this;
-                }
-
-                return _uOldRef;
             }
 
             uint32_t __YYAPI ThreadTaskRunnerImpl::GetId()
@@ -95,7 +78,7 @@ namespace YY
                         auto _pWorkEntry = oThreadWorkList.Pop();
                         if (_pWorkEntry)
                         {
-                            _pWorkEntry->DoWork();
+                            (*_pWorkEntry)();
                             _pWorkEntry->Wakeup(S_OK);
                             _pWorkEntry->Release();
                         }
@@ -136,20 +119,19 @@ namespace YY
 #endif
 
 #ifdef _WIN32
-            HRESULT __YYAPI ThreadTaskRunnerImpl::PushThreadWorkEntry(ThreadWorkEntry* _pWorkEntry)
+            HRESULT __YYAPI ThreadTaskRunnerImpl::PushThreadWorkEntry(RefPtr<ThreadWorkEntry> _pWorkEntry)
             {
                 if (bStopWeakup)
                 {
                     _pWorkEntry->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
                     return E_FAIL;
                 }
-                _pWorkEntry->AddRef();
                 AddRef();
                 for (;;)
                 {
                     if (!Sync::BitSet(&uWeakupCountAndPushLock, LockedQueuePushBitIndex))
                     {
-                        oThreadWorkList.Push(_pWorkEntry);
+                        oThreadWorkList.Push(_pWorkEntry.Detach());
                         break;
                     }
                 }

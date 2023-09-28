@@ -13,7 +13,6 @@ namespace YY
             class SequencedTaskRunnerImpl : public SequencedTaskRunner
             {
             private:
-                uint32_t uRef;
                 uint32_t uTaskRunnerId;
                 uint32_t uThreadId;
                 // |uWeakCount| bStopWeakup | bPushLock |
@@ -47,17 +46,12 @@ namespace YY
 
                 /////////////////////////////////////////////////////
                 // SequencedTaskRunner
-
-                virtual uint32_t __YYAPI AddRef() override;
-
-                virtual uint32_t __YYAPI Release() override;
-
                 virtual uint32_t __YYAPI GetId() override;
 
                 virtual TaskRunnerStyle __YYAPI GetStyle() override;
 
             private:
-                HRESULT __YYAPI PushThreadWorkEntry(ThreadWorkEntry* _pWorkEntry) override;
+                HRESULT __YYAPI PushThreadWorkEntry(RefPtr<ThreadWorkEntry> _pWorkEntry) override;
 
                 void __YYAPI CleanupWorkEntryQueue();
 

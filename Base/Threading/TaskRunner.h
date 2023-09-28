@@ -15,10 +15,6 @@
 
 #pragma pack(push, __YY_PACKING)
 
-#ifndef DECLSPEC_NOVTABLE
-#define DECLSPEC_NOVTABLE
-#endif
-
 namespace YY
 {
     namespace Base
@@ -36,34 +32,28 @@ namespace YY
 
             YY_APPLY_ENUM_CALSS_BIT_OPERATOR(TaskRunnerStyle);
             
-            enum class ThreadWorkEntryStyle
+            enum class TaskEntryStyle
             {
                 None = 0,
                 // 任务同步进行。
                 Sync = 0x00000001,
             };
 
-            YY_APPLY_ENUM_CALSS_BIT_OPERATOR(ThreadWorkEntryStyle);
+            YY_APPLY_ENUM_CALSS_BIT_OPERATOR(TaskEntryStyle);
 
-            struct ThreadWorkEntry
+            struct ThreadWorkEntry : public RefValue
             {
-                // 此内存的引用计数
-                uint32_t uRef;
-
-                ThreadWorkEntryStyle fStyle;
+                TaskEntryStyle fStyle;
 
                 // 操作结果，任务可能被取消。
                 HRESULT hr;
 
-                ThreadWorkEntry(ThreadWorkEntryStyle _eStyle);
+                ThreadWorkEntry(TaskEntryStyle _eStyle);
 
-                virtual ~ThreadWorkEntry() = default;
+                ThreadWorkEntry(const ThreadWorkEntry&) = delete;
+                ThreadWorkEntry& operator=(const ThreadWorkEntry&) = delete;
 
-                uint32_t __YYAPI AddRef();
-
-                uint32_t __YYAPI Release();
-
-                virtual void __YYAPI DoWork() = 0;
+                virtual void __YYAPI operator()() = 0;
 
                 /// <summary>
                 /// 设置错误代码，并唤醒相关等待者。
@@ -80,35 +70,10 @@ namespace YY
                 bool __YYAPI Wait(_In_ uint32_t _uMilliseconds = uint32_max);
             };
 
-            template<typename WorkEntryType>
-            struct ThreadWorkEntryImpl
-                : public ThreadWorkEntry
-                , public WorkEntryType
-            {
-                template<typename... Args>
-                ThreadWorkEntryImpl(ThreadWorkEntryStyle _eStyle, Args&&... _args)
-                    : ThreadWorkEntry(_eStyle)
-                    , WorkEntryType {std::forward<Args>(_args)...}
-                {
-                }
-
-                ~ThreadWorkEntryImpl() override = default;
-
-                virtual void __YYAPI DoWork() override
-                {
-                    WorkEntryType::operator()();
-                }
-            };
-
             // 按顺序执行的Task（不一定绑定固定物理线程，只保证任务串行）
-            class DECLSPEC_NOVTABLE SequencedTaskRunner
+            class SequencedTaskRunner : public RefValue
             {
             public:
-#ifndef _MSC_VER
-                virtual ~SequencedTaskRunner()
-                {
-                }
-#endif
                 /// <summary>
                 /// 从线程池创建一个TaskRunner，后续PostTask提交后将保持串行。注意：不保证保证是否同一个线程，仅保证任务串行！
                 /// </summary>
@@ -120,10 +85,6 @@ namespace YY
                 /// </summary>
                 /// <returns></returns>
                 static RefPtr<SequencedTaskRunner> __YYAPI GetCurrent();
-
-                virtual uint32_t __YYAPI AddRef() = 0;
-
-                virtual uint32_t __YYAPI Release() = 0;
 
                 /// <summary>
                 /// 返回 TaskRunner 的唯一Id，注意，这不是线程Id。
@@ -149,7 +110,22 @@ namespace YY
                 template<typename LambdaCallback>
                 HRESULT __YYAPI PostTask(_In_ LambdaCallback&& _pfnLambdaCallback)
                 {
-                    auto _pThreadWorkEntry = RefPtr<ThreadWorkEntryImpl<LambdaCallback>>::Create(ThreadWorkEntryStyle::None, std::move(_pfnLambdaCallback));
+                    struct LambdaTaskEntry : public ThreadWorkEntry
+                    {
+                        LambdaCallback pfnLambdaCallback;
+
+                        LambdaTaskEntry(TaskEntryStyle _eStyle, LambdaCallback _pfnLambdaCallback)
+                            : ThreadWorkEntry(_eStyle)
+                            , pfnLambdaCallback(std::move(_pfnLambdaCallback))
+                        {
+                        }
+
+                        void __YYAPI operator()() override
+                        {
+                            pfnLambdaCallback();
+                        }
+                    };
+                    auto _pThreadWorkEntry = RefPtr<LambdaTaskEntry>::Create(TaskEntryStyle::None, std::move(_pfnLambdaCallback));
                     if (!_pThreadWorkEntry)
                         return E_OUTOFMEMORY;
 
@@ -164,7 +140,7 @@ namespace YY
                 template<typename LambdaCallback>
                 auto __YYAPI AsyncTask(_In_ LambdaCallback&& _pfnLambdaCallback)
                 {
-                    struct WorkEntryType
+                    struct AsyncTaskEntry : public ThreadWorkEntry
                     {
                         // 这个任务完成后重新回到此 TaskRunner
                         RefPtr<SequencedTaskRunner> pResumeTaskRunner;
@@ -173,7 +149,15 @@ namespace YY
                         // 需要异步执行的 Callback，注意放在结构体末尾，便于编译器重复代码合并
                         LambdaCallback pfnLambdaCallback;
 
-                        void operator()()
+                        AsyncTaskEntry(TaskEntryStyle _eStyle, RefPtr<SequencedTaskRunner> _pResumeTaskRunner, LambdaCallback _pfnLambdaCallback)
+                            : ThreadWorkEntry(_eStyle)
+                            , pResumeTaskRunner(std::move(_pResumeTaskRunner))
+                            , hHandle(0)
+                            , pfnLambdaCallback(std::move(_pfnLambdaCallback))
+                        {
+                        }
+
+                        void __YYAPI operator()() override
                         {
                             pfnLambdaCallback();
 
@@ -200,21 +184,19 @@ namespace YY
                         }
                     };
 
-                    using ThreadWorkEntry = ThreadWorkEntryImpl<WorkEntryType>;
-
                     auto _pCurrent = YY::Base::Threading::SequencedTaskRunner::GetCurrent();
-                    auto _pThreadWorkEntry = RefPtr<ThreadWorkEntry>::Create(ThreadWorkEntryStyle::None, _pCurrent.Get(), 0, std::move(_pfnLambdaCallback));
-                    if (!_pThreadWorkEntry)
+                    auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create(TaskEntryStyle::None, std::move(_pCurrent), std::move(_pfnLambdaCallback));
+                    if (!_pAsyncTaskEntry)
                         throw Exception();
 
                     struct awaitable
                     {
                     private:
-                        RefPtr<ThreadWorkEntry> pThreadWorkEntry;
+                        RefPtr<AsyncTaskEntry> pAsyncTaskEntry;
 
                     public:
-                        awaitable(RefPtr<ThreadWorkEntry> _pThreadWorkEntry)
-                            : pThreadWorkEntry(std::move(_pThreadWorkEntry))
+                        awaitable(RefPtr<AsyncTaskEntry> _pAsyncTaskEntry)
+                            : pAsyncTaskEntry(std::move(_pAsyncTaskEntry))
                         {
                         }
 
@@ -222,12 +204,12 @@ namespace YY
 
                         bool await_ready() noexcept
                         {
-                            return pThreadWorkEntry->hHandle == /*hReadyHandle*/ (intptr_t)-1;
+                            return pAsyncTaskEntry->hHandle == /*hReadyHandle*/ (intptr_t)-1;
                         }
 
                         bool await_suspend(std::coroutine_handle<> _hHandle) noexcept
                         {
-                            return YY::Base::Sync::CompareExchange(&pThreadWorkEntry->hHandle, (intptr_t)_hHandle.address(), 0) == 0;
+                            return YY::Base::Sync::CompareExchange(&pAsyncTaskEntry->hHandle, (intptr_t)_hHandle.address(), 0) == 0;
                         }
 
                         void await_resume() noexcept
@@ -235,11 +217,11 @@ namespace YY
                         }
                     };
 
-                    auto _hr = PushThreadWorkEntry(_pThreadWorkEntry);
+                    auto _hr = PushThreadWorkEntry(_pAsyncTaskEntry);
                     if (FAILED(_hr))
                         throw Exception();
 
-                    return awaitable(std::move(_pThreadWorkEntry));
+                    return awaitable(std::move(_pAsyncTaskEntry));
                 }
 
                 /// <summary>
@@ -268,11 +250,11 @@ namespace YY
                 }
 
             protected:
-                virtual HRESULT __YYAPI PushThreadWorkEntry(_In_ ThreadWorkEntry* _pWorkEntry) = 0;
+                virtual HRESULT __YYAPI PushThreadWorkEntry(_In_ RefPtr<ThreadWorkEntry> _pWorkEntry) = 0;
             };
 
             // 任务串行，拥有固定线程的Task
-            class DECLSPEC_NOVTABLE ThreadTaskRunner : public SequencedTaskRunner
+            class ThreadTaskRunner : public SequencedTaskRunner
             {
             public:
 

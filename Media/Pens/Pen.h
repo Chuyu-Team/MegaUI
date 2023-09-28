@@ -18,42 +18,34 @@ namespace YY
                 Brush oBrush;
                 float iThickness;
 
-                SharedData(const ResourceMetadata* _pMetadata)
+                SharedData(Brush _oBrush = Brush(), float _iThickness = 1.0f, const ResourceMetadata* _pMetadata = Pen::GetStaticResourceMetadata())
                     : Resource::SharedData(_pMetadata)
-                    , oBrush()
-                    , iThickness(1.0f)
+                    , oBrush(std::move(_oBrush))
+                    , iThickness(_iThickness)
                 {
                 }
             };
             
             inline SharedData* GetSharedData() const
             {
-                return (SharedData*)pSharedData;
+                return (SharedData*)pSharedData.Get();
             }
 
         public:
             Pen(Brush _oBrush, float _iThickness = 1.0f)
             {
-                auto _pSharedData = new SharedData(GetStaticResourceMetadata());
-                _pSharedData->oBrush = _oBrush;
-                _pSharedData->iThickness = _iThickness;
-
-                Attach(_pSharedData);
+                auto _pSharedData = new SharedData(std::move(_oBrush), _iThickness);
+                pSharedData.Attach(_pSharedData);
             }
-
+            
             Pen(std::nullptr_t)
             {
             }
-            
-            Pen(const Pen& _oOther)
-                : Resource(_oOther)
-            {
-            }
-
-            Pen(Pen&& _oOther)
-                : Resource(std::move(_oOther))
-            {
-            }
+            Pen() = default;
+            Pen(const Pen& _oOther) = default;
+            Pen(Pen&& _oOther) = default;
+            inline Pen& operator=(const Pen& _oOther) = default;
+            inline Pen& operator=(Pen&& _oOther) = default;
 
             static const ResourceMetadata* __YYAPI GetStaticResourceMetadata()
             {
@@ -81,13 +73,10 @@ namespace YY
 
             bool __YYAPI operator==(std::nullptr_t) const
             {
-                return pSharedData == nullptr;
+                return pSharedData.Get() == nullptr;
             }
 
-            bool __YYAPI operator!=(std::nullptr_t) const
-            {
-                return pSharedData != nullptr;
-            }
+            bool __YYAPI operator==(const Pen& _oOther) const = default;
         };
     }
 } // namespace YY

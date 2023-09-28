@@ -14,46 +14,34 @@ namespace YY
     {
         namespace Threading
         {
-            struct SimpleWorkType
+            struct SimpleWorkThreadWorkEntry : public ThreadWorkEntry
             {
                 TaskRunnerSimpleCallback pfnCallback;
                 void* pUserData;
 
-                void operator()() const
+                SimpleWorkThreadWorkEntry(TaskEntryStyle _eStyle, TaskRunnerSimpleCallback _pfnCallback, void* pUserData)
+                    : ThreadWorkEntry(_eStyle)
+                    , pfnCallback(_pfnCallback)
+                    , pUserData(pUserData)
+                {
+                }
+
+                void __YYAPI operator()() override
                 {
                     pfnCallback(pUserData);
                 }
             };
 
-            using SimpleWorkThreadWorkEntry = ThreadWorkEntryImpl<SimpleWorkType>;
-
-            ThreadWorkEntry::ThreadWorkEntry(ThreadWorkEntryStyle _eStyle)
-                : uRef(1u)
-                , fStyle(_eStyle)
+            ThreadWorkEntry::ThreadWorkEntry(TaskEntryStyle _eStyle)
+                : fStyle(_eStyle)
                 , hr(E_PENDING)
             {
-            }
-
-            uint32_t ThreadWorkEntry::AddRef()
-            {
-                return Sync::Increment(&uRef);
-            }
-
-            uint32_t ThreadWorkEntry::Release()
-            {
-                const auto _uNewRef = Sync::Decrement(&uRef);
-                if (_uNewRef == 0)
-                {
-                    delete this;
-                }
-
-                return _uNewRef;
             }
 
             void __YYAPI ThreadWorkEntry::Wakeup(HRESULT _hrCode)
             {
                 hr = _hrCode;
-                if (HasFlags(fStyle, ThreadWorkEntryStyle::Sync))
+                if (HasFlags(fStyle, TaskEntryStyle::Sync))
                 {
                     WakeByAddressAll(&hr);
                 }
@@ -80,11 +68,11 @@ namespace YY
 
             HRESULT __YYAPI SequencedTaskRunner::PostTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
             {
-                auto _pThreadWorkEntry = RefPtr<SimpleWorkThreadWorkEntry>::Create(ThreadWorkEntryStyle::None, _pfnCallback, _pUserData);
+                auto _pThreadWorkEntry = RefPtr<SimpleWorkThreadWorkEntry>::Create(TaskEntryStyle::None, _pfnCallback, _pUserData);
                 if (!_pThreadWorkEntry)
                     return E_OUTOFMEMORY;
 
-                return PushThreadWorkEntry(_pThreadWorkEntry);
+                return PushThreadWorkEntry(std::move(_pThreadWorkEntry));
             }
 
             HRESULT __YYAPI SequencedTaskRunner::SendTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
@@ -96,7 +84,7 @@ namespace YY
                     return S_OK;
                 }
 
-                SimpleWorkThreadWorkEntry _oWorkEntry(ThreadWorkEntryStyle::Sync, _pfnCallback, _pUserData);
+                SimpleWorkThreadWorkEntry _oWorkEntry(TaskEntryStyle::Sync, _pfnCallback, _pUserData);
                 auto _hr = PushThreadWorkEntry(&_oWorkEntry);            
                 if (FAILED(_hr))
                 {

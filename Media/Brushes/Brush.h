@@ -16,26 +16,30 @@ namespace YY
             constexpr static uint32_t uStaticDeep = Resource::uStaticDeep + 1;
 
         public:
-            inline Brush()
-                : Resource()
+            inline Brush() noexcept = default;
+
+            inline Brush(std::nullptr_t) noexcept
             {
             }
 
-            inline Brush(const Brush& _oOther)
-                : Resource(_oOther)
-            {
-            }
+            inline Brush(const Brush& _oOther) noexcept = default;
 
-            inline Brush& __YYAPI operator=(const Brush& _oOther)
-            {
-                Resource::operator=(_oOther);
-                return *this;
-            }
+            inline Brush(Brush&& _oOther) noexcept = default;
 
-            static const ResourceMetadata* __YYAPI GetStaticResourceMetadata()
+            inline Brush& __YYAPI operator=(const Brush& _oOther) = default;
+            inline Brush& __YYAPI operator=(Brush&& _oOther) = default;
+
+            static const ResourceMetadata* __YYAPI GetStaticResourceMetadata() noexcept
             {
                 static const ResourceMetadata s_Metadata = {Resource::GetStaticResourceMetadata(), uStaticDeep};
                 return &s_Metadata;
+            }
+            
+            bool operator==(const Brush&) const noexcept = default;
+
+            bool operator==(std::nullptr_t _null) const noexcept
+            {
+                return pSharedData.Get() == nullptr;
             }
         };
 
@@ -49,17 +53,18 @@ namespace YY
             public:
                 Color oCloor;
 
-                SharedData(const ResourceMetadata* _pMetadata)
-                    : Resource::SharedData(_pMetadata)
+                SharedData(Color _oCloor, const ResourceMetadata* _pMetadata = SolidColorBrush::GetStaticResourceMetadata())
+                    : Brush::SharedData(_pMetadata)
+                    , oCloor(_oCloor)
                 {
                 }
             };
 
             inline SharedData* GetSharedData() const
             {
-                return (SharedData*)pSharedData;
+                return (SharedData*)pSharedData.Get();
             }
-
+            
         public:
             /// <summary>
             /// SolidColorBrush - The constructor accepts the color of the brush
@@ -67,31 +72,31 @@ namespace YY
             /// <param name="_oCloor"> The color value. </param>
             SolidColorBrush(Color _oCloor)
             {
-                auto _pSharedData = new SharedData(GetStaticResourceMetadata());
-                _pSharedData->oCloor = _oCloor;
-
-                pSharedData = _pSharedData;
+                auto _pSharedData = new SharedData(_oCloor, GetStaticResourceMetadata());
+                pSharedData.Attach(_pSharedData);
             }
 
-            SolidColorBrush()
+            SolidColorBrush(std::nullptr_t)
             {
             }
 
-            SolidColorBrush(const SolidColorBrush& _oOther)
-                : Brush(_oOther)
+            SolidColorBrush() = default;
+            SolidColorBrush(const SolidColorBrush& _oOther) = default;
+            SolidColorBrush(SolidColorBrush&& _oOther) = default;
+            inline SolidColorBrush& operator=(const SolidColorBrush& _oOther) = default;
+            inline SolidColorBrush& operator=(SolidColorBrush&& _oOther) = default;
+
+            bool operator==(const SolidColorBrush&) const = default;
+
+            bool operator==(std::nullptr_t _null) const
             {
+                return pSharedData.Get() == nullptr;
             }
-            
+
             static const ResourceMetadata* __YYAPI GetStaticResourceMetadata()
             {
                 static const ResourceMetadata s_Metadata = {Brush::GetStaticResourceMetadata(), uStaticDeep};
                 return &s_Metadata;
-            }
-
-            inline SolidColorBrush& operator=(const SolidColorBrush& _oOther)
-            {
-                Brush::operator=(_oOther);
-                return *this;
             }
 
             Color __YYAPI GetColor() const

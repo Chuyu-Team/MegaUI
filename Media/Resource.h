@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <Base/YY.h>
-#include <Base/Sync/Interlocked.h>
+#include <Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -8,85 +8,39 @@ namespace YY
 {
     namespace Media
     {
+        struct ResourceMetadata
+        {
+            const ResourceMetadata* pBaseMetadata;
+            // 类的继承深度
+            const uint32_t uDeep;
+        };
+
         class Resource
         {
-        public:
-            struct ResourceMetadata
+        protected:
+            class SharedData : public RefValue
             {
-                const ResourceMetadata* pBaseMetadata;
-                // 类的继承深度
-                uint32_t uDeep;
-            };
-
-            class SharedData
-            {
-            private:
-                uint32_t uRef;
+            public:
                 const ResourceMetadata* pMetadata;
 
-            public:
-                SharedData(const ResourceMetadata* _pMetadata)
-                    : uRef(1)
-                    , pMetadata(_pMetadata)
+                SharedData(const ResourceMetadata* _pMetadata = Resource::GetStaticResourceMetadata())
+                    : pMetadata(_pMetadata)
                 {
-                }
-
-                virtual ~SharedData()
-                {
-                }
-
-                uint32_t __YYAPI AddRef()
-                {
-                    return Sync::Increment(&uRef);
-                }
-
-                uint32_t __YYAPI Release()
-                {
-                    auto _uOldRef = Sync::Decrement(&uRef);
-                    if (_uOldRef == 0)
-                    {
-                        delete this;
-                    }
-
-                    return _uOldRef;
-                }
-
-                bool __YYAPI IsShared() const
-                {
-                    return uRef > 1;
-                }
-
-                const ResourceMetadata* __YYAPI GetResourceMetadata() const
-                {
-                    return pMetadata;
-                }
+                }        
             };
             
-        protected:
-            SharedData* pSharedData;
+            RefPtr<SharedData> pSharedData;
+
             constexpr static uint32_t uStaticDeep = 0;
 
         public:
-            Resource() noexcept
-                : pSharedData(nullptr)
+            Resource(std::nullptr_t)
             {
             }
 
-            Resource(const Resource& _oOther) noexcept
-                : pSharedData(_oOther.Clone())
-            {
-            }
-
-            Resource(Resource&& _oOther) noexcept
-                : pSharedData(_oOther.Detach())
-            {
-            }
-            
-            ~Resource() noexcept
-            {
-                if (pSharedData)
-                    pSharedData->Release();
-            }
+            Resource() = default;
+            Resource(const Resource&) = default;
+            Resource(Resource&&) = default;
 
             static const ResourceMetadata* __YYAPI GetStaticResourceMetadata() noexcept
             {
@@ -96,7 +50,7 @@ namespace YY
 
             const ResourceMetadata* __YYAPI GetResourceMetadata() const noexcept
             {
-                return pSharedData ? pSharedData->GetResourceMetadata() : nullptr;
+                return pSharedData.Get() ? pSharedData.Get()->pMetadata : nullptr;
             }
 
             template<class Type>
@@ -115,7 +69,7 @@ namespace YY
                         {
                             if (_pCurrentMetadata == _pTargetMetadata)
                             {
-                                _Tmp.Attach(Clone());
+                                _Tmp.pSharedData.Attach(pSharedData.Clone());
                             }
                             break;
                         }
@@ -127,86 +81,19 @@ namespace YY
 
             Resource& operator=(std::nullptr_t) noexcept
             {
-                if (pSharedData)
-                {
-                    pSharedData->Release();
-                    pSharedData = nullptr;
-                }
-
+                pSharedData = nullptr;
                 return *this;
             }
 
-            Resource& operator=(const Resource& _oOther) noexcept
-            {
-                if (pSharedData != _oOther.pSharedData)
-                {
-                    if (pSharedData)
-                        pSharedData->Release();
-                    pSharedData = _oOther.pSharedData;
-                    if (pSharedData)
-                        pSharedData->AddRef();
-                }
+            Resource& operator=(const Resource& _oOther) noexcept = default;
 
-                return *this;
-            }
+            Resource& operator=(Resource&& _oOther) noexcept = default;
 
-            Resource& operator=(Resource&& _oOther) noexcept
-            {
-                if (pSharedData != _oOther.pSharedData)
-                {
-                    Attach(_oOther.Detach());
-                }
-
-                return *this;
-            }
-
-            bool operator==(std::nullptr_t) const noexcept
+            bool operator==(const Resource& _oOther) const noexcept = default;
+            
+            bool operator==(const std::nullptr_t) const noexcept
             {
                 return pSharedData == nullptr;
-            }
-
-            bool operator==(const Resource& _oOther) const noexcept
-            {
-                return pSharedData == _oOther.pSharedData;
-            }
-
-            bool operator!=(std::nullptr_t) const noexcept
-            {
-                return pSharedData != nullptr;
-            }
-
-            bool operator!=(const Resource& _oOther) const noexcept
-            {
-                return pSharedData != _oOther.pSharedData;
-            }
-
-        protected:
-            void Attach(_In_opt_ SharedData* _pSharedData) noexcept
-            {
-                if (pSharedData != _pSharedData)
-                {
-                    if (pSharedData)
-                        pSharedData->Release();
-
-                    pSharedData = _pSharedData;
-                }
-            }
-
-            _Ret_maybenull_ SharedData* __YYAPI Detach() noexcept
-            {
-                auto _pSharedData = pSharedData;
-                pSharedData = nullptr;
-                return _pSharedData;
-            }
-
-            _Ret_maybenull_ SharedData* __YYAPI Clone() const noexcept
-            {
-                if (!pSharedData)
-                    return nullptr;
-
-                auto _pSharedData = static_cast<SharedData*>(pSharedData);
-                _pSharedData->AddRef();
-                return _pSharedData;
             }
         };
 

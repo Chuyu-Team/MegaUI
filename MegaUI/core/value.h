@@ -14,6 +14,7 @@
 #include <Media/Font.h>
 #include <Media/Size.h>
 #include <Media/Point.h>
+#include <Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -207,7 +208,7 @@ namespace YY
             };
 
         private:
-            SharedData* pSharedData;
+            RefPtr<SharedData> pSharedData;
 
         public:
             Value(SharedData* _pSharedData = nullptr)
@@ -215,39 +216,20 @@ namespace YY
             {
             }
 
-            Value(const Value& _Other)
-                : pSharedData(_Other.pSharedData)
-            {
-                if (pSharedData)
-                    pSharedData->AddRef();
-            }
+            Value(const Value& _Other) = default;
 
-            Value(Value&& _Other) noexcept
-                : pSharedData(_Other.pSharedData)
-            {
-                _Other.pSharedData = nullptr;
-            }
-
-            ~Value()
-            {
-                if (pSharedData)
-                    pSharedData->Release();
-            }
+            Value(Value&& _Other) noexcept = default;
             
-            Value& __YYAPI operator=(const Value& _Other);
+            Value& __YYAPI operator=(const Value& _Other) = default;
             
-            Value& __YYAPI operator=(Value&& _Other) noexcept;
+            Value& __YYAPI operator=(Value&& _Other) noexcept = default;
             
             Value& __YYAPI operator=(std::nullptr_t);
 
-            bool __YYAPI operator==(_In_ const Value& _Other) const;
-
-            bool __YYAPI operator!=(_In_ const Value& _Other) const;
+            bool __YYAPI operator==(_In_ const Value& _Other) const = default;
 
             bool __YYAPI operator==(std::nullptr_t) const;
             
-            bool __YYAPI operator!=(std::nullptr_t) const;
-
             template<int32_t iValue>
             static Value __YYAPI CreateInt32()
             {

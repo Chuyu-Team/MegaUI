@@ -5,6 +5,7 @@
 
 #include <Base/YY.h>
 #include <Base/Sync/Interlocked.h>
+#include <Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -141,34 +142,17 @@ namespace YY
             // 此类可以将Gdi+的对象支持带引用计数。便于统一的内存管理。
             template<typename Type>
             class GdiplusRef
-                : public Type
+                : public RefValue
+                , public Type
             {
-            private:
-                uint32_t uRef;
-
             public:
                 template<typename... Args>
                 GdiplusRef(const Args&... _oArgs)
                     : Type(_oArgs...)
-                    , uRef(1)
                 {
                 }
 
-                uint32_t __YYAPI AddRef()
-                {
-                    return Sync::Increment(&uRef);
-                }
-
-                uint32_t __YYAPI Release()
-                {
-                    auto _uOldRef = Sync::Decrement(&uRef);
-                    if (_uOldRef == 0)
-                    {
-                        delete this;
-                    }
-
-                    return _uOldRef;
-                }
+                GdiplusRef(const GdiplusRef&) = delete;
             };
         }
     } // namespace Media

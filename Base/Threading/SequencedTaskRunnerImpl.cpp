@@ -14,27 +14,10 @@ namespace YY
         namespace Threading
         {
             SequencedTaskRunnerImpl::SequencedTaskRunnerImpl()
-                : uRef(1u)
-                , uTaskRunnerId(GenerateNewTaskRunnerId())
+                : uTaskRunnerId(GenerateNewTaskRunnerId())
                 , uThreadId(0u)
                 , uWeakupCountAndPushLock(0u)
             {
-            }
-
-            uint32_t __YYAPI SequencedTaskRunnerImpl::AddRef()
-            {
-                return Sync::Increment(&uRef);
-            }
-
-            uint32_t __YYAPI SequencedTaskRunnerImpl::Release()
-            {
-                auto _uOldRef = Sync::Decrement(&uRef);
-                if (_uOldRef == 0)
-                {
-                    delete this;
-                }
-
-                return _uOldRef;
             }
 
             uint32_t __YYAPI SequencedTaskRunnerImpl::GetId()
@@ -48,7 +31,7 @@ namespace YY
             }
 
 #ifdef _WIN32
-            HRESULT __YYAPI SequencedTaskRunnerImpl::PushThreadWorkEntry(ThreadWorkEntry* _pWorkEntry)
+            HRESULT __YYAPI SequencedTaskRunnerImpl::PushThreadWorkEntry(RefPtr<ThreadWorkEntry> _pWorkEntry)
             {
                 if (bStopWeakup)
                 {
@@ -56,14 +39,13 @@ namespace YY
                     return E_FAIL;
                 }
 
-                _pWorkEntry->AddRef();
                 AddRef();
 
                 for (;;)
                 {
                     if (!Sync::BitSet(&uWeakupCountAndPushLock, LockedQueuePushBitIndex))
                     {
-                        oThreadWorkList.Push(_pWorkEntry);
+                        oThreadWorkList.Push(_pWorkEntry.Detach());
                         break;
                     }
                 }
@@ -110,7 +92,7 @@ namespace YY
                     auto _pWorkEntry = oThreadWorkList.Pop();
                     if (_pWorkEntry)
                     {
-                        _pWorkEntry->DoWork();
+                        (*_pWorkEntry)();
                         _pWorkEntry->Wakeup(S_OK);
                         _pWorkEntry->Release();
                         Release();

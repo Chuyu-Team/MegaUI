@@ -4,6 +4,7 @@
 #include <MegaUI/Core/Value.h>
 #include <Base/Containers/Array.h>
 #include <Base/Containers/ArrayView.h>
+#include <Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -53,19 +54,14 @@ namespace YY
             Array<Cond> CondArray;
             // A
 
-            CondMap(const Value& _CondValue, uint32_t _uSpecif, const Array<Cond>& _CondArray)
-                : CondValue(_CondValue)
+            CondMap(Value _CondValue, uint32_t _uSpecif, Array<Cond> _CondArray)
+                : CondValue(std::move(_CondValue))
                 , uSpecif(_uSpecif)
-                , CondArray(_CondArray)
+                , CondArray(std::move(_CondArray))
             {
             }
 
-            CondMap(const CondMap& _Other)
-                : CondValue(_Other.CondValue)
-                , uSpecif(_Other.uSpecif)
-                , CondArray(_Other.CondArray)
-            {
-            }
+            CondMap(const CondMap& _Other) = default;
 
             CondMap(CondMap&& _Other) noexcept
                 : CondValue(std::move(_Other.CondValue))
@@ -75,17 +71,7 @@ namespace YY
                 _Other.uSpecif = 0;
             }
 
-            CondMap& __YYAPI operator=(const CondMap& _Other)
-            {
-                if (this != &_Other)
-                {
-                    CondValue = _Other.CondValue;
-                    uSpecif = _Other.uSpecif;
-                    CondArray.SetArray(_Other.CondArray);
-                }
-
-                return *this;
-            }
+            CondMap& __YYAPI operator=(const CondMap& _Other) = default;
             
             CondMap& __YYAPI operator=(CondMap&& _Other) noexcept
             {
@@ -212,12 +198,9 @@ namespace YY
             }
         };
 
-        class StyleSheet
+        class StyleSheet : public RefValue
         {
         protected:
-            // MegaUI 扩展
-            uint32_t uRef;
-
             // 0
             uint32_t uRuleId;
             // 8
@@ -233,7 +216,7 @@ namespace YY
             u8String szSheetResourceID;
 
             // 需要继承的属性
-            StyleSheet* pInheritStyle;
+            RefPtr<StyleSheet> pInheritStyle;
 
             bool bMakeImmutable;
         public:
@@ -242,12 +225,6 @@ namespace YY
 
             StyleSheet(StyleSheet const&) = delete;
             StyleSheet& operator=(StyleSheet const&) = delete;
-
-            ~StyleSheet();
-
-            uint32_t __YYAPI AddRef();
-
-            uint32_t __YYAPI Release();
 
             // 1
             HRESULT __YYAPI AddRule(uString szRule, IControlInfo* _pControlInfo, Array<Cond> CondArray, const ArrayView<Decl>& DeclArray);
