@@ -21,8 +21,6 @@ RefPtr 是 类似于shared_ptr的智能指针。他们不同的是 RefPtr 自生
 
 namespace YY::Base::Memory
 {
-    using namespace YY::Base::Memory;
-
     class RefValue
     {
     private:

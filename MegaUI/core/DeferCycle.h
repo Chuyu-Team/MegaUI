@@ -4,6 +4,7 @@
 #include <Base/Containers/HashSet.h>
 
 #include <Base/Memory/Alloc.h>
+#include <Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -48,7 +49,7 @@ namespace YY
             uint32_t fGroups;
         };
 
-        class DeferCycle
+        class DeferCycle : public RefValue
         {
         public:
             // pdaGC
@@ -75,8 +76,6 @@ namespace YY
             uint32_t uPropertyChangedPostSourceCount;
             //int32_t cPCEnter;
             uint32_t uPropertyChangeEnter;
-            // 当前内存区域的引用计数，如果为 0，则销毁此对象
-            uint32_t uRef;
 
             DeferCycle()
                 : uEnter(0u)
@@ -86,26 +85,7 @@ namespace YY
                 , uPropertyChangedFireCount(0u)
                 , uPropertyChangedPostSourceCount(0u)
                 , uPropertyChangeEnter(0u)
-                , uRef(0)
             {
-            }
-
-
-            uint32_t __YYAPI AddRef()
-            {
-                return ++uRef;
-            }
-
-            uint32_t __YYAPI Release()
-            {
-                const auto _uRefNew = --uRef;
-
-                if (_uRefNew == 0)
-                {
-                    HDelete(this);
-                }
-
-                return _uRefNew;
             }
         };
     }
