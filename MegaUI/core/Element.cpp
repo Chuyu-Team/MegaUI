@@ -1230,7 +1230,7 @@ namespace YY
 
             const uint64_t _uNewSize = (uint64_t)_cOldChildrenList + (uint64_t)_cChildren;
             // Element 使用 int32 存储下标，所以 不能超过 int32_max
-            if (_uNewSize > int32_max)
+            if (_uNewSize > (std::numeric_limits<int32_t>::max)())
                 return E_NOTIMPL;
 
             ElementList _NewChildrenList;
@@ -1368,7 +1368,7 @@ namespace YY
                 return S_FALSE;
             
             // 入口明明加了int32_max限制，这里为什么任然出现大于 int32_max？？？
-            if (_cChildrenOldSize > int32_max)
+            if (_cChildrenOldSize > (std::numeric_limits<int32_t>::max)())
                 return E_UNEXPECTED;
 
             uint_t _uRemoveCount = 0u;
@@ -1395,7 +1395,7 @@ namespace YY
             {
                 ElementList _ChildrenNew;
                 auto _uSizeNew = _cChildrenOldSize - _uRemoveCount;
-                if (_uSizeNew > int32_max)
+                if (_uSizeNew > (std::numeric_limits<int32_t>::max)())
                 {
                     // 入口明明加了int32_max限制，这里为什么任然出现大于 int32_max？？？
                     hr = E_UNEXPECTED;
@@ -1713,7 +1713,7 @@ namespace YY
 
             for (auto i = _pDeferObject->uPropertyChangedPostSourceCount + 1; i < _pDeferObject->vecPropertyChanged.GetSize(); ++i)
             {
-                if (i > int32_max)
+                if (i > (std::numeric_limits<int32_t>::max)())
                 {
                     throw Exception(_S("PreSourceChange期间，uPropertyChangedPostSourceCount数值超过 int32_max。"));
                 }
@@ -1972,7 +1972,7 @@ namespace YY
                 return E_OUTOFMEMORY;
             }
             auto _uIndex = _pDeferCycle->vecPropertyChanged.GetItemIndex(pItem);
-            if (_uIndex > int32_max)
+            if (_uIndex > (std::numeric_limits<int32_t>::max)())
                 throw Exception();
 
             auto _iIndex = (int32_t)_uIndex;
@@ -2122,7 +2122,7 @@ namespace YY
                     else
                     {
                         uint_t uAddIndex = pDeferCycle->vecGroupChangeNormalPriority.GetItemIndex(pItem);
-                        if (uAddIndex > int32_max)
+                        if (uAddIndex > (std::numeric_limits<int32_t>::max)())
                             throw Exception();
 
                         pDeferCycle->AddRef();
@@ -2156,7 +2156,7 @@ namespace YY
                     else
                     {
                         auto uAddIndex = pDeferCycle->vecGroupChangeLowPriority.GetItemIndex(pItem);
-                        if (uAddIndex > int32_max)
+                        if (uAddIndex > (std::numeric_limits<int32_t>::max)())
                             throw Exception();
 
                         pDeferCycle->AddRef();
@@ -2884,10 +2884,10 @@ namespace YY
                 Size _ConstraintSize = { GetWidth(), GetHeight() };
 
                 if (_ConstraintSize.Width == -1)
-                    _ConstraintSize.Width = int16_max;
+                    _ConstraintSize.Width = (std::numeric_limits<int16_t>::max)();
 
                 if (_ConstraintSize.Height == -1)
-                    _ConstraintSize.Height = int16_max;
+                    _ConstraintSize.Height = (std::numeric_limits<int16_t>::max)();
 
                 UpdateDesiredSize(_ConstraintSize);
 
@@ -3814,7 +3814,7 @@ namespace YY
                 // 反向增长
                 size_t _uStart = _pFrom && HasFlags(_eNavigate, NavigatingStyle::Relative) ? (size_t(_pFrom->iIndex) - 1) : (_uChildrenSize - 1);
 
-                for (; _uStart != uint_max; --_uStart)
+                for (; _uStart != (std::numeric_limits<size_t>::max)(); --_uStart)
                 {
                     auto _pItem = _Children[_uStart];
 

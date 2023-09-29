@@ -163,7 +163,7 @@ namespace YY
                     return S_OK;
 
                 // WinAPI限制，无法处理大于 int32_max。
-                if (_cchSrc > YY::Base::int32_max)
+                if (_cchSrc > (std::numeric_limits<int>::max)())
                     return E_UNEXPECTED;
 
                 const auto _eEncoding = _pszDst->GetEncoding();
@@ -175,7 +175,7 @@ namespace YY
 
                 for (;;)
                 {
-                    if (_cchDstBuffer >= uint_max)
+                    if (_cchDstBuffer >= (std::numeric_limits<size_t>::max)())
                     {
                         return E_OUTOFMEMORY;
                     }
@@ -189,8 +189,8 @@ namespace YY
                     _cchDstBuffer = _pszDst->GetCapacity();
 
                     auto _cchOutBufferSize = _cchDstBuffer - _cchOldDst;
-                    if (_cchOutBufferSize > YY::Base::int32_max)
-                        _cchOutBufferSize = YY::Base::int32_max;
+                    if (_cchOutBufferSize > (std::numeric_limits<int>::max)())
+                        _cchOutBufferSize = (std::numeric_limits<int>::max)();
 
                     auto _cchAppendDst = WideCharToMultiByte(UINT(_eEncoding), 0, _szSrc.GetConstString(), (int)_cchSrc, _szDstBuffer + _cchOldDst, (int)_cchOutBufferSize, nullptr, nullptr);
                     _pszDst->UnlockBuffer((size_t)(_cchOldDst + _cchAppendDst));
@@ -296,7 +296,7 @@ namespace YY
                     return S_OK;
 
                 // WinAPI 限制，无法处理超过 int32_max
-                if (_cchSrc > YY::Base::int32_max)
+                if (_cchSrc > (std::numeric_limits<int>::max)())
                     return E_UNEXPECTED;
 
                 const auto _cchOldDst = _pszDst->GetSize();

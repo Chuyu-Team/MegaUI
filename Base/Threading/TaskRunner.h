@@ -67,7 +67,7 @@ namespace YY
                 /// </summary>
                 /// <param name="_uMilliseconds">需要等待的毫秒数。</param>
                 /// <returns></returns>
-                bool __YYAPI Wait(_In_ uint32_t _uMilliseconds = uint32_max);
+                bool __YYAPI Wait(_In_ uint32_t _uMilliseconds = UINT32_MAX);
             };
 
             // 按顺序执行的Task（不一定绑定固定物理线程，只保证任务串行）

@@ -54,7 +54,7 @@ namespace YY
             }
 
             const auto _cchValue = strlen(_szValue);
-            if (_cchValue > uint32_max)
+            if (_cchValue > (std::numeric_limits<UINT>::max)())
                 return E_UNEXPECTED;
 
             auto _szValueCopy = SysAllocStringLen(nullptr, (UINT)_cchValue);
@@ -118,7 +118,7 @@ namespace YY
             if (_uCount == 0)
                 return S_FALSE;
 
-            if (_uCount > uint32_max)
+            if (_uCount > (std::numeric_limits<ULONG>::max)())
                 return E_UNEXPECTED;
 
             constexpr VARTYPE _vt = VariantHelp<ArryItemType>::vt;

@@ -98,31 +98,6 @@ namespace YY
         typedef ::intptr_t int_t;
         typedef ::size_t uint_t;
 
-        constexpr auto int8_min = INT8_MIN;
-        constexpr auto int8_max = INT8_MAX;
-
-        constexpr auto int16_min = INT16_MIN;
-        constexpr auto int16_max = INT16_MAX;
-
-        constexpr auto int32_min = INT32_MIN;
-        constexpr auto int32_max = INT32_MAX;
-
-        constexpr auto int64_min = INT64_MIN;
-        constexpr auto int64_max = INT64_MAX;
-
-        constexpr auto uint8_max = UINT8_MAX;
-        constexpr auto uint16_max = UINT16_MAX;
-        constexpr auto uint32_max = UINT32_MAX;
-        constexpr auto uint64_max = UINT64_MAX;
-
-        constexpr auto intmax_min = INTMAX_MIN;
-        constexpr auto intmax_max = INTMAX_MAX;
-        constexpr auto uintmax_max = UINTMAX_MAX;
-
-        constexpr auto int_min = INTPTR_MIN;
-        constexpr auto int_max = INTPTR_MAX;
-        constexpr auto uint_max = UINTPTR_MAX;
-
 #ifdef _MSC_VER
         // ANSI字符
         typedef char achar_t;

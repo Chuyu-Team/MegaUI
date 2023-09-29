@@ -358,8 +358,8 @@ namespace YY
                 }
             }
 
-            if (_uWeight > uint16_max)
-                _uWeight = uint16_max;
+            if (_uWeight > (std::numeric_limits<uint16_t>::max)())
+                _uWeight = (std::numeric_limits<uint16_t>::max)();
 
             return _uRuleId | (_uWeight << 16);
         }

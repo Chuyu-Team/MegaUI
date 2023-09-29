@@ -236,7 +236,7 @@ namespace YY
 
                     static _Ret_notnull_ SharedData* __YYAPI _GetEmptySharedData()
                     {
-                        static const SharedData s_Empty = {0, int_max};
+                        static const SharedData s_Empty = {0, (std::numeric_limits<decltype(SharedData::iRef)>::max)()};
                         return const_cast<SharedData*>(&s_Empty);
                     }
 
@@ -248,7 +248,7 @@ namespace YY
 
                     bool __YYAPI IsReadOnly() const
                     {
-                        return iRef == int_max;
+                        return iRef == (std::numeric_limits<decltype(SharedData::iRef)>::max)();
                     }
 
                     void __YYAPI AddRef()
@@ -1059,7 +1059,7 @@ namespace YY
                 using _ReadType = typename CurrentAllocPolicyArray::_ReadType;
                 static constexpr AllocPolicy eAllocPolicy = _eAllocPolicy;
                 
-                constexpr static size_t uInvalidIndex = uint_max;
+                constexpr static size_t uInvalidIndex = (std::numeric_limits<size_t>::max)();
 
                 constexpr Array()
                 {

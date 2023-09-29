@@ -23,6 +23,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 
 #include <stdlib.h>
 #include <algorithm>
+#include <limits>
 
 #include <Base/Strings/StringView.h>
 #include <Base/Encoding.h>
@@ -750,7 +751,7 @@ namespace YY
 
                         const static StaticStringData g_EmptyStringData =
                         {
-                            {{0, uint16_t(_eEncoding), int32_max}, 0, 0}
+                            {{0, uint16_t(_eEncoding), (std::numeric_limits<decltype(iRef)>::max)()}, 0, 0}
                         };
                         return const_cast<StringData*>(&g_EmptyStringData.Base);
                     }
@@ -764,7 +765,7 @@ namespace YY
                     {
                         if (IsReadOnly())
                         {
-                            return  int32_max;
+                            return (std::numeric_limits<decltype(iRef)>::max)();
                         }
 
                         if (iRef < 0)
@@ -780,7 +781,7 @@ namespace YY
                     {
                         if (IsReadOnly())
                         {
-                            return  int32_max;
+                            return (std::numeric_limits<decltype(iRef)>::max)();
                         }
 
                         if (iRef < 0)
@@ -801,7 +802,7 @@ namespace YY
 
                     bool __YYAPI IsReadOnly()
                     {
-                        return iRef ==  int32_max;
+                        return iRef == (std::numeric_limits<decltype(iRef)>::max)();
                     }
 
                     bool __YYAPI IsShared()

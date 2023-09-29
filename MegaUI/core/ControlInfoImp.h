@@ -126,7 +126,7 @@ namespace YY
                     return ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoIndexImp(_Prop);
                 }
 
-                static_assert(ControlInfoImp<_Class>::GetPropertyInfoCount() < int32_max, "");
+                static_assert(ControlInfoImp<_Class>::GetPropertyInfoCount() < (std::numeric_limits<int32_t>::max)(), "");
                 return int32_t(_uIndex + ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount());
             }
 
@@ -304,7 +304,7 @@ namespace YY
                 if (_uIndex >= (uint_t)Element::StaticControlInfo::uPropsCount)
                     return -1;
 
-                static_assert(Element::StaticControlInfo::uPropsCount <= int32_max, "");
+                static_assert(Element::StaticControlInfo::uPropsCount <= (std::numeric_limits<int32_t>::max)(), "");
                 return (int32_t)_uIndex;
             }
 
@@ -314,7 +314,7 @@ namespace YY
                 if (_uIndex >= (uint_t)Element::StaticControlInfo::uPropsCount)
                     return -1;
 
-                static_assert(Element::StaticControlInfo::uPropsCount <= int32_max, "");
+                static_assert(Element::StaticControlInfo::uPropsCount <= (std::numeric_limits<int32_t>::max)(), "");
                 return (int32_t)_uIndex;
             }
 

@@ -57,11 +57,11 @@ namespace YY
             template<typename T, typename... Args>
             _Success_(return != NULL) _Check_return_ _Ret_maybenull_
                 _CRTALLOCATOR
-                inline T* HNew(Args... args)
+                inline T* HNew(Args&&... args)
             {
                 T* _p = (T*)HAlloc(sizeof(T));
                 if (_p)
-                    new (_p) T(args...);
+                    new (_p) T(std::forward<Args>(args)...);
 
                 return _p;
             }
@@ -69,11 +69,11 @@ namespace YY
             template<typename T, typename... Args>
             _Success_(return != NULL) _Check_return_ _Ret_maybenull_
                 _CRTALLOCATOR
-                inline T* HNewAndZero(Args... args)
+                inline T* HNewAndZero(Args&&... args)
             {
                 T* _p = (T*)HAllocAndZero(sizeof(T));
                 if (_p)
-                    new (_p) T(args...);
+                    new (_p) T(std::forward<Args>(args)...);
 
                 return _p;
             }

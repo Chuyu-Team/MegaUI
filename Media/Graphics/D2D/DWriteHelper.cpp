@@ -142,7 +142,7 @@ namespace YY
                         return E_INVALIDARG;
                     *_ppTextLayout = nullptr;
 
-                    if (_szText.GetSize() > uint32_max)
+                    if (_szText.GetSize() > (std::numeric_limits<UINT32>::max)())
                         return E_UNEXPECTED;
 
                     auto _pDWriteFactory = GetDWriteFactory();

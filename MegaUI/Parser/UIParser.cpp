@@ -451,7 +451,7 @@ namespace YY
         IControlInfo* __YYAPI UIParser::FindControlInfo(u8StringView _szControlName, uint32_t* _pIndex)
         {
             if (_pIndex)
-                *_pIndex = uint32_max;
+                *_pIndex = (std::numeric_limits<uint32_t>::max)();
 
             if (_szControlName.GetSize() == 0)
                 return nullptr;
@@ -459,7 +459,7 @@ namespace YY
             auto _uSize = ControlInfoArray.GetSize();
             auto _pData = ControlInfoArray.GetData();
 
-            if (_uSize > uint32_max)
+            if (_uSize > (std::numeric_limits<uint32_t>::max)())
                 return nullptr;
 
             for (uint32_t _uIndex = 0; _uIndex != _uSize; ++_uIndex)
@@ -483,7 +483,7 @@ namespace YY
                 return nullptr;
 
             uint_t _uIndex = ControlInfoArray.GetItemIndex(_ppBuffer);
-            if (_uIndex > uint32_max)
+            if (_uIndex > (std::numeric_limits<uint32_t>::max)())
                 throw Exception();
 
             *_ppBuffer = _pControlInfo;
@@ -601,7 +601,7 @@ namespace YY
                 return E_OUTOFMEMORY;
 
             uint_t _uIndex = LocalValueCache.GetItemIndex(_ppBufer);
-            if (_uIndex > uint16_max)
+            if (_uIndex > (std::numeric_limits<uint16_t>::max)())
                 throw Exception();
 
             *_ppBufer = std::move(_Value);

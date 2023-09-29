@@ -140,7 +140,7 @@ namespace YY
             {
                 (uint_t)ValueType::ElementList,
                 1,
-                uint_max,
+                (std::numeric_limits<uint_t>::max)(),
                 (uchar_t*)ElementList::SharedData::GetEmptySharedData()->GetData(),
             };
 
@@ -178,7 +178,7 @@ namespace YY
             {
                 (uint_t)ValueType::uString,
                 1,
-                uint_max,
+                (std::numeric_limits<uint_t>::max)(),
                 uString::StringData::GetEmtpyStringData()->GetStringBuffer(),
             };
 
@@ -790,7 +790,7 @@ namespace YY
         {
             if (pSharedData && pSharedData->NeedCalculate())
             {
-                if (_iNewDpi == 0 || _iNewDpi > uint16_max)
+                if (_iNewDpi == 0 || _iNewDpi > (std::numeric_limits<uint16_t>::max)())
                     throw Exception(_S("DPI错误！"));
 
                 auto _pSuffixType = pSharedData->SuffixType;
