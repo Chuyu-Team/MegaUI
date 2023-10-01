@@ -167,9 +167,11 @@
     <ClInclude Include="..\Base\Containers\Optional.h" />
     <ClInclude Include="..\Base\Encoding.h" />
     <ClInclude Include="..\Base\Exception.h" />
+    <ClInclude Include="..\Base\IO\File.h" />
     <ClInclude Include="..\Base\Memory\Alloc.h" />
     <ClInclude Include="..\Base\Memory\RefPtr.h" />
     <ClInclude Include="..\Base\Memory\UniquePtr.h" />
+    <ClInclude Include="..\Base\Memory\WeakPtr.h" />
     <ClInclude Include="..\Base\SafeCast.h" />
     <ClInclude Include="..\Base\SAL.h" />
     <ClInclude Include="..\Base\Strings\NString.h" />
@@ -178,9 +180,10 @@
     <ClInclude Include="..\Base\Strings\StringView.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\Base\Sync\InterlockedQueue.h" />
-    <ClInclude Include="..\Base\Sync\SingleLinkedList.h" />
+    <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h" />
     <ClInclude Include="..\Base\Sync\Sync.h" />
     <ClInclude Include="..\Base\tchar.h" />
+    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.hpp" />
     <ClInclude Include="..\Base\Threading\ProcessThreads.h" />
     <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />

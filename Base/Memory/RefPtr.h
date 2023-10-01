@@ -25,10 +25,12 @@ namespace YY::Base::Memory
     {
     private:
         uint32_t uRef;
+        uint32_t uWeakRef;
 
     public:
         RefValue()
             : uRef(1u)
+            , uWeakRef(1u)
         {
         }
 
@@ -43,18 +45,52 @@ namespace YY::Base::Memory
 
         uint32_t __YYAPI Release() noexcept
         {
-            auto _uOldRef = Sync::Decrement(&uRef);
-            if (_uOldRef == 0)
+            auto _uNewRef = Sync::Decrement(&uRef);
+            if (_uNewRef == 0)
             {
-                HDelete(this);
+                this->~RefValue();
+
+                ReleaseWeak();
             }
 
-            return _uOldRef;
+            return _uNewRef;
         }
 
         bool __YYAPI IsShared() const noexcept
         {
             return uRef > 1;
+        }
+
+        uint32_t __YYAPI AddWeakRef() noexcept
+        {
+            return Sync::Increment(&uWeakRef);
+        }
+
+        uint32_t __YYAPI ReleaseWeak() noexcept
+        {
+            auto _uNewWeakRef = Sync::Decrement(&uWeakRef);
+
+            if (_uNewWeakRef == 0)
+            {
+                HFree(this);
+            }
+
+            return _uNewWeakRef;
+        }
+        
+        bool __YYAPI TryAddRef() noexcept
+        {
+            auto _uCurrentRef = uRef;
+            for (; _uCurrentRef;)
+            {
+                const auto _uLast = Sync::CompareExchange(&uRef, _uCurrentRef + 1, _uCurrentRef);
+                if (_uLast == _uCurrentRef)
+                    return true;
+
+                _uCurrentRef = _uLast;
+            }
+
+            return false;
         }
     };
 
@@ -183,11 +219,26 @@ namespace YY::Base::Memory
         template<typename... Args>
         static RefPtr __YYAPI Create(Args&&... _args) noexcept
         {
+            return FromPtr(HNew<_Type>(std::forward<Args>(_args)...));
+        }
+
+        /// <summary>
+        /// 从裸指针构建 RefPtr，注意，这里不增加引用计数。
+        /// </summary>
+        /// <param name="_pOther"></param>
+        /// <returns></returns>
+        static RefPtr __YYAPI FromPtr(_In_opt_ _Type* _pOther) noexcept
+        {
             RefPtr _p;
-            _p.Attach(HNew<_Type>(std::forward<Args>(_args)...));
+            _p.Attach(_pOther);
             return _p;
         }
     };
 } // namespace YY::Base::Memory
+
+namespace YY
+{
+    using namespace YY::Base::Memory;
+}
 
 #pragma pack(pop)

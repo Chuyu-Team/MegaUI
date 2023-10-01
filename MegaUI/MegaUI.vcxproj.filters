@@ -76,6 +76,9 @@
     <Filter Include="Media\Graphics\GDIPlus">
       <UniqueIdentifier>{1c62b765-e956-4202-aa72-a94f3fd0ee3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\IO">
+      <UniqueIdentifier>{81a59bca-d12b-4c0a-b464-1060f6463207}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -228,7 +231,7 @@
     <ClInclude Include="..\Media\Resource.h">
       <Filter>Media</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Sync\SingleLinkedList.h">
+    <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h">
       <Filter>Base\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\DrawContext.h">
@@ -284,6 +287,15 @@
     </ClInclude>
     <ClInclude Include="..\Base\SafeCast.h">
       <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.hpp">
+      <Filter>Base\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\IO\File.h">
+      <Filter>Base\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Memory\WeakPtr.h">
+      <Filter>Base\Memory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
