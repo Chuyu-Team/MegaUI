@@ -23,7 +23,7 @@ namespace YY::Base::Memory
         _Type* p;
 
     public:
-        WeakPtr() noexcept
+        constexpr WeakPtr() noexcept
             : p(nullptr)
         {
         }
@@ -78,6 +78,25 @@ namespace YY::Base::Memory
             if (p && p->TryAddRef())
             {
                 _pTmp.Attach(p);
+            }
+            return _pTmp;
+        }
+
+        _Ret_maybenull_ RefPtr<_Type> __YYAPI Get() noexcept
+        {
+            RefPtr<_Type> _pTmp;
+
+            if (p)
+            {
+                if (p->TryAddRef())
+                {
+                    _pTmp.Attach(p);
+                }
+                else
+                {
+                    // weak ptr已经无效，所以我们释放自己。
+                    *this = nullptr;
+                }
             }
             return _pTmp;
         }

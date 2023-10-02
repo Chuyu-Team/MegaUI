@@ -29,7 +29,7 @@ namespace YY::Base::Threading
 
     TaskRunnerStyle __YYAPI SequencedTaskRunnerImpl::GetStyle()
     {
-        return TaskRunnerStyle::None;
+        return TaskRunnerStyle::Sequenced;
     }
 
 #ifdef _WIN32
@@ -58,20 +58,16 @@ namespace YY::Base::Threading
         // uWeakCount + 1 <==> uWeakupCountAndPushLock + 2 <==> (uWeakupCountAndPushLock | 1) + 1
         if (Sync::Add(&uWeakupCountAndPushLock, UnlockQueuePushLockBitAndWeakupOnceRaw) < WeakupOnceRaw * 2u)
         {
-            WeakPtr<SequencedTaskRunnerImpl> _pWeak = this;
+            // 额外增加一次引用计数，避免TrySubmitThreadpoolCallback回调函数内部已经被释放了
+            AddRef();
             auto _bRet = TrySubmitThreadpoolCallback(
                 [](_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) -> void
                 {
-                    WeakPtr<SequencedTaskRunnerImpl> _pWeak;
-                    _pWeak.Attach(reinterpret_cast<WeakPtrRef<SequencedTaskRunnerImpl>*>(Context));
-
-                    auto pSequencedTaskRunner = _pWeak.Get();
-                    if (pSequencedTaskRunner)
-                    {
-                        pSequencedTaskRunner->ExecuteTaskRunner();
-                    }
+                    // 注意 上面额外调用了 AddRef，所以现在由 RefPtr接管的安全的。
+                    auto _pSequencedTaskRunner = RefPtr<SequencedTaskRunnerImpl>::FromPtr(reinterpret_cast<SequencedTaskRunnerImpl*>(Context));
+                    _pSequencedTaskRunner->ExecuteTaskRunner();
                 },
-                _pWeak.Detach(),
+                this,
                 nullptr);
 
             if (!_bRet)
@@ -80,7 +76,10 @@ namespace YY::Base::Threading
                 Sync::BitSet(&uWeakupCountAndPushLock, StopWeakupBitIndex);
                 auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
                 CleanupTaskQueue();
-                ReleaseWeak();
+
+                // 刚才调用前 TrySubmitThreadpoolCallback，特意增加了一次引用计数
+                // 现在 TrySubmitThreadpoolCallback 失败，所以重新归还引用计数
+                Release();
                 return _hr;
             }
         }
@@ -92,7 +91,7 @@ namespace YY::Base::Threading
     void __YYAPI SequencedTaskRunnerImpl::ExecuteTaskRunner()
     {
         uThreadId = GetCurrentThreadId();
-        g_pTaskRunner = this;
+        g_pTaskRunnerWeak = this;
 
         for (;;)
         {
@@ -112,7 +111,7 @@ namespace YY::Base::Threading
             if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
                 break;
         }
-        g_pTaskRunner = nullptr;
+        g_pTaskRunnerWeak = nullptr;
         uThreadId = 0;
         return;
     }

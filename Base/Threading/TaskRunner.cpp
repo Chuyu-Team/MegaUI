@@ -48,13 +48,19 @@ namespace YY::Base::Threading
         HRESULT _hrTarget = E_PENDING;
         return WaitOnAddress(&hr, &_hrTarget, sizeof(_hrTarget), _uMilliseconds);
     }
+    
+    RefPtr<TaskRunner> __YYAPI Threading::TaskRunner::GetCurrent()
+    {
+        return g_pTaskRunnerWeak.Get();
+    }
 
     RefPtr<SequencedTaskRunner> __YYAPI SequencedTaskRunner::GetCurrent()
     {
-        if (!g_pTaskRunner)
+        auto _pTaskRunner = g_pTaskRunnerWeak.Get();
+        if (_pTaskRunner == nullptr || HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle::Sequenced) == false)
             return nullptr;
 
-        return RefPtr<SequencedTaskRunner>(g_pTaskRunner);
+        return RefPtr<SequencedTaskRunner>(std::move(_pTaskRunner));
     }
 
     RefPtr<SequencedTaskRunner> __YYAPI SequencedTaskRunner::Create()
@@ -62,7 +68,7 @@ namespace YY::Base::Threading
         return RefPtr<SequencedTaskRunnerImpl>::Create();
     }
 
-    HRESULT __YYAPI SequencedTaskRunner::PostTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
+    HRESULT __YYAPI TaskRunner::PostTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
     {
         auto _pThreadWorkEntry = RefPtr<SimpleTaskEntry>::Create(TaskEntryStyle::None, _pfnCallback, _pUserData);
         if (!_pThreadWorkEntry)
@@ -71,10 +77,10 @@ namespace YY::Base::Threading
         return PostTaskInternal(std::move(_pThreadWorkEntry));
     }
 
-    HRESULT __YYAPI SequencedTaskRunner::SendTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
+    HRESULT __YYAPI TaskRunner::SendTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
     {
         // 调用者的跟执行者属于同一个TaskRunner，这时我们直接调用 _pfnCallback，避免各种等待以及任务投递开销。
-        if (SequencedTaskRunner::GetCurrent() == this)
+        if (TaskRunner::GetCurrent() == this)
         {
             _pfnCallback(_pUserData);
             return S_OK;
@@ -93,31 +99,29 @@ namespace YY::Base::Threading
             
     RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::GetCurrent()
     {
-        // 尚未初始化，没有运行 RunUIMessageLoop 或者其他。
-        if (!g_pTaskRunner)
-            return nullptr;
+        auto _pTaskRunner = g_pTaskRunnerWeak.Get();
 
         // 当前 TaskRunner 必须是物理线程。
-        if (!HasFlags(g_pTaskRunner->GetStyle(), TaskRunnerStyle ::FixedThread))
-        {
+        if (_pTaskRunner == nullptr || HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle ::FixedThread))
             return nullptr;
-        }
-        return RefPtr<ThreadTaskRunner>((ThreadTaskRunner*)g_pTaskRunner);
+
+        return RefPtr<ThreadTaskRunner>(std::move(_pTaskRunner));
     }
 
     uintptr_t __YYAPI ThreadTaskRunner::RunUIMessageLoop(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
     {
         RefPtr<ThreadTaskRunnerImpl> _pThreadTaskRunnerImpl;
-        if (g_pTaskRunner)
+
+        if (auto _pTaskRunner = g_pTaskRunnerWeak.Get())
         {
-            if (!HasFlags(g_pTaskRunner->GetStyle(), TaskRunnerStyle::FixedThread))
+            if (!HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle::FixedThread))
             {
                 // 非物理线程不能进行UI消息循环！！！
                 // 暂时设计如此，未来再说。
                 throw Exception(E_INVALIDARG);
             }
 
-            _pThreadTaskRunnerImpl = static_cast<ThreadTaskRunnerImpl*>(g_pTaskRunner);
+            _pThreadTaskRunnerImpl = std::move(_pTaskRunner);
         }
         else
         {

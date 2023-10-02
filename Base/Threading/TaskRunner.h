@@ -22,8 +22,10 @@ namespace YY::Base::Threading
     enum class TaskRunnerStyle
     {
         None = 0,
+        // 保证提交的任务串行
+        Sequenced = 0x00000001,
         // 拥有固定线程，没有此标准表示实际指向物理线程可能随时变化。
-        FixedThread = 0x00000001,
+        FixedThread = 0x00000002,
     };
 
     YY_APPLY_ENUM_CALSS_BIT_OPERATOR(TaskRunnerStyle);
@@ -73,23 +75,20 @@ namespace YY::Base::Threading
     };*/
     class TaskRunnerDispatchImplByIoCompletionImpl;
 
-    // 按顺序执行的Task（不一定绑定固定物理线程，只保证任务串行）
-    class SequencedTaskRunner : public RefValue
+    // 通用任务执行器的抽象层
+    class TaskRunner : public RefValue
     {
         friend TaskRunnerDispatchImplByIoCompletionImpl;
 
     public:
-        /// <summary>
-        /// 从线程池创建一个TaskRunner，后续PostTask提交后将保持串行。注意：不保证保证是否同一个线程，仅保证任务串行！
-        /// </summary>
-        /// <returns>返回TaskRunner指针，函数几乎不会失败，但是如果内存不足，那么将返回 nullptr。</returns>
-        static RefPtr<SequencedTaskRunner> __YYAPI Create();
 
         /// <summary>
-        /// 获取当前任务的 SequencedTaskRunner
+        /// 获取调用者的 TaskRunner
         /// </summary>
-        /// <returns></returns>
-        static RefPtr<SequencedTaskRunner> __YYAPI GetCurrent();
+        /// <returns>
+        /// 如果返回 nullptr，可能当前调用者是线程池，也可能来自外部线程。
+        /// </returns>
+        static RefPtr<TaskRunner> __YYAPI GetCurrent();
 
         /// <summary>
         /// 返回 TaskRunner 的唯一Id，注意，这不是线程Id。
@@ -148,13 +147,13 @@ namespace YY::Base::Threading
             struct AsyncTaskEntry : public TaskEntry
             {
                 // 这个任务完成后重新回到此 TaskRunner
-                RefPtr<SequencedTaskRunner> pResumeTaskRunner;
+                RefPtr<TaskRunner> pResumeTaskRunner;
                 // 0，表示尚未设置，-1表示任务完成。
                 intptr_t hHandle;
                 // 需要异步执行的 Callback，注意放在结构体末尾，便于编译器重复代码合并
                 LambdaCallback pfnLambdaCallback;
 
-                AsyncTaskEntry(TaskEntryStyle _eStyle, RefPtr<SequencedTaskRunner> _pResumeTaskRunner, LambdaCallback _pfnLambdaCallback)
+                AsyncTaskEntry(TaskEntryStyle _eStyle, RefPtr<TaskRunner> _pResumeTaskRunner, LambdaCallback _pfnLambdaCallback)
                     : TaskEntry(_eStyle)
                     , pResumeTaskRunner(std::move(_pResumeTaskRunner))
                     , hHandle(0)
@@ -172,7 +171,7 @@ namespace YY::Base::Threading
                     {
                         // 如果 pResumeTaskRunner == nullptr，目标不属于任何一个 SequencedTaskRunner，这很可能任务不关下是否需要串行
                         // 如果 pResumeTaskRunner == SequencedTaskRunner::GetCurrent()，这没有道理进行 PostTask，徒增开销。
-                        if (pResumeTaskRunner == nullptr || pResumeTaskRunner == YY::Base::Threading::SequencedTaskRunner::GetCurrent())
+                        if (pResumeTaskRunner == nullptr || pResumeTaskRunner == YY::Base::Threading::TaskRunner::GetCurrent())
                         {
                             std::coroutine_handle<>::from_address(_hHandle).resume();
                         }
@@ -189,7 +188,7 @@ namespace YY::Base::Threading
                 }
             };
 
-            auto _pCurrent = YY::Base::Threading::SequencedTaskRunner::GetCurrent();
+            auto _pCurrent = YY::Base::Threading::TaskRunner::GetCurrent();
             auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create(TaskEntryStyle::None, std::move(_pCurrent), std::move(_pfnLambdaCallback));
             if (!_pAsyncTaskEntry)
                 throw Exception();
@@ -258,7 +257,27 @@ namespace YY::Base::Threading
         virtual HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) = 0;
     };
 
-    // 任务串行，拥有固定线程的Task
+    // 按顺序执行的Task（不一定绑定固定物理线程，只保证任务串行）
+    class SequencedTaskRunner : public TaskRunner
+    {
+    public:
+        /// <summary>
+        /// 获取当前调用所属的 SequencedTaskRunner。
+        /// </summary>
+        /// <returns>
+        /// 如果返回 nullptr，可能当前不是 SequencedTaskRunner，来自线程池，也可能来自外部创建的线程，不属于任何一个 TaskRunner。
+        /// </returns>
+        static RefPtr<SequencedTaskRunner> __YYAPI GetCurrent();
+        
+        /// <summary>
+        /// 从线程池创建一个TaskRunner，后续PostTask提交后将保持串行。注意：不保证保证是否同一个线程，仅保证任务串行！
+        /// </summary>
+        /// <returns>返回TaskRunner指针，函数几乎不会失败，但是如果内存不足，那么将返回 nullptr。</returns>
+        static RefPtr<SequencedTaskRunner> __YYAPI Create();
+
+    };
+
+    // 任务串行并且拥有固定线程的任务执行器
     class ThreadTaskRunner : public SequencedTaskRunner
     {
     public:

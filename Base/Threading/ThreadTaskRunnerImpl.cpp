@@ -54,7 +54,7 @@ namespace YY::Base::Threading
         ++s_uUIMessageLoopEnterCount;
         if (s_uUIMessageLoopEnterCount == 1)
         {
-            g_pTaskRunner = this;
+            g_pTaskRunnerWeak = this;
             EnableWeakup(true);
         }
 
@@ -107,7 +107,9 @@ namespace YY::Base::Threading
         --s_uUIMessageLoopEnterCount;
         if (s_uUIMessageLoopEnterCount == 0)
         {
-            g_pTaskRunner = nullptr;
+            // 对于线程来说，交给weak_ptr控制
+            // 线程退出或者交还线程池时再统释放。
+            // g_pTaskRunnerWeak = nullptr;
             EnableWeakup(false);
         }
         return _oMsg.wParam;
