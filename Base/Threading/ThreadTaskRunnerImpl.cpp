@@ -14,9 +14,8 @@ namespace YY::Base::Threading
     static thread_local uint32_t s_uUIMessageLoopEnterCount = 0u;
 
     ThreadTaskRunnerImpl::ThreadTaskRunnerImpl()
-        : uTaskRunnerId(GenerateNewTaskRunnerId())
+        : uWeakupCountAndPushLock(WeakupOnceRaw)
         , uThreadId(GetCurrentThreadId())
-        , uWeakupCountAndPushLock(WeakupOnceRaw)
     {
     }
 
@@ -32,13 +31,8 @@ namespace YY::Base::Threading
     {
         CleanupTaskQueue();
     }
-
-    uint32_t __YYAPI ThreadTaskRunnerImpl::GetId()
-    {
-        return uTaskRunnerId;
-    }
             
-    TaskRunnerStyle __YYAPI ThreadTaskRunnerImpl::GetStyle()
+    TaskRunnerStyle __YYAPI ThreadTaskRunnerImpl::GetStyle() const noexcept
     {
         return TaskRunnerStyle::FixedThread;
     }
@@ -161,7 +155,7 @@ namespace YY::Base::Threading
         return S_OK;
     }
 
-    void __YYAPI ThreadTaskRunnerImpl::CleanupTaskQueue()
+    void __YYAPI ThreadTaskRunnerImpl::CleanupTaskQueue() noexcept
     {
         for (;;)
         {

@@ -183,6 +183,7 @@
     <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h" />
     <ClInclude Include="..\Base\Sync\Sync.h" />
     <ClInclude Include="..\Base\tchar.h" />
+    <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp" />
     <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.hpp" />
     <ClInclude Include="..\Base\Threading\ProcessThreads.h" />
     <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />

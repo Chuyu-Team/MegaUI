@@ -22,7 +22,7 @@ namespace YY::Base::Sync
         // 一般不应该直接操作此成员
         Entry volatile* pHead;
 
-        InterlockedSingleLinkedList()
+        constexpr InterlockedSingleLinkedList()
             : pHead(nullptr)
         {
         }

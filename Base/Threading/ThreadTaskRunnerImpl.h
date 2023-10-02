@@ -14,8 +14,8 @@ namespace YY::Base::Threading
     class ThreadTaskRunnerImpl : public ThreadTaskRunner
     {
     private:
-        uint32_t uTaskRunnerId;
-        uint32_t uThreadId;
+        InterlockedQueue<TaskEntry> oTaskQueue;
+
         // |uWeakCount| bStopWeakup | bPushLock |
         // | 31  ~  2 |     1       |    0      |
         union
@@ -36,7 +36,8 @@ namespace YY::Base::Threading
             WeakupOnceRaw = 1 << WeakupCountStartBitIndex,
             UnlockQueuePushLockBitAndWeakupOnceRaw = WeakupOnceRaw - (1u << LockedQueuePushBitIndex),
         };
-        InterlockedQueue<TaskEntry> oTaskQueue;
+        
+        uint32_t uThreadId;
 
     public:
         ThreadTaskRunnerImpl();
@@ -54,10 +55,8 @@ namespace YY::Base::Threading
         ThreadTaskRunnerImpl& operator=(const ThreadTaskRunnerImpl&) = delete;
 
         /////////////////////////////////////////////////////
-        // SequencedTaskRunner
-        virtual uint32_t __YYAPI GetId() override;
-
-        virtual TaskRunnerStyle __YYAPI GetStyle() override;
+        // TaskRunner
+        virtual TaskRunnerStyle __YYAPI GetStyle() const noexcept override;
                 
         /////////////////////////////////////////////////////
         // ThreadTaskRunner
@@ -71,7 +70,7 @@ namespace YY::Base::Threading
     private:
         HRESULT __YYAPI PostTaskInternal(RefPtr<TaskEntry> _pTask) override;
 
-        void __YYAPI CleanupTaskQueue();
+        void __YYAPI CleanupTaskQueue() noexcept;
     };
 } // namespace YY
 

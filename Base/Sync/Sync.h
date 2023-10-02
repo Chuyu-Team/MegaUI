@@ -15,6 +15,9 @@ namespace YY
             using ::WaitOnAddress;
             using ::WakeByAddressSingle;
             using ::WakeByAddressAll;
+
+            #pragma comment(lib, "Synchronization.lib")
+
 #else // !_WIN32
             bool
             __YYAPI

@@ -35,7 +35,7 @@ namespace YY::Base::Memory
                 p->AddWeakRef();
         }
 
-        WeakPtr(_In_opt_ WeakPtrRef<_Type>* _pOther) noexcept
+        constexpr WeakPtr(_In_opt_ WeakPtrRef<_Type>* _pOther) noexcept
             : p(reinterpret_cast<_Type*>(_pOther))
         {
         }

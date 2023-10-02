@@ -102,7 +102,7 @@ namespace YY::Base::Threading
 
                 for (ULONG _uIndex = 0; _uIndex != _uNumEntriesRemoved; ++_uIndex)
                 {
-                    auto _pDispatchTask = static_cast<DispatchEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped);
+                    auto _pDispatchTask = RefPtr<DispatchEntry>::FromPtr(static_cast<DispatchEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped));
                     if (!_pDispatchTask)
                         continue;
 
@@ -111,13 +111,12 @@ namespace YY::Base::Threading
                     _pDispatchTask->pResumeTaskRunner = nullptr;
                     if (_pResumeTaskRunner)
                     {
-                        _pResumeTaskRunner->PostTaskInternal(_pDispatchTask);
+                        _pResumeTaskRunner->PostTaskInternal(std::move(_pDispatchTask));
                     }
                     else
                     {
                         _pDispatchTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
                     }
-                    _pDispatchTask->Release();
                 }
             }
         }

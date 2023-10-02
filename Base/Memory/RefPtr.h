@@ -28,7 +28,7 @@ namespace YY::Base::Memory
         uint32_t uWeakRef;
 
     public:
-        RefValue()
+        constexpr RefValue()
             : uRef(1u)
             , uWeakRef(1u)
         {
@@ -230,7 +230,7 @@ namespace YY::Base::Memory
         static RefPtr __YYAPI FromPtr(_In_opt_ _Type* _pOther) noexcept
         {
             RefPtr _p;
-            _p.Attach(_pOther);
+            _p.p = _pOther;
             return _p;
         }
     };

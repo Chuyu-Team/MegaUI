@@ -11,9 +11,7 @@ __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 namespace YY::Base::Threading
 {
     SequencedTaskRunnerImpl::SequencedTaskRunnerImpl()
-        : uTaskRunnerId(GenerateNewTaskRunnerId())
-        , uThreadId(0u)
-        , uWeakupCountAndPushLock(0u)
+        : uWeakupCountAndPushLock(0u)
     {
     }
 
@@ -22,12 +20,7 @@ namespace YY::Base::Threading
         CleanupTaskQueue();
     }
 
-    uint32_t __YYAPI SequencedTaskRunnerImpl::GetId()
-    {
-        return uTaskRunnerId;
-    }
-
-    TaskRunnerStyle __YYAPI SequencedTaskRunnerImpl::GetStyle()
+    TaskRunnerStyle __YYAPI SequencedTaskRunnerImpl::GetStyle() const noexcept
     {
         return TaskRunnerStyle::Sequenced;
     }
@@ -90,7 +83,6 @@ namespace YY::Base::Threading
 
     void __YYAPI SequencedTaskRunnerImpl::ExecuteTaskRunner()
     {
-        uThreadId = GetCurrentThreadId();
         g_pTaskRunnerWeak = this;
 
         for (;;)
@@ -112,7 +104,6 @@ namespace YY::Base::Threading
                 break;
         }
         g_pTaskRunnerWeak = nullptr;
-        uThreadId = 0;
         return;
     }
             

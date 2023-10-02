@@ -80,6 +80,11 @@ namespace YY::Base::Threading
     {
         friend TaskRunnerDispatchImplByIoCompletionImpl;
 
+    protected:
+        uint32_t uTaskRunnerId;
+
+        TaskRunner();
+
     public:
 
         /// <summary>
@@ -94,9 +99,12 @@ namespace YY::Base::Threading
         /// 返回 TaskRunner 的唯一Id，注意，这不是线程Id。
         /// </summary>
         /// <returns></returns>
-        virtual uint32_t __YYAPI GetId() = 0;
+        uint32_t __YYAPI GetId() const noexcept
+        {
+            return uTaskRunnerId;
+        }
 
-        virtual TaskRunnerStyle __YYAPI GetStyle() = 0;
+        virtual TaskRunnerStyle __YYAPI GetStyle() const noexcept = 0;
 
         /// <summary>
         /// 将任务异步执行。
@@ -331,6 +339,35 @@ namespace YY::Base::Threading
                     _pfnLambdaCallback();
                 },
                 (void*)&_pfnLambdaCallback);
+        }
+    };
+
+    // 自动将任务并行处理且负载均衡
+    class ParallelTaskRunner : public TaskRunner
+    {
+    protected:
+        // 允许并行执行的最大个数
+        // 如果为 0，则表示跟随系统物理线程数
+        volatile uint32_t uParallelMaximum;
+
+        ParallelTaskRunner(uint32_t _uParallelMaximum)
+            : uParallelMaximum(_uParallelMaximum)
+        {
+        }
+
+    public:
+        static RefPtr<ParallelTaskRunner> __YYAPI GetCurrent() noexcept;
+
+        static RefPtr<ParallelTaskRunner> __YYAPI Create(uint32_t _uParallelMaximum = 0u) noexcept;
+
+        uint32_t __YYAPI GetParallelMaximum() const noexcept
+        {
+            return uParallelMaximum;
+        }
+
+        void __YYAPI SetParallelMaximum(uint32_t _uParallelMaximum) noexcept
+        {
+            uParallelMaximum = _uParallelMaximum;
         }
     };
 } // namespace YY::Base::Threading;

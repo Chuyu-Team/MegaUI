@@ -79,6 +79,9 @@
     <Filter Include="Base\IO">
       <UniqueIdentifier>{81a59bca-d12b-4c0a-b464-1060f6463207}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\Threading\TaskRunner">
+      <UniqueIdentifier>{681ed380-96c6-447f-a87b-2d6b7d841c64}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -183,12 +186,6 @@
     <ClInclude Include="..\Base\SAL.h">
       <Filter>Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunner.h">
-      <Filter>Base\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h">
-      <Filter>Base\Threading</Filter>
-    </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.h">
       <Filter>UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
@@ -276,26 +273,35 @@
     <ClInclude Include="..\Base\Threading\ProcessThreads.h">
       <Filter>Base\Threading</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h">
-      <Filter>Base\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h">
-      <Filter>Base\Threading</Filter>
-    </ClInclude>
     <ClInclude Include="..\Base\Memory\Alloc.h">
       <Filter>Base\Memory</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\SafeCast.h">
       <Filter>Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.hpp">
-      <Filter>Base\Threading</Filter>
-    </ClInclude>
     <ClInclude Include="..\Base\IO\File.h">
       <Filter>Base\IO</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Memory\WeakPtr.h">
       <Filter>Base\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\TaskRunner.h">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.hpp">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp">
+      <Filter>Base\Threading\TaskRunner</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -335,9 +341,6 @@
     <ClCompile Include="..\Media\Font.cpp">
       <Filter>Media</Filter>
     </ClCompile>
-    <ClCompile Include="..\Base\Threading\TaskRunner.cpp">
-      <Filter>Base\Threading</Filter>
-    </ClCompile>
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp">
       <Filter>UI\Accessibility\UIAutomation</Filter>
     </ClCompile>
@@ -371,14 +374,17 @@
     <ClCompile Include="..\Media\Graphics\DrawContext.cpp">
       <Filter>Media\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp">
-      <Filter>Base\Threading</Filter>
+    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\TaskRunner.cpp">
+      <Filter>Base\Threading\TaskRunner</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp">
-      <Filter>Base\Threading</Filter>
+      <Filter>Base\Threading\TaskRunner</Filter>
     </ClCompile>
-    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp">
-      <Filter>Base\Threading</Filter>
+    <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp">
+      <Filter>Base\Threading\TaskRunner</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

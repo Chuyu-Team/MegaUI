@@ -4,6 +4,7 @@
 #include <Base/Exception.h>
 #include <Base/Threading/ThreadTaskRunnerImpl.h>
 #include <Base/Threading/SequencedTaskRunnerImpl.h>
+#include <Base/Threading/ParallelTaskRunnerImpl.hpp>
 #include <Base/Sync/Sync.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
@@ -48,7 +49,12 @@ namespace YY::Base::Threading
         HRESULT _hrTarget = E_PENDING;
         return WaitOnAddress(&hr, &_hrTarget, sizeof(_hrTarget), _uMilliseconds);
     }
-    
+
+    Threading::TaskRunner::TaskRunner()
+        : uTaskRunnerId(GenerateNewTaskRunnerId())
+    {
+    }
+
     RefPtr<TaskRunner> __YYAPI Threading::TaskRunner::GetCurrent()
     {
         return g_pTaskRunnerWeak.Get();
@@ -137,5 +143,19 @@ namespace YY::Base::Threading
         auto _uResult = _pThreadTaskRunnerImpl->RunUIMessageLoop(_pfnCallback, _pUserData);
         _pThreadTaskRunnerImpl->Release();
         return _uResult;
+    }
+
+    RefPtr<ParallelTaskRunner> __YYAPI ParallelTaskRunner::GetCurrent() noexcept
+    {
+        auto _pTaskRunner = g_pTaskRunnerWeak.Get();
+        if (_pTaskRunner == nullptr || _pTaskRunner->GetStyle() != TaskRunnerStyle::None)
+            return nullptr;
+
+        return RefPtr<ParallelTaskRunner>(std::move(_pTaskRunner));
+    }
+
+    RefPtr<ParallelTaskRunner> __YYAPI ParallelTaskRunner::Create(uint32_t _uParallelMaximum) noexcept
+    {
+        return RefPtr<ParallelTaskRunnerImpl>::Create(_uParallelMaximum);
     }
 } // namespace YY
