@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Base/Threading/TaskRunnerImpl.h>
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Memory/UniquePtr.h>
@@ -75,7 +75,7 @@ namespace YY::Base::Threading
 
             for (size_t i = 0; i != _pBuffer->Processor.GroupCount;++i)
             {
-                _uLogicalProcessorCount += BitsCount(_pBuffer->Processor.GroupMask[i].Mask);
+                _uLogicalProcessorCount += BitsCount((uintptr_t)_pBuffer->Processor.GroupMask[i].Mask);
             }
 
         } while (false);
@@ -92,7 +92,7 @@ namespace YY::Base::Threading
         if (_uLogicalProcessorCount == 0)
             _uLogicalProcessorCount = 1;
 
-        // ·ÀÖ¹ÒâÍâµÄÂß¼­´¦ÀíÆ÷ÊıÁ¿·¢ËÍ±ä»¯£¬Ôì³ÉÇ±ÔÚµÄ·çÏÕ£¬ÌØÒâÊ¹ÓÃÔ­×Ó²Ù×÷
+        // é˜²æ­¢æ„å¤–çš„é€»è¾‘å¤„ç†å™¨æ•°é‡å‘é€å˜åŒ–ï¼Œé€ æˆæ½œåœ¨çš„é£é™©ï¼Œç‰¹æ„ä½¿ç”¨åŸå­æ“ä½œ
         auto _uLast = Sync::CompareExchange(&s_LogicalProcessorCount, _uLogicalProcessorCount, 0);
         return _uLast ? _uLast : _uLogicalProcessorCount;
     }
@@ -115,7 +115,7 @@ namespace YY::Base::Threading
                 volatile uint32_t bStopWeakup : 1;
                 volatile uint32_t bPopLock : 1;
                 int32_t uWeakupCount : 29;
-                // µ±Ç°ÒÑ¾­Æô¶¯µÄÏß³ÌÊı
+                // å½“å‰å·²ç»å¯åŠ¨çš„çº¿ç¨‹æ•°
                 uint32_t uParallelCurrent;
             };
         };
@@ -171,13 +171,13 @@ namespace YY::Base::Threading
                 {
                     oTaskQueue.Push(_pTask.Detach());
 
-                    // ºóÃæ½»»»ÂÔ
+                    // åé¢äº¤æ¢ç•¥
                     Sync::BitReset(&TaskRunnerFlags.uWeakupCountAndPushLock, LockedQueuePushBitIndex);
                     break;
                 }
             }
 
-            // ½â³ıËø¶¨£¬²¢ÇÒ WeakupCount + 1£¬Ò²³¢ÊÔÌáÉı uParallelCurrent
+            // è§£é™¤é”å®šï¼Œå¹¶ä¸” WeakupCount + 1ï¼Œä¹Ÿå°è¯•æå‡ uParallelCurrent
             TaskRunnerFlagsType _uOldFlags = TaskRunnerFlags;
             TaskRunnerFlagsType _uNewFlags;
             for (;;)
@@ -197,11 +197,11 @@ namespace YY::Base::Threading
                 _uOldFlags.fFlags64 = _uLast;
             }
 
-            // ²¢·¢ËÍÊıÁ¿Ã»ÓĞÌáÉı£¬ËùÒÔÎŞĞè´ÓÏß³Ì³ØÀ­ĞÂµÄÏß³Ì
+            // å¹¶å‘é€æ•°é‡æ²¡æœ‰æå‡ï¼Œæ‰€ä»¥æ— éœ€ä»çº¿ç¨‹æ± æ‹‰æ–°çš„çº¿ç¨‹
             if (_uOldFlags.uParallelCurrent == _uNewFlags.uParallelCurrent)
                 return S_OK;
 
-            // Èç¹ûÊÇµÚÒ»´ÎÄÇÃ´ÔÙ¶îÍâ AddRef£¬±ÜÃâTrySubmitThreadpoolCallback»Øµ÷º¯Êıµ÷ÓÃÊ± TaskRunner ±»ÊÍ·ÅÁË
+            // å¦‚æœæ˜¯ç¬¬ä¸€æ¬¡é‚£ä¹ˆå†é¢å¤– AddRefï¼Œé¿å…TrySubmitThreadpoolCallbackå›è°ƒå‡½æ•°è°ƒç”¨æ—¶ TaskRunner è¢«é‡Šæ”¾äº†
             if (_uOldFlags.uParallelCurrent == 0u)
             {
                 AddRef();
@@ -215,14 +215,14 @@ namespace YY::Base::Threading
                 EXECUTE_TASK_RUNNER__:
                     _pTaskRunner->ExecuteTaskRunner();
 
-                    // ³¢ÊÔÊÍ·Å uParallelCurrent
+                    // å°è¯•é‡Šæ”¾ uParallelCurrent
                     TaskRunnerFlagsType _uOldFlags = _pTaskRunner->TaskRunnerFlags;
                     TaskRunnerFlagsType _uNewFlags;
                     for (;;)
                     {
                         if (_pTaskRunner->IsShared())
                         {
-                            // ÈÎÈ»ÓĞÈÎÎñ£¬ÖØĞÂÖ´ĞĞ ExecuteTaskRunner
+                            // ä»»ç„¶æœ‰ä»»åŠ¡ï¼Œé‡æ–°æ‰§è¡Œ ExecuteTaskRunner
                             if (_uOldFlags.uWeakupCount > 0)
                             {
                                 goto EXECUTE_TASK_RUNNER__;
@@ -241,7 +241,7 @@ namespace YY::Base::Threading
 
                     if (_uNewFlags.uParallelCurrent == 0u)
                     {
-                        // ¶ÔÓ¦ÉÏÃæ if (_uOldFlags.uParallelCurrent == 0u) AddRef();
+                        // å¯¹åº”ä¸Šé¢ if (_uOldFlags.uParallelCurrent == 0u) AddRef();
                         _pTaskRunner->Release();
                     }
                 },
@@ -250,13 +250,13 @@ namespace YY::Base::Threading
 
             if (!_bRet)
             {
-                // ×èÖ¹ºóĞøÔÙ»½ĞÑÏß³Ì
+                // é˜»æ­¢åç»­å†å”¤é†’çº¿ç¨‹
                 Sync::BitSet(&TaskRunnerFlags.uWeakupCountAndPushLock, StopWeakupBitIndex);
                 auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
 
                 if (Sync::Decrement(&TaskRunnerFlags.uParallelCurrent) == 0u)
                 {
-                    // ¶ÔÓ¦ÉÏÃæ if (_uOldFlags.uParallelCurrent == 0u) AddRef();
+                    // å¯¹åº”ä¸Šé¢ if (_uOldFlags.uParallelCurrent == 0u) AddRef();
                     Release();
                 }
                 return _hr;
@@ -290,9 +290,9 @@ namespace YY::Base::Threading
 
             for (;;)
             {
-                // ÀíÂÛÉÏ ExecuteTaskRunner Ö´ĞĞÊ±ÒıÓÃ¼ÆÊı = 2£¬ÒòÎªÖ´ĞĞÆ÷ÓµÓĞÒ»´ÎÒıÓÃ¼ÆÊı
-                // Èç¹ûÎª 1 (IsShared() == false)£¬ÄÇÃ´ËµÃ÷ÓÃ»§ÒÑ¾­ÊÍ·ÅÁËÕâ¸ö TaskRunner
-                // ÕâÊ±ÎÒÃÇĞèÒª¼°Ê±µÄÍË³ö£¬Ëæºó»á½«¶ÓÁĞÀïµÄÈÎÎñÈ«²¿È¡ÏûÊÍ·ÅÄÚ´æ¡£
+                // ç†è®ºä¸Š ExecuteTaskRunner æ‰§è¡Œæ—¶å¼•ç”¨è®¡æ•° = 2ï¼Œå› ä¸ºæ‰§è¡Œå™¨æ‹¥æœ‰ä¸€æ¬¡å¼•ç”¨è®¡æ•°
+                // å¦‚æœä¸º 1 (IsShared() == false)ï¼Œé‚£ä¹ˆè¯´æ˜ç”¨æˆ·å·²ç»é‡Šæ”¾äº†è¿™ä¸ª TaskRunner
+                // è¿™æ—¶æˆ‘ä»¬éœ€è¦åŠæ—¶çš„é€€å‡ºï¼Œéšåä¼šå°†é˜Ÿåˆ—é‡Œçš„ä»»åŠ¡å…¨éƒ¨å–æ¶ˆé‡Šæ”¾å†…å­˜ã€‚
                 if (!IsShared())
                     break;
 

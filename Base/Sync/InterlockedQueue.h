@@ -1,5 +1,6 @@
-#pragma once
+ï»¿#pragma once
 #include <Base/Sync/Interlocked.h>
+#include <Base/Memory/Alloc.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -41,7 +42,7 @@ namespace YY::Base::Sync
 
             for (;;)
             {
-                // µ±Ç°¿éÈÎÈ»ÓÐÔªËØ£¿
+                // å½“å‰å—ä»»ç„¶æœ‰å…ƒç´ ï¼Ÿ
                 if (!pFirstReadBlock->IsEmpty())
                 {
                     auto _pTmp = pFirstReadBlock->arrLoopBuffer[pFirstReadBlock->uLastReadIndex % uMaxBlockSize];
@@ -49,13 +50,13 @@ namespace YY::Base::Sync
                     return _pTmp;
                 }
 
-                // ³¢ÊÔÁ÷×ªµ½ÏÂÒ»¿é
+                // å°è¯•æµè½¬åˆ°ä¸‹ä¸€å—
                 if (!pFirstReadBlock->pNextBlock)
                     return nullptr;
 
                 auto _pPendingDelete = pFirstReadBlock;
                 pFirstReadBlock = pFirstReadBlock->pNextBlock;
-                delete _pPendingDelete;
+                HDelete(_pPendingDelete);
             }
 
             return nullptr;
@@ -65,13 +66,13 @@ namespace YY::Base::Sync
         {
             if (!pLastWriteBlock)
             {
-                pFirstReadBlock = pLastWriteBlock = new Block;
+                pFirstReadBlock = pLastWriteBlock = HNew<Block>();
             }
 
-            // Èç¹ûÂúÁË¾Í³¢ÊÔÁ´½Óµ½ÏÂÒ»¿é
+            // å¦‚æžœæ»¡äº†å°±å°è¯•é“¾æŽ¥åˆ°ä¸‹ä¸€å—
             if (pLastWriteBlock->IsFull())
             {
-                auto _pNextBlock = new Block;
+                auto _pNextBlock = HNew<Block>();
                 pLastWriteBlock->pNextBlock = _pNextBlock;
                 pLastWriteBlock = _pNextBlock;
             }

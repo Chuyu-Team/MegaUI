@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "ThreadTaskRunnerImpl.h"
 
 #include <MegaUI/Base/ErrorCode.h>
@@ -9,8 +9,8 @@ __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY::Base::Threading
 {
-    // RunUIMessageLoop Ω¯»Îµƒ¥Œ ˝°£
-    // ∂‘”⁄ ThreadTaskRunner ¿¥Àµ±ÿ–Î±£÷§œ˚œ¢—≠ª∑‘⁄≤≈ƒ‹’˝≥£π§◊˜°£
+    // RunUIMessageLoop ËøõÂÖ•ÁöÑÊ¨°Êï∞„ÄÇ
+    // ÂØπ‰∫é ThreadTaskRunner Êù•ËØ¥ÂøÖÈ°ª‰øùËØÅÊ∂àÊÅØÂæ™ÁéØÂú®ÊâçËÉΩÊ≠£Â∏∏Â∑•‰Ωú„ÄÇ
     static thread_local uint32_t s_uUIMessageLoopEnterCount = 0u;
 
     ThreadTaskRunnerImpl::ThreadTaskRunnerImpl()
@@ -86,23 +86,23 @@ namespace YY::Base::Threading
                     _pTask->Wakeup(S_OK);
                 }
 
-                // uPushLock ’º”√1bit£¨À˘“‘ uWeakCount += 1 µ»º€”⁄ uWeakCountAndPushLock += 2
+                // uPushLock Âç†Áî®1bitÔºåÊâÄ‰ª• uWeakCount += 1 Á≠â‰ª∑‰∫é uWeakCountAndPushLock += 2
                 if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
                 {
-                    // uWeakCount “—æ≠πÈ¡„£¨Ω¯»ÎÀØ√ﬂ◊¥Ã¨
+                    // uWeakCount Â∑≤ÁªèÂΩíÈõ∂ÔºåËøõÂÖ•Áù°Áú†Áä∂ÊÄÅ
                     WaitMessage();
                 }
 
-                // œ˚œ¢—≠ª∑±æ…Ì“ÚŒ™¥¶”⁄º§ªÓ◊¥Ã¨£¨À˘“‘
-                Sync::Add(&uWeakupCountAndPushLock, WeakupOnceRaw);
+                // Ê∂àÊÅØÂæ™ÁéØÊú¨Ë∫´Âõ†‰∏∫Â§Ñ‰∫éÊøÄÊ¥ªÁä∂ÊÄÅÔºåÊâÄ‰ª•
+                Sync::Add(&uWeakupCountAndPushLock, uint32_t(WeakupOnceRaw));
             }
         }
 
         --s_uUIMessageLoopEnterCount;
         if (s_uUIMessageLoopEnterCount == 0)
         {
-            // ∂‘”⁄œﬂ≥Ã¿¥Àµ£¨Ωª∏¯weak_ptrøÿ÷∆
-            // œﬂ≥ÃÕÀ≥ˆªÚ’ﬂΩªªπœﬂ≥Ã≥ÿ ±‘ŸÕ≥ Õ∑≈°£
+            // ÂØπ‰∫éÁ∫øÁ®ãÊù•ËØ¥Ôºå‰∫§Áªôweak_ptrÊéßÂà∂
+            // Á∫øÁ®ãÈÄÄÂá∫ÊàñËÄÖ‰∫§ËøòÁ∫øÁ®ãÊ±†Êó∂ÂÜçÁªüÈáäÊîæ„ÄÇ
             // g_pTaskRunnerWeak = nullptr;
             EnableWeakup(false);
         }
@@ -140,17 +140,17 @@ namespace YY::Base::Threading
             }
         }
 
-        // Œ“√« Ω‚≥˝À¯∂®£¨uPushLock = 0 ≤¢«“Ω´ uWeakCount += 1
-        // “ÚŒ™∏’≤≈ uWeakCountAndPushLock “—æ≠Ω´µ⁄“ª∏ˆ±Íº«Œª…Ë÷√Œª 1
-        // À˘“‘Œ“√«‘Ÿ uWeakCountAndPushLock += 1º¥ø…°£
+        // Êàë‰ª¨ Ëß£Èô§ÈîÅÂÆöÔºåuPushLock = 0 Âπ∂‰∏îÂ∞Ü uWeakCount += 1
+        // Âõ†‰∏∫ÂàöÊâç uWeakCountAndPushLock Â∑≤ÁªèÂ∞ÜÁ¨¨‰∏Ä‰∏™Ê†áËÆ∞‰ΩçËÆæÁΩÆ‰Ωç 1
+        // ÊâÄ‰ª•Êàë‰ª¨ÂÜç uWeakCountAndPushLock += 1Âç≥ÂèØ„ÄÇ
         // uWeakCount + 1 <==> uWeakCountAndPushLock + 2 <==> (uWeakCountAndPushLock | 1) + 1
-        if (Sync::Add(&uWeakupCountAndPushLock, UnlockQueuePushLockBitAndWeakupOnceRaw) < WeakupOnceRaw * 2u)
+        if (Sync::Add(&uWeakupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWeakupOnceRaw)) < WeakupOnceRaw * 2u)
         {
-            // Œ™ 1  «Àµ√˜µ±«∞’˝‘⁄µ»¥˝ ‰»Îœ˚œ¢£¨≤¢«“Œ¥÷˜∂ØªΩ–—
-            // “Ú¥Àµ˜”√ PostAppMessageW ≥¢ ‘ªΩ–—ƒø±Íœﬂ≥Ãµƒœ˚œ¢—≠ª∑°£
+            // ‰∏∫ 1 ÊòØËØ¥ÊòéÂΩìÂâçÊ≠£Âú®Á≠âÂæÖËæìÂÖ•Ê∂àÊÅØÔºåÂπ∂‰∏îÊú™‰∏ªÂä®Âî§ÈÜí
+            // Âõ†Ê≠§Ë∞ÉÁî® PostAppMessageW Â∞ùËØïÂî§ÈÜíÁõÆÊ†áÁ∫øÁ®ãÁöÑÊ∂àÊÅØÂæ™ÁéØ„ÄÇ
             auto _bRet = PostAppMessageW(uThreadId, WM_APP, 0, 0);
 
-            // Post  ß∞‹¥¶¿Ì£¨‘› ±≤ª◊ˆ¥¶¿Ì£¨ø…ƒ‹ «µ±«∞œµÕ≥◊ ‘¥≤ª◊„£¨º»»ª“—æ≠º”»Î¡À∂”¡–Œ“√«œ»’‚—˘∞…°£
+            // Post Â§±Ë¥•Â§ÑÁêÜÔºåÊöÇÊó∂‰∏çÂÅöÂ§ÑÁêÜÔºåÂèØËÉΩÊòØÂΩìÂâçÁ≥ªÁªüËµÑÊ∫ê‰∏çË∂≥ÔºåÊó¢ÁÑ∂Â∑≤ÁªèÂä†ÂÖ•‰∫ÜÈòüÂàóÊàë‰ª¨ÂÖàËøôÊ†∑Âêß„ÄÇ
         }
         return S_OK;
     }

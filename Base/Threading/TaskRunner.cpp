@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "TaskRunner.h"
 
 #include <Base/Exception.h>
@@ -6,6 +6,7 @@
 #include <Base/Threading/SequencedTaskRunnerImpl.h>
 #include <Base/Threading/ParallelTaskRunnerImpl.hpp>
 #include <Base/Sync/Sync.h>
+#include <Base/Threading/TaskRunnerDispatchImpl.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -85,7 +86,7 @@ namespace YY::Base::Threading
 
     HRESULT __YYAPI TaskRunner::SendTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
     {
-        // µ÷ÓÃÕßµÄ¸úÖ´ĞĞÕßÊôÓÚÍ¬Ò»¸öTaskRunner£¬ÕâÊ±ÎÒÃÇÖ±½Óµ÷ÓÃ _pfnCallback£¬±ÜÃâ¸÷ÖÖµÈ´ıÒÔ¼°ÈÎÎñÍ¶µİ¿ªÏú¡£
+        // è°ƒç”¨è€…çš„è·Ÿæ‰§è¡Œè€…å±äºåŒä¸€ä¸ªTaskRunnerï¼Œè¿™æ—¶æˆ‘ä»¬ç›´æ¥è°ƒç”¨ _pfnCallbackï¼Œé¿å…å„ç§ç­‰å¾…ä»¥åŠä»»åŠ¡æŠ•é€’å¼€é”€ã€‚
         if (TaskRunner::GetCurrent() == this)
         {
             _pfnCallback(_pUserData);
@@ -102,13 +103,29 @@ namespace YY::Base::Threading
         return _oWorkEntry.hr;
     }
 
+    HRESULT __YYAPI TaskRunner::PostDelayInternal(RefPtr<DelayDispatchEntry> _pTask)
+    {
+        // ç°åœ¨çš„æ—¶é—´å·²ç»æ¯”è¿‡æœŸæ—¶é—´å¤§ï¼Œé‚£ä¹ˆç«‹å³è§¦å‘ä»»åŠ¡ï¼Œé™ä½å»¶è¿Ÿ
+        auto _uCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+        if (_pTask->uExpire <= _uCurrent)
+        {
+            _pTask->uExpire = _uCurrent;
+            return PostTaskInternal(std::move(_pTask));
+        }
+        else
+        {
+            TaskRunnerDispatchImplByIoCompletionImpl::Get()->AddTimer(std::move(_pTask));
+
+            return S_OK;
+        }
+    }
             
     RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::GetCurrent()
     {
         auto _pTaskRunner = g_pTaskRunnerWeak.Get();
 
-        // µ±Ç° TaskRunner ±ØĞëÊÇÎïÀíÏß³Ì¡£
-        if (_pTaskRunner == nullptr || HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle ::FixedThread))
+        // å½“å‰ TaskRunner å¿…é¡»æ˜¯ç‰©ç†çº¿ç¨‹ã€‚
+        if (_pTaskRunner == nullptr || HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle ::FixedThread) == false)
             return nullptr;
 
         return RefPtr<ThreadTaskRunner>(std::move(_pTaskRunner));
@@ -122,8 +139,8 @@ namespace YY::Base::Threading
         {
             if (!HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle::FixedThread))
             {
-                // ·ÇÎïÀíÏß³Ì²»ÄÜ½øĞĞUIÏûÏ¢Ñ­»·£¡£¡£¡
-                // ÔİÊ±Éè¼ÆÈç´Ë£¬Î´À´ÔÙËµ¡£
+                // éç‰©ç†çº¿ç¨‹ä¸èƒ½è¿›è¡ŒUIæ¶ˆæ¯å¾ªç¯ï¼ï¼ï¼
+                // æš‚æ—¶è®¾è®¡å¦‚æ­¤ï¼Œæœªæ¥å†è¯´ã€‚
                 throw Exception(E_INVALIDARG);
             }
 
@@ -131,7 +148,7 @@ namespace YY::Base::Threading
         }
         else
         {
-            // ÕâÊÇÖ÷Ïß³Ì£¿£¿£¿
+            // è¿™æ˜¯ä¸»çº¿ç¨‹ï¼Ÿï¼Ÿï¼Ÿ
             _pThreadTaskRunnerImpl = RefPtr<ThreadTaskRunnerImpl>::Create();
             if (!_pThreadTaskRunnerImpl)
             {

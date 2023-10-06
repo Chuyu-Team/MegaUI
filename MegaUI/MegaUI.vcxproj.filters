@@ -82,6 +82,9 @@
     <Filter Include="Base\Threading\TaskRunner">
       <UniqueIdentifier>{681ed380-96c6-447f-a87b-2d6b7d841c64}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\Time">
+      <UniqueIdentifier>{acad2a55-e5aa-4701-b55a-c0d7db0f1332}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -291,7 +294,7 @@
     <ClInclude Include="..\Base\Threading\TaskRunner.h">
       <Filter>Base\Threading\TaskRunner</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.hpp">
+    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.h">
       <Filter>Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h">
@@ -302,6 +305,18 @@
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp">
       <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Time\TickCount.h">
+      <Filter>Base\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Time\TimeSpan.h">
+      <Filter>Base\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Time\Common.h">
+      <Filter>Base\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Containers\BitMap.h">
+      <Filter>Base\Containers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -384,6 +399,9 @@
       <Filter>Base\Threading\TaskRunner</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp">
       <Filter>Base\Threading\TaskRunner</Filter>
     </ClCompile>
   </ItemGroup>

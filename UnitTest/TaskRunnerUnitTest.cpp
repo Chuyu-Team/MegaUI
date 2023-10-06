@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "CppUnitTest.h"
 #include <atlstr.h>
 #include <Windows.h>
@@ -17,7 +17,7 @@ namespace UnitTest
     TEST_CLASS(SequencedTaskRunnerUnitTest)
     {
     public:
-        TEST_METHOD(ÈÎÎñĞòÁĞ»¯±£Ö¤)
+        TEST_METHOD(ä»»åŠ¡åºåˆ—åŒ–ä¿è¯)
         {
             auto _pTaskRunner = SequencedTaskRunner::Create();
 
@@ -48,7 +48,7 @@ namespace UnitTest
             }
         }
 
-        TEST_METHOD(TaskRunnerÏú»ÙºóÈÎÎñÈ«²¿×Ô¶¯È¡Ïû)
+        TEST_METHOD(TaskRunneré”€æ¯åä»»åŠ¡å…¨éƒ¨è‡ªåŠ¨å–æ¶ˆ)
         {
             auto _pTaskRunner = SequencedTaskRunner::Create();
 
@@ -80,7 +80,7 @@ namespace UnitTest
             Assert::AreEqual((uint32_t)_uCount2, 1u);
         }
 
-        TEST_METHOD(TaskRunnerÄÚ²¿¿ÉÒÔÕıÈ·È¡µ½TaskRunner×ÔÉíÖ¸Õë)
+        TEST_METHOD(TaskRunnerå†…éƒ¨å¯ä»¥æ­£ç¡®å–åˆ°TaskRunnerè‡ªèº«æŒ‡é’ˆ)
         {
             auto _pTaskRunner = SequencedTaskRunner::Create();
 
@@ -106,11 +106,11 @@ namespace UnitTest
     TEST_CLASS(ParallelTaskRunnerUnitTest)
     {
     public :
-        TEST_METHOD(²¢ĞĞÊıÁ¿±£Ö¤)
+        TEST_METHOD(å¹¶è¡Œæ•°é‡ä¿è¯)
         {
 
             {
-                // Ö»ÔÊĞíÒ»¸ö²¢ĞĞ
+                // åªå…è®¸ä¸€ä¸ªå¹¶è¡Œ
                 uint32_t _uCount = 0;
                 volatile uint32_t _uCount2 = 0;
                 auto _pTaskRunner = ParallelTaskRunner::Create(1);
@@ -140,7 +140,7 @@ namespace UnitTest
 
 
             {
-                // ÔÊĞí4¸ö²¢ĞĞ
+                // å…è®¸4ä¸ªå¹¶è¡Œ
                 uint32_t _uCount = 0;
                 volatile uint32_t _uMaxCount = 0;
                 volatile uint32_t _uCount2 = 0;
@@ -185,7 +185,7 @@ namespace UnitTest
         }
 
         
-        TEST_METHOD(TaskRunnerÏú»ÙºóÈÎÎñÈ«²¿×Ô¶¯È¡Ïû)
+        TEST_METHOD(TaskRunneré”€æ¯åä»»åŠ¡å…¨éƒ¨è‡ªåŠ¨å–æ¶ˆ)
         {
             auto _pTaskRunner = ParallelTaskRunner::Create(4);
 
@@ -214,7 +214,7 @@ namespace UnitTest
             Assert::IsTrue((uint32_t)_uCount2 < 100u);
         }
 
-        TEST_METHOD(TaskRunnerÄÚ²¿¿ÉÒÔÕıÈ·È¡µ½TaskRunner×ÔÉíÖ¸Õë)
+        TEST_METHOD(TaskRunnerå†…éƒ¨å¯ä»¥æ­£ç¡®å–åˆ°TaskRunnerè‡ªèº«æŒ‡é’ˆ)
         {
             auto _pTaskRunner = ParallelTaskRunner::Create();
 

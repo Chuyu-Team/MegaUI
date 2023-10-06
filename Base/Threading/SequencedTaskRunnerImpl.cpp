@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "SequencedTaskRunnerImpl.h"
 
 #include <MegaUI/Base/ErrorCode.h>
@@ -45,18 +45,18 @@ namespace YY::Base::Threading
             }
         }
 
-        // ÎÒÃÇ ½â³ıËø¶¨£¬uPushLock = 0 ²¢ÇÒ½« uWeakCount += 1
-        // ÒòÎª¸Õ²Å uWeakupCountAndPushLock ÒÑ¾­½«µÚÒ»¸ö±ê¼ÇÎ»ÉèÖÃÎ» 1
-        // ËùÒÔÎÒÃÇÔÙ uWeakupCountAndPushLock += 1¼´¿É¡£
+        // æˆ‘ä»¬ è§£é™¤é”å®šï¼ŒuPushLock = 0 å¹¶ä¸”å°† uWeakCount += 1
+        // å› ä¸ºåˆšæ‰ uWeakupCountAndPushLock å·²ç»å°†ç¬¬ä¸€ä¸ªæ ‡è®°ä½è®¾ç½®ä½ 1
+        // æ‰€ä»¥æˆ‘ä»¬å† uWeakupCountAndPushLock += 1å³å¯ã€‚
         // uWeakCount + 1 <==> uWeakupCountAndPushLock + 2 <==> (uWeakupCountAndPushLock | 1) + 1
-        if (Sync::Add(&uWeakupCountAndPushLock, UnlockQueuePushLockBitAndWeakupOnceRaw) < WeakupOnceRaw * 2u)
+        if (Sync::Add(&uWeakupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWeakupOnceRaw)) < WeakupOnceRaw * 2u)
         {
-            // ¶îÍâÔö¼ÓÒ»´ÎÒıÓÃ¼ÆÊı£¬±ÜÃâTrySubmitThreadpoolCallback»Øµ÷º¯ÊıÄÚ²¿ÒÑ¾­±»ÊÍ·ÅÁË
+            // é¢å¤–å¢åŠ ä¸€æ¬¡å¼•ç”¨è®¡æ•°ï¼Œé¿å…TrySubmitThreadpoolCallbackå›è°ƒå‡½æ•°å†…éƒ¨å·²ç»è¢«é‡Šæ”¾äº†
             AddRef();
             auto _bRet = TrySubmitThreadpoolCallback(
                 [](_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) -> void
                 {
-                    // ×¢Òâ ÉÏÃæ¶îÍâµ÷ÓÃÁË AddRef£¬ËùÒÔÏÖÔÚÓÉ RefPtr½Ó¹ÜµÄ°²È«µÄ¡£
+                    // æ³¨æ„ ä¸Šé¢é¢å¤–è°ƒç”¨äº† AddRefï¼Œæ‰€ä»¥ç°åœ¨ç”± RefPtræ¥ç®¡çš„å®‰å…¨çš„ã€‚
                     auto _pSequencedTaskRunner = RefPtr<SequencedTaskRunnerImpl>::FromPtr(reinterpret_cast<SequencedTaskRunnerImpl*>(Context));
                     _pSequencedTaskRunner->ExecuteTaskRunner();
                 },
@@ -65,13 +65,13 @@ namespace YY::Base::Threading
 
             if (!_bRet)
             {
-                // ×èÖ¹ºóĞøÔÙ»½ĞÑÏß³Ì
+                // é˜»æ­¢åç»­å†å”¤é†’çº¿ç¨‹
                 Sync::BitSet(&uWeakupCountAndPushLock, StopWeakupBitIndex);
                 auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
                 CleanupTaskQueue();
 
-                // ¸Õ²Åµ÷ÓÃÇ° TrySubmitThreadpoolCallback£¬ÌØÒâÔö¼ÓÁËÒ»´ÎÒıÓÃ¼ÆÊı
-                // ÏÖÔÚ TrySubmitThreadpoolCallback Ê§°Ü£¬ËùÒÔÖØĞÂ¹é»¹ÒıÓÃ¼ÆÊı
+                // åˆšæ‰è°ƒç”¨å‰ TrySubmitThreadpoolCallbackï¼Œç‰¹æ„å¢åŠ äº†ä¸€æ¬¡å¼•ç”¨è®¡æ•°
+                // ç°åœ¨ TrySubmitThreadpoolCallback å¤±è´¥ï¼Œæ‰€ä»¥é‡æ–°å½’è¿˜å¼•ç”¨è®¡æ•°
                 Release();
                 return _hr;
             }
@@ -87,9 +87,9 @@ namespace YY::Base::Threading
 
         for (;;)
         {
-            // ÀíÂÛÉÏ ExecuteTaskRunner Ö´ĞĞÊ±ÒıÓÃ¼ÆÊı = 2£¬ÒòÎªÖ´ĞĞÆ÷ÓµÓĞÒ»´ÎÒıÓÃ¼ÆÊı
-            // Èç¹ûÎª 1 (IsShared() == false)£¬ÄÇÃ´ËµÃ÷ÓÃ»§ÒÑ¾­ÊÍ·ÅÁËÕâ¸ö TaskRunner
-            // ÕâÊ±ÎÒÃÇĞèÒª¼°Ê±µÄÍË³ö£¬Ëæºó»á½«¶ÓÁĞÀïµÄÈÎÎñÈ«²¿È¡ÏûÊÍ·ÅÄÚ´æ¡£
+            // ç†è®ºä¸Š ExecuteTaskRunner æ‰§è¡Œæ—¶å¼•ç”¨è®¡æ•° = 2ï¼Œå› ä¸ºæ‰§è¡Œå™¨æ‹¥æœ‰ä¸€æ¬¡å¼•ç”¨è®¡æ•°
+            // å¦‚æœä¸º 1 (IsShared() == false)ï¼Œé‚£ä¹ˆè¯´æ˜ç”¨æˆ·å·²ç»é‡Šæ”¾äº†è¿™ä¸ª TaskRunner
+            // è¿™æ—¶æˆ‘ä»¬éœ€è¦åŠæ—¶çš„é€€å‡ºï¼Œéšåä¼šå°†é˜Ÿåˆ—é‡Œçš„ä»»åŠ¡å…¨éƒ¨å–æ¶ˆé‡Šæ”¾å†…å­˜ã€‚
             if (!IsShared())
                 break;
 

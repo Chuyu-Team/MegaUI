@@ -1,15 +1,15 @@
-#pragma once
+ï»¿#pragma once
 #include <Base/YY.h>
 
 #include <Windows.h>
 
 #include <Base/Strings/StringView.h>
-#include <Base/Threading/TaskRunnerDispatchImpl.hpp>
+#include <Base/Threading/TaskRunnerDispatchImpl.h>
 
 #pragma pack(push, __YY_PACKING)
 
 /*
-DispatchTaskRunner ½ö´¦Àíµ÷¶ÈÈÎÎñ£¨±ÈÈç¶¨Ê±Æ÷¡¢Òì²½IO£©£¬ÎŞ·¨²ÎÖ´ĞĞÆäËûTask¡£
+DispatchTaskRunner ä»…å¤„ç†è°ƒåº¦ä»»åŠ¡ï¼ˆæ¯”å¦‚å®šæ—¶å™¨ã€å¼‚æ­¥IOï¼‰ï¼Œæ— æ³•å‚æ‰§è¡Œå…¶ä»–Taskã€‚
 
 */
 
@@ -63,17 +63,17 @@ namespace YY::Base::IO
             _Out_ void* _pBuffer,
             _In_ uint32_t _cbToRead)
         {
-            struct AsyncTaskEntry : public DispatchEntry
+            struct AsyncTaskEntry : public IoDispatchEntry
             {
-                // 0£¬Ğ­³Ì¾ä±ú±íÊ¾ÉĞÎ´ÉèÖÃ£¬-1±íÊ¾ÈÎÎñÍê³É¡£
+                // 0ï¼Œåç¨‹å¥æŸ„è¡¨ç¤ºå°šæœªè®¾ç½®ï¼Œ-1è¡¨ç¤ºä»»åŠ¡å®Œæˆã€‚
                 intptr_t hHandle;
                 LSTATUS lStatus;
 
-                AsyncTaskEntry(RefPtr<SequencedTaskRunner> _pResumeTaskRunner)
+                AsyncTaskEntry(RefPtr<TaskRunner> _pResumeTaskRunner)
                     : hHandle(0u)
                     , lStatus(ERROR_IO_PENDING)
                 {
-                    pResumeTaskRunner = std::move(_pResumeTaskRunner);
+                    pResumeTaskRunnerWeak = std::move(_pResumeTaskRunner);
                 }
 
                 void __YYAPI operator()() override
@@ -87,7 +87,7 @@ namespace YY::Base::IO
                 }
             };
 
-            auto _pCurrent = YY::Base::Threading::SequencedTaskRunner::GetCurrent();
+            auto _pCurrent = YY::Base::Threading::TaskRunner::GetCurrent();
             auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create(std::move(_pCurrent));
             if (!_pAsyncTaskEntry)
                 throw Exception();
@@ -97,7 +97,7 @@ namespace YY::Base::IO
 
             if (ReadFile(hFile, _pBuffer, _cbToRead, nullptr, _pAsyncTaskEntry.Clone()))
             {
-                // ¶ÁÈ¡³É¹¦
+                // è¯»å–æˆåŠŸ
                 _pAsyncTaskEntry->operator()();
                 _pAsyncTaskEntry->Release();
             }
@@ -106,12 +106,12 @@ namespace YY::Base::IO
                 const auto _lStatus = GetLastError();
                 if (_lStatus == ERROR_IO_PENDING)
                 {
-                    // ½øÈëÒì²½¶ÁÈ¡Ä£Ê½£¬»½ĞÑÒ»ÏÂ Dispatch£¬IOÍê³ÉºóDispatch×Ô¶¯»á½«ÈÎÎñÖØĞÂ×ª·¢µ½µ÷ÓÃÕß
+                    // è¿›å…¥å¼‚æ­¥è¯»å–æ¨¡å¼ï¼Œå”¤é†’ä¸€ä¸‹ Dispatchï¼ŒIOå®ŒæˆåDispatchè‡ªåŠ¨ä¼šå°†ä»»åŠ¡é‡æ–°è½¬å‘åˆ°è°ƒç”¨è€…
                     TaskRunnerDispatchImplByIoCompletionImpl::Get()->Weakup();
                 }
                 else
                 {
-                    // Ê§°Ü£¡
+                    // å¤±è´¥ï¼
                     _pAsyncTaskEntry->lStatus = _lStatus;
                     _pAsyncTaskEntry->hHandle = -1;
                     _pAsyncTaskEntry->Release();

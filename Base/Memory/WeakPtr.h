@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include <Base/YY.h>
 #include <Base/Sync/Interlocked.h>
@@ -78,25 +78,6 @@ namespace YY::Base::Memory
             if (p && p->TryAddRef())
             {
                 _pTmp.Attach(p);
-            }
-            return _pTmp;
-        }
-
-        _Ret_maybenull_ RefPtr<_Type> __YYAPI Get() noexcept
-        {
-            RefPtr<_Type> _pTmp;
-
-            if (p)
-            {
-                if (p->TryAddRef())
-                {
-                    _pTmp.Attach(p);
-                }
-                else
-                {
-                    // weak ptr“—æ≠Œﬁ–ß£¨À˘“‘Œ“√« Õ∑≈◊‘º∫°£
-                    *this = nullptr;
-                }
             }
             return _pTmp;
         }

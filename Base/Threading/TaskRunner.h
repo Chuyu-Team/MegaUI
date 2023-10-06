@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <type_traits>
 #include <functional>
 #include <coroutine>
@@ -12,6 +12,8 @@
 #include <Base/Sync/Interlocked.h>
 #include <Base/Exception.h>
 #include <MegaUI/Base/ErrorCode.h>
+#include <Base/Memory/WeakPtr.h>
+#include <Base/Time/TickCount.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -22,9 +24,9 @@ namespace YY::Base::Threading
     enum class TaskRunnerStyle
     {
         None = 0,
-        // ±£Ö¤Ìá½»µÄÈÎÎñ´®ĞĞ
+        // ä¿è¯æäº¤çš„ä»»åŠ¡ä¸²è¡Œ
         Sequenced = 0x00000001,
-        // ÓµÓĞ¹Ì¶¨Ïß³Ì£¬Ã»ÓĞ´Ë±ê×¼±íÊ¾Êµ¼ÊÖ¸ÏòÎïÀíÏß³Ì¿ÉÄÜËæÊ±±ä»¯¡£
+        // æ‹¥æœ‰å›ºå®šçº¿ç¨‹ï¼Œæ²¡æœ‰æ­¤æ ‡å‡†è¡¨ç¤ºå®é™…æŒ‡å‘ç‰©ç†çº¿ç¨‹å¯èƒ½éšæ—¶å˜åŒ–ã€‚
         FixedThread = 0x00000002,
     };
 
@@ -33,7 +35,7 @@ namespace YY::Base::Threading
     enum class TaskEntryStyle
     {
         None = 0,
-        // ÈÎÎñÍ¬²½½øĞĞ¡£
+        // ä»»åŠ¡åŒæ­¥è¿›è¡Œã€‚
         Sync = 0x00000001,
     };
 
@@ -43,7 +45,7 @@ namespace YY::Base::Threading
     {
         TaskEntryStyle fStyle;
 
-        // ²Ù×÷½á¹û£¬ÈÎÎñ¿ÉÄÜ±»È¡Ïû¡£
+        // æ“ä½œç»“æœï¼Œä»»åŠ¡å¯èƒ½è¢«å–æ¶ˆã€‚
         HRESULT hr;
 
         TaskEntry(TaskEntryStyle _eStyle);
@@ -54,18 +56,41 @@ namespace YY::Base::Threading
         virtual void __YYAPI operator()() = 0;
 
         /// <summary>
-        /// ÉèÖÃ´íÎó´úÂë£¬²¢»½ĞÑÏà¹ØµÈ´ıÕß¡£
+        /// è®¾ç½®é”™è¯¯ä»£ç ï¼Œå¹¶å”¤é†’ç›¸å…³ç­‰å¾…è€…ã€‚
         /// </summary>
-        /// <param name="_hrCode">ÈÎÎñÍË³ö´úÂë¡£</param>
+        /// <param name="_hrCode">ä»»åŠ¡é€€å‡ºä»£ç ã€‚</param>
         /// <returns></returns>
         void __YYAPI Wakeup(_In_ HRESULT _hrCode);
 
         /// <summary>
-        /// µÈ´ı´ËÈÎÎñÍê³É¡£
+        /// ç­‰å¾…æ­¤ä»»åŠ¡å®Œæˆã€‚
         /// </summary>
-        /// <param name="_uMilliseconds">ĞèÒªµÈ´ıµÄºÁÃëÊı¡£</param>
+        /// <param name="_uMilliseconds">éœ€è¦ç­‰å¾…çš„æ¯«ç§’æ•°ã€‚</param>
         /// <returns></returns>
         bool __YYAPI Wait(_In_ uint32_t _uMilliseconds = UINT32_MAX);
+    };
+
+    class TaskRunner;
+
+    struct DispatchEntry : public TaskEntry
+    {
+        WeakPtr<TaskRunner> pResumeTaskRunnerWeak;
+        bool bCancel;
+
+        DispatchEntry()
+            : TaskEntry(TaskEntryStyle::None)
+            , bCancel(false)
+        {
+        }
+    };
+
+    struct DelayDispatchEntry
+        : public DispatchEntry
+    {
+        DelayDispatchEntry* pNext = nullptr;
+
+        // ä»»åŠ¡åˆ°æœŸæ—¶é—´ï¼ˆéœ€è¦å‘ç”Ÿå›è°ƒçš„æ—¶é—´ï¼‰
+        TickCount<TimePrecise::Millisecond> uExpire;
     };
 
     /*class ThreadPool : public RefValue
@@ -75,7 +100,7 @@ namespace YY::Base::Threading
     };*/
     class TaskRunnerDispatchImplByIoCompletionImpl;
 
-    // Í¨ÓÃÈÎÎñÖ´ĞĞÆ÷µÄ³éÏó²ã
+    // é€šç”¨ä»»åŠ¡æ‰§è¡Œå™¨çš„æŠ½è±¡å±‚
     class TaskRunner : public RefValue
     {
         friend TaskRunnerDispatchImplByIoCompletionImpl;
@@ -88,15 +113,15 @@ namespace YY::Base::Threading
     public:
 
         /// <summary>
-        /// »ñÈ¡µ÷ÓÃÕßµÄ TaskRunner
+        /// è·å–è°ƒç”¨è€…çš„ TaskRunner
         /// </summary>
         /// <returns>
-        /// Èç¹û·µ»Ø nullptr£¬¿ÉÄÜµ±Ç°µ÷ÓÃÕßÊÇÏß³Ì³Ø£¬Ò²¿ÉÄÜÀ´×ÔÍâ²¿Ïß³Ì¡£
+        /// å¦‚æœè¿”å› nullptrï¼Œå¯èƒ½å½“å‰è°ƒç”¨è€…æ˜¯çº¿ç¨‹æ± ï¼Œä¹Ÿå¯èƒ½æ¥è‡ªå¤–éƒ¨çº¿ç¨‹ã€‚
         /// </returns>
         static RefPtr<TaskRunner> __YYAPI GetCurrent();
 
         /// <summary>
-        /// ·µ»Ø TaskRunner µÄÎ¨Ò»Id£¬×¢Òâ£¬Õâ²»ÊÇÏß³ÌId¡£
+        /// è¿”å› TaskRunner çš„å”¯ä¸€Idï¼Œæ³¨æ„ï¼Œè¿™ä¸æ˜¯çº¿ç¨‹Idã€‚
         /// </summary>
         /// <returns></returns>
         uint32_t __YYAPI GetId() const noexcept
@@ -107,7 +132,7 @@ namespace YY::Base::Threading
         virtual TaskRunnerStyle __YYAPI GetStyle() const noexcept = 0;
 
         /// <summary>
-        /// ½«ÈÎÎñÒì²½Ö´ĞĞ¡£
+        /// å°†ä»»åŠ¡å¼‚æ­¥æ‰§è¡Œã€‚
         /// </summary>
         /// <param name="_pfnCallback"></param>
         /// <param name="_pUserData"></param>
@@ -115,9 +140,9 @@ namespace YY::Base::Threading
         HRESULT __YYAPI PostTask(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
 
         /// <summary>
-        /// ½«ÈÎÎñÒì²½Ö´ĞĞ¡£
+        /// å°†ä»»åŠ¡å¼‚æ­¥æ‰§è¡Œã€‚
         /// </summary>
-        /// <param name="pfnLambdaCallback">ĞèÒªÒì²½Ö´ĞĞµÄLambda±í´ïÊ½¡£</param>
+        /// <param name="pfnLambdaCallback">éœ€è¦å¼‚æ­¥æ‰§è¡Œçš„Lambdaè¡¨è¾¾å¼ã€‚</param>
         /// <returns></returns>
         template<typename LambdaCallback>
         HRESULT __YYAPI PostTask(_In_ LambdaCallback&& _pfnLambdaCallback)
@@ -145,25 +170,25 @@ namespace YY::Base::Threading
         }
 
         /// <summary>
-        /// ´´½¨Ò»¸öÒì²½¿É co_await ÈÎÎñ¡£
+        /// åˆ›å»ºä¸€ä¸ªå¼‚æ­¥å¯ co_await ä»»åŠ¡ã€‚
         /// </summary>
-        /// <param name="_pfnLambdaCallback">ĞèÒªÒì²½Ö´ĞĞµÄ Lambda ±í´ïÊ½</param>
+        /// <param name="_pfnLambdaCallback">éœ€è¦å¼‚æ­¥æ‰§è¡Œçš„ Lambda è¡¨è¾¾å¼</param>
         /// <returns>awaitable</returns>
         template<typename LambdaCallback>
         auto __YYAPI AsyncTask(_In_ LambdaCallback&& _pfnLambdaCallback)
         {
             struct AsyncTaskEntry : public TaskEntry
             {
-                // Õâ¸öÈÎÎñÍê³ÉºóÖØĞÂ»Øµ½´Ë TaskRunner
-                RefPtr<TaskRunner> pResumeTaskRunner;
-                // 0£¬±íÊ¾ÉĞÎ´ÉèÖÃ£¬-1±íÊ¾ÈÎÎñÍê³É¡£
+                // è¿™ä¸ªä»»åŠ¡å®Œæˆåé‡æ–°å›åˆ°æ­¤ TaskRunner
+                WeakPtr<TaskRunner> pResumeTaskRunnerWeak;
+                // 0ï¼Œè¡¨ç¤ºå°šæœªè®¾ç½®ï¼Œ-1è¡¨ç¤ºä»»åŠ¡å®Œæˆã€‚
                 intptr_t hHandle;
-                // ĞèÒªÒì²½Ö´ĞĞµÄ Callback£¬×¢Òâ·ÅÔÚ½á¹¹ÌåÄ©Î²£¬±ãÓÚ±àÒëÆ÷ÖØ¸´´úÂëºÏ²¢
+                // éœ€è¦å¼‚æ­¥æ‰§è¡Œçš„ Callbackï¼Œæ³¨æ„æ”¾åœ¨ç»“æ„ä½“æœ«å°¾ï¼Œä¾¿äºç¼–è¯‘å™¨é‡å¤ä»£ç åˆå¹¶
                 LambdaCallback pfnLambdaCallback;
 
                 AsyncTaskEntry(TaskEntryStyle _eStyle, RefPtr<TaskRunner> _pResumeTaskRunner, LambdaCallback _pfnLambdaCallback)
                     : TaskEntry(_eStyle)
-                    , pResumeTaskRunner(std::move(_pResumeTaskRunner))
+                    , pResumeTaskRunnerWeak(std::move(_pResumeTaskRunner))
                     , hHandle(0)
                     , pfnLambdaCallback(std::move(_pfnLambdaCallback))
                 {
@@ -177,20 +202,26 @@ namespace YY::Base::Threading
 
                     if (_hHandle)
                     {
-                        // Èç¹û pResumeTaskRunner == nullptr£¬Ä¿±ê²»ÊôÓÚÈÎºÎÒ»¸ö SequencedTaskRunner£¬ÕâºÜ¿ÉÄÜÈÎÎñ²»¹ØÏÂÊÇ·ñĞèÒª´®ĞĞ
-                        // Èç¹û pResumeTaskRunner == SequencedTaskRunner::GetCurrent()£¬ÕâÃ»ÓĞµÀÀí½øĞĞ PostTask£¬Í½Ôö¿ªÏú¡£
-                        if (pResumeTaskRunner == nullptr || pResumeTaskRunner == YY::Base::Threading::TaskRunner::GetCurrent())
+                        // å¦‚æœ pResumeTaskRunner == nullptrï¼Œç›®æ ‡ä¸å±äºä»»ä½•ä¸€ä¸ª SequencedTaskRunnerï¼Œè¿™å¾ˆå¯èƒ½ä»»åŠ¡ä¸å…³ä¸‹æ˜¯å¦éœ€è¦ä¸²è¡Œ
+                        // å¦‚æœ pResumeTaskRunner == SequencedTaskRunner::GetCurrent()ï¼Œè¿™æ²¡æœ‰é“ç†è¿›è¡Œ PostTaskï¼Œå¾’å¢å¼€é”€ã€‚
+                        auto _pResumeTaskRunner = pResumeTaskRunnerWeak.Get();
+                        if (pResumeTaskRunnerWeak == nullptr || _pResumeTaskRunner == YY::Base::Threading::TaskRunner::GetCurrent())
                         {
                             std::coroutine_handle<>::from_address(_hHandle).resume();
                         }
-                        else
+                        else if(_pResumeTaskRunner)
                         {
-                            pResumeTaskRunner->PostTask(
+                            _pResumeTaskRunner->PostTask(
                                 [](void* _hHandle)
                                 {
                                     std::coroutine_handle<>::from_address(_hHandle).resume();
                                 },
                                 (void*)_hHandle);
+                        }
+                        else
+                        {
+                            // ä»»åŠ¡è¢«å–æ¶ˆ
+                            std::coroutine_handle<>::from_address(_hHandle).destroy();
                         }
                     }
                 }
@@ -237,7 +268,7 @@ namespace YY::Base::Threading
         }
 
         /// <summary>
-        /// Í¬²½Ö´ĞĞCallback¡£ÑÏÖØ¾¯¸æ£ºÕâ¿ÉÄÜ×èÈûµ÷ÓÃÕß£¬ÉõÖÁ²úÉúËÀËø£¡£¡£¡
+        /// åŒæ­¥æ‰§è¡ŒCallbackã€‚ä¸¥é‡è­¦å‘Šï¼šè¿™å¯èƒ½é˜»å¡è°ƒç”¨è€…ï¼Œç”šè‡³äº§ç”Ÿæ­»é”ï¼ï¼ï¼
         /// </summary>
         /// <param name="_pfnCallback"></param>
         /// <param name="_pUserData"></param>
@@ -245,9 +276,9 @@ namespace YY::Base::Threading
         HRESULT __YYAPI SendTask(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
                 
         /// <summary>
-        /// Í¬²½Ö´ĞĞÒ»¶ÎLambda±í´ïÊ½¡£ÑÏÖØ¾¯¸æ£ºÕâ¿ÉÄÜ×èÈûµ÷ÓÃÕß£¬ÉõÖÁ²úÉúËÀËø£¡£¡£¡
+        /// åŒæ­¥æ‰§è¡Œä¸€æ®µLambdaè¡¨è¾¾å¼ã€‚ä¸¥é‡è­¦å‘Šï¼šè¿™å¯èƒ½é˜»å¡è°ƒç”¨è€…ï¼Œç”šè‡³äº§ç”Ÿæ­»é”ï¼ï¼ï¼
         /// </summary>
-        /// <param name="_pfnLambdaCallback">ĞèÒªÍ¬²½Ö´ĞĞµÄ Lambda ±í´ïÊ½¡£</param>
+        /// <param name="_pfnLambdaCallback">éœ€è¦åŒæ­¥æ‰§è¡Œçš„ Lambda è¡¨è¾¾å¼ã€‚</param>
         /// <returns></returns>
         template<typename LambdaCallback>
         HRESULT __YYAPI SendTask(LambdaCallback&& _pfnLambdaCallback)
@@ -261,71 +292,118 @@ namespace YY::Base::Threading
                 (void*)&_pfnLambdaCallback);
         }
 
+        template<typename LambdaCallback>
+        RefPtr<DelayDispatchEntry> CreateTimer(uint32_t _uIntervalMilliseconds, LambdaCallback&& _pfnLambdaCallback)
+        {
+            if (_uIntervalMilliseconds == 0)
+                return nullptr;
+            auto _uCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+
+            struct Timer : public DelayDispatchEntry
+            {
+                // ä»»åŠ¡é—´éš”
+                uint32_t uIntervalMilliseconds;
+
+                LambdaCallback pfnLambdaCallback;
+
+                Timer(uint32_t _uIntervalMilliseconds, LambdaCallback _pfnLambdaCallback)
+                    : uIntervalMilliseconds(_uIntervalMilliseconds)
+                    , pfnLambdaCallback(std::move(_pfnLambdaCallback))
+                {
+                }
+
+                void __YYAPI operator()() override
+                {
+                    pfnLambdaCallback();
+
+                    if (bCancel == false)
+                    {
+                        auto _pResumeTaskRunner = pResumeTaskRunnerWeak.Get();
+                        // ä»»åŠ¡è¢«å–æ¶ˆï¼Ÿ
+                        if (!_pResumeTaskRunner)
+                            return;
+
+                        uExpire += TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(uIntervalMilliseconds);
+
+                        _pResumeTaskRunner->PostDelayInternal(this);
+                    }
+                }
+            };
+
+            auto _pTimer = RefPtr<Timer>::Create(_uIntervalMilliseconds, std::move(_pfnLambdaCallback));
+            _pTimer->pResumeTaskRunnerWeak = this;
+            _pTimer->uExpire = _uCurrent + TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(_uIntervalMilliseconds);
+            PostDelayInternal(_pTimer);
+            return _pTimer;
+        }
+
     protected:
         virtual HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) = 0;
+
+        HRESULT __YYAPI PostDelayInternal(_In_ RefPtr<DelayDispatchEntry> _pTask);
     };
 
-    // °´Ë³ĞòÖ´ĞĞµÄTask£¨²»Ò»¶¨°ó¶¨¹Ì¶¨ÎïÀíÏß³Ì£¬Ö»±£Ö¤ÈÎÎñ´®ĞĞ£©
+    // æŒ‰é¡ºåºæ‰§è¡Œçš„Taskï¼ˆä¸ä¸€å®šç»‘å®šå›ºå®šç‰©ç†çº¿ç¨‹ï¼Œåªä¿è¯ä»»åŠ¡ä¸²è¡Œï¼‰
     class SequencedTaskRunner : public TaskRunner
     {
     public:
         /// <summary>
-        /// »ñÈ¡µ±Ç°µ÷ÓÃËùÊôµÄ SequencedTaskRunner¡£
+        /// è·å–å½“å‰è°ƒç”¨æ‰€å±çš„ SequencedTaskRunnerã€‚
         /// </summary>
         /// <returns>
-        /// Èç¹û·µ»Ø nullptr£¬¿ÉÄÜµ±Ç°²»ÊÇ SequencedTaskRunner£¬À´×ÔÏß³Ì³Ø£¬Ò²¿ÉÄÜÀ´×ÔÍâ²¿´´½¨µÄÏß³Ì£¬²»ÊôÓÚÈÎºÎÒ»¸ö TaskRunner¡£
+        /// å¦‚æœè¿”å› nullptrï¼Œå¯èƒ½å½“å‰ä¸æ˜¯ SequencedTaskRunnerï¼Œæ¥è‡ªçº¿ç¨‹æ± ï¼Œä¹Ÿå¯èƒ½æ¥è‡ªå¤–éƒ¨åˆ›å»ºçš„çº¿ç¨‹ï¼Œä¸å±äºä»»ä½•ä¸€ä¸ª TaskRunnerã€‚
         /// </returns>
         static RefPtr<SequencedTaskRunner> __YYAPI GetCurrent();
         
         /// <summary>
-        /// ´ÓÏß³Ì³Ø´´½¨Ò»¸öTaskRunner£¬ºóĞøPostTaskÌá½»ºó½«±£³Ö´®ĞĞ¡£×¢Òâ£º²»±£Ö¤±£Ö¤ÊÇ·ñÍ¬Ò»¸öÏß³Ì£¬½ö±£Ö¤ÈÎÎñ´®ĞĞ£¡
+        /// ä»çº¿ç¨‹æ± åˆ›å»ºä¸€ä¸ªTaskRunnerï¼Œåç»­PostTaskæäº¤åå°†ä¿æŒä¸²è¡Œã€‚æ³¨æ„ï¼šä¸ä¿è¯ä¿è¯æ˜¯å¦åŒä¸€ä¸ªçº¿ç¨‹ï¼Œä»…ä¿è¯ä»»åŠ¡ä¸²è¡Œï¼
         /// </summary>
-        /// <returns>·µ»ØTaskRunnerÖ¸Õë£¬º¯Êı¼¸ºõ²»»áÊ§°Ü£¬µ«ÊÇÈç¹ûÄÚ´æ²»×ã£¬ÄÇÃ´½«·µ»Ø nullptr¡£</returns>
+        /// <returns>è¿”å›TaskRunneræŒ‡é’ˆï¼Œå‡½æ•°å‡ ä¹ä¸ä¼šå¤±è´¥ï¼Œä½†æ˜¯å¦‚æœå†…å­˜ä¸è¶³ï¼Œé‚£ä¹ˆå°†è¿”å› nullptrã€‚</returns>
         static RefPtr<SequencedTaskRunner> __YYAPI Create();
 
     };
 
-    // ÈÎÎñ´®ĞĞ²¢ÇÒÓµÓĞ¹Ì¶¨Ïß³ÌµÄÈÎÎñÖ´ĞĞÆ÷
+    // ä»»åŠ¡ä¸²è¡Œå¹¶ä¸”æ‹¥æœ‰å›ºå®šçº¿ç¨‹çš„ä»»åŠ¡æ‰§è¡Œå™¨
     class ThreadTaskRunner : public SequencedTaskRunner
     {
     public:
         /// <summary>
-        /// ´ÓÏß³Ì³ØÈ¡Ò»¸öÏß³Ì²¢ÇÒÓë¸ÃTaskRunner°ó¶¨£¬Ê¼ÖÕ±£Ö¤ºóĞøÈÎÎñÔÚÍ¬Ò»¸öÏß³ÌÖĞÖ´ĞĞ¡£
-        /// Èç¹ûThreadTaskRunnerÉúÃüÖÜÆÚ½â³ı£¬Ôò½«Ïß³Ì¹é»¹Ïß³Ì³Ø¡£
-        /// ÎÂÜ°ÌáÊ¾£ºÓÅÏÈ¿¼ÂÇÊ¹ÓÃ `SequencedTaskRunner::Create()`£¬ThreadTaskRunnerµÄ´´½¨¿ªÏúÎª¸ß°º¡£
+        /// ä»çº¿ç¨‹æ± å–ä¸€ä¸ªçº¿ç¨‹å¹¶ä¸”ä¸è¯¥TaskRunnerç»‘å®šï¼Œå§‹ç»ˆä¿è¯åç»­ä»»åŠ¡åœ¨åŒä¸€ä¸ªçº¿ç¨‹ä¸­æ‰§è¡Œã€‚
+        /// å¦‚æœThreadTaskRunnerç”Ÿå‘½å‘¨æœŸè§£é™¤ï¼Œåˆ™å°†çº¿ç¨‹å½’è¿˜çº¿ç¨‹æ± ã€‚
+        /// æ¸©é¦¨æç¤ºï¼šä¼˜å…ˆè€ƒè™‘ä½¿ç”¨ `SequencedTaskRunner::Create()`ï¼ŒThreadTaskRunnerçš„åˆ›å»ºå¼€é”€ä¸ºé«˜æ˜‚ã€‚
         /// </summary>
         /// <returns></returns>
         // static RefPtr<ThreadTaskRunner> __YYAPI Create();
 
         /// <summary>
-        /// »ñÈ¡µ±Ç°Ïß³Ì°ó¶¨µÄTaskRunner¡£
+        /// è·å–å½“å‰çº¿ç¨‹ç»‘å®šçš„TaskRunnerã€‚
         /// </summary>
         /// <returns>
-        /// Èç¹ûÔÚ·µ»Ø nullptr£¬¸ÃÏß³Ì¿ÉÄÜÊôÓÚ SequencedTaskRunner£¬Ã»ÓĞ¹Ì¶¨ÎïÀíÏß³Ì¡£Ò²¿ÉÄÜ RunUIMessageLoop ÉĞÎ´µ÷ÓÃ¡£
+        /// å¦‚æœåœ¨è¿”å› nullptrï¼Œè¯¥çº¿ç¨‹å¯èƒ½å±äº SequencedTaskRunnerï¼Œæ²¡æœ‰å›ºå®šç‰©ç†çº¿ç¨‹ã€‚ä¹Ÿå¯èƒ½ RunUIMessageLoop å°šæœªè°ƒç”¨ã€‚
         /// </returns>
         static RefPtr<ThreadTaskRunner> __YYAPI GetCurrent();
 
         /// <summary>
-        /// »ñÈ¡°ó¶¨µÄÏß³ÌId¡£
+        /// è·å–ç»‘å®šçš„çº¿ç¨‹Idã€‚
         /// </summary>
         /// <returns></returns>
         virtual uint32_t __YYAPI GetThreadId() = 0;
                 
 
         /// <summary>
-        /// ÔËĞĞUIÏß³Ì×¨ÊôÏûÏ¢Ñ­»·¡£
-        /// * Ö÷Ïß³ÌÔËĞĞÏûÏ¢Ñ­»·ºó²ÅÄÜÕı³£Ê¹ÓÃ ThreadTaskRunner::GetCurrent();
-        /// * Èç¹û RunUIMessageLoop ÍË³ö£¬ºóĞøµÄPostTaskµÈÇëÇó½«Ê§°Ü¡£
+        /// è¿è¡ŒUIçº¿ç¨‹ä¸“å±æ¶ˆæ¯å¾ªç¯ã€‚
+        /// * ä¸»çº¿ç¨‹è¿è¡Œæ¶ˆæ¯å¾ªç¯åæ‰èƒ½æ­£å¸¸ä½¿ç”¨ ThreadTaskRunner::GetCurrent();
+        /// * å¦‚æœ RunUIMessageLoop é€€å‡ºï¼Œåç»­çš„PostTaskç­‰è¯·æ±‚å°†å¤±è´¥ã€‚
         /// </summary>
-        /// <param name="_pfnCallback">Æô¶¯Ñ­»·Ö®Ç°½øĞĞµÄº¯Êıµ÷ÓÃ£¬Callback·¢ÉúÆÚ¼ä¿ÉÒÔÊ¹ÓÃ`ThreadTaskRunner::GetCurrent()`¡£</param>
-        /// <param name="_pUserData">ºóĞø´«µİ¸ø _pfnCallback µÄ _pUserData</param>
-        /// <returns>ÏûÏ¢Ñ­»·ÍË³ö´úÂë¡£</returns>
+        /// <param name="_pfnCallback">å¯åŠ¨å¾ªç¯ä¹‹å‰è¿›è¡Œçš„å‡½æ•°è°ƒç”¨ï¼ŒCallbackå‘ç”ŸæœŸé—´å¯ä»¥ä½¿ç”¨`ThreadTaskRunner::GetCurrent()`ã€‚</param>
+        /// <param name="_pUserData">åç»­ä¼ é€’ç»™ _pfnCallback çš„ _pUserData</param>
+        /// <returns>æ¶ˆæ¯å¾ªç¯é€€å‡ºä»£ç ã€‚</returns>
         static uintptr_t __YYAPI RunUIMessageLoop(_In_opt_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
 
         /// <summary>
-        /// ÔËĞĞUIÏß³Ì×¨ÊôÏûÏ¢Ñ­»·¡£
-        /// * Ö÷Ïß³ÌÔËĞĞÏûÏ¢Ñ­»·ºó²ÅÄÜÕı³£Ê¹ÓÃ ThreadTaskRunner::GetCurrent();
-        /// * Èç¹û RunUIMessageLoop ÍË³ö£¬ºóĞøµÄPostTaskµÈÇëÇó½«Ê§°Ü¡£
+        /// è¿è¡ŒUIçº¿ç¨‹ä¸“å±æ¶ˆæ¯å¾ªç¯ã€‚
+        /// * ä¸»çº¿ç¨‹è¿è¡Œæ¶ˆæ¯å¾ªç¯åæ‰èƒ½æ­£å¸¸ä½¿ç”¨ ThreadTaskRunner::GetCurrent();
+        /// * å¦‚æœ RunUIMessageLoop é€€å‡ºï¼Œåç»­çš„PostTaskç­‰è¯·æ±‚å°†å¤±è´¥ã€‚
         /// </summary>
         /// <param name="_pfnLambdaCallback"></param>
         /// <returns></returns>
@@ -342,12 +420,12 @@ namespace YY::Base::Threading
         }
     };
 
-    // ×Ô¶¯½«ÈÎÎñ²¢ĞĞ´¦ÀíÇÒ¸ºÔØ¾ùºâ
+    // è‡ªåŠ¨å°†ä»»åŠ¡å¹¶è¡Œå¤„ç†ä¸”è´Ÿè½½å‡è¡¡
     class ParallelTaskRunner : public TaskRunner
     {
     protected:
-        // ÔÊĞí²¢ĞĞÖ´ĞĞµÄ×î´ó¸öÊı
-        // Èç¹ûÎª 0£¬Ôò±íÊ¾¸úËæÏµÍ³ÎïÀíÏß³ÌÊı
+        // å…è®¸å¹¶è¡Œæ‰§è¡Œçš„æœ€å¤§ä¸ªæ•°
+        // å¦‚æœä¸º 0ï¼Œåˆ™è¡¨ç¤ºè·Ÿéšç³»ç»Ÿç‰©ç†çº¿ç¨‹æ•°
         volatile uint32_t uParallelMaximum;
 
         ParallelTaskRunner(uint32_t _uParallelMaximum)

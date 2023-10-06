@@ -161,6 +161,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Base\Containers\ArrayView.h" />
+    <ClInclude Include="..\Base\Containers\BitMap.h" />
     <ClInclude Include="..\Base\Containers\ConstructorPolicy.h" />
     <ClInclude Include="..\Base\Containers\Array.h" />
     <ClInclude Include="..\Base\Containers\HashSet.h" />
@@ -184,12 +185,15 @@
     <ClInclude Include="..\Base\Sync\Sync.h" />
     <ClInclude Include="..\Base\tchar.h" />
     <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp" />
-    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.hpp" />
+    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.h" />
     <ClInclude Include="..\Base\Threading\ProcessThreads.h" />
     <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />
     <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
+    <ClInclude Include="..\Base\Time\Common.h" />
+    <ClInclude Include="..\Base\Time\TickCount.h" />
+    <ClInclude Include="..\Base\Time\TimeSpan.h" />
     <ClInclude Include="..\Base\YY.h" />
     <ClInclude Include="..\Media\Brushes\Brush.h" />
     <ClInclude Include="..\Media\Color.h" />
@@ -238,6 +242,7 @@
     <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
     <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
+    <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp" />
     <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp" />
     <ClCompile Include="..\Media\Font.cpp">
