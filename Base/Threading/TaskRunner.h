@@ -37,9 +37,13 @@ namespace YY::Base::Threading
         None = 0,
         // 任务同步进行。
         Sync = 0x00000001,
+        // 任务尝试进行取消
+        Canceled = 0x00000004,
     };
 
     YY_APPLY_ENUM_CALSS_BIT_OPERATOR(TaskEntryStyle);
+
+    class TaskRunner;
 
     struct TaskEntry : public RefValue
     {
@@ -47,6 +51,16 @@ namespace YY::Base::Threading
 
         // 操作结果，任务可能被取消。
         HRESULT hr;
+
+        WeakPtr<TaskRunner> pOwnerTaskRunnerWeak;
+
+        // 这个任务完成后重新回到的 TaskRunner
+        WeakPtr<TaskRunner> pResumeTaskRunnerWeak;
+
+        // 任务到期时间，如果为 0则立即触发
+        TickCount<TimePrecise::Millisecond> uExpire;
+
+        TaskEntry* pNext = nullptr;
 
         TaskEntry(TaskEntryStyle _eStyle);
 
@@ -68,29 +82,29 @@ namespace YY::Base::Threading
         /// <param name="_uMilliseconds">需要等待的毫秒数。</param>
         /// <returns></returns>
         bool __YYAPI Wait(_In_ uint32_t _uMilliseconds = UINT32_MAX);
-    };
 
-    class TaskRunner;
-
-    struct DispatchEntry : public TaskEntry
-    {
-        WeakPtr<TaskRunner> pResumeTaskRunnerWeak;
-        bool bCancel;
-
-        DispatchEntry()
-            : TaskEntry(TaskEntryStyle::None)
-            , bCancel(false)
+        bool __YYAPI IsCanceled() const noexcept
         {
+            return HasFlags(fStyle, TaskEntryStyle::Canceled);
         }
-    };
 
-    struct DelayDispatchEntry
-        : public DispatchEntry
-    {
-        DelayDispatchEntry* pNext = nullptr;
+        void __YYAPI Cancel()
+        {
+            fStyle |= TaskEntryStyle::Canceled;
+        }
 
-        // 任务到期时间（需要发生回调的时间）
-        TickCount<TimePrecise::Millisecond> uExpire;
+        void RunTask()
+        {
+            if (IsCanceled())
+            {
+                Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+            }
+            else
+            {
+                this->operator()();
+                Wakeup(S_OK);
+            }
+        }
     };
 
     /*class ThreadPool : public RefValue
@@ -131,13 +145,21 @@ namespace YY::Base::Threading
 
         virtual TaskRunnerStyle __YYAPI GetStyle() const noexcept = 0;
 
+        HRESULT __YYAPI PostDelayTask(
+            _In_ TimeSpan<TimePrecise::Millisecond> _uAfter,
+            _In_ TaskRunnerSimpleCallback _pfnCallback,
+            _In_opt_ void* _pUserData);
+
         /// <summary>
         /// 将任务异步执行。
         /// </summary>
         /// <param name="_pfnCallback"></param>
         /// <param name="_pUserData"></param>
         /// <returns></returns>
-        HRESULT __YYAPI PostTask(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
+        HRESULT __YYAPI PostTask(_In_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData)
+        {
+            return PostDelayTask(TimeSpan<TimePrecise::Millisecond>(), _pfnCallback, _pUserData);
+        }
 
         /// <summary>
         /// 将任务异步执行。
@@ -145,14 +167,16 @@ namespace YY::Base::Threading
         /// <param name="pfnLambdaCallback">需要异步执行的Lambda表达式。</param>
         /// <returns></returns>
         template<typename LambdaCallback>
-        HRESULT __YYAPI PostTask(_In_ LambdaCallback&& _pfnLambdaCallback)
+        HRESULT __YYAPI PostDelayTask(
+            _In_ TimeSpan<TimePrecise::Millisecond> _uAfter,
+            _In_ LambdaCallback&& _pfnLambdaCallback)
         {
             struct LambdaTaskEntry : public TaskEntry
             {
                 LambdaCallback pfnLambdaCallback;
 
-                LambdaTaskEntry(TaskEntryStyle _eStyle, LambdaCallback _pfnLambdaCallback)
-                    : TaskEntry(_eStyle)
+                LambdaTaskEntry(LambdaCallback _pfnLambdaCallback)
+                    : TaskEntry(TaskEntryStyle::None)
                     , pfnLambdaCallback(std::move(_pfnLambdaCallback))
                 {
                 }
@@ -162,11 +186,28 @@ namespace YY::Base::Threading
                     pfnLambdaCallback();
                 }
             };
-            auto _pThreadWorkEntry = RefPtr<LambdaTaskEntry>::Create(TaskEntryStyle::None, std::move(_pfnLambdaCallback));
-            if (!_pThreadWorkEntry)
+
+            auto _pDelayTask = RefPtr<LambdaTaskEntry>::Create(std::move(_pfnLambdaCallback));
+            if (!_pDelayTask)
                 return E_OUTOFMEMORY;
 
-            return PostTaskInternal(_pThreadWorkEntry);
+            if (_uAfter.GetMilliseconds() > 0)
+            {
+                _pDelayTask->uExpire = TickCount<TimePrecise::Millisecond>::GetCurrent() + _uAfter;
+            }
+            
+            return PostDelayTaskInternal(std::move(_pDelayTask));
+        }
+        
+        /// <summary>
+        /// 将任务异步执行。
+        /// </summary>
+        /// <param name="pfnLambdaCallback">需要异步执行的Lambda表达式。</param>
+        /// <returns></returns>
+        template<typename LambdaCallback>
+        HRESULT __YYAPI PostTask(_In_ LambdaCallback&& _pfnLambdaCallback)
+        {
+            return PostDelayTask(TimeSpan<TimePrecise::Millisecond>(), std::move(_pfnLambdaCallback));
         }
 
         /// <summary>
@@ -175,20 +216,19 @@ namespace YY::Base::Threading
         /// <param name="_pfnLambdaCallback">需要异步执行的 Lambda 表达式</param>
         /// <returns>awaitable</returns>
         template<typename LambdaCallback>
-        auto __YYAPI AsyncTask(_In_ LambdaCallback&& _pfnLambdaCallback)
+        auto __YYAPI AsyncDelayTask(
+            _In_ TimeSpan<TimePrecise::Millisecond> _uAfter,
+            _In_ LambdaCallback&& _pfnLambdaCallback)
         {
             struct AsyncTaskEntry : public TaskEntry
             {
-                // 这个任务完成后重新回到此 TaskRunner
-                WeakPtr<TaskRunner> pResumeTaskRunnerWeak;
                 // 0，表示尚未设置，-1表示任务完成。
                 intptr_t hHandle;
                 // 需要异步执行的 Callback，注意放在结构体末尾，便于编译器重复代码合并
                 LambdaCallback pfnLambdaCallback;
 
-                AsyncTaskEntry(TaskEntryStyle _eStyle, RefPtr<TaskRunner> _pResumeTaskRunner, LambdaCallback _pfnLambdaCallback)
-                    : TaskEntry(_eStyle)
-                    , pResumeTaskRunnerWeak(std::move(_pResumeTaskRunner))
+                AsyncTaskEntry(LambdaCallback _pfnLambdaCallback)
+                    : TaskEntry(TaskEntryStyle::None)
                     , hHandle(0)
                     , pfnLambdaCallback(std::move(_pfnLambdaCallback))
                 {
@@ -228,9 +268,11 @@ namespace YY::Base::Threading
             };
 
             auto _pCurrent = YY::Base::Threading::TaskRunner::GetCurrent();
-            auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create(TaskEntryStyle::None, std::move(_pCurrent), std::move(_pfnLambdaCallback));
+            auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create(std::move(_pfnLambdaCallback));
             if (!_pAsyncTaskEntry)
                 throw Exception();
+
+            _pAsyncTaskEntry->pResumeTaskRunnerWeak = _pCurrent;
 
             struct awaitable
             {
@@ -260,11 +302,18 @@ namespace YY::Base::Threading
                 }
             };
 
-            auto _hr = PostTaskInternal(_pAsyncTaskEntry);
+            auto _hr = PostDelayTaskInternal(_pAsyncTaskEntry);
             if (FAILED(_hr))
                 throw Exception();
 
             return awaitable(std::move(_pAsyncTaskEntry));
+        }
+
+        template<typename LambdaCallback>
+        auto __YYAPI AsyncTask(
+            _In_ LambdaCallback&& _pfnLambdaCallback)
+        {
+            return AsyncDelayTask(TimeSpan<TimePrecise::Millisecond>(), std::move(_pfnLambdaCallback));
         }
 
         /// <summary>
@@ -293,21 +342,23 @@ namespace YY::Base::Threading
         }
 
         template<typename LambdaCallback>
-        RefPtr<DelayDispatchEntry> CreateTimer(uint32_t _uIntervalMilliseconds, LambdaCallback&& _pfnLambdaCallback)
+        RefPtr<TaskEntry> CreateTimer(TimeSpan<TimePrecise::Millisecond> _uInterval, LambdaCallback&& _pfnLambdaCallback)
         {
-            if (_uIntervalMilliseconds == 0)
+            if (_uInterval.GetMilliseconds() <= 0)
                 return nullptr;
+
             auto _uCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
-            struct Timer : public DelayDispatchEntry
+            struct Timer : public TaskEntry
             {
                 // 任务间隔
-                uint32_t uIntervalMilliseconds;
+                TimeSpan<TimePrecise::Millisecond> uInterval;
 
                 LambdaCallback pfnLambdaCallback;
 
-                Timer(uint32_t _uIntervalMilliseconds, LambdaCallback _pfnLambdaCallback)
-                    : uIntervalMilliseconds(_uIntervalMilliseconds)
+                Timer(TimeSpan<TimePrecise::Millisecond> _uInterval, LambdaCallback _pfnLambdaCallback)
+                    : TaskEntry(TaskEntryStyle::None)
+                    , uInterval(_uInterval)
                     , pfnLambdaCallback(std::move(_pfnLambdaCallback))
                 {
                 }
@@ -316,31 +367,30 @@ namespace YY::Base::Threading
                 {
                     pfnLambdaCallback();
 
-                    if (bCancel == false)
+                    if (!IsCanceled())
                     {
-                        auto _pResumeTaskRunner = pResumeTaskRunnerWeak.Get();
+                        auto _pResumeTaskRunner = pOwnerTaskRunnerWeak.Get();
                         // 任务被取消？
                         if (!_pResumeTaskRunner)
                             return;
 
-                        uExpire += TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(uIntervalMilliseconds);
+                        uExpire += uInterval;
 
-                        _pResumeTaskRunner->PostDelayInternal(this);
+                        _pResumeTaskRunner->PostDelayTaskInternal(this);
                     }
                 }
             };
 
-            auto _pTimer = RefPtr<Timer>::Create(_uIntervalMilliseconds, std::move(_pfnLambdaCallback));
-            _pTimer->pResumeTaskRunnerWeak = this;
-            _pTimer->uExpire = _uCurrent + TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(_uIntervalMilliseconds);
-            PostDelayInternal(_pTimer);
+            auto _pTimer = RefPtr<Timer>::Create(_uInterval, std::move(_pfnLambdaCallback));
+            _pTimer->uExpire = _uCurrent + _uInterval;
+            PostDelayTaskInternal(_pTimer);
             return _pTimer;
         }
 
     protected:
         virtual HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) = 0;
 
-        HRESULT __YYAPI PostDelayInternal(_In_ RefPtr<DelayDispatchEntry> _pTask);
+        HRESULT __YYAPI PostDelayTaskInternal(_In_ RefPtr<TaskEntry> _pTask);
     };
 
     // 按顺序执行的Task（不一定绑定固定物理线程，只保证任务串行）

@@ -11,7 +11,7 @@ __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 namespace YY::Base::Threading
 {
     SequencedTaskRunnerImpl::SequencedTaskRunnerImpl()
-        : uWeakupCountAndPushLock(0u)
+        : uWakeupCountAndPushLock(0u)
     {
     }
 
@@ -30,7 +30,7 @@ namespace YY::Base::Threading
     {
         _pTask->hr = E_PENDING;
 
-        if (bStopWeakup)
+        if (bStopWakeup)
         {
             _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
             return E_FAIL;
@@ -38,18 +38,18 @@ namespace YY::Base::Threading
 
         for (;;)
         {
-            if (!Sync::BitSet(&uWeakupCountAndPushLock, LockedQueuePushBitIndex))
+            if (!Sync::BitSet(&uWakeupCountAndPushLock, LockedQueuePushBitIndex))
             {
                 oTaskQueue.Push(_pTask.Detach());
                 break;
             }
         }
 
-        // 我们 解除锁定，uPushLock = 0 并且将 uWeakCount += 1
-        // 因为刚才 uWeakupCountAndPushLock 已经将第一个标记位设置位 1
-        // 所以我们再 uWeakupCountAndPushLock += 1即可。
-        // uWeakCount + 1 <==> uWeakupCountAndPushLock + 2 <==> (uWeakupCountAndPushLock | 1) + 1
-        if (Sync::Add(&uWeakupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWeakupOnceRaw)) < WeakupOnceRaw * 2u)
+        // 我们 解除锁定，uPushLock = 0 并且将 uWakeupCount += 1
+        // 因为刚才 uWakeupCountAndPushLock 已经将第一个标记位设置位 1
+        // 所以我们再 uWakeupCountAndPushLock += 1即可。
+        // uWakeupCount + 1 <==> uWakeupCountAndPushLock + 2 <==> (uWakeupCountAndPushLock | 1) + 1
+        if (Sync::Add(&uWakeupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWakeupOnceRaw)) < WakeupOnceRaw * 2u)
         {
             // 额外增加一次引用计数，避免TrySubmitThreadpoolCallback回调函数内部已经被释放了
             AddRef();
@@ -66,7 +66,7 @@ namespace YY::Base::Threading
             if (!_bRet)
             {
                 // 阻止后续再唤醒线程
-                Sync::BitSet(&uWeakupCountAndPushLock, StopWeakupBitIndex);
+                Sync::BitSet(&uWakeupCountAndPushLock, StopWakeupBitIndex);
                 auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
                 CleanupTaskQueue();
 
@@ -93,14 +93,12 @@ namespace YY::Base::Threading
             if (!IsShared())
                 break;
 
-            auto _pTask = RefPtr<TaskEntry>::FromPtr(oTaskQueue.Pop());
+            auto _pTask = oTaskQueue.Pop();
             if (!_pTask)
                 break;
-                    
-            _pTask->operator()();
-            _pTask->Wakeup(S_OK);
-
-            if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
+            _pTask->RunTask();
+            _pTask->Release();
+            if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
                 break;
         }
         g_pTaskRunnerWeak = nullptr;
@@ -117,7 +115,7 @@ namespace YY::Base::Threading
 
             _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
 
-            if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
+            if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
                 break;
         }
         return;

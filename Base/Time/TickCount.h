@@ -136,7 +136,7 @@ namespace YY::Base::Time
 
         constexpr TimeSpan<ePrecise> operator-(const TickCount& _oOther) const noexcept
         {
-            return TimeSpan<ePrecise>((uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / GetSecondsPerInternal());
+            return TimeSpan<ePrecise>::FromInternalValue((uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / GetSecondsPerInternal());
         }
     };
 }

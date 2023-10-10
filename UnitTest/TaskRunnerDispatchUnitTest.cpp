@@ -30,8 +30,10 @@ namespace UnitTest
                 auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
 
-                RefPtr<DelayDispatchEntry> _pTimer;
-                _pTimer = _pTaskRunner->CreateTimer(500, [_uStartTick, &_pTimer, _hEvent]()
+                RefPtr<TaskEntry> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                    [_uStartTick, &_pTimer, _hEvent]()
                     {
                         auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
 
@@ -43,7 +45,7 @@ namespace UnitTest
                         Assert::IsTrue(_nSpan.GetMilliseconds() >= 500 - 100);
                         Assert::IsTrue(_nSpan.GetMilliseconds() <= 500 + 100);
 
-                        _pTimer->bCancel = true;
+                        _pTimer->Cancel();
                         SetEvent(_hEvent);
                     });
 
@@ -54,8 +56,10 @@ namespace UnitTest
                 auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
 
-                RefPtr<DelayDispatchEntry> _pTimer;
-                _pTimer = _pTaskRunner->CreateTimer(5000, [_uStartTick, &_pTimer, _hEvent]()
+                RefPtr<TaskEntry> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+                    [_uStartTick, &_pTimer, _hEvent]()
                     {
                         auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
 
@@ -67,7 +71,7 @@ namespace UnitTest
                         Assert::IsTrue(_nSpan.GetMilliseconds() >= 5000 - 200);
                         Assert::IsTrue(_nSpan.GetMilliseconds() <= 5000 + 200);
 
-                        _pTimer->bCancel = true;
+                        _pTimer->Cancel();
                         SetEvent(_hEvent);
                     });
 
@@ -86,8 +90,10 @@ namespace UnitTest
             auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
             int nCount = 0;
-            RefPtr<DelayDispatchEntry> _pTimer;
-            _pTimer = _pTaskRunner->CreateTimer(500, [&nCount, _uStartTick, &_pTimer, _hEvent]()
+            RefPtr<TaskEntry> _pTimer;
+            _pTimer = _pTaskRunner->CreateTimer(
+                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                [&nCount, _uStartTick, &_pTimer, _hEvent]()
                 {
                     ++nCount;
                     auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
@@ -103,7 +109,7 @@ namespace UnitTest
 
                     if (nCount == 5)
                     {
-                        _pTimer->bCancel = true;
+                        _pTimer->Cancel();
 
                         SetEvent(_hEvent);
                     }

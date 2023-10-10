@@ -1357,7 +1357,7 @@ namespace YY::MegaUI
             return S_FALSE;
             
         // 入口明明加了int32_max限制，这里为什么任然出现大于 int32_max？？？
-        if (_cChildrenOldSize > (std::numeric_limits<int32_t>::max)())
+        if (_cChildrenOldSize > (size_t)(std::numeric_limits<int32_t>::max)())
             return E_UNEXPECTED;
 
         uint_t _uRemoveCount = 0u;
@@ -1384,7 +1384,7 @@ namespace YY::MegaUI
         {
             ElementList _ChildrenNew;
             auto _uSizeNew = _cChildrenOldSize - _uRemoveCount;
-            if (_uSizeNew > (std::numeric_limits<int32_t>::max)())
+            if (_uSizeNew > (size_t)(std::numeric_limits<int32_t>::max)())
             {
                 // 入口明明加了int32_max限制，这里为什么任然出现大于 int32_max？？？
                 hr = E_UNEXPECTED;
@@ -1701,7 +1701,7 @@ namespace YY::MegaUI
 
         for (auto i = _pDeferObject->uPropertyChangedPostSourceCount + 1; i < _pDeferObject->vecPropertyChanged.GetSize(); ++i)
         {
-            if (i > (std::numeric_limits<int32_t>::max)())
+            if (i > (size_t)(std::numeric_limits<int32_t>::max)())
             {
                 throw Exception(_S("PreSourceChange期间，uPropertyChangedPostSourceCount数值超过 int32_max。"));
             }
@@ -1960,7 +1960,7 @@ namespace YY::MegaUI
             return E_OUTOFMEMORY;
         }
         auto _uIndex = _pDeferCycle->vecPropertyChanged.GetItemIndex(pItem);
-        if (_uIndex > (std::numeric_limits<int32_t>::max)())
+        if (_uIndex > (size_t)(std::numeric_limits<int32_t>::max)())
             throw Exception();
 
         auto _iIndex = (int32_t)_uIndex;
@@ -2110,7 +2110,7 @@ namespace YY::MegaUI
                 else
                 {
                     uint_t uAddIndex = pDeferCycle->vecGroupChangeNormalPriority.GetItemIndex(pItem);
-                    if (uAddIndex > (std::numeric_limits<int32_t>::max)())
+                    if (uAddIndex > (size_t)(std::numeric_limits<int32_t>::max)())
                         throw Exception();
 
                     pDeferCycle->AddRef();
@@ -2144,7 +2144,7 @@ namespace YY::MegaUI
                 else
                 {
                     auto uAddIndex = pDeferCycle->vecGroupChangeLowPriority.GetItemIndex(pItem);
-                    if (uAddIndex > (std::numeric_limits<int32_t>::max)())
+                    if (uAddIndex > (size_t)(std::numeric_limits<int32_t>::max)())
                         throw Exception();
 
                     pDeferCycle->AddRef();

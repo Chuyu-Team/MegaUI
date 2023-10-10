@@ -293,7 +293,7 @@ namespace YY
                 if (_oBrush == nullptr || _szText.GetSize() == 0 || _LayoutRect.IsEmpty() || oSurface.IsNull())
                     return;
 
-                if (_szText.GetSize() > (std::numeric_limits<INT>::max)())
+                if (_szText.GetSize() > (size_t)(std::numeric_limits<INT>::max)())
                     throw Exception();
                 auto _pNativeBrush = GetNativeBrush(_oBrush);
                 if (!_pNativeBrush)
@@ -321,7 +321,7 @@ namespace YY
                 _pExtent->Width = 0;
                 _pExtent->Height = 0;
 
-                if (_szText.GetSize() > (std::numeric_limits<INT>::max)())
+                if (_szText.GetSize() > (size_t)(std::numeric_limits<INT>::max)())
                     throw Exception();
                 auto _Status = s_AutoGdiplusStartup.TryGdiplusStartup();
                 if (_Status != Gdiplus::Status::Ok)

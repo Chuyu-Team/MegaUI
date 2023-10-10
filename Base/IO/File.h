@@ -63,17 +63,16 @@ namespace YY::Base::IO
             _Out_ void* _pBuffer,
             _In_ uint32_t _cbToRead)
         {
-            struct AsyncTaskEntry : public IoDispatchEntry
+            struct AsyncTaskEntry : public IoTaskEntry
             {
                 // 0，协程句柄表示尚未设置，-1表示任务完成。
                 intptr_t hHandle;
                 LSTATUS lStatus;
 
-                AsyncTaskEntry(RefPtr<TaskRunner> _pResumeTaskRunner)
+                AsyncTaskEntry()
                     : hHandle(0u)
                     , lStatus(ERROR_IO_PENDING)
                 {
-                    pResumeTaskRunnerWeak = std::move(_pResumeTaskRunner);
                 }
 
                 void __YYAPI operator()() override
@@ -88,10 +87,11 @@ namespace YY::Base::IO
             };
 
             auto _pCurrent = YY::Base::Threading::TaskRunner::GetCurrent();
-            auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create(std::move(_pCurrent));
+            auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create();
             if (!_pAsyncTaskEntry)
                 throw Exception();
 
+            _pAsyncTaskEntry->pOwnerTaskRunnerWeak = _pCurrent;
             _pAsyncTaskEntry->Offset = (uint32_t)_uOffset;
             _pAsyncTaskEntry->OffsetHigh = (uint32_t)(_uOffset >> 32);
 

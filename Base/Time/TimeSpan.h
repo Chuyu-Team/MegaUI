@@ -32,13 +32,19 @@ namespace YY::Base::Time
     template<TimePrecise ePrecise>
     class TimeSpan
     {
+    private:
+        constexpr TimeSpan(int64_t _uElapsedInternal) noexcept
+            : uElapsedInternal(_uElapsedInternal)
+        {
+        }
+
     public:
         int64_t uElapsedInternal;
 
         using TimeSpanCommon = TimeSpanCommon<ePrecise>;
 
-        constexpr TimeSpan(int64_t _uElapsedInternal = 0) noexcept
-            : uElapsedInternal(_uElapsedInternal)
+        constexpr TimeSpan() noexcept
+            : uElapsedInternal(0u)
         {
         }
 

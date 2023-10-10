@@ -102,19 +102,19 @@ namespace YY::Base::Threading
     public:
         InterlockedQueue<TaskEntry> oTaskQueue;
         
-        // |uWeakCount| bPushLock | bStopWeakup | bPushLock |
+        // |uWeakCount| bPushLock | bStopWakeup | bPushLock |
         // | 31  ~  3 |    2      |     1       |    0      |
         union TaskRunnerFlagsType
         {
             uint64_t fFlags64;
-            uint32_t uWeakupCountAndPushLock;
+            uint32_t uWakeupCountAndPushLock;
 
             struct
             {
                 volatile uint32_t bPushLock : 1;
-                volatile uint32_t bStopWeakup : 1;
+                volatile uint32_t bStopWakeup : 1;
                 volatile uint32_t bPopLock : 1;
-                int32_t uWeakupCount : 29;
+                int32_t uWakeupCount : 29;
                 // 当前已经启动的线程数
                 uint32_t uParallelCurrent;
             };
@@ -127,11 +127,11 @@ namespace YY::Base::Threading
         enum : uint32_t
         {
             LockedQueuePushBitIndex = 0,
-            StopWeakupBitIndex,
+            StopWakeupBitIndex,
             LockedQueuePopBitIndex,
-            WeakupCountStartBitIndex,
-            WeakupOnceRaw = 1 << WeakupCountStartBitIndex,
-            UnlockQueuePushLockBitAndWeakupOnceRaw = WeakupOnceRaw - (1u << LockedQueuePushBitIndex),
+            WakeupCountStartBitIndex,
+            WakeupOnceRaw = 1 << WakeupCountStartBitIndex,
+            UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
         };
 
         
@@ -157,7 +157,7 @@ namespace YY::Base::Threading
         {
             _pTask->hr = E_PENDING;
 
-            if (TaskRunnerFlags.bStopWeakup)
+            if (TaskRunnerFlags.bStopWakeup)
             {
                 _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
                 return E_FAIL;
@@ -167,12 +167,12 @@ namespace YY::Base::Threading
 
             for (;;)
             {
-                if (!Sync::BitSet(&TaskRunnerFlags.uWeakupCountAndPushLock, LockedQueuePushBitIndex))
+                if (!Sync::BitSet(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePushBitIndex))
                 {
                     oTaskQueue.Push(_pTask.Detach());
 
                     // 后面交换略
-                    Sync::BitReset(&TaskRunnerFlags.uWeakupCountAndPushLock, LockedQueuePushBitIndex);
+                    Sync::BitReset(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePushBitIndex);
                     break;
                 }
             }
@@ -183,9 +183,9 @@ namespace YY::Base::Threading
             for (;;)
             {
                 _uNewFlags = _uOldFlags;
-                _uNewFlags.uWeakupCountAndPushLock += WeakupOnceRaw;
+                _uNewFlags.uWakeupCountAndPushLock += WakeupOnceRaw;
 
-                if (_uNewFlags.uParallelCurrent < _uParallelMaximum && _uNewFlags.uWeakupCount >= (int32_t)_uNewFlags.uParallelCurrent)
+                if (_uNewFlags.uParallelCurrent < _uParallelMaximum && _uNewFlags.uWakeupCount >= (int32_t)_uNewFlags.uParallelCurrent)
                 {
                     _uNewFlags.uParallelCurrent += 1;
                 }
@@ -223,7 +223,7 @@ namespace YY::Base::Threading
                         if (_pTaskRunner->IsShared())
                         {
                             // 任然有任务，重新执行 ExecuteTaskRunner
-                            if (_uOldFlags.uWeakupCount > 0)
+                            if (_uOldFlags.uWakeupCount > 0)
                             {
                                 goto EXECUTE_TASK_RUNNER__;
                             }
@@ -251,7 +251,7 @@ namespace YY::Base::Threading
             if (!_bRet)
             {
                 // 阻止后续再唤醒线程
-                Sync::BitSet(&TaskRunnerFlags.uWeakupCountAndPushLock, StopWeakupBitIndex);
+                Sync::BitSet(&TaskRunnerFlags.uWakeupCountAndPushLock, StopWakeupBitIndex);
                 auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
 
                 if (Sync::Decrement(&TaskRunnerFlags.uParallelCurrent) == 0u)
@@ -273,11 +273,11 @@ namespace YY::Base::Threading
             RefPtr<TaskEntry> _pTmp;
             for (;;)
             {
-                if (!Sync::BitSet(&TaskRunnerFlags.uWeakupCountAndPushLock, LockedQueuePopBitIndex))
+                if (!Sync::BitSet(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePopBitIndex))
                 {
                     _pTmp.Attach(oTaskQueue.Pop());
 
-                    Sync::BitReset(&TaskRunnerFlags.uWeakupCountAndPushLock, LockedQueuePopBitIndex);           
+                    Sync::BitReset(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePopBitIndex);           
                     break;
                 }
             }
@@ -303,7 +303,7 @@ namespace YY::Base::Threading
                 _pTask->operator()();
                 _pTask->Wakeup(S_OK);
 
-                if (Sync::Subtract(&TaskRunnerFlags.uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
+                if (Sync::Subtract(&TaskRunnerFlags.uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
                     break;
             }
             g_pTaskRunnerWeak = nullptr;
@@ -319,7 +319,7 @@ namespace YY::Base::Threading
                     break;
 
                 _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-                if (Sync::Subtract(&TaskRunnerFlags.uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
+                if (Sync::Subtract(&TaskRunnerFlags.uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
                     break;
             }
             return;

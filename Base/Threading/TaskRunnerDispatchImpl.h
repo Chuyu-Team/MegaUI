@@ -16,21 +16,22 @@ TaskRunnerDispatch 仅处理调度任务（比如定时器、异步IO），无�
 
 namespace YY::Base::Threading
 {
-    struct IoDispatchEntry
-        : public DispatchEntry
+    struct IoTaskEntry
+        : public TaskEntry
         , public OVERLAPPED
 
     {
-        IoDispatchEntry()
-            : OVERLAPPED {}
+        IoTaskEntry()
+            : TaskEntry(TaskEntryStyle::None)
+            , OVERLAPPED {}
         {
         }
     };
 
     struct TimingWheelSimpleList
     {
-        DelayDispatchEntry* pFirst = nullptr;
-        DelayDispatchEntry* pLast = nullptr;
+        TaskEntry* pFirst = nullptr;
+        TaskEntry* pLast = nullptr;
 
         TimingWheelSimpleList() = default;
         
@@ -39,7 +40,7 @@ namespace YY::Base::Threading
         TimingWheelSimpleList& operator=(TimingWheelSimpleList&&) = default;
 
 
-        _Ret_maybenull_ DelayDispatchEntry* Pop() noexcept
+        _Ret_maybenull_ TaskEntry* Pop() noexcept
         {
             if (pFirst == nullptr)
                 return nullptr;
@@ -55,7 +56,7 @@ namespace YY::Base::Threading
             return _pOldFirst;
         }
 
-        void Push(_In_ DelayDispatchEntry* _pEntry) noexcept
+        void Push(_In_ TaskEntry* _pEntry) noexcept
         {
             _pEntry->pNext = nullptr;
 
@@ -94,7 +95,7 @@ namespace YY::Base::Threading
         // 其余：655'360ms + 的元素
         TimingWheelSimpleList arrTimingWheelOthers;
         // 等待加入的列表
-        InterlockedQueue<DelayDispatchEntry> arrTimerDispatchPending;
+        InterlockedQueue<TaskEntry> arrTimerDispatchPending;
 
         // TimingWheel的位图缓存，加速轮子的遍历过程
         BitMap<sizeof(arrTimingWheel1) / sizeof(arrTimingWheel1[0])> oTimingWheel1BitMap;
@@ -116,12 +117,12 @@ namespace YY::Base::Threading
 
         void __YYAPI Weakup();
 
-        void __YYAPI AddTimer(_In_ RefPtr<DelayDispatchEntry> _pDispatchTask) noexcept;
+        void __YYAPI AddDelayTask(_In_ RefPtr<TaskEntry> _pDispatchTask) noexcept;
 
     private:
         void __YYAPI ExecuteTaskRunner();
 
-        void __YYAPI Dispatch(_In_ RefPtr<DispatchEntry> _pTask);
+        void __YYAPI Dispatch(_In_ RefPtr<TaskEntry> _pTask);
 
         void __YYAPI Dispatch(_In_ TimingWheelSimpleList& _oTimingWheelList);
 
@@ -134,7 +135,7 @@ namespace YY::Base::Threading
         void __YYAPI DispatchTimingWheel(TickCount<TimePrecise::Millisecond> _oCurrent);
 
 
-        void __YYAPI AddTimingWheel(_In_ RefPtr<DelayDispatchEntry> _pDispatchTask) noexcept;
+        void __YYAPI AddTimingWheel(_In_ RefPtr<TaskEntry> _pDispatchTask) noexcept;
 
         uint32_t __YYAPI GetMinimumWaitTime() const noexcept;
     };

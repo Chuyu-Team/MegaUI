@@ -296,7 +296,7 @@ namespace YY
                     return S_OK;
 
                 // WinAPI 限制，无法处理超过 int32_max
-                if (_cchSrc > (std::numeric_limits<int>::max)())
+                if (_cchSrc > (size_t)(std::numeric_limits<int>::max)())
                     return E_UNEXPECTED;
 
                 const auto _cchOldDst = _pszDst->GetSize();

@@ -75,13 +75,21 @@ namespace YY::Base::Threading
         return RefPtr<SequencedTaskRunnerImpl>::Create();
     }
 
-    HRESULT __YYAPI TaskRunner::PostTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
+    HRESULT __YYAPI TaskRunner::PostDelayTask(
+        TimeSpan<TimePrecise::Millisecond> _uAfter,
+        TaskRunnerSimpleCallback _pfnCallback,
+        void* _pUserData)
     {
-        auto _pThreadWorkEntry = RefPtr<SimpleTaskEntry>::Create(TaskEntryStyle::None, _pfnCallback, _pUserData);
-        if (!_pThreadWorkEntry)
+        auto _pDelayTask = RefPtr<SimpleTaskEntry>::Create(TaskEntryStyle::None, _pfnCallback, _pUserData);
+        if (!_pDelayTask)
             return E_OUTOFMEMORY;
 
-        return PostTaskInternal(std::move(_pThreadWorkEntry));
+        if (_uAfter.GetMilliseconds() > 0)
+        {
+            _pDelayTask->uExpire = TickCount<TimePrecise::Millisecond>::GetCurrent() + _uAfter;
+        }
+
+        return PostDelayTaskInternal(std::move(_pDelayTask));
     }
 
     HRESULT __YYAPI TaskRunner::SendTask(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
@@ -103,8 +111,19 @@ namespace YY::Base::Threading
         return _oWorkEntry.hr;
     }
 
-    HRESULT __YYAPI TaskRunner::PostDelayInternal(RefPtr<DelayDispatchEntry> _pTask)
+    HRESULT __YYAPI TaskRunner::PostDelayTaskInternal(RefPtr<TaskEntry> _pTask)
     {
+        _pTask->pOwnerTaskRunnerWeak = this;
+
+        if (_pTask->IsCanceled())
+        {
+            _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+            return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
+        }
+
+        if (_pTask->uExpire.GetInternalValue() == 0)
+            return PostTaskInternal(std::move(_pTask));
+
         // 现在的时间已经比过期时间大，那么立即触发任务，降低延迟
         auto _uCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
         if (_pTask->uExpire <= _uCurrent)
@@ -114,8 +133,7 @@ namespace YY::Base::Threading
         }
         else
         {
-            TaskRunnerDispatchImplByIoCompletionImpl::Get()->AddTimer(std::move(_pTask));
-
+            TaskRunnerDispatchImplByIoCompletionImpl::Get()->AddDelayTask(std::move(_pTask));
             return S_OK;
         }
     }

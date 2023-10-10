@@ -126,7 +126,7 @@ namespace YY
                     return ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoIndexImp(_Prop);
                 }
 
-                static_assert(ControlInfoImp<_Class>::GetPropertyInfoCount() < (std::numeric_limits<int32_t>::max)(), "");
+                static_assert(ControlInfoImp<_Class>::GetPropertyInfoCount() < (uint32_t)(std::numeric_limits<int32_t>::max)(), "");
                 return int32_t(_uIndex + ControlInfoImp<typename _Class::StaticControlInfo::BaseControl>::GetPropertyInfoCount());
             }
 

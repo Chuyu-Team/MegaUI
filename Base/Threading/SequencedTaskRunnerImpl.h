@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Base/Threading/TaskRunnerImpl.h>
 #include <Base/Sync/InterlockedQueue.h>
 
@@ -11,25 +11,25 @@ namespace YY::Base::Threading
     private:
         InterlockedQueue<TaskEntry> oTaskQueue;
 
-        // |uWeakCount| bStopWeakup | bPushLock |
-        // | 31  ~  2 |     1       |    0      |
+        // |uWakeupCount| bStopWakeup | bPushLock |
+        // | 31   ~   2 |     1       |    0      |
         union
         {
-            uint32_t uWeakupCountAndPushLock;
+            uint32_t uWakeupCountAndPushLock;
             struct
             {
                 uint32_t bPushLock : 1;
-                uint32_t bStopWeakup : 1;
-                uint32_t uWeakupCount : 30;
+                uint32_t bStopWakeup : 1;
+                uint32_t uWakeupCount : 30;
             };
         };
         enum : uint32_t
         {
             LockedQueuePushBitIndex = 0,
-            StopWeakupBitIndex,
-            WeakupCountStartBitIndex,
-            WeakupOnceRaw = 1 << WeakupCountStartBitIndex,
-            UnlockQueuePushLockBitAndWeakupOnceRaw = WeakupOnceRaw - (1u << LockedQueuePushBitIndex),
+            StopWakeupBitIndex,
+            WakeupCountStartBitIndex,
+            WakeupOnceRaw = 1 << WakeupCountStartBitIndex,
+            UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
         };
 
     public:

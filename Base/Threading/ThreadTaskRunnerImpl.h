@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <new>
 #include <functional>
@@ -16,25 +16,25 @@ namespace YY::Base::Threading
     private:
         InterlockedQueue<TaskEntry> oTaskQueue;
 
-        // |uWeakCount| bStopWeakup | bPushLock |
-        // | 31  ~  2 |     1       |    0      |
+        // |uWeakupCount| bStopWakeup | bPushLock |
+        // | 31   ~   2 |     1       |    0      |
         union
         {
-            uint32_t uWeakupCountAndPushLock;
+            uint32_t uWakeupCountAndPushLock;
             struct
             {
                 uint32_t bPushLock : 1;
-                uint32_t bStopWeakup : 1;
-                uint32_t uWeakupCount : 30;
+                uint32_t bStopWakeup : 1;
+                uint32_t uWakeupCount : 30;
             };
         };
         enum : uint32_t
         {
             LockedQueuePushBitIndex = 0,
-            StopWeakupBitIndex,
-            WeakupCountStartBitIndex,
-            WeakupOnceRaw = 1 << WeakupCountStartBitIndex,
-            UnlockQueuePushLockBitAndWeakupOnceRaw = WeakupOnceRaw - (1u << LockedQueuePushBitIndex),
+            StopWakeupBitIndex,
+            WakeupCountStartBitIndex,
+            WakeupOnceRaw = 1 << WakeupCountStartBitIndex,
+            UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
         };
         
         uint32_t uThreadId;
@@ -43,7 +43,7 @@ namespace YY::Base::Threading
         ThreadTaskRunnerImpl();
 
         /// <summary>
-        /// ´ÓÏß³Ì³Ø½èÓÃÒ»¸öÏß³Ì£¬Ö´ÐÐTaskRunner¡£
+        /// ä»Žçº¿ç¨‹æ± å€Ÿç”¨ä¸€ä¸ªçº¿ç¨‹ï¼Œæ‰§è¡ŒTaskRunnerã€‚
         /// </summary>
         /// <param name="_uTaskRunnerId"></param>
         // ThreadTaskRunnerImpl(_In_ uint32_t _uTaskRunnerId);
@@ -65,7 +65,7 @@ namespace YY::Base::Threading
                 
         uintptr_t __YYAPI RunUIMessageLoop(_In_opt_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
                 
-        void __YYAPI EnableWeakup(_In_ bool _bEnable);
+        void __YYAPI EnableWakeup(_In_ bool _bEnable);
 
     private:
         HRESULT __YYAPI PostTaskInternal(RefPtr<TaskEntry> _pTask) override;

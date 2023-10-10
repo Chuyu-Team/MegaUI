@@ -12,7 +12,7 @@
 | 类/结构名      | 帕斯卡                     | `class Element;`              |
 | 函数名称       | 帕斯卡                     | `void __fastcall Init();`     |
 | 全局变量       | `g_` + 匈牙利Y前缀 + 帕斯卡| `uint32_t g_uSize;`           | 类或者函数中的static变量也认为是全局变量。
-| 常量           | `c_` + 匈牙利Y前缀 + 帕斯卡| `const uint32_t c_uSize = 0;` | 类或者函数中的static常量也这样处理。
+| 常量           | 帕斯卡                     | `constexpr uint32_t Size = 0;`| 类或者函数中的static常量也这样处理。
 | 参数/局部变量  | `_` + 匈牙利Y前缀 + 帕斯卡 | `uint32_t _uSize;`            |
 | 成员变量       | 匈牙利Y前缀 + 帕斯卡       | `uint32_t uSize;`             |
 | 枚举/枚举成员  | 帕斯卡                     | `enum ValueType { Element, };`|
@@ -29,7 +29,7 @@
 | ------------------ | --------- | --------------------- | ---------
 | bool               | b         | `bool bSuccess;`      |
 | 字符               | ch        | `char chDriveLetter;` | char，wchar_t 统一。
-| 带符号整形         | i         | `int64_t iSize;`      | int8_t、int16_t、int32_t均适用，不考虑长度。
+| 带符号数字         | n         | `int64_t nSize;`      | int8_t、int16_t、int32_t、float、double均适用，不考虑长度。
 | 无符号整形         | u         | `uint64_t uSize;`     | uint8_t、uint16_t、uint32_t均适用，不考虑长度。
 | Flags              | f         | `uint32_t fMark;`     | 
 | Buffer变量的字节数 | cb        | `uint32_t cbBuffer;`  | 必须为无符号数，不考虑长度。
@@ -411,7 +411,7 @@ public:
 * 优先考虑 `enum class`;
 * 花括号独立一行，花括号内代码缩进一次。
 * 尽量放置在自己的命名空间中。
-* 最开始的美剧成员需要拥有初始值，因为大多数编译器初始值是 0，而某些可能是 -1。消除潜在不确定因素。
+* 最开始的枚举成员需要拥有初始值，因为大多数编译器初始值是 0，而某些可能是 -1。消除潜在不确定因素。
 
 ```cpp
 enum class ValueType

@@ -77,7 +77,7 @@ namespace YY::Base::Threading
         }
     }
 
-    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::AddTimer(RefPtr<DelayDispatchEntry> _pDispatchTask) noexcept
+    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::AddDelayTask(RefPtr<TaskEntry> _pDispatchTask) noexcept
     {
         for (;;)
         {
@@ -90,6 +90,7 @@ namespace YY::Base::Threading
         }
 
         Weakup();
+        // TODO: 按需唤醒
         PostQueuedCompletionStatus(hIoCompletionPort, 0, 0, nullptr);    
     }
 
@@ -104,17 +105,17 @@ namespace YY::Base::Threading
         {
             for (;;)
             {
-                auto _pDispatchTask = arrTimerDispatchPending.Pop();
+                auto _pDispatchTask = RefPtr<TaskEntry>::FromPtr(arrTimerDispatchPending.Pop());
                 if (!_pDispatchTask)
                     break;
 
                 if (_pDispatchTask->uExpire <= uTimingWheelCurrentTick)
                 {
-                    Dispatch(RefPtr<DelayDispatchEntry>::FromPtr(_pDispatchTask));
+                    Dispatch(std::move(_pDispatchTask));
                     continue;
                 }
 
-                AddTimingWheel(RefPtr<DelayDispatchEntry>::FromPtr(_pDispatchTask));
+                AddTimingWheel(std::move(_pDispatchTask));
             }
 
             auto uMinimumWaitTime = GetMinimumWaitTime();
@@ -140,7 +141,7 @@ namespace YY::Base::Threading
             // 处理完成端口的数据，它的优先级最高
             for (ULONG _uIndex = 0; _uIndex != _uNumEntriesRemoved; ++_uIndex)
             {
-                auto _pDispatchTask = RefPtr<DispatchEntry>::FromPtr(static_cast<IoDispatchEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped));
+                auto _pDispatchTask = RefPtr<TaskEntry>::FromPtr(static_cast<IoTaskEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped));
                 if (!_pDispatchTask)
                     continue;
 
@@ -159,7 +160,7 @@ namespace YY::Base::Threading
     {
         while (auto _pItem = _oTimingWheelList.Pop())
         {
-            Dispatch(RefPtr<DelayDispatchEntry>::FromPtr(_pItem));
+            Dispatch(RefPtr<TaskEntry>::FromPtr(_pItem));
         }
     }
 
@@ -180,9 +181,9 @@ namespace YY::Base::Threading
 
         while (auto _pItem = _oTimingWheel2.Pop())
         {
-            if (_pItem->bCancel || _pItem->uExpire <= _oCurrent)
+            if (_pItem->IsCanceled() || _pItem->uExpire <= _oCurrent)
             {
-                Dispatch(RefPtr<DelayDispatchEntry>::FromPtr(_pItem));
+                Dispatch(RefPtr<TaskEntry>::FromPtr(_pItem));
                 continue;
             }
 
@@ -191,7 +192,7 @@ namespace YY::Base::Threading
 
             if (_uBaseBlockCount < std::size(arrTimingWheel1))
             {
-                auto _uIndex = _uNewLastBlockIndexIndex % std::size(arrTimingWheel1);
+                const uint32_t _uIndex = _uNewLastBlockIndexIndex % std::size(arrTimingWheel1);
                 arrTimingWheel1[_uIndex].Push(_pItem);
                 oTimingWheel1BitMap.SetItem(_uIndex, true);
             }
@@ -201,7 +202,7 @@ namespace YY::Base::Threading
 
                 assert(false);
 
-                Dispatch(RefPtr<DelayDispatchEntry>::FromPtr(_pItem));
+                Dispatch(RefPtr<TaskEntry>::FromPtr(_pItem));
             }
         }
 
@@ -224,9 +225,9 @@ namespace YY::Base::Threading
 
         while (auto _pItem = arrTimingWheel3[_uTimingWheel3BlockIndex].Pop())
         {
-            if (_pItem->bCancel || _pItem->uExpire <= _oCurrent)
+            if (_pItem->IsCanceled() || _pItem->uExpire <= _oCurrent)
             {
-                Dispatch(RefPtr<DelayDispatchEntry>::FromPtr(_pItem));
+                Dispatch(RefPtr<TaskEntry>::FromPtr(_pItem));
                 continue;
             }
 
@@ -235,13 +236,13 @@ namespace YY::Base::Threading
 
             if (_uBaseBlockCount < std::size(arrTimingWheel1))
             {
-                auto _uIndex = _uNewLastBlockIndexIndex % std::size(arrTimingWheel1);
+                uint32_t _uIndex = _uNewLastBlockIndexIndex % std::size(arrTimingWheel1);
                 arrTimingWheel1[_uIndex].Push(_pItem);
                 oTimingWheel1BitMap.SetItem(_uIndex, true);
             }
             else if (_uBaseBlockCount < std::size(arrTimingWheel1) * std::size(arrTimingWheel2))
             {
-                auto _uIndex = (_uNewLastBlockIndexIndex / std::size(arrTimingWheel1)) % std::size(arrTimingWheel2);
+                uint32_t _uIndex = (_uNewLastBlockIndexIndex / std::size(arrTimingWheel1)) % std::size(arrTimingWheel2);
                 arrTimingWheel2[_uIndex].Push(_pItem);
                 oTimingWheel2BitMap.SetItem(_uIndex, true);
             }
@@ -251,7 +252,7 @@ namespace YY::Base::Threading
 
                 assert(false);
 
-                Dispatch(RefPtr<DelayDispatchEntry>::FromPtr(_pItem));
+                Dispatch(RefPtr<TaskEntry>::FromPtr(_pItem));
             }
         }
 
@@ -266,9 +267,9 @@ namespace YY::Base::Threading
 
         while (auto _pItem = arrTimingWheelOthers.Pop())
         {
-            if (_pItem->bCancel || _pItem->uExpire <= _oCurrent)
+            if (_pItem->IsCanceled() || _pItem->uExpire <= _oCurrent)
             {
-                Dispatch(RefPtr<DelayDispatchEntry>::FromPtr(_pItem));
+                Dispatch(RefPtr<TaskEntry>::FromPtr(_pItem));
                 continue;
             }
 
@@ -277,19 +278,19 @@ namespace YY::Base::Threading
 
             if (_uBaseBlockCount < std::size(arrTimingWheel1))
             {
-                auto _uIndex = _uNewLastBlockIndexIndex % std::size(arrTimingWheel1);
+                uint32_t _uIndex = _uNewLastBlockIndexIndex % std::size(arrTimingWheel1);
                 arrTimingWheel1[_uIndex].Push(_pItem);
                 oTimingWheel1BitMap.SetItem(_uIndex, true);
             }
             else if (_uBaseBlockCount < std::size(arrTimingWheel1) * std::size(arrTimingWheel2))
             {
-                auto _uIndex = (_uNewLastBlockIndexIndex / std::size(arrTimingWheel1)) % std::size(arrTimingWheel2);
+                uint32_t _uIndex = (_uNewLastBlockIndexIndex / std::size(arrTimingWheel1)) % std::size(arrTimingWheel2);
                 arrTimingWheel2[_uIndex].Push(_pItem);
                 oTimingWheel2BitMap.SetItem(_uIndex, true);
             }
             else if (_uBaseBlockCount < std::size(arrTimingWheel1) * std::size(arrTimingWheel2) * std::size(arrTimingWheel3))
             {
-                auto _uIndex = (_uNewLastBlockIndexIndex / std::size(arrTimingWheel1) / std::size(arrTimingWheel2)) % std::size(arrTimingWheel3);
+                uint32_t _uIndex = (_uNewLastBlockIndexIndex / std::size(arrTimingWheel1) / std::size(arrTimingWheel2)) % std::size(arrTimingWheel3);
                 arrTimingWheel3[_uIndex].Push(_pItem);
                 oTimingWheel3BitMap.SetItem(_uIndex, true);
             }
@@ -334,10 +335,11 @@ namespace YY::Base::Threading
                 if (_iIndex < 0)
                     break;
 
-                if (_iIndex >= _uMaxRigthEndIndex1)
+                const auto _uIndex = (uint32_t)_iIndex;
+                if (_uIndex >= _uMaxRigthEndIndex1)
                     break;
-                Dispatch(arrTimingWheel1[_iIndex]);
-                oTimingWheel1BitMap.SetItem(_iIndex, false);
+                Dispatch(arrTimingWheel1[_uIndex]);
+                oTimingWheel1BitMap.SetItem(_uIndex, false);
             }
 
             if (_uStartIndex1 > _uEndIndex1)
@@ -349,12 +351,12 @@ namespace YY::Base::Threading
                     _iIndex = oTimingWheel1BitMap.Find(_iIndex);
                     if (_iIndex < 0)
                         break;
-
-                    if (_iIndex >= _uEndIndex1)
+                    const auto _uIndex = (uint32_t)_iIndex;
+                    if (_uIndex >= _uEndIndex1)
                         break;
 
-                    Dispatch(arrTimingWheel1[_iIndex]);
-                    oTimingWheel1BitMap.SetItem(_iIndex, false);
+                    Dispatch(arrTimingWheel1[_uIndex]);
+                    oTimingWheel1BitMap.SetItem(_uIndex, false);
                 }
             }
 
@@ -373,9 +375,9 @@ namespace YY::Base::Threading
                 _iIndex = oTimingWheel1BitMap.Find(_iIndex);
                 if (_iIndex < 0)
                     break;
-
-                Dispatch(arrTimingWheel1[_iIndex]);
-                oTimingWheel1BitMap.SetItem(_iIndex, false);
+                auto _uIndex = (uint32_t)_iIndex;
+                Dispatch(arrTimingWheel1[_uIndex]);
+                oTimingWheel1BitMap.SetItem(_uIndex, false);
             }
             //
             /////////////////////////////////////////
@@ -393,12 +395,12 @@ namespace YY::Base::Threading
                 _iIndex = oTimingWheel2BitMap.Find(_iIndex);
                 if (_iIndex < 0)
                     break;
-
-                if (_iIndex >= _uMaxRigthEndIndex2)
+                const auto _uIndex = (uint32_t)_iIndex;
+                if (_uIndex >= _uMaxRigthEndIndex2)
                     break;
 
-                Dispatch(arrTimingWheel2[_iIndex]);
-                oTimingWheel2BitMap.SetItem(_iIndex, false);
+                Dispatch(arrTimingWheel2[_uIndex]);
+                oTimingWheel2BitMap.SetItem(_uIndex, false);
             }
 
 
@@ -411,11 +413,11 @@ namespace YY::Base::Threading
                     _iIndex = oTimingWheel2BitMap.Find(_iIndex);
                     if (_iIndex < 0)
                         break;
-
-                    if (_iIndex >= _uEndIndex2)
+                    const auto _uIndex = (uint32_t)_iIndex;
+                    if (_uIndex >= _uEndIndex2)
                         break;
-                    Dispatch(arrTimingWheel2[_iIndex]);
-                    oTimingWheel2BitMap.SetItem(_iIndex, false);
+                    Dispatch(arrTimingWheel2[_uIndex]);
+                    oTimingWheel2BitMap.SetItem(_uIndex, false);
                 }
             }
 
@@ -449,9 +451,9 @@ namespace YY::Base::Threading
                 _iIndex = oTimingWheel2BitMap.Find(_iIndex);
                 if (_iIndex < 0)
                     break;
-
-                Dispatch(arrTimingWheel2[_iIndex]);
-                oTimingWheel2BitMap.SetItem(_iIndex, false);
+                const auto _uIndex = (uint32_t)_iIndex;
+                Dispatch(arrTimingWheel2[_uIndex]);
+                oTimingWheel2BitMap.SetItem(_uIndex, false);
             }
             //
             /////////////////////////////////////////
@@ -470,12 +472,12 @@ namespace YY::Base::Threading
                 _iIndex = oTimingWheel3BitMap.Find(_iIndex);
                 if (_iIndex < 0)
                     break;
-
-                if (_iIndex >= _uMaxRigthEndIndex3)
+                const auto _uIndex = (uint32_t)_iIndex;
+                if (_uIndex >= _uMaxRigthEndIndex3)
                     break;
 
-                Dispatch(arrTimingWheel3[_iIndex]);
-                oTimingWheel3BitMap.SetItem(_iIndex, false);
+                Dispatch(arrTimingWheel3[_uIndex]);
+                oTimingWheel3BitMap.SetItem(_uIndex, false);
             }
 
             if (_uStartIndex3 > _uEndIndex3)
@@ -487,11 +489,11 @@ namespace YY::Base::Threading
                     _iIndex = oTimingWheel3BitMap.Find(_iIndex);
                     if (_iIndex < 0)
                         break;
-
-                    if (_iIndex >= _uEndIndex3)
+                    const auto _uIndex = (uint32_t)_iIndex;
+                    if (_uIndex >= _uEndIndex3)
                         break;
-                    Dispatch(arrTimingWheel3[_iIndex]);
-                    oTimingWheel3BitMap.SetItem(_iIndex, false);
+                    Dispatch(arrTimingWheel3[_uIndex]);
+                    oTimingWheel3BitMap.SetItem(_uIndex, false);
                 }
             }
 
@@ -545,7 +547,7 @@ namespace YY::Base::Threading
         }
     }
 
-    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::AddTimingWheel(RefPtr<DelayDispatchEntry> _pDispatchTask) noexcept
+    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::AddTimingWheel(RefPtr<TaskEntry> _pDispatchTask) noexcept
     {
         const auto _uSpanBlock = (_pDispatchTask->uExpire - uTimingWheelCurrentTick).GetMilliseconds() / TimingWheelBaseTick;
         auto _uBase1 = (uTimingWheelCurrentTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick + _uSpanBlock;
@@ -633,10 +635,10 @@ namespace YY::Base::Threading
         return UINT32_MAX;
     }
 
-    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Dispatch(RefPtr<DispatchEntry> _pDispatchTask)
+    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Dispatch(RefPtr<TaskEntry> _pDispatchTask)
     {
-        auto _pResumeTaskRunner = _pDispatchTask->pResumeTaskRunnerWeak.Get();
-        if (_pResumeTaskRunner == nullptr || _pDispatchTask->bCancel)
+        auto _pResumeTaskRunner = _pDispatchTask->pOwnerTaskRunnerWeak.Get();
+        if (_pResumeTaskRunner == nullptr || _pDispatchTask->IsCanceled())
         {
             _pDispatchTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
         }

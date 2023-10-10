@@ -14,7 +14,7 @@ namespace YY::Base::Threading
     static thread_local uint32_t s_uUIMessageLoopEnterCount = 0u;
 
     ThreadTaskRunnerImpl::ThreadTaskRunnerImpl()
-        : uWeakupCountAndPushLock(WeakupOnceRaw)
+        : uWakeupCountAndPushLock(WakeupOnceRaw)
         , uThreadId(GetCurrentThreadId())
     {
     }
@@ -22,7 +22,7 @@ namespace YY::Base::Threading
     /*ThreadTaskRunnerImpl::ThreadTaskRunnerImpl(uint32_t _uTaskRunnerId)
         : uTaskRunnerId(_uTaskRunnerId)
         , uThreadId(0)
-        , uWeakupCountAndPushLock(0)
+        , uWakeupCountAndPushLock(0)
     {
 
     }*/
@@ -49,7 +49,7 @@ namespace YY::Base::Threading
         if (s_uUIMessageLoopEnterCount == 1)
         {
             g_pTaskRunnerWeak = this;
-            EnableWeakup(true);
+            EnableWakeup(true);
         }
 
         if (_pfnCallback)
@@ -80,21 +80,22 @@ namespace YY::Base::Threading
             }
             else
             {
-                if (auto _pTask = RefPtr<TaskEntry>::FromPtr(oTaskQueue.Pop()))
+                auto _pTask = oTaskQueue.Pop();
+                if (_pTask)
                 {
-                    _pTask->operator()();
-                    _pTask->Wakeup(S_OK);
+                    _pTask->RunTask();
+                    _pTask->Release();
                 }
 
-                // uPushLock 占用1bit，所以 uWeakCount += 1 等价于 uWeakCountAndPushLock += 2
-                if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
+                // uPushLock 占用1bit，所以 uWakeupCount += 1 等价于 uWakeupCountAndPushLock += 2
+                if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
                 {
-                    // uWeakCount 已经归零，进入睡眠状态
+                    // uWakeupCount 已经归零，进入睡眠状态
                     WaitMessage();
                 }
 
                 // 消息循环本身因为处于激活状态，所以
-                Sync::Add(&uWeakupCountAndPushLock, uint32_t(WeakupOnceRaw));
+                Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
             }
         }
 
@@ -104,20 +105,20 @@ namespace YY::Base::Threading
             // 对于线程来说，交给weak_ptr控制
             // 线程退出或者交还线程池时再统释放。
             // g_pTaskRunnerWeak = nullptr;
-            EnableWeakup(false);
+            EnableWakeup(false);
         }
         return _oMsg.wParam;
     }
 
-    void __YYAPI ThreadTaskRunnerImpl::EnableWeakup(bool _bEnable)
+    void __YYAPI ThreadTaskRunnerImpl::EnableWakeup(bool _bEnable)
     {
         if (_bEnable)
         {
-            Sync::BitReset(&uWeakupCountAndPushLock, StopWeakupBitIndex);
+            Sync::BitReset(&uWakeupCountAndPushLock, StopWakeupBitIndex);
         }
         else
         {
-            Sync::BitSet(&uWeakupCountAndPushLock, StopWeakupBitIndex);
+            Sync::BitSet(&uWakeupCountAndPushLock, StopWakeupBitIndex);
         }
     }
 #endif
@@ -125,7 +126,7 @@ namespace YY::Base::Threading
 #ifdef _WIN32
     HRESULT __YYAPI ThreadTaskRunnerImpl::PostTaskInternal(RefPtr<TaskEntry> _pTask)
     {
-        if (bStopWeakup)
+        if (bStopWakeup)
         {
             _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
             return E_FAIL;
@@ -133,18 +134,18 @@ namespace YY::Base::Threading
 
         for (;;)
         {
-            if (!Sync::BitSet(&uWeakupCountAndPushLock, LockedQueuePushBitIndex))
+            if (!Sync::BitSet(&uWakeupCountAndPushLock, LockedQueuePushBitIndex))
             {
                 oTaskQueue.Push(_pTask.Detach());
                 break;
             }
         }
 
-        // 我们 解除锁定，uPushLock = 0 并且将 uWeakCount += 1
-        // 因为刚才 uWeakCountAndPushLock 已经将第一个标记位设置位 1
-        // 所以我们再 uWeakCountAndPushLock += 1即可。
-        // uWeakCount + 1 <==> uWeakCountAndPushLock + 2 <==> (uWeakCountAndPushLock | 1) + 1
-        if (Sync::Add(&uWeakupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWeakupOnceRaw)) < WeakupOnceRaw * 2u)
+        // 我们 解除锁定，uPushLock = 0 并且将 uWakeupCount += 1
+        // 因为刚才 uWakeupCountAndPushLock 已经将第一个标记位设置位 1
+        // 所以我们再 uWakeupCountAndPushLock += 1即可。
+        // uWakeupCount + 1 <==> uWakeupCountAndPushLock + 2 <==> (uWakeupCountAndPushLock | 1) + 1
+        if (Sync::Add(&uWakeupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWakeupOnceRaw)) < WakeupOnceRaw * 2u)
         {
             // 为 1 是说明当前正在等待输入消息，并且未主动唤醒
             // 因此调用 PostAppMessageW 尝试唤醒目标线程的消息循环。
@@ -165,7 +166,7 @@ namespace YY::Base::Threading
 
             _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
 
-            if (Sync::Subtract(&uWeakupCountAndPushLock, WeakupOnceRaw) < WeakupOnceRaw)
+            if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
                 break;
         }
     }
