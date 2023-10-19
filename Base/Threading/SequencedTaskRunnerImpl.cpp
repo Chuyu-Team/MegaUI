@@ -25,15 +25,13 @@ namespace YY::Base::Threading
         return TaskRunnerStyle::Sequenced;
     }
 
-#ifdef _WIN32
     HRESULT __YYAPI SequencedTaskRunnerImpl::PostTaskInternal(RefPtr<TaskEntry> _pTask)
     {
         _pTask->hr = E_PENDING;
 
         if (bStopWakeup)
         {
-            _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-            return E_FAIL;
+            return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
         }
 
         for (;;)
@@ -51,35 +49,23 @@ namespace YY::Base::Threading
         // uWakeupCount + 1 <==> uWakeupCountAndPushLock + 2 <==> (uWakeupCountAndPushLock | 1) + 1
         if (Sync::Add(&uWakeupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWakeupOnceRaw)) < WakeupOnceRaw * 2u)
         {
-            // 额外增加一次引用计数，避免TrySubmitThreadpoolCallback回调函数内部已经被释放了
-            AddRef();
-            auto _bRet = TrySubmitThreadpoolCallback(
-                [](_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) -> void
-                {
-                    // 注意 上面额外调用了 AddRef，所以现在由 RefPtr接管的安全的。
-                    auto _pSequencedTaskRunner = RefPtr<SequencedTaskRunnerImpl>::FromPtr(reinterpret_cast<SequencedTaskRunnerImpl*>(Context));
-                    _pSequencedTaskRunner->ExecuteTaskRunner();
-                },
-                this,
-                nullptr);
-
-            if (!_bRet)
+            auto _hr = ThreadPool::PostTaskInternal(this);
+            if (FAILED(_hr))
             {
                 // 阻止后续再唤醒线程
                 Sync::BitSet(&uWakeupCountAndPushLock, StopWakeupBitIndex);
-                auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
                 CleanupTaskQueue();
-
-                // 刚才调用前 TrySubmitThreadpoolCallback，特意增加了一次引用计数
-                // 现在 TrySubmitThreadpoolCallback 失败，所以重新归还引用计数
-                Release();
                 return _hr;
             }
         }
 
         return S_OK;
     }
-#endif
+
+    void __YYAPI SequencedTaskRunnerImpl::operator()()
+    {
+        ExecuteTaskRunner();
+    }
 
     void __YYAPI SequencedTaskRunnerImpl::ExecuteTaskRunner()
     {
@@ -96,7 +82,7 @@ namespace YY::Base::Threading
             auto _pTask = oTaskQueue.Pop();
             if (!_pTask)
                 break;
-            _pTask->RunTask();
+            _pTask->operator()();
             _pTask->Release();
             if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
                 break;

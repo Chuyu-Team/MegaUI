@@ -24,7 +24,7 @@ namespace YY::Base::Threading
         {
         }
 
-        void __YYAPI operator()() override
+        void __YYAPI RunTask() override
         {
             pfnCallback(pUserData);
         }
@@ -117,7 +117,6 @@ namespace YY::Base::Threading
 
         if (_pTask->IsCanceled())
         {
-            _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
             return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
         }
 
@@ -136,6 +135,20 @@ namespace YY::Base::Threading
             TaskRunnerDispatchImplByIoCompletionImpl::Get()->AddDelayTask(std::move(_pTask));
             return S_OK;
         }
+    }
+
+    RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::Create(bool _bBackgroundLoop)
+    {
+        auto _pTaskRunner = RefPtr<ThreadTaskRunnerImpl>::Create(0u, _bBackgroundLoop);
+        if (_pTaskRunner)
+        {
+            auto _hr = ThreadPool::PostTaskInternal(_pTaskRunner.Get());
+            if (FAILED(_hr))
+            {
+                return nullptr;
+            }
+        }
+        return _pTaskRunner;
     }
             
     RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::GetCurrent()

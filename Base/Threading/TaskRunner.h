@@ -14,6 +14,7 @@
 #include <MegaUI/Base/ErrorCode.h>
 #include <Base/Memory/WeakPtr.h>
 #include <Base/Time/TickCount.h>
+#include <Base/Threading/ThreadPool.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -67,7 +68,18 @@ namespace YY::Base::Threading
         TaskEntry(const TaskEntry&) = delete;
         TaskEntry& operator=(const TaskEntry&) = delete;
 
-        virtual void __YYAPI operator()() = 0;
+        void __YYAPI operator()()
+        {
+            if (IsCanceled())
+            {
+                Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+            }
+            else
+            {
+                RunTask();
+                Wakeup(S_OK);
+            }
+        }
 
         /// <summary>
         /// 设置错误代码，并唤醒相关等待者。
@@ -93,25 +105,9 @@ namespace YY::Base::Threading
             fStyle |= TaskEntryStyle::Canceled;
         }
 
-        void RunTask()
-        {
-            if (IsCanceled())
-            {
-                Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-            }
-            else
-            {
-                this->operator()();
-                Wakeup(S_OK);
-            }
-        }
+        virtual void __YYAPI RunTask() = 0;
     };
 
-    /*class ThreadPool : public RefValue
-    {
-    public:
-
-    };*/
     class TaskRunnerDispatchImplByIoCompletionImpl;
 
     // 通用任务执行器的抽象层
@@ -181,7 +177,7 @@ namespace YY::Base::Threading
                 {
                 }
 
-                void __YYAPI operator()() override
+                void __YYAPI RunTask() override
                 {
                     pfnLambdaCallback();
                 }
@@ -234,7 +230,7 @@ namespace YY::Base::Threading
                 {
                 }
 
-                void __YYAPI operator()() override
+                void __YYAPI RunTask() override
                 {
                     pfnLambdaCallback();
 
@@ -363,7 +359,7 @@ namespace YY::Base::Threading
                 {
                 }
 
-                void __YYAPI operator()() override
+                void __YYAPI RunTask() override
                 {
                     pfnLambdaCallback();
 
@@ -422,8 +418,9 @@ namespace YY::Base::Threading
         /// 如果ThreadTaskRunner生命周期解除，则将线程归还线程池。
         /// 温馨提示：优先考虑使用 `SequencedTaskRunner::Create()`，ThreadTaskRunner的创建开销为高昂。
         /// </summary>
+        /// <param name="_bBackgroundLoop"></param>
         /// <returns></returns>
-        // static RefPtr<ThreadTaskRunner> __YYAPI Create();
+        static RefPtr<ThreadTaskRunner> __YYAPI Create(_In_ bool _bBackgroundLoop = true);
 
         /// <summary>
         /// 获取当前线程绑定的TaskRunner。

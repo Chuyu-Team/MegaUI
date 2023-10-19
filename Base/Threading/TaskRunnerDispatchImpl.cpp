@@ -25,7 +25,6 @@ namespace YY::Base::Threading
         , uTimingWheelCurrentTick()
     {
         hIoCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1u);
-        //hWeakupEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     }
 
     TaskRunnerDispatchImplByIoCompletionImpl::~TaskRunnerDispatchImplByIoCompletionImpl()
@@ -60,19 +59,10 @@ namespace YY::Base::Threading
     {
         if (!Sync::BitSet(&fFlags, 0))
         {
-            auto _bRet = TrySubmitThreadpoolCallback(
-                [](_Inout_ PTP_CALLBACK_INSTANCE Instance, _In_ PVOID Context) -> void
-                {
-                    auto _pDispatch = ((TaskRunnerDispatchImplByIoCompletionImpl*)Context);
-
-                    _pDispatch->ExecuteTaskRunner();
-                },
-                this,
-                nullptr);
-
-            if (!_bRet)
+            auto _hr = ThreadPool::PostTaskInternalWithoutAddRef(this);
+            if (FAILED(_hr))
             {
-                throw Exception(YY::Base::HRESULT_From_LSTATUS(GetLastError()));
+                throw Exception(_hr);
             }
         }
     }
@@ -92,6 +82,11 @@ namespace YY::Base::Threading
         Weakup();
         // TODO: 按需唤醒
         PostQueuedCompletionStatus(hIoCompletionPort, 0, 0, nullptr);    
+    }
+
+    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::operator()()
+    {
+        ExecuteTaskRunner();
     }
 
     void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::ExecuteTaskRunner()
@@ -637,14 +632,27 @@ namespace YY::Base::Threading
 
     void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Dispatch(RefPtr<TaskEntry> _pDispatchTask)
     {
-        auto _pResumeTaskRunner = _pDispatchTask->pOwnerTaskRunnerWeak.Get();
-        if (_pResumeTaskRunner == nullptr || _pDispatchTask->IsCanceled())
+        do
         {
-            _pDispatchTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-        }
-        else
-        {
+            if (_pDispatchTask->IsCanceled())
+                break;
+
+            // 不属于任何TaskRunner，因此在线程池随机唤醒
+            if (_pDispatchTask->pOwnerTaskRunnerWeak == nullptr)
+            {
+                auto _hr = ThreadPool::PostTaskInternal(_pDispatchTask.Get());
+                return;
+            }
+
+            // 任务所属的 TaskRunner 已经释放？
+            auto _pResumeTaskRunner = _pDispatchTask->pOwnerTaskRunnerWeak.Get();
+            if (_pResumeTaskRunner == nullptr)
+                break;
+
             _pResumeTaskRunner->PostTaskInternal(std::move(_pDispatchTask));
-        }
+            return;
+        } while (false);
+
+        _pDispatchTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
     }
 }

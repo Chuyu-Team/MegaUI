@@ -159,8 +159,7 @@ namespace YY::Base::Threading
 
             if (TaskRunnerFlags.bStopWakeup)
             {
-                _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-                return E_FAIL;
+                return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
             }
             
             const auto _uParallelMaximum = uParallelMaximum ? uParallelMaximum : GetLogicalProcessorCount();
@@ -201,59 +200,16 @@ namespace YY::Base::Threading
             if (_uOldFlags.uParallelCurrent == _uNewFlags.uParallelCurrent)
                 return S_OK;
 
-            // 如果是第一次那么再额外 AddRef，避免TrySubmitThreadpoolCallback回调函数调用时 TaskRunner 被释放了
+            // 如果是第一次那么再额外 AddRef，避免ThreadPool::PostTaskInternalWithoutAddRef回调函数调用时 TaskRunner 被释放了
             if (_uOldFlags.uParallelCurrent == 0u)
             {
                 AddRef();
             }
-
-            auto _bRet = TrySubmitThreadpoolCallback(
-                [](_Inout_ PTP_CALLBACK_INSTANCE Instance, _In_ PVOID Context) -> void
-                {
-                    auto _pTaskRunner = reinterpret_cast<ParallelTaskRunnerImpl*>(Context);                    
-                    
-                EXECUTE_TASK_RUNNER__:
-                    _pTaskRunner->ExecuteTaskRunner();
-
-                    // 尝试释放 uParallelCurrent
-                    TaskRunnerFlagsType _uOldFlags = _pTaskRunner->TaskRunnerFlags;
-                    TaskRunnerFlagsType _uNewFlags;
-                    for (;;)
-                    {
-                        if (_pTaskRunner->IsShared())
-                        {
-                            // 任然有任务，重新执行 ExecuteTaskRunner
-                            if (_uOldFlags.uWakeupCount > 0)
-                            {
-                                goto EXECUTE_TASK_RUNNER__;
-                            }
-                        }
-
-                        _uNewFlags = _uOldFlags;
-                        _uNewFlags.uParallelCurrent -= 1;
-
-                        auto _uLast = Sync::CompareExchange(&_pTaskRunner->TaskRunnerFlags.fFlags64, _uNewFlags.fFlags64, _uOldFlags.fFlags64);
-                        if (_uLast == _uOldFlags.fFlags64)
-                            break;
-
-                        _uOldFlags.fFlags64 = _uLast;
-                    }
-
-                    if (_uNewFlags.uParallelCurrent == 0u)
-                    {
-                        // 对应上面 if (_uOldFlags.uParallelCurrent == 0u) AddRef();
-                        _pTaskRunner->Release();
-                    }
-                },
-                this,
-                nullptr);
-
-            if (!_bRet)
+            auto _hr = ThreadPool::PostTaskInternalWithoutAddRef(this);
+            if (FAILED(_hr))
             {
                 // 阻止后续再唤醒线程
                 Sync::BitSet(&TaskRunnerFlags.uWakeupCountAndPushLock, StopWakeupBitIndex);
-                auto _hr = YY::Base::HRESULT_From_LSTATUS(GetLastError());
-
                 if (Sync::Decrement(&TaskRunnerFlags.uParallelCurrent) == 0u)
                 {
                     // 对应上面 if (_uOldFlags.uParallelCurrent == 0u) AddRef();
@@ -282,6 +238,42 @@ namespace YY::Base::Threading
                 }
             }
             return _pTmp;
+        }
+
+        void __YYAPI operator()()
+        {
+        EXECUTE_TASK_RUNNER__:
+            ExecuteTaskRunner();
+
+            // 尝试释放 uParallelCurrent
+            TaskRunnerFlagsType _uOldFlags = TaskRunnerFlags;
+            TaskRunnerFlagsType _uNewFlags;
+            for (;;)
+            {
+                if (IsShared())
+                {
+                    // 任然有任务，重新执行 ExecuteTaskRunner
+                    if (_uOldFlags.uWakeupCount > 0)
+                    {
+                        goto EXECUTE_TASK_RUNNER__;
+                    }
+                }
+
+                _uNewFlags = _uOldFlags;
+                _uNewFlags.uParallelCurrent -= 1;
+
+                auto _uLast = Sync::CompareExchange(&TaskRunnerFlags.fFlags64, _uNewFlags.fFlags64, _uOldFlags.fFlags64);
+                if (_uLast == _uOldFlags.fFlags64)
+                    break;
+
+                _uOldFlags.fFlags64 = _uLast;
+            }
+
+            if (_uNewFlags.uParallelCurrent == 0u)
+            {
+                // 对应上面 ThreadPool::PostTaskInternalWithoutAddRef 的AddRef();
+                Release();
+            }
         }
 
         void __YYAPI ExecuteTaskRunner()

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Base/YY.h>
 #include <Base/Exception.h>
 #include <MegaUI/Base/ErrorCode.h>
@@ -11,7 +11,7 @@ namespace YY
         bool SafeCast(_In_ const InType& _oIn, _Out_opt_ OutType* _pOut) noexcept;
 
         /// <summary>
-        /// °²È«µÄÀàĞÍ×ª»»£¬Èç¹ûÊ§°ÜÔòÅ×³öÒì³£¡£
+        /// å®‰å…¨çš„ç±»å‹è½¬æ¢ï¼Œå¦‚æœå¤±è´¥åˆ™æŠ›å‡ºå¼‚å¸¸ã€‚
         /// </summary>
         /// <param name="_oIn"></param>
         /// <returns></returns>
@@ -21,7 +21,7 @@ namespace YY
             OutType _oOut;
             if (!SafeCast(_oIn, &_oOut))
             {
-                throw Exception(_S("Ö¸¶¨ÀàĞÍ×ª»»Ê§°Ü¡£"), E_INVALIDARG);
+                throw Exception(_S("æŒ‡å®šç±»å‹è½¬æ¢å¤±è´¥ã€‚"), E_INVALIDARG);
             }
 
             return _oOut;
@@ -48,5 +48,12 @@ namespace YY
                 *_pOut = (uint16_t)_oIn;
             return true;
         }
+
+        template<typename Type>
+        Type* RemoveVolatileCast(volatile Type* _pIn)
+        {
+            return const_cast<Type*>(_pIn);
+        }
+
     } // namespace Base
 } // namespace YY

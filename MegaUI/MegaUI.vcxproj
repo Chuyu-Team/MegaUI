@@ -190,6 +190,8 @@
     <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />
     <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h" />
+    <ClInclude Include="..\Base\Threading\ThreadPool.h" />
+    <ClInclude Include="..\Base\Threading\ThreadPoolForWindows.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Time\Common.h" />
     <ClInclude Include="..\Base\Time\TickCount.h" />
@@ -244,6 +246,7 @@
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp" />
+    <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp" />
     <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp" />
     <ClCompile Include="..\Media\Font.cpp">
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>

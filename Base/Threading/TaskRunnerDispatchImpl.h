@@ -80,9 +80,9 @@ namespace YY::Base::Threading
 
     class TaskRunnerDispatchImplByIoCompletionImpl
     {
+        friend ThreadPool;
     private:
         HANDLE hIoCompletionPort;
-        HANDLE hWeakupEvent;
         uint32_t fFlags;
         TickCount<TimePrecise::Millisecond> uTimingWheelCurrentTick;
 
@@ -118,6 +118,9 @@ namespace YY::Base::Threading
         void __YYAPI Weakup();
 
         void __YYAPI AddDelayTask(_In_ RefPtr<TaskEntry> _pDispatchTask) noexcept;
+
+    protected:
+        void __YYAPI operator()();
 
     private:
         void __YYAPI ExecuteTaskRunner();

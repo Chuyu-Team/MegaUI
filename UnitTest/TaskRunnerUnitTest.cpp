@@ -6,6 +6,7 @@
 #include <string>
 
 #include <Base/Threading/TaskRunner.h>
+#include <Base/Threading/ProcessThreads.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -233,6 +234,63 @@ namespace UnitTest
             Sleep(500);
             
             Assert::AreEqual((void*)_pOutTaskRunner.Get(), (void*)_pTaskRunner.Get());
+        }
+    };
+
+    TEST_CLASS(ThreadTaskRunnerUnitTest)
+    {
+    public:
+        TEST_METHOD(后台模式检测)
+        {
+            auto _pTaskRunner = ThreadTaskRunner::Create(true);
+
+            volatile uint32_t _uCount2 = 0;
+
+            _pTaskRunner->PostTask([&_uCount2]()
+                {
+                    _uCount2 = 1;
+                });
+
+            Sleep(100);
+
+            Assert::AreEqual((uint32_t)_uCount2, 1u);
+
+            _pTaskRunner->PostTask([&_uCount2]()
+                {
+                    _uCount2 = 2;
+                });
+
+            Sleep(100);
+
+            Assert::AreEqual((uint32_t)_uCount2, 2u);
+
+            _pTaskRunner->PostTask([&_uCount2]()
+                {
+                    _uCount2 = 3;
+                });
+
+            Sleep(100);
+
+            Assert::AreEqual((uint32_t)_uCount2, 3u);
+        }
+
+
+        TEST_METHOD(线程Id获取)
+        {
+            auto _pTaskRunner = ThreadTaskRunner::Create(true);
+
+            auto _oId = _pTaskRunner->GetThreadId();
+            decltype(_oId) _oId2 = 0xCC;
+
+
+            _pTaskRunner->PostTask([&_oId2]()
+                {
+                    _oId2 = Threading::GetCurrentThreadId();
+                });
+
+            Sleep(10);
+
+            Assert::AreEqual(_oId, _oId2);
         }
     };
 } // namespace UnitTest

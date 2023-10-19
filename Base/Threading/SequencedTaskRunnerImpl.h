@@ -8,6 +8,7 @@ namespace YY::Base::Threading
 {
     class SequencedTaskRunnerImpl : public SequencedTaskRunner
     {
+        friend ThreadPool;
     private:
         InterlockedQueue<TaskEntry> oTaskQueue;
 
@@ -45,8 +46,10 @@ namespace YY::Base::Threading
         // TaskRunner
         virtual TaskRunnerStyle __YYAPI GetStyle() const noexcept override;
 
+        void __YYAPI operator()();
+
     private:
-        HRESULT __YYAPI PostTaskInternal(RefPtr<TaskEntry> _pWorkEntry) override;
+        HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) override;
 
         void __YYAPI CleanupTaskQueue() noexcept;
 

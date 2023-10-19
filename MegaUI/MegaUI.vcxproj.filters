@@ -37,9 +37,6 @@
     <Filter Include="Base\Containers">
       <UniqueIdentifier>{89a3bf71-18a5-4c34-9e8c-07dba97668f7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Sync">
-      <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Base\Threading">
       <UniqueIdentifier>{70ce5618-1412-4047-91ac-176a84a368fd}</UniqueIdentifier>
     </Filter>
@@ -84,6 +81,12 @@
     </Filter>
     <Filter Include="Base\Time">
       <UniqueIdentifier>{acad2a55-e5aa-4701-b55a-c0d7db0f1332}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Threading\TaskRunner\Windows">
+      <UniqueIdentifier>{81d23f6c-2fdc-45b6-b240-e41605dfe965}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Memory\Sync">
+      <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -169,7 +172,7 @@
       <Filter>Base\Containers</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\Interlocked.h">
-      <Filter>Base\Sync</Filter>
+      <Filter>Base\Memory\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Color.h">
       <Filter>Media</Filter>
@@ -232,7 +235,7 @@
       <Filter>Media</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h">
-      <Filter>Base\Sync</Filter>
+      <Filter>Base\Memory\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\DrawContext.h">
       <Filter>Media\Graphics</Filter>
@@ -268,10 +271,10 @@
       <Filter>Base\Containers</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\InterlockedQueue.h">
-      <Filter>Base\Sync</Filter>
+      <Filter>Base\Memory\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\Sync.h">
-      <Filter>Base\Sync</Filter>
+      <Filter>Base\Memory\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ProcessThreads.h">
       <Filter>Base\Threading</Filter>
@@ -317,6 +320,12 @@
     </ClInclude>
     <ClInclude Include="..\Base\Containers\BitMap.h">
       <Filter>Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\ThreadPool.h">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\ThreadPoolForWindows.h">
+      <Filter>Base\Threading\TaskRunner\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -389,9 +398,6 @@
     <ClCompile Include="..\Media\Graphics\DrawContext.cpp">
       <Filter>Media\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp">
-      <Filter>Base\Threading\TaskRunner</Filter>
-    </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp">
       <Filter>Base\Threading\TaskRunner</Filter>
     </ClCompile>
@@ -403,6 +409,12 @@
     </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp">
       <Filter>Base\Threading\TaskRunner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp">
+      <Filter>Base\Threading\TaskRunner\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

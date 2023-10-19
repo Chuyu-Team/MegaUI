@@ -24,8 +24,8 @@ namespace YY::Base::Memory
     class RefValue
     {
     private:
-        uint32_t uRef;
-        uint32_t uWeakRef;
+        volatile uint32_t uRef;
+        volatile uint32_t uWeakRef;
 
     public:
         constexpr RefValue()

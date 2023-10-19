@@ -75,7 +75,7 @@ namespace YY::Base::IO
                 {
                 }
 
-                void __YYAPI operator()() override
+                void __YYAPI RunTask() override
                 {
                     lStatus = DosErrorFormNtStatus(Internal);
                     auto _hHandle = (void*)YY::Base::Sync::Exchange(&hHandle, /*hReadyHandle*/ (intptr_t)-1);
@@ -159,3 +159,5 @@ namespace YY::Base::IO
         }
     };
 }
+
+#pragma pack(pop)
