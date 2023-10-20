@@ -29,7 +29,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现。
 #include <Base/Encoding.h>
 #include <Base/Exception.h>
 #include <Base/YY.h>
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Memory/Alloc.h>
 

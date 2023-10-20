@@ -4,6 +4,8 @@
 #include <winerror.h>
 #endif
 
+#include <Base/YY.h>
+
 namespace YY::Base
 {
 #ifndef _WIN32
@@ -77,3 +79,8 @@ namespace YY::Base
     }
 #endif
 } // namespace YY::Base
+
+namespace YY
+{
+    using namespace YY::Base;
+}

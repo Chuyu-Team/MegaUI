@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Base/Memory/RefPtr.h>
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 
 #pragma pack(push, __YY_PACKING)
 

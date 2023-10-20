@@ -114,9 +114,6 @@
     <ClInclude Include="Core\DeferCycle.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
-    <ClInclude Include="base\ErrorCode.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Layout.h">
       <Filter>UI\Core</Filter>
     </ClInclude>
@@ -326,6 +323,9 @@
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadPoolForWindows.h">
       <Filter>Base\Threading\TaskRunner\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\ErrorCode.h">
+      <Filter>Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

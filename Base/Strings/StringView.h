@@ -8,7 +8,7 @@
 #include <Base/YY.h>
 #include <Base/Encoding.h>
 #include <Base/tchar.h>
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 
 #pragma pack(push, __YY_PACKING)
 

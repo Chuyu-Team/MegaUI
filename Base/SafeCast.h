@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <Base/YY.h>
 #include <Base/Exception.h>
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 
 namespace YY
 {

@@ -3,7 +3,7 @@
 
 #include <Base/Sync/Interlocked.h>
 #include <Base/Sync/Sync.h>
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 

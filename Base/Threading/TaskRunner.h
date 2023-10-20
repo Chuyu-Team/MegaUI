@@ -11,7 +11,7 @@
 #include <Base/Memory/RefPtr.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Exception.h>
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 #include <Base/Memory/WeakPtr.h>
 #include <Base/Time/TickCount.h>
 #include <Base/Threading/ThreadPool.h>

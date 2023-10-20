@@ -34,7 +34,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现！
 #include <Base/Exception.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Containers/ConstructorPolicy.h>
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 #include <Base/Memory/Alloc.h>
 
 #pragma pack(push, __YY_PACKING)

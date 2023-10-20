@@ -6,7 +6,7 @@
 #include <Windows.h>
 #endif
 
-#include <MegaUI/Base/ErrorCode.h>
+#include <Base/ErrorCode.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
