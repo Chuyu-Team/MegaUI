@@ -1,15 +1,15 @@
-#pragma once
+ï»¿#pragma once
 
 #include <Base/YY.h>
 
 #ifdef _PREFAST_
 #define __YY_IGNORE_UNINITIALIZED_VARIABLE(_VAR) memset(_VAR, 0, 0);
 #else
-// ºöÂÔ C6001 ¾¯¸æ£¬Ê¹ÓÃÎ´³õÊ¼»¯µÄ±äÁ¿¾¯¸æ
+// å¿½ç•¥ C6001 è­¦å‘Šï¼Œä½¿ç”¨æœªåˆå§‹åŒ–çš„å˜é‡è­¦å‘Š
 #define __YY_IGNORE_UNINITIALIZED_VARIABLE(_VAR)
 #endif
 
-// ½ûÓÃº¯ÊıSAL²»Ò»ÖÂ¾¯¸æ
+// ç¦ç”¨å‡½æ•°SALä¸ä¸€è‡´è­¦å‘Š
 #ifdef _MSC_VER
 #define __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION() __pragma(warning(disable:28251))
 #else
@@ -27,6 +27,10 @@
 
 #ifndef _Success_
 #define _Success_(expr)
+#endif
+
+#ifndef _When_
+#define _When_(expr, annos)
 #endif
 
 #ifndef _In_
@@ -59,6 +63,10 @@
 
 #ifndef _In_reads_opt_
 #define _In_reads_opt_(size) _In_opt_
+#endif
+
+#ifndef _In_range_
+#define _In_range_(lb,ub) _In_
 #endif
 
 #ifndef _Out_
@@ -145,3 +153,18 @@
 #define _Post_writable_byte_size_(size)
 #endif
 
+#ifndef _Acquires_exclusive_lock_
+#define _Acquires_exclusive_lock_(e)
+#endif
+
+#ifndef _Releases_exclusive_lock_
+#define _Releases_exclusive_lock_(e)
+#endif
+
+#ifndef _Acquires_shared_lock_
+#define _Acquires_shared_lock_(e)
+#endif
+
+#ifndef _Releases_shared_lock_
+#define _Releases_shared_lock_(e)
+#endif

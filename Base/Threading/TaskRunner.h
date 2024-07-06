@@ -3,10 +3,6 @@
 #include <functional>
 #include <coroutine>
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 #include <Base/YY.h>
 #include <Base/Memory/RefPtr.h>
 #include <Base/Sync/Interlocked.h>

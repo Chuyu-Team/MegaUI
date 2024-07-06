@@ -1,6 +1,12 @@
 ﻿#include "pch.h"
 #include "TaskRunnerDispatchImpl.h"
 
+#include <utility>
+
+#ifndef _WIN32
+#include <signal.h>
+#endif
+
 #include <Base/Time/TimeSpan.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
@@ -24,15 +30,21 @@ namespace YY::Base::Threading
         : fFlags(0u)
         , uTimingWheelCurrentTick()
     {
+#ifdef _WIN32
         hIoCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1u);
+#endif
     }
 
     TaskRunnerDispatchImplByIoCompletionImpl::~TaskRunnerDispatchImplByIoCompletionImpl()
     {
+#ifdef _WIN32
         if (hIoCompletionPort)
         {
             CloseHandle(hIoCompletionPort);
         }
+#else
+        hThread = NullThreadHandle;
+#endif
     }
 
     TaskRunnerDispatchImplByIoCompletionImpl* __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Get() noexcept
@@ -41,6 +53,7 @@ namespace YY::Base::Threading
         return &s_Dispatch;
     }
 
+#ifdef _WIN32
     bool __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::BindIO(HANDLE _hHandle) const noexcept
     {
         if (_hHandle == INVALID_HANDLE_VALUE)
@@ -54,6 +67,7 @@ namespace YY::Base::Threading
         }
         return true;
     }
+#endif
 
     void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Weakup()
     {
@@ -64,6 +78,19 @@ namespace YY::Base::Threading
             {
                 throw Exception(_hr);
             }
+        }
+        else
+        {
+#ifdef _WIN32
+
+            // TODO: 按需唤醒
+            PostQueuedCompletionStatus(hIoCompletionPort, 0, 0, nullptr);
+#else
+            if (hThread != NullThreadHandle)
+            {
+                pthread_kill(hThread, SIGUSR1);
+            }
+#endif
         }
     }
 
@@ -80,8 +107,6 @@ namespace YY::Base::Threading
         }
 
         Weakup();
-        // TODO: 按需唤醒
-        PostQueuedCompletionStatus(hIoCompletionPort, 0, 0, nullptr);    
     }
 
     void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::operator()()
@@ -89,6 +114,25 @@ namespace YY::Base::Threading
         ExecuteTaskRunner();
     }
 
+    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::ProcessingPending() noexcept
+    {
+        for (;;)
+        {
+            auto _pDispatchTask = RefPtr<TaskEntry>::FromPtr(arrTimerDispatchPending.Pop());
+            if (!_pDispatchTask)
+                break;
+
+            if (_pDispatchTask->uExpire <= uTimingWheelCurrentTick)
+            {
+                Dispatch(std::move(_pDispatchTask));
+                continue;
+            }
+
+            AddTimingWheel(std::move(_pDispatchTask));
+        }
+    }
+
+#ifdef _WIN32
     void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::ExecuteTaskRunner()
     {
         uTimingWheelCurrentTick = GetNearTick(TickCount<TimePrecise::Millisecond>::GetCurrent());
@@ -98,20 +142,7 @@ namespace YY::Base::Threading
 
         for (;;)
         {
-            for (;;)
-            {
-                auto _pDispatchTask = RefPtr<TaskEntry>::FromPtr(arrTimerDispatchPending.Pop());
-                if (!_pDispatchTask)
-                    break;
-
-                if (_pDispatchTask->uExpire <= uTimingWheelCurrentTick)
-                {
-                    Dispatch(std::move(_pDispatchTask));
-                    continue;
-                }
-
-                AddTimingWheel(std::move(_pDispatchTask));
-            }
+            ProcessingPending();
 
             auto uMinimumWaitTime = GetMinimumWaitTime();
             auto _bRet = GetQueuedCompletionStatusEx(hIoCompletionPort, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, uMinimumWaitTime, FALSE);
@@ -144,12 +175,49 @@ namespace YY::Base::Threading
             }
 
             auto _oCurrent = GetNearTick(TickCount<TimePrecise::Millisecond>::GetCurrent());
-
             DispatchTimingWheel(_oCurrent);
-
             uTimingWheelCurrentTick = _oCurrent;
         }
     }
+#else
+    void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::ExecuteTaskRunner()
+    {
+        uTimingWheelCurrentTick = GetNearTick(TickCount<TimePrecise::Millisecond>::GetCurrent());
+
+        sigset_t set;
+        sigemptyset(&set);
+        sigaddset(&set, SIGUSR1);
+
+        timespec _oTimeOut;
+
+        hThread = pthread_self();
+
+        for (;;)
+        {
+            ProcessingPending();
+
+            const auto _uMinimumWaitTime = GetMinimumWaitTime();
+
+            if (_uMinimumWaitTime)
+            {
+                if (_uMinimumWaitTime == UINT32_MAX)
+                {
+                    sigtimedwait(&set, nullptr, nullptr);
+                }
+                else
+                {
+                    _oTimeOut.tv_sec = _uMinimumWaitTime / SecondsPerMillisecond;
+                    _oTimeOut.tv_nsec = (_uMinimumWaitTime % SecondsPerMillisecond) * MillisecondsPerMicrosecond * MicrosecondPerNanosecond;
+                    sigtimedwait(&set, nullptr, &_oTimeOut);
+                }
+            }
+
+            auto _oCurrent = GetNearTick(TickCount<TimePrecise::Millisecond>::GetCurrent());
+            DispatchTimingWheel(_oCurrent);
+            uTimingWheelCurrentTick = _oCurrent;
+        }
+    }
+#endif
 
     void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Dispatch(TimingWheelSimpleList& _oTimingWheelList)
     {

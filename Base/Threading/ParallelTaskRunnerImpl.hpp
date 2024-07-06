@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <Base/Threading/TaskRunnerImpl.h>
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Memory/UniquePtr.h>
@@ -46,6 +47,7 @@ namespace YY::Base::Threading
         return BitsCount64(_fBitMask);
     }
 
+#ifdef _WIN32
     static uint32_t __YYAPI GetLogicalProcessorCount() noexcept
     {
         static uint32_t s_LogicalProcessorCount = 0;
@@ -96,6 +98,27 @@ namespace YY::Base::Threading
         auto _uLast = Sync::CompareExchange(&s_LogicalProcessorCount, _uLogicalProcessorCount, 0);
         return _uLast ? _uLast : _uLogicalProcessorCount;
     }
+#else
+    static uint32_t __YYAPI GetLogicalProcessorCount() noexcept
+    {
+        static uint32_t s_LogicalProcessorCount = 0;
+        if (s_LogicalProcessorCount != 0)
+        {
+            return s_LogicalProcessorCount;
+        }
+
+        const auto _uCount = get_nprocs();
+        if (_uCount)
+        {
+            s_LogicalProcessorCount = _uCount;
+        }
+        else
+        {
+            s_LogicalProcessorCount = 1;
+        }
+        return s_LogicalProcessorCount;
+    }
+#endif
 
     class ParallelTaskRunnerImpl : public ParallelTaskRunner
     {
@@ -106,8 +129,8 @@ namespace YY::Base::Threading
         // | 31  ~  3 |    2      |     1       |    0      |
         union TaskRunnerFlagsType
         {
-            uint64_t fFlags64;
-            uint32_t uWakeupCountAndPushLock;
+            volatile uint64_t fFlags64;
+            volatile uint32_t uWakeupCountAndPushLock;
 
             struct
             {
@@ -164,25 +187,20 @@ namespace YY::Base::Threading
             
             const auto _uParallelMaximum = uParallelMaximum ? uParallelMaximum : GetLogicalProcessorCount();
 
-            for (;;)
-            {
-                if (!Sync::BitSet(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePushBitIndex))
-                {
-                    oTaskQueue.Push(_pTask.Detach());
-
-                    // 后面交换略
-                    Sync::BitReset(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePushBitIndex);
-                    break;
-                }
-            }
-
             // 解除锁定，并且 WeakupCount + 1，也尝试提升 uParallelCurrent
             TaskRunnerFlagsType _uOldFlags = TaskRunnerFlags;
             TaskRunnerFlagsType _uNewFlags;
             for (;;)
             {
+                if (_uOldFlags.uWakeupCountAndPushLock & (1 << LockedQueuePushBitIndex))
+                {
+                    YieldProcessor();
+                    _uOldFlags.fFlags64 = TaskRunnerFlags.fFlags64;
+                    continue;
+                }
+
                 _uNewFlags = _uOldFlags;
-                _uNewFlags.uWakeupCountAndPushLock += WakeupOnceRaw;
+                _uNewFlags.uWakeupCountAndPushLock += WakeupOnceRaw | (1 << LockedQueuePushBitIndex);
 
                 if (_uNewFlags.uParallelCurrent < _uParallelMaximum && _uNewFlags.uWakeupCount >= (int32_t)_uNewFlags.uParallelCurrent)
                 {
@@ -191,7 +209,11 @@ namespace YY::Base::Threading
 
                 auto _uLast = Sync::CompareExchange(&TaskRunnerFlags.fFlags64, _uNewFlags.fFlags64, _uOldFlags.fFlags64);
                 if (_uLast == _uOldFlags.fFlags64)
+                {
+                    oTaskQueue.Push(_pTask.Detach());
+                    Sync::BitReset(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePushBitIndex);
                     break;
+                }
 
                 _uOldFlags.fFlags64 = _uLast;
             }
@@ -232,8 +254,7 @@ namespace YY::Base::Threading
                 if (!Sync::BitSet(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePopBitIndex))
                 {
                     _pTmp.Attach(oTaskQueue.Pop());
-
-                    Sync::BitReset(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePopBitIndex);           
+                    Sync::BitReset(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePopBitIndex);
                     break;
                 }
             }
@@ -242,44 +263,13 @@ namespace YY::Base::Threading
 
         void __YYAPI operator()()
         {
-        EXECUTE_TASK_RUNNER__:
             ExecuteTaskRunner();
-
-            // 尝试释放 uParallelCurrent
-            TaskRunnerFlagsType _uOldFlags = TaskRunnerFlags;
-            TaskRunnerFlagsType _uNewFlags;
-            for (;;)
-            {
-                if (IsShared())
-                {
-                    // 任然有任务，重新执行 ExecuteTaskRunner
-                    if (_uOldFlags.uWakeupCount > 0)
-                    {
-                        goto EXECUTE_TASK_RUNNER__;
-                    }
-                }
-
-                _uNewFlags = _uOldFlags;
-                _uNewFlags.uParallelCurrent -= 1;
-
-                auto _uLast = Sync::CompareExchange(&TaskRunnerFlags.fFlags64, _uNewFlags.fFlags64, _uOldFlags.fFlags64);
-                if (_uLast == _uOldFlags.fFlags64)
-                    break;
-
-                _uOldFlags.fFlags64 = _uLast;
-            }
-
-            if (_uNewFlags.uParallelCurrent == 0u)
-            {
-                // 对应上面 ThreadPool::PostTaskInternalWithoutAddRef 的AddRef();
-                Release();
-            }
         }
 
         void __YYAPI ExecuteTaskRunner()
         {
             g_pTaskRunnerWeak = this;
-
+            bool _bReleaseParallelCurrent = true;
             for (;;)
             {
                 // 理论上 ExecuteTaskRunner 执行时引用计数 = 2，因为执行器拥有一次引用计数
@@ -293,13 +283,48 @@ namespace YY::Base::Threading
                     break;
 
                 _pTask->operator()();
-                _pTask->Wakeup(S_OK);
-
-                if (Sync::Subtract(&TaskRunnerFlags.uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
+                _pTask.Reset();
+                if (!SubtractWakeupOnce())
+                {
+                    _bReleaseParallelCurrent = false;
                     break;
+                }
             }
+
+            if (_bReleaseParallelCurrent)
+                Sync::Decrement(&TaskRunnerFlags.uParallelCurrent);
+
             g_pTaskRunnerWeak = nullptr;
             return;
+        }
+
+        bool SubtractWakeupOnce()
+        {
+            bool _bEixt = false;
+            TaskRunnerFlagsType _uOldFlags = TaskRunnerFlags;
+            TaskRunnerFlagsType _uNewFlags;
+            for (;;)
+            {
+                _uNewFlags = _uOldFlags;
+                _uNewFlags.uWakeupCountAndPushLock -= WakeupOnceRaw;
+                _bEixt = _uNewFlags.uWakeupCount < _uNewFlags.uParallelCurrent;
+                if (_bEixt)
+                    _uNewFlags.uParallelCurrent -= 1;
+
+                auto _uLast = Sync::CompareExchange(&TaskRunnerFlags.fFlags64, _uNewFlags.fFlags64, _uOldFlags.fFlags64);
+                if (_uLast == _uOldFlags.fFlags64)
+                    break;
+
+                _uOldFlags.fFlags64 = _uLast;
+            }
+
+            if (_uNewFlags.uParallelCurrent == 0u)
+            {
+                // 对应上面 ThreadPool::PostTaskInternalWithoutAddRef 的AddRef();
+                Release();
+            }
+
+            return !_bEixt;
         }
 
         void __YYAPI CleanupTaskQueue() noexcept
@@ -311,8 +336,6 @@ namespace YY::Base::Threading
                     break;
 
                 _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-                if (Sync::Subtract(&TaskRunnerFlags.uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
-                    break;
             }
             return;
         }

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <stdlib.h>
 #include <memory>
+#include <string.h>
 
 #include <Base/YY.h>
 
@@ -42,7 +43,7 @@ namespace YY
                 auto _pNewBlock = realloc(_Block, _Size);
                 if (_pNewBlock)
                 {
-                    memset(_pNewBlock, 0, _Size);
+                    ::memset(_pNewBlock, 0, _Size);
                 }
                 return _pNewBlock;
 

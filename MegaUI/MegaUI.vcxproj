@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -31,7 +31,6 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -46,6 +45,7 @@
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
     <EnableASAN>true</EnableASAN>
+    <RemoteProjectRelDir>MegaUI</RemoteProjectRelDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -83,6 +83,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir);$(ProjectDir);$(IntDir)Gen;$(IncludePath)</IncludePath>
+    <RemoteDeployDir>$(RemoteRootDir)/MegaUI</RemoteDeployDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -133,6 +134,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <SupportJustMyCode>false</SupportJustMyCode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <CppLanguageStandard>c++20</CppLanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -183,6 +185,8 @@
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\Base\Sync\InterlockedQueue.h" />
     <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h" />
+    <ClInclude Include="..\Base\Sync\CriticalSection.h" />
+    <ClInclude Include="..\Base\Sync\SRWLock.h" />
     <ClInclude Include="..\Base\Sync\Sync.h" />
     <ClInclude Include="..\Base\tchar.h" />
     <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp" />
@@ -192,6 +196,7 @@
     <ClInclude Include="..\Base\Threading\TaskRunner.h" />
     <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\ThreadPool.h" />
+    <ClInclude Include="..\Base\Threading\ThreadPoolForLinux.h" />
     <ClInclude Include="..\Base\Threading\ThreadPoolForWindows.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Time\Common.h" />
@@ -213,6 +218,10 @@
     <ClInclude Include="..\Media\Rect.h" />
     <ClInclude Include="..\Media\Resource.h" />
     <ClInclude Include="..\Media\Size.h" />
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml.hpp" />
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="Accessibility\UIAutomation\ElementPatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\PatternProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.h" />
@@ -242,11 +251,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
+    <ClCompile Include="..\Base\Sync\CriticalSection.cpp" />
+    <ClCompile Include="..\Base\Sync\SRWLock.cpp" />
     <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp" />
-    <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp" />
+    <ClCompile Include="..\Base\Threading\ThreadPoolForLinux.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Linux'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp">
+      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp" />
     <ClCompile Include="..\Media\Font.cpp">
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>

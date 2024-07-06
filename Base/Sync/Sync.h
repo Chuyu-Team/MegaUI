@@ -1,7 +1,4 @@
-#pragma once
-#ifdef _WIN32
-#include <Windows.h>
-#endif
+﻿#pragma once
 
 #include <Base/YY.h>
 

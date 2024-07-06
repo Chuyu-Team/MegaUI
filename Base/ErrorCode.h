@@ -36,7 +36,7 @@ namespace YY::Base
     constexpr LSTATUS ERROR_CANCELLED = 5;
     constexpr LSTATUS ERROR_BAD_FORMAT = 5;
 #endif
-    constexpr inline _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_From_LSTATUS(_In_ LSTATUS _lStatus) noexcept
+    constexpr inline _Translates_Win32_to_HRESULT_(_lStatus) HRESULT HRESULT_From_LSTATUS(_In_ LSTATUS _lStatus) noexcept
     {
         if (_lStatus == ERROR_SUCCESS)
             return S_OK;

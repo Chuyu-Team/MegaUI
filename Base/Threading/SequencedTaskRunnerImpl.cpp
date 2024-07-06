@@ -29,25 +29,32 @@ namespace YY::Base::Threading
     {
         _pTask->hr = E_PENDING;
 
-        if (bStopWakeup)
-        {
-            return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
-        }
-
+        auto _fFlags = uWakeupCountAndPushLock;
         for (;;)
         {
-            if (!Sync::BitSet(&uWakeupCountAndPushLock, LockedQueuePushBitIndex))
+            if (_fFlags & (1 << StopWakeupBitIndex))
+            {
+                return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
+            }
+            else if (_fFlags & (1 << LockedQueuePushBitIndex))
+            {
+                YieldProcessor();
+                _fFlags = uWakeupCountAndPushLock;
+                continue;
+            }
+
+            const auto _uLast = Sync::CompareExchange(&uWakeupCountAndPushLock, _fFlags + LockQueuePushLockAndWakeupOnceRaw, _fFlags);
+            if (_uLast == _fFlags)
             {
                 oTaskQueue.Push(_pTask.Detach());
+                Sync::BitReset(&uWakeupCountAndPushLock, LockedQueuePushBitIndex);
                 break;
             }
+            _fFlags = _uLast;
         }
 
-        // 我们 解除锁定，uPushLock = 0 并且将 uWakeupCount += 1
-        // 因为刚才 uWakeupCountAndPushLock 已经将第一个标记位设置位 1
-        // 所以我们再 uWakeupCountAndPushLock += 1即可。
-        // uWakeupCount + 1 <==> uWakeupCountAndPushLock + 2 <==> (uWakeupCountAndPushLock | 1) + 1
-        if (Sync::Add(&uWakeupCountAndPushLock, uint32_t(UnlockQueuePushLockBitAndWakeupOnceRaw)) < WakeupOnceRaw * 2u)
+        // 小于 WakeupOnceRaw说明之前是没有线程了
+        if (_fFlags < WakeupOnceRaw)
         {
             auto _hr = ThreadPool::PostTaskInternal(this);
             if (FAILED(_hr))
@@ -58,7 +65,6 @@ namespace YY::Base::Threading
                 return _hr;
             }
         }
-
         return S_OK;
     }
 

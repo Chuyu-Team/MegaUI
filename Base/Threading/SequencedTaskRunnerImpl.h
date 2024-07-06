@@ -8,7 +8,7 @@ namespace YY::Base::Threading
 {
     class SequencedTaskRunnerImpl : public SequencedTaskRunner
     {
-        friend ThreadPool;
+        friend YY::Base::Threading::ThreadPool;
     private:
         InterlockedQueue<TaskEntry> oTaskQueue;
 
@@ -16,7 +16,7 @@ namespace YY::Base::Threading
         // | 31   ~   2 |     1       |    0      |
         union
         {
-            uint32_t uWakeupCountAndPushLock;
+            volatile uint32_t uWakeupCountAndPushLock;
             struct
             {
                 uint32_t bPushLock : 1;
@@ -30,7 +30,7 @@ namespace YY::Base::Threading
             StopWakeupBitIndex,
             WakeupCountStartBitIndex,
             WakeupOnceRaw = 1 << WakeupCountStartBitIndex,
-            UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
+            LockQueuePushLockAndWakeupOnceRaw = WakeupOnceRaw + (1u << LockedQueuePushBitIndex),
         };
 
     public:

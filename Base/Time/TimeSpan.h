@@ -41,7 +41,7 @@ namespace YY::Base::Time
     public:
         int64_t uElapsedInternal;
 
-        using TimeSpanCommon = TimeSpanCommon<ePrecise>;
+        using TimeSpanCommon_t = TimeSpanCommon<ePrecise>;
 
         constexpr TimeSpan() noexcept
             : uElapsedInternal(0u)
@@ -57,7 +57,7 @@ namespace YY::Base::Time
 
         constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
         {
-            return TimeSpanCommon::GetSecondsPerInternal();
+            return TimeSpanCommon_t::GetSecondsPerInternal();
         }
 
         constexpr static TimeSpan __YYAPI FromInternalValue(int64_t _uElapsedInternalValue) noexcept

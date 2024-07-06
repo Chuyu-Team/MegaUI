@@ -1,11 +1,12 @@
 ﻿#pragma once
+
 #include <Base/Threading/TaskRunner.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Memory/WeakPtr.h>
 #include <Base/Time/TickCount.h>
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Containers/BitMap.h>
-
+#include <Base/Threading/ProcessThreads.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -16,6 +17,7 @@ TaskRunnerDispatch 仅处理调度任务（比如定时器、异步IO），无�
 
 namespace YY::Base::Threading
 {
+#if defined(_WIN32)
     struct IoTaskEntry
         : public TaskEntry
         , public OVERLAPPED
@@ -27,6 +29,7 @@ namespace YY::Base::Threading
         {
         }
     };
+#endif
 
     struct TimingWheelSimpleList
     {
@@ -82,7 +85,11 @@ namespace YY::Base::Threading
     {
         friend ThreadPool;
     private:
+#if defined(_WIN32)
         HANDLE hIoCompletionPort;
+#else
+        ThreadHandle hThread = NullThreadHandle;
+#endif
         uint32_t fFlags;
         TickCount<TimePrecise::Millisecond> uTimingWheelCurrentTick;
 
@@ -113,7 +120,9 @@ namespace YY::Base::Threading
 
         static _Ret_notnull_ TaskRunnerDispatchImplByIoCompletionImpl* __YYAPI Get() noexcept;
 
+#if defined(_WIN32)
         bool __YYAPI BindIO(_In_ HANDLE _hHandle) const noexcept;
+#endif
 
         void __YYAPI Weakup();
 
@@ -124,6 +133,8 @@ namespace YY::Base::Threading
 
     private:
         void __YYAPI ExecuteTaskRunner();
+
+        void __YYAPI ProcessingPending() noexcept;
 
         void __YYAPI Dispatch(_In_ RefPtr<TaskEntry> _pTask);
 

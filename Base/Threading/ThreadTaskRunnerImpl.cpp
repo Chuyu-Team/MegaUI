@@ -116,7 +116,7 @@ namespace YY::Base::Threading
             {
                 for (auto _uCurrent = uWakeupCountAndPushLock; _uCurrent < WakeupOnceRaw; _uCurrent = uWakeupCountAndPushLock)
                 {
-                    Sync::WaitOnAddress(&uWakeupCountAndPushLock, &_uCurrent, sizeof(_uCurrent), INFINITE);
+                    Sync::WaitOnAddress(&uWakeupCountAndPushLock, &_uCurrent, sizeof(_uCurrent), UINT32_MAX);
 
                     if (!IsShared())
                     {

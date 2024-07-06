@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <utility>
 
-
 #include <Base/YY.h>
 #include <Base/Sync/Interlocked.h>
 
@@ -22,7 +21,13 @@ namespace YY::Base::Containers
         _In_reads_bytes_((_uOffset / 8) + 1) const int32_t* _pBase,
         _In_ uint32_t _uOffset) noexcept
     {
+#if defined(_WIN32)
         return ::_bittest(reinterpret_cast<const LONG*>(_pBase), _uOffset);
+#else
+        uint32_t _uMod = _uOffset % YY_bitsizeof(int32_t);
+
+        return (_pBase[_uOffset / YY_bitsizeof(int32_t)] >> _uMod) & 1;
+#endif
     }
 
     inline
@@ -67,6 +72,7 @@ namespace YY::Base::Containers
         _In_range_(< , 32) uint32_t _Index
         ) noexcept
     {
+#if defined(_WIN32)
         if (::_BitScanForward(reinterpret_cast<unsigned long*>(&_Index), *_puMask))
         {
             return _Index;
@@ -75,6 +81,13 @@ namespace YY::Base::Containers
         {
             return -1;
         }
+#else
+        auto _uMask = *_puMask >> _Index;
+        if (_uMask == 0)
+            return -1;
+
+        return __builtin_ctzl(_uMask) + _Index;
+#endif
     }
     
     inline
@@ -106,7 +119,7 @@ namespace YY::Base::Containers
         }
 
         // 没有找到再搜索高 32位
-        auto _nIndex = BitFind((uint32_t*)(_puMask) + 1, _uIndex - YY_bitsizeof(uint32_t));
+        auto _nIndex = BitFind((uint32_t*)(_puMask) + 1, _uIndex - (uint32_t)YY_bitsizeof(uint32_t));
         if (_nIndex >= 0)
         {
             return _nIndex + YY_bitsizeof(uint32_t);
@@ -190,14 +203,14 @@ namespace YY::Base::Containers
             auto _uBolckIndex = _uBitIndex / YY_bitsizeof(uintptr_t);
             auto _uIndex = BitFind(&arrBits[_uBolckIndex], _uBitIndex % YY_bitsizeof(uintptr_t));
             if (_uIndex >= 0)
-                return _uIndex + _uBolckIndex * YY_bitsizeof(uintptr_t);
+                return static_cast<int32_t>(_uIndex + _uBolckIndex * YY_bitsizeof(uintptr_t));
 
             for (++_uBolckIndex; _uBolckIndex < std::size(arrBits);++_uBolckIndex)
             {
                 _uIndex = BitFind(&arrBits[_uBolckIndex], 0);
                 if (_uIndex >= 0)
                 {
-                    return _uIndex + _uBolckIndex * YY_bitsizeof(uintptr_t);
+                    return static_cast<int32_t>(_uIndex + _uBolckIndex * YY_bitsizeof(uintptr_t));
                 }
             }
 

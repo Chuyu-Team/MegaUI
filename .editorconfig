@@ -11,6 +11,7 @@ charset = utf-8-bom
 indent_style = space
 indent_size = 4
 
-[*.{vcxproj,xml}]
+[*.{vcxproj,xml,props,targets}]
 indent_style = space
 indent_size = 2
+insert_final_newline = false

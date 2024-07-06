@@ -91,7 +91,7 @@ namespace YY
 
             void __YYAPI InvalidateRect(_In_opt_ const Rect* _pRect);
 
-            __inline void __YYAPI InvalidateRect(const Rect& _Rect)
+            inline void __YYAPI InvalidateRect(const Rect& _Rect)
             {
                 InvalidateRect(&_Rect);
             }

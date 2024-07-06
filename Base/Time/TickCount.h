@@ -21,9 +21,7 @@ namespace YY::Base::Time
             QueryPerformanceCounter(&_PerformanceCounter);
             return _PerformanceCounter.QuadPart;
         }
-#endif
 
-#if _WIN32
         static int64_t __YYAPI GetSecondsPerInternal() noexcept
         {
             static LARGE_INTEGER s_Frequency = {};
@@ -33,6 +31,10 @@ namespace YY::Base::Time
             }
             return s_Frequency.QuadPart;
         }
+#else
+        static uint64_t __YYAPI GetCurrentInternalValue() noexcept;
+
+        static int64_t __YYAPI GetSecondsPerInternal() noexcept;
 #endif
     };
 
@@ -45,6 +47,8 @@ namespace YY::Base::Time
         {
             return GetTickCount64();
         }
+#else
+        static uint64_t __YYAPI GetCurrentInternalValue() noexcept;
 #endif
         constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
         {
@@ -64,20 +68,17 @@ namespace YY::Base::Time
         }
 
     public:
-        uint64_t uTickCountInternal;
+        uint64_t uTickCountInternal = 0u;
 
-        using TickCountCommon = TickCountCommon<ePrecise>;
+        using TickCountCommon_t = TickCountCommon<ePrecise>;
 
-        constexpr TickCount() noexcept
-            : uTickCountInternal(0u)
-        {
-        }
+        constexpr TickCount() noexcept = default;
 
         constexpr TickCount(const TickCount&) noexcept = default;
 
         static TickCount __YYAPI GetCurrent() noexcept
         {
-            return TickCount(TickCountCommon::GetCurrentInternalValue());
+            return TickCount(TickCountCommon_t::GetCurrentInternalValue());
         }
 
         constexpr static TickCount __YYAPI FromInternalValue(uint64_t _uTickCountInternal) noexcept
@@ -92,7 +93,7 @@ namespace YY::Base::Time
 
         constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
         {
-            return TickCountCommon::GetSecondsPerInternal();
+            return TickCountCommon_t::GetSecondsPerInternal();
         }
         
         constexpr TickCount& operator=(const TickCount&) noexcept = default;

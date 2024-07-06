@@ -109,7 +109,6 @@ namespace UnitTest
     public :
         TEST_METHOD(并行数量保证)
         {
-
             {
                 // 只允许一个并行
                 uint32_t _uCount = 0;
@@ -138,7 +137,6 @@ namespace UnitTest
                     Sleep(1000);
                 }
             }
-
 
             {
                 // 允许4个并行

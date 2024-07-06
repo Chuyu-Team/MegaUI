@@ -29,6 +29,7 @@ LockBuffer 与 UnlockBuffer 必须成对出现！
 
 #include <initializer_list>
 #include <stdlib.h>
+#include <limits>
 
 #include <Base/YY.h>
 #include <Base/Exception.h>

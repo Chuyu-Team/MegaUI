@@ -85,7 +85,10 @@
     <Filter Include="Base\Threading\TaskRunner\Windows">
       <UniqueIdentifier>{81d23f6c-2fdc-45b6-b240-e41605dfe965}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Memory\Sync">
+    <Filter Include="Base\Threading\TaskRunner\Linux">
+      <UniqueIdentifier>{c80dc393-4130-4dd6-a910-4c2c57d23eb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Sync">
       <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -169,7 +172,7 @@
       <Filter>Base\Containers</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\Interlocked.h">
-      <Filter>Base\Memory\Sync</Filter>
+      <Filter>Base\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Color.h">
       <Filter>Media</Filter>
@@ -232,7 +235,7 @@
       <Filter>Media</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h">
-      <Filter>Base\Memory\Sync</Filter>
+      <Filter>Base\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\DrawContext.h">
       <Filter>Media\Graphics</Filter>
@@ -268,10 +271,10 @@
       <Filter>Base\Containers</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\InterlockedQueue.h">
-      <Filter>Base\Memory\Sync</Filter>
+      <Filter>Base\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Sync\Sync.h">
-      <Filter>Base\Memory\Sync</Filter>
+      <Filter>Base\Sync</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ProcessThreads.h">
       <Filter>Base\Threading</Filter>
@@ -326,6 +329,27 @@
     </ClInclude>
     <ClInclude Include="..\Base\ErrorCode.h">
       <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\ThreadPoolForLinux.h">
+      <Filter>Base\Threading\TaskRunner\Linux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Sync\CriticalSection.h">
+      <Filter>Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Sync\SRWLock.h">
+      <Filter>Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_iterators.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_print.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_utils.hpp">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -415,6 +439,15 @@
     </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp">
       <Filter>Base\Threading\TaskRunner\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Threading\ThreadPoolForLinux.cpp">
+      <Filter>Base\Threading\TaskRunner\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Sync\SRWLock.cpp">
+      <Filter>Base\Sync</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Sync\CriticalSection.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

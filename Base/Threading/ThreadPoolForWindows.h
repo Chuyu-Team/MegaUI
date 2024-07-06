@@ -53,4 +53,9 @@ namespace YY::Base::Threading
     };
 }
 
+namespace YY
+{
+    using namespace YY::Base::Threading;
+}
+
 #pragma pack(pop)
