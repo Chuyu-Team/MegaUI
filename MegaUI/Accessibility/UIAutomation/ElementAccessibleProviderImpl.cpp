@@ -142,7 +142,7 @@ namespace YY
                 _Bounds += _pParent->GetLocation();
             }
 
-            pElement->GetWindow()->ClientToScreen(&_Bounds);
+            pElement->GetWindow()->WindowToScreen(&_Bounds);
 
             return _Bounds;
         }

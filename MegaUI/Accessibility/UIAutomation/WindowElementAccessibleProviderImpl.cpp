@@ -112,7 +112,7 @@ namespace YY
                 [=, &_hr]()
                 {
                     Point _Point((float)_X, (float)_Y);
-                    pElement->GetWindow()->ScreenToClient(&_Point);
+                    pElement->GetWindow()->ScreenToWindow(&_Point);
                     auto _pFind = pElement->GetWindow()->FindElementFromPoint(_Point);
                     if (_pFind)
                     {
