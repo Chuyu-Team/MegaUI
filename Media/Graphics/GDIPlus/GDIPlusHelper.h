@@ -153,6 +153,16 @@ namespace YY
                 }
 
                 GdiplusRef(const GdiplusRef&) = delete;
+
+                void (operator delete)(void* in_pVoid)
+                {
+                    free(in_pVoid);
+                }
+
+                void* (operator new)(size_t in_size)
+                {
+                    return malloc(in_size);
+                }
             };
         }
     } // namespace Media
