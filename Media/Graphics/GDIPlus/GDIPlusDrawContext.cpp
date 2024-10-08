@@ -306,7 +306,8 @@ namespace YY
                 if (!HasFlags(_fTextAlign, ContentAlignStyle::Wrap))
                     _fStringFormatFlags |= Gdiplus::StringFormatFlags::StringFormatFlagsNoWrap;
 
-                Gdiplus::StringFormat _Format(_fStringFormatFlags);
+                Gdiplus::StringFormat _Format(Gdiplus::StringFormat::GenericTypographic());
+                _Format.SetFormatFlags(_fStringFormatFlags);
                 _Format.SetAlignment(GetFontAlignment(_fTextAlign));
                 _Format.SetLineAlignment(GetFontLineAlignment(_fTextAlign));
 
@@ -334,7 +335,8 @@ namespace YY
                 if (!HasFlags(_fTextAlign, ContentAlignStyle::Wrap))
                     _fStringFormatFlags |= Gdiplus::StringFormatFlags::StringFormatFlagsNoWrap;
 
-                Gdiplus::StringFormat _Format(_fStringFormatFlags);
+                Gdiplus::StringFormat _Format(Gdiplus::StringFormat::GenericTypographic());
+                _Format.SetFormatFlags(_fStringFormatFlags);
                 _Format.SetAlignment(GetFontAlignment(_fTextAlign));
                 _Format.SetLineAlignment(GetFontLineAlignment(_fTextAlign));
 

@@ -15,6 +15,11 @@
 #include <MegaUI/Control/Button.h>
 #include <Base/Threading/TaskRunner.h>
 
+#ifdef _WIN32
+#include <Media/Graphics/D2D/D2D1_1DrawContext.h>
+#include <Media/Graphics/GDIPlus/GDIPlusDrawContext.h>
+#endif
+
 using namespace YY;
 using namespace YY::MegaUI;
 
@@ -114,9 +119,9 @@ int wmain()
 
                 _pTestWindow->SetHost(pWindowElement);
 
-                _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+                _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, D2D1_1DrawContext::GetDrawContextFactory());
                 pWindowElement->EndDefer(Cooike);
-
+                SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.1");
                 _pTestWindow->ShowWindow(SW_SHOWNORMAL);
             }
 
@@ -127,9 +132,9 @@ int wmain()
 
                 _pTestWindow2->SetHost(pWindowElement);
 
-                _pTestWindow2->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0);
+                _pTestWindow2->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, GDIPlusDrawContext::GetDrawContextFactory());
                 pWindowElement->EndDefer(Cooike);
-
+                SetWindowTextW(_pTestWindow2->GetWnd(), L"GDIPlus");
                 _pTestWindow2->ShowWindow(SW_SHOWNORMAL);
             }
 
