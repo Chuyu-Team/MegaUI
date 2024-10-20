@@ -57,7 +57,7 @@ namespace YY
 
         YY_APPLY_ENUM_CALSS_BIT_OPERATOR(EventModifier);
 
-        inline EventModifier __YYAPI Win32EventModifierToEventModifier(uint32_t _fWin32EventModifier)
+        inline constexpr EventModifier __YYAPI Win32EventModifierToEventModifier(uint32_t _fWin32EventModifier)
         {
             EventModifier _Modifier = EventModifier::None;
 
@@ -86,8 +86,15 @@ namespace YY
             return _Modifier;
         }
 
+        struct PlatformEvent
+        {
+            HWND hWnd = nullptr;
+            UINT uMsg = 0;
+            WPARAM wParam = 0;
+            LPARAM lParam = 0;
+        };
 
-        struct BaseEvent
+        struct BaseEvent : public PlatformEvent
         {
             // 产生事件的Element
             Element* pTarget;
@@ -138,11 +145,11 @@ namespace YY
             uint16_t fFlags;
 
 #ifdef _WIN32
-            KeyboardEvent(Element* _pTarget, WPARAM _wParam, LPARAM _lParam, EventModifier _fModifiers = EventModifier::None)
-                : BaseEvent {_pTarget, EventId::KeyboardEvent, _fModifiers}
-                , vKey(LOWORD(_wParam))
-                , uRepeatCount(LOWORD(_lParam))
-                , fFlags(HIWORD(_lParam))
+            constexpr KeyboardEvent(Element* _pTarget, const PlatformEvent& _oPlatformEvent, EventModifier _fModifiers = EventModifier::None)
+                : BaseEvent { _oPlatformEvent, _pTarget, EventId::KeyboardEvent, _fModifiers}
+                , vKey(LOWORD(_oPlatformEvent.wParam))
+                , uRepeatCount(LOWORD(_oPlatformEvent.lParam))
+                , fFlags(HIWORD(_oPlatformEvent.lParam))
             {
             }
 #endif
@@ -204,7 +211,7 @@ namespace YY
             NavigatingType Navigate;
 
             KeyboardNavigateEvent(Element* _pTarget, NavigatingType _Navigate)
-                : BaseEvent {_pTarget, EventId::KeyboardNavigateEvent, EventModifier::None}
+                : BaseEvent{ {}, _pTarget, EventId::KeyboardNavigateEvent, EventModifier::None }
                 , Navigate(_Navigate)
             {
             }
@@ -216,15 +223,20 @@ namespace YY
             // 鼠标坐标
             Point pt;
 
-            MouseEvent(Element* _pTarget, EventModifier _fEventModifier, Point _pt)
-                : BaseEvent {_pTarget, EventId::MouseEvent, _fEventModifier}
-                , pt(_pt)
+            //MouseEvent(Element* _pTarget, EventModifier _fEventModifier, Point _pt)
+            //    : BaseEvent {_pTarget, EventId::MouseEvent, _fEventModifier}
+            //    , pt(_pt)
+            //{
+            //}
+
+#ifdef _WIN32
+            constexpr MouseEvent(Element* _pTarget, const PlatformEvent& _oPlatformEvent)
+                : BaseEvent{ _oPlatformEvent, _pTarget, EventId::MouseEvent, Win32EventModifierToEventModifier(_oPlatformEvent.wParam) }
+                , pt(MAKEPOINTS(_oPlatformEvent.lParam))
             {
             }
+#endif
         };
-
-
-
 
         struct ClickEvent : public BaseEvent
         {
@@ -232,9 +244,14 @@ namespace YY
             // 鼠标坐标
             Point pt;
 
-            ClickEvent(Element* _pTarget, EventModifier _fEventModifier = EventModifier::None, Point _pt = Point {-1, -1})
-                : BaseEvent {_pTarget, EventId::ClickEvent, _fEventModifier}
-                , pt(_pt)
+            constexpr ClickEvent(const MouseEvent& _oEvent)
+                : BaseEvent { static_cast<const PlatformEvent&>(_oEvent), _oEvent.pTarget, EventId::ClickEvent, _oEvent.fModifiers }
+                , pt(_oEvent.pt)
+            {
+            }
+
+            constexpr ClickEvent(Element* _pTarget, EventModifier _fModifiers)
+                : BaseEvent{ PlatformEvent{}, _pTarget, ClickEvent::Id, _fModifiers }
             {
             }
         };

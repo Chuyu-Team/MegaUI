@@ -12,7 +12,8 @@ __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
     _APPLY(PopAxisAlignedClip)                                                              \
     _APPLY(DrawLine, _pCommandData->oPoint0, _pCommandData->oPoint1, _pCommandData->oPen)   \
     _APPLY(DrawRectangle, _pCommandData->oRect, _pCommandData->oPen, _pCommandData->oBrush) \
-    _APPLY(DrawString, _pCommandData->szText, _pCommandData->FontInfo, _pCommandData->oBrush, _pCommandData->LayoutRect, _pCommandData->fTextAlign)
+    _APPLY(DrawString, _pCommandData->szText, _pCommandData->FontInfo, _pCommandData->oBrush, _pCommandData->LayoutRect, _pCommandData->fTextAlign) \
+    _APPLY(DrawString2, _pCommandData->oOrigin, _pCommandData->pTextLayout, _pCommandData->oBrush)
 
 namespace YY
 {
@@ -28,6 +29,7 @@ namespace YY
                 DrawLine,
                 DrawRectangle,
                 DrawString,
+                DrawString2,
             };
 
             template<CommandType _eType>
@@ -79,6 +81,15 @@ namespace YY
                 Brush oBrush;
                 Rect LayoutRect;
                 ContentAlignStyle fTextAlign;
+            };
+
+            template<>
+            struct DrawCommandData<CommandType::DrawString2>
+            {
+                CommandType eCommandType;
+                Point oOrigin;
+                RefPtr<IDWriteTextLayout> pTextLayout;
+                Brush oBrush;
             };
 
             template<CommandType _eType, class... Args>
@@ -264,6 +275,19 @@ namespace YY
             void DrawAsyncCommandContext::MeasureString(uStringView _szText, const Font& _FontInfo, const Size& _LayoutSize, ContentAlignStyle _fTextAlign, Size* _pExtent)
             {
                 pTargetDrawContext->MeasureString(_szText, _FontInfo, _LayoutSize, _fTextAlign, _pExtent);
+            }
+
+            RefPtr<IDWriteTextLayout>__YYAPI DrawAsyncCommandContext::CreateTextLayout(uString _szText, const Font& _FontInfo, const Size& _LayoutSize, ContentAlignStyle _fTextAlign)
+            {
+                return pTargetDrawContext->CreateTextLayout(_szText, _FontInfo, _LayoutSize, _fTextAlign);
+            }
+
+            void __YYAPI DrawAsyncCommandContext::DrawString2(const Point& _Origin, RefPtr<IDWriteTextLayout> _pTextLayout, Brush _oBrush)
+            {
+                if (!pCurrentCommandEntry)
+                    abort();
+
+                RecordDrawCommand<CommandType::DrawString2>(pCurrentCommandEntry->oCommandData, _Origin, _pTextLayout, _oBrush);
             }
 
             void DrawAsyncCommandContext::FreeDrawingCommand(DrawCommandEntry* _pEntry)

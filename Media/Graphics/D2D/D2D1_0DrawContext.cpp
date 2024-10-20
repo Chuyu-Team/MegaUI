@@ -402,6 +402,37 @@ namespace YY
                 DWrite::MeasureString(_szText, _FontInfo, _LayoutSize, _fTextAlign, _pExtent);
             }
 
+            RefPtr<IDWriteTextLayout> __YYAPI D2D1_0DrawContext::CreateTextLayout(uString _szText, const Font& _FontInfo, const Size& _LayoutSize, ContentAlignStyle _fTextAlign)
+            {
+                RefPtr<IDWriteTextFormat> _pTextFormat;
+                auto _hr = DWrite::CreateTextFormat(_FontInfo, _fTextAlign, L"", _pTextFormat.ReleaseAndGetAddressOf());
+                if (FAILED(_hr))
+                {
+                    return nullptr;
+                }
+
+                RefPtr<IDWriteTextLayout> _pTextLayout;
+                _hr = DWrite::CreateTextLayout(_szText, _pTextFormat, _FontInfo.fStyle, _LayoutSize, _pTextLayout.ReleaseAndGetAddressOf());
+                if (FAILED(_hr))
+                {
+                    return nullptr;
+                }
+
+                return _pTextLayout;
+            }
+
+            void __YYAPI D2D1_0DrawContext::DrawString2(const Point& _Origin, RefPtr<IDWriteTextLayout> _pTextLayout, Brush _oBrush)
+            {
+                if (!pRenderTarget.Get())
+                    return;
+
+                auto _oNativeBrush = GetNativeBrush(_oBrush);
+                if (!_oNativeBrush.Get())
+                    return;
+
+                pRenderTarget->DrawTextLayout(_Origin, _pTextLayout, _oNativeBrush, D2D1_DRAW_TEXT_OPTIONS::D2D1_DRAW_TEXT_OPTIONS_CLIP);
+            }
+
             HRESULT D2D1_0DrawContext::TryInitializeRenderTarget()
             {
                 if (pRenderTarget != nullptr)

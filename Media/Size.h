@@ -59,6 +59,11 @@ namespace YY
             {
                 return *(Gdiplus::SizeF*)this;
             }
+
+            __YYAPI operator SIZE () const
+            {
+                return SIZE{ (long)Width, (long)Height };
+            }
 #endif
         };
     } // namespace Media

@@ -151,6 +151,19 @@ namespace YY
                     _In_ ContentAlignStyle _fTextAlign,
                     _Out_ Size* _pExtent) override;
 
+                RefPtr<IDWriteTextLayout> __YYAPI CreateTextLayout(
+                    _In_ uString _szText,
+                    _In_ const Font& _FontInfo,
+                    _In_ const Size& _LayoutSize,
+                    _In_ ContentAlignStyle _fTextAlign) override;
+
+                void
+                __YYAPI
+                DrawString2(
+                    _In_ const Point& _Origin,
+                    _In_ RefPtr<IDWriteTextLayout> _pTextLayout,
+                    _In_ Brush _oBrush) override;
+
             private:
                 HRESULT __YYAPI TryInitializeRenderTarget();
                 

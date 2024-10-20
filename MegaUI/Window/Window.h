@@ -109,7 +109,7 @@ namespace YY
             constexpr static auto FindEnable = 0x00000008;
 
 
-            Element* __YYAPI FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fFindMarks = FindVisible);
+            Element* __YYAPI FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fFindMarks = FindVisible, _Out_opt_ Point* _pElementPoint = nullptr);
 
             int32_t __YYAPI GetDpi() const;
 
@@ -139,13 +139,13 @@ namespace YY
 
             void __YYAPI GetRect(Rect* _Bounds);
 
-            void __YYAPI ClientToScreen(_Inout_ Rect* _Bounds);
+            void __YYAPI WindowToScreen(_Inout_ Rect* _Bounds);
             
-            void __YYAPI ClientToScreen(_Inout_ Point* _pPoint);
+            void __YYAPI WindowToScreen(_Inout_ Point* _pPoint);
 
-            void __YYAPI ScreenToClient(_Inout_ Rect* _Bounds);
+            void __YYAPI ScreenToWindow(_Inout_ Rect* _Bounds);
             
-            void __YYAPI ScreenToClient(_Inout_ Point* _pPoint);
+            void __YYAPI ScreenToWindow(_Inout_ Point* _pPoint);
 
             Element* __YYAPI GetPressed();
 
@@ -185,7 +185,7 @@ namespace YY
 
             void __YYAPI OnUpdateUiState(uint16_t _eType, uint16_t _fState);
 
-            void __YYAPI OnMouseMove(Point _MousePoint, uint32_t _fFlags);
+            void __YYAPI OnMouseMove(MouseEvent& _Event);
             
             void __YYAPI OnMouseFocusMoved(Element* _pFrom, Element* _pTo);
 

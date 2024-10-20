@@ -42,6 +42,12 @@ namespace YY
                     Gdiplus::GdiplusStartupInput _oGdiplusStartupInput;
                     return Gdiplus::GdiplusStartup(&uGdiplusToken, &_oGdiplusStartupInput, NULL);
                 }
+
+                static Gdiplus::Status AutoStartup()
+                {
+                    static thread_local AutoGdiplusStartup s_AutoGdiplusStartup;
+                    return s_AutoGdiplusStartup.TryGdiplusStartup();
+                }
             };
 
             // 此类用于减少一次Gdi+的堆内存分配

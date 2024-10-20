@@ -80,7 +80,7 @@ namespace YY
                         DWRITE_FONT_WEIGHT(_FontInfo.uWeight),
                         _eFontStyle,
                         DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-                        _FontInfo.iSize,
+                        (int)_FontInfo.iSize,
                         _szLocaleName,
                         _pTextFormat.ReleaseAndGetAddressOf());
                     if (FAILED(_hr))

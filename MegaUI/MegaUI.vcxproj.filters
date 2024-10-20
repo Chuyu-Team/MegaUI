@@ -351,6 +351,12 @@
     <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_utils.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Control\TextBox.h">
+      <Filter>UI\Control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Media\Graphics\GDIPlus\GdiPlusTextLayout.hpp">
+      <Filter>Media\Graphics\GDIPlus</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -446,8 +452,11 @@
     <ClCompile Include="..\Base\Sync\SRWLock.cpp">
       <Filter>Base\Sync</Filter>
     </ClCompile>
+    <ClCompile Include="Control\TextBox.cpp">
+      <Filter>UI\Control</Filter>
+    </ClCompile>
     <ClCompile Include="..\Base\Sync\CriticalSection.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Base\Sync</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

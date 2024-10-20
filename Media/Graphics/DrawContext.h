@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <dwrite.h>
 
 #include <Media/Point.h>
 #include <Media/Brushes/Brush.h>
@@ -124,6 +125,26 @@ namespace YY
                     _In_ const Size& _LayoutSize,
                     _In_ ContentAlignStyle _fTextAlign,
                     _Out_ Size* _pExtent) = 0;
+
+                virtual RefPtr<IDWriteTextLayout> __YYAPI CreateTextLayout(
+                    _In_ uString _szText,
+                    _In_ const Font& _FontInfo,
+                    _In_ const Size& _LayoutSize,
+                    _In_ ContentAlignStyle _fTextAlign
+                    )
+                {
+                    return nullptr;
+                };
+
+                virtual
+                void
+                __YYAPI
+                DrawString2(
+                    _In_ const Point& _Origin,
+                    _In_ RefPtr<IDWriteTextLayout> _pTextLayout,
+                    _In_ Brush _oBrush)
+                {
+                }
             };
 
             class DrawContextFactory

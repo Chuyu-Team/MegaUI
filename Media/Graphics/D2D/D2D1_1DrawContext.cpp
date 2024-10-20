@@ -605,6 +605,10 @@ namespace YY
             void __YYAPI D2D1_1DrawContext::DrawLine(Point _oPoint0, Point _oPoint1, Pen _oPen)
             {
                 // ToDo
+                if (!pDeviceContext)
+                    return;
+
+                pDeviceContext->DrawLine(_oPoint0, _oPoint1, GetNativeBrush(_oPen.GetBrush()), _oPen.GetThickness());
             }
 
             void __YYAPI D2D1_1DrawContext::DrawRectangle(const Rect& _oRect, Pen _oPen, Brush _oBrush)
@@ -650,6 +654,37 @@ namespace YY
             void __YYAPI D2D1_1DrawContext::MeasureString(uStringView _szText, const Font& _FontInfo, const Size& _LayoutSize, ContentAlignStyle _fTextAlign, Size* _pExtent)
             {
                 DWrite::MeasureString(_szText, _FontInfo, _LayoutSize, _fTextAlign, _pExtent);
+            }
+
+            RefPtr<IDWriteTextLayout> __YYAPI D2D1_1DrawContext::CreateTextLayout(uString _szText, const Font& _FontInfo, const Size& _LayoutSize, ContentAlignStyle _fTextAlign)
+            {
+                RefPtr<IDWriteTextFormat> _pTextFormat;
+                auto _hr = DWrite::CreateTextFormat(_FontInfo, _fTextAlign, L"", _pTextFormat.ReleaseAndGetAddressOf());
+                if (FAILED(_hr))
+                {
+                    return nullptr;
+                }
+
+                RefPtr<IDWriteTextLayout> _pTextLayout;
+                _hr = DWrite::CreateTextLayout(_szText, _pTextFormat, _FontInfo.fStyle, _LayoutSize, _pTextLayout.ReleaseAndGetAddressOf());
+                if (FAILED(_hr))
+                {
+                    return nullptr;
+                }
+
+                return _pTextLayout;
+            }
+
+            void __YYAPI D2D1_1DrawContext::DrawString2(const Point& _Origin, RefPtr<IDWriteTextLayout> _pTextLayout, Brush _oBrush)
+            {
+                if (!pDeviceContext.Get())
+                    return;
+
+                auto _oNativeBrush = GetNativeBrush(_oBrush);
+                if (!_oNativeBrush.Get())
+                    return;
+
+                pDeviceContext.Get()->DrawTextLayout(_Origin, _pTextLayout, _oNativeBrush, D2D1_DRAW_TEXT_OPTIONS::D2D1_DRAW_TEXT_OPTIONS_CLIP);
             }
             
             RefPtr<ID2D1Brush> __YYAPI D2D1_1DrawContext::GetNativeBrush(Brush _oBrush)

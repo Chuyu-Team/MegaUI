@@ -55,6 +55,20 @@ namespace YY
                 return X != _Other.X || Y != _Other.Y;
             }
 
+            inline Point& operator+=(const Point& _Other)
+            {
+                X += _Other.X;
+                Y += _Other.Y;
+                return *this;
+            }
+
+            inline Point& operator-=(const Point& _Other)
+            {
+                X -= _Other.X;
+                Y -= _Other.Y;
+                return *this;
+            }
+
 #ifdef _WIN32
             __YYAPI operator D2D1_POINT_2F&() const
             {

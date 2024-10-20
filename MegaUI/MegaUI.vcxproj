@@ -214,6 +214,7 @@
     <ClInclude Include="..\Media\Graphics\DrawContext.h" />
     <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusHelper.h" />
     <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.h" />
+    <ClInclude Include="..\Media\Graphics\GDIPlus\GdiPlusTextLayout.hpp" />
     <ClInclude Include="..\Media\Pens\Pen.h" />
     <ClInclude Include="..\Media\Point.h" />
     <ClInclude Include="..\Media\Rect.h" />
@@ -232,6 +233,7 @@
     <ClInclude Include="Base\ComUnknowImpl.h" />
     <ClInclude Include="Base\MegaUITypeInt.h" />
     <ClInclude Include="Control\Button.h" />
+    <ClInclude Include="Control\TextBox.h" />
     <ClInclude Include="Core\ControlInfo.h" />
     <ClInclude Include="Core\ControlInfoImp.h" />
     <ClInclude Include="Core\DeferCycle.h" />
@@ -292,6 +294,7 @@
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Control\Button.cpp" />
+    <ClCompile Include="Control\TextBox.cpp" />
     <ClCompile Include="Core\ControlInfo.cpp" />
     <ClCompile Include="Core\Element.cpp" />
     <ClCompile Include="Core\StyleSheet.cpp" />

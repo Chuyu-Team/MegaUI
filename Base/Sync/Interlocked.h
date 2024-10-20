@@ -33,6 +33,11 @@ namespace YY::Base::Sync
 #endif
     }
 
+    inline int32_t __YYAPI Increment(volatile int32_t* _pAddend)
+    {
+        return (int32_t)Increment(const_cast<int32_t*>(_pAddend));
+    }
+
     inline int64_t __YYAPI Increment(int64_t* _pAddend)
     {
 #ifdef _MSC_VER
@@ -42,9 +47,19 @@ namespace YY::Base::Sync
 #endif
     }
 
+    inline int64_t __YYAPI Increment(volatile int64_t* _pAddend)
+    {
+        return (int64_t)Increment(const_cast<int64_t*>(_pAddend));
+    }
+
     inline uint32_t __YYAPI Increment(uint32_t* _pAddend)
     {
         return (uint32_t)Increment(reinterpret_cast<int32_t*>(_pAddend));
+    }
+
+    inline uint32_t __YYAPI Increment(volatile uint32_t* _pAddend)
+    {
+        return (uint32_t)Increment(const_cast<uint32_t*>(_pAddend));
     }
 
     inline uint64_t __YYAPI Increment(uint64_t* _pAddend)
@@ -52,10 +67,9 @@ namespace YY::Base::Sync
         return (uint64_t)Increment(reinterpret_cast<int64_t*>(_pAddend));
     }
             
-    template<typename Type>
-    inline Type __YYAPI Increment(volatile Type* _pAddend)
+    inline uint64_t __YYAPI Increment(volatile uint64_t* _pAddend)
     {
-        return (Type)Increment((Type*)(_pAddend));
+        return (uint64_t)Increment(const_cast<uint64_t*>(_pAddend));
     }
 
     inline int32_t __YYAPI Decrement(int32_t* _pAddend)

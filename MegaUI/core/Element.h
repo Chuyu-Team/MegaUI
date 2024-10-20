@@ -6,6 +6,7 @@
 #include <Media/Graphics/DrawContext.h>
 #include <MegaUI/Core/UIEvent.h>
 #include <MegaUI/Render/Render.h>
+#include <Base/Containers/Optional.h>
 
 // Global layout positions
 #define LP_None         -3
@@ -349,6 +350,9 @@ namespace YY::MegaUI
 
         // 缓存的字体信息
         Font SpecFont;
+
+        RefPtr<IDWriteTextLayout> pTextLayout;
+
 	public:
         Element();
 
@@ -560,7 +564,7 @@ namespace YY::MegaUI
 
         void __YYAPI PaintBackground(_In_ DrawContext* _pDrawContext, const Value& _Background, _In_ const Rect& _Bounds);
             
-        void __YYAPI PaintContent(
+        virtual void __YYAPI PaintContent(
             _In_ DrawContext* _pDrawContext,
             _In_ const Value& _Content,
             _In_ const Font& _FontInfo,
@@ -670,7 +674,13 @@ namespace YY::MegaUI
 
         virtual HRESULT __YYAPI DefaultAction();
 
+        void __YYAPI ElementToWindow(_Inout_ Point* _poPoint);
+
+        void __YYAPI WindowToElement(_Inout_ Point* _poPoint);
+
 	protected:
+        RefPtr<IDWriteTextLayout> __YYAPI GetTextLayout(Size _ConstraintSize);
+
 		// Value Update
         HRESULT __YYAPI PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 		HRESULT __YYAPI PostSourceChange();
@@ -865,6 +875,9 @@ namespace YY::MegaUI
         virtual bool __YYAPI OnLeftButtonUp(const MouseEvent& _Event);
 
         virtual bool __YYAPI OnClick(const ClickEvent& _Event);
+
+        virtual bool __YYAPI OnMouseMove(const MouseEvent& _Event);
+
 	};
 }
 

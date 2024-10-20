@@ -313,7 +313,7 @@ namespace YY
         }
 #endif
 
-        Element* Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fFindMarks)
+        Element* Window::FindElementFromPoint(const Point& _ptPoint, uint32_t fFindMarks, Point* _pElementPoint)
         {
             if (!pHost)
                 return nullptr;
@@ -346,7 +346,7 @@ namespace YY
                 for (;;)
                 {
                     if (_uSize == 0)
-                        return _pLastFind;
+                        goto __End;
 
                     --_uSize;
 
@@ -386,6 +386,13 @@ namespace YY
                 }
             }
 
+        __End:
+            if (_pElementPoint)
+            {
+                *_pElementPoint = _ptPoint;
+                _pElementPoint->X -= _Bounds.Left;
+                _pElementPoint->Y -= _Bounds.Top;
+            }
             return _pLastFind;
         }
 
@@ -487,7 +494,7 @@ namespace YY
         }
 
 #ifdef _WIN32
-        void Window::ClientToScreen(Rect* _Bounds)
+        void Window::WindowToScreen(Rect* _Bounds)
         {
             POINT _Point = {};
             ::ClientToScreen(hWnd, &_Point);
@@ -500,7 +507,7 @@ namespace YY
 #endif
 
 #ifdef _WIN32
-        void Window::ClientToScreen(Point* _pPoint)
+        void Window::WindowToScreen(Point* _pPoint)
         {
             POINT _Point = {};
             ::ClientToScreen(hWnd, &_Point);
@@ -510,7 +517,7 @@ namespace YY
 #endif
 
 #ifdef _WIN32
-        void Window::ScreenToClient(Rect* _Bounds)
+        void Window::ScreenToWindow(Rect* _Bounds)
         {
             POINT _Point = {};
             ::ScreenToClient(hWnd, &_Point);
@@ -523,7 +530,7 @@ namespace YY
 #endif
 
 #ifdef _WIN32
-        void Window::ScreenToClient(Point* _pPoint)
+        void Window::ScreenToWindow(Point* _pPoint)
         {
 
             POINT _Point = {};
@@ -671,8 +678,11 @@ namespace YY
                 }
                 break;
             case WM_MOUSEMOVE:
-                OnMouseMove(MAKEPOINTS(_lParam), (uint32_t)_wParam);              
+            {
+                MouseEvent _Event(nullptr, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam });
+                OnMouseMove(_Event);
                 break;
+            }
             case WM_MOUSELEAVE:
                 fTrackMouse &= ~TME_LEAVE;
                 if (pHost && pLastMouseFocusedElement)
@@ -680,15 +690,15 @@ namespace YY
                 break;
             case WM_LBUTTONDOWN:
             {
-                MouseEvent _Event(nullptr, Win32EventModifierToEventModifier(_wParam), MAKEPOINTS(_lParam));
-                _Event.pTarget = FindElementFromPoint(_Event.pt, FindVisible | FindEnable | FindActionMouse);
+                MouseEvent _Event(nullptr, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam });
+                _Event.pTarget = FindElementFromPoint(_Event.pt, FindVisible | FindEnable | FindActionMouse, &_Event.pt);
                 OnLeftButtonDown(_Event);
                 break;
             }
             case WM_LBUTTONUP:
             {
-                MouseEvent _Event(nullptr, Win32EventModifierToEventModifier(_wParam), MAKEPOINTS(_lParam));
-                _Event.pTarget = FindElementFromPoint(_Event.pt, FindVisible | FindEnable | FindActionMouse);
+                MouseEvent _Event(nullptr, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam });
+                _Event.pTarget = FindElementFromPoint(_Event.pt, FindVisible | FindEnable | FindActionMouse, &_Event.pt);
 
                 OnLeftButtonUp(_Event);
                 break;
@@ -710,13 +720,13 @@ namespace YY
                 OnUpdateUiState(LOWORD(_wParam), HIWORD(_wParam));
                 break;
             case WM_KEYDOWN:
-                OnKeyDown(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam));
+                OnKeyDown(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam }, KeyboardEvent::GetEventModifier()));
                 break;
             case WM_KEYUP:
-                OnKeyUp(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam));
+                OnKeyUp(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam }, KeyboardEvent::GetEventModifier()));
                 break;
             case WM_CHAR:
-                OnChar(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, _wParam, _lParam, KeyboardEvent::GetEventModifier()));
+                OnChar(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam }, KeyboardEvent::GetEventModifier()));
                 break;
             case WM_GETOBJECT:
             {
@@ -1018,29 +1028,44 @@ namespace YY
 #endif
 
 #ifdef _WIN32
-        void Window::OnMouseMove(Point _MousePoint, uint32_t _fFlags)
+        void Window::OnMouseMove(MouseEvent& _Event)
         {
-            if ((_fFlags & MK_LBUTTON) == 0)
+            // if (!HasFlags(_Event.fModifiers, EventModifier::LeftButton))
             {
                 if (pHost)
                 {
-                    auto _pNewMouseElement = FindElementFromPoint(_MousePoint, FindVisible | FindEnable | FindActionMouse);
-
-                    if (_pNewMouseElement != pLastMouseFocusedElement)
-                        OnMouseFocusMoved(pLastMouseFocusedElement, _pNewMouseElement);                        
-
-                    if ((fTrackMouse & TME_LEAVE) == 0)
+                    if (bCapture)
                     {
+                        if (pLastPressedElement)
+                        {
+                            pLastPressedElement->WindowToElement(&_Event.pt);
+                            pLastPressedElement->OnMouseMove(_Event);
+                        }
+                    }
+                    else
+                    {
+                        auto _pNewMouseElement = FindElementFromPoint(_Event.pt, FindVisible | FindEnable | FindActionMouse, &_Event.pt);
                         if (_pNewMouseElement)
                         {
-                            TRACKMOUSEEVENT tme;
-                            tme.cbSize = sizeof(tme);
-                            tme.dwFlags = TME_LEAVE;
-                            tme.dwHoverTime = HOVER_DEFAULT;
-                            tme.hwndTrack = hWnd;
-                            if (TrackMouseEvent(&tme))
+                            _pNewMouseElement->OnMouseMove(_Event);
+                        }
+
+                        if (_pNewMouseElement != pLastMouseFocusedElement)
+                            OnMouseFocusMoved(pLastMouseFocusedElement, _pNewMouseElement);
+
+                        if ((fTrackMouse & TME_LEAVE) == 0)
+                        {
+                            if (_pNewMouseElement)
                             {
-                                fTrackMouse |= TME_LEAVE;
+                                TRACKMOUSEEVENT tme;
+                                tme.cbSize = sizeof(tme);
+                                tme.dwFlags = TME_LEAVE;
+                                tme.dwHoverTime = HOVER_DEFAULT;
+                                tme.hwndTrack = hWnd;
+                                if (TrackMouseEvent(&tme))
+                                {
+                                    fTrackMouse |= TME_LEAVE;
+                                }
                             }
                         }
                     }
@@ -1080,13 +1105,14 @@ namespace YY
 
             if (_Event.pTarget)
             {
+                _Event.pTarget->OnLeftButtonDown(_Event);
+
                 SetKeyboardFocus(_Event.pTarget);
 
                 // 启用鼠标消息跟踪
                 ::SetCapture(hWnd);
                 bCapture = TRUE;                
 
-                _Event.pTarget->OnLeftButtonDown(_Event);
             }
 
             return true;

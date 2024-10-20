@@ -543,6 +543,19 @@ namespace YY::MegaUI
 
 	void Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
 	{
+        if (_eIndicies == PropertyIndicies::PI_Specified)
+        {
+            if (Element::g_ControlInfoData.ContentProp == _Prop
+                || Element::g_ControlInfoData.ContentAlignProp == _Prop
+                || Element::g_ControlInfoData.FontFamilyProp == _Prop
+                || Element::g_ControlInfoData.FontSizeProp == _Prop
+                || Element::g_ControlInfoData.FontWeightProp == _Prop
+                || Element::g_ControlInfoData.FontStyleProp == _Prop)
+            {
+                pTextLayout = nullptr;
+            }
+        }
+
         if (_Prop.pfnCustomPropertyHandle)
         {
             OnPropertyChangedHandleData _HandleData;
@@ -1126,31 +1139,28 @@ namespace YY::MegaUI
         ContentAlignStyle _fContentAlign
         )
     {
-        if (_Content.GetType() == ValueType::uString)
+        auto _pTextLayout = GetTextLayout(_Bounds.GetSize());
+        if (_pTextLayout)
         {
-            _pDrawContext->DrawString(_Content.GetString(), _FontInfo, SolidColorBrush(_ForegroundColor), _Bounds, _fContentAlign);
+            _pDrawContext->DrawString2(_Bounds.GetPoint(), _pTextLayout, SolidColorBrush(_ForegroundColor));
         }
     }
 
     Size Element::GetContentSize(Size _ConstraintSize)
     {
         // todo
-        Size _ContentSize;
+        auto _pTextLayout = GetTextLayout(_ConstraintSize);
+        if (_pTextLayout)
+        {
+            DWRITE_TEXT_METRICS TextMetrics;
+            auto _hr = _pTextLayout->GetMetrics(&TextMetrics);
+            if (SUCCEEDED(_hr))
+            {
+                return Size{ TextMetrics.widthIncludingTrailingWhitespace, TextMetrics.height };
+            }
+        }
 
-        auto _ContentValue = GetValue(Element::g_ControlInfoData.ContentProp);
-        switch (_ContentValue.GetType())
-        {
-        case ValueType::uString:
-        {
-            auto _pDrawContext = pWindow->GetDrawContext();
-            _pDrawContext->MeasureString(_ContentValue.GetString(), SpecFont, _ConstraintSize, fSpecContentAlign, &_ContentSize);
-            break;
-        }
-        default:
-            return _ConstraintSize;
-            break;
-        }
-        return _ContentSize;
+        return _ConstraintSize;
     }
 
     Size Element::SelfLayoutUpdateDesiredSize(Size _ConstraintSize)
@@ -1619,6 +1629,55 @@ namespace YY::MegaUI
     {
         // Element默认的 Action行为什么也不做。
         return S_OK;
+    }
+
+    void __YYAPI Element::ElementToWindow(Point* _poPoint)
+    {
+        auto _pItem = this;
+
+        do
+        {
+            *_poPoint += _pItem->GetLocation();
+            _pItem = _pItem->GetParent();
+        } while (_pItem);
+    }
+
+    void __YYAPI Element::WindowToElement(Point* _poPoint)
+    {
+        auto _pItem = this;
+
+        do
+        {
+            *_poPoint -= _pItem->GetLocation();
+            _pItem = _pItem->GetParent();
+        } while (_pItem);
+    }
+
+    RefPtr<IDWriteTextLayout> Element::GetTextLayout(Size _ConstraintSize)
+    {
+        do
+        {
+            if (pTextLayout)
+            {
+                pTextLayout->SetMaxWidth(_ConstraintSize.Width);
+                pTextLayout->SetMaxHeight(_ConstraintSize.Height);
+                break;
+            }
+
+            if (!pWindow)
+                break;
+
+            auto _pDrawContext = pWindow->GetDrawContext();
+            if (!_pDrawContext)
+                break;
+
+            auto _ContentValue = GetValue(Element::g_ControlInfoData.ContentProp);
+            if (_ContentValue.GetType() != ValueType::uString)
+                break;
+
+            pTextLayout = _pDrawContext->CreateTextLayout(_ContentValue.GetString(), SpecFont, _ConstraintSize, fSpecContentAlign);
+        } while (false);
+        return pTextLayout;
     }
 
     Element* Element::GetImmediateChild(Element* _pFrom)
@@ -3937,11 +3996,16 @@ namespace YY::MegaUI
 
     bool Element::OnLeftButtonUp(const MouseEvent& _Event)
     {
-        ClickEvent _ClickEvent(_Event.pTarget, _Event.fModifiers, _Event.pt);
+        ClickEvent _ClickEvent(_Event);
         return OnClick(_ClickEvent);
     }
 
     bool Element::OnClick(const ClickEvent& _Event)
+    {
+        return false;
+    }
+
+    bool __YYAPI Element::OnMouseMove(const MouseEvent& _Event)
     {
         return false;
     }

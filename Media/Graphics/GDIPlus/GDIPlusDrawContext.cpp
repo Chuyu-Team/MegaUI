@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "GDIPlusDrawContext.h"
+#include "GdiPlusTextLayout.hpp"
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -11,8 +12,6 @@ namespace YY
     {
         namespace Graphics
         {
-            static thread_local AutoGdiplusStartup s_AutoGdiplusStartup;
-
             static int32_t __YYAPI GetFontStyle(_In_ const Font& _FontInfo)
             {
                 int32_t _fFontStyle = 0;
@@ -165,7 +164,7 @@ namespace YY
                 oPaint.Right = oPixelSize.cx;
                 oPaint.Bottom = oPixelSize.cy;
 
-                if (s_AutoGdiplusStartup.TryGdiplusStartup() != Gdiplus::Ok)
+                if (AutoGdiplusStartup::AutoStartup() != Gdiplus::Ok)
                 {
                     return E_UNEXPECTED;
                 }
@@ -324,7 +323,7 @@ namespace YY
 
                 if (_szText.GetSize() > (size_t)(std::numeric_limits<INT>::max)())
                     throw Exception();
-                auto _Status = s_AutoGdiplusStartup.TryGdiplusStartup();
+                auto _Status = AutoGdiplusStartup::AutoStartup();
                 if (_Status != Gdiplus::Status::Ok)
                     throw Exception();
 
@@ -390,6 +389,113 @@ namespace YY
 
                 if (_Status != Gdiplus::Status::Ok)
                     throw Exception(); 
+            }
+
+            RefPtr<IDWriteTextLayout>__YYAPI GDIPlusDrawContext::CreateTextLayout(uString _szText, const Font& _FontInfo, const Size& _LayoutSize, ContentAlignStyle _fTextAlign)
+            {
+                DWRITE_FONT_STYLE _eFontStyle = DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL;
+                if (HasFlags(_FontInfo.fStyle, FontStyle::Italic))
+                    _eFontStyle = DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_ITALIC;
+
+                auto _pGdiPlusTextLayout = new GdiPlusTextLayout(
+                    _FontInfo.szFace,
+                    nullptr,
+                    DWRITE_FONT_WEIGHT(_FontInfo.uWeight),
+                    _eFontStyle,
+                    DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
+                    (int)_FontInfo.iSize,
+                    _szText,
+                    _LayoutSize.Width,
+                    _LayoutSize.Height);
+
+                /*RefPtr<IDWriteTextFormat> _pTextFormat;
+                auto _hr = _pDWriteFactory->CreateTextFormat(
+                    _FontInfo.szFace,
+                    nullptr,
+                    DWRITE_FONT_WEIGHT(_FontInfo.uWeight),
+                    _eFontStyle,
+                    DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
+                    _FontInfo.iSize,
+                    _szLocaleName,
+                    _pTextFormat.ReleaseAndGetAddressOf());*/
+                //if (FAILED(_hr))
+                //    return _hr;
+
+                // static_cast<IDWriteTextFormat*>(_pGdiPlusTextLayout)->SetFontFamilyName(_FontInfo.szFace);
+
+                DWRITE_TEXT_ALIGNMENT _TextAlignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING;
+                if (HasFlags(_fTextAlign, ContentAlignStyle::Right))
+                {
+                    _TextAlignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_TRAILING;
+                }
+                else if (HasFlags(_fTextAlign, ContentAlignStyle::Center))
+                {
+                    _TextAlignment = DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_CENTER;
+                }
+
+                _pGdiPlusTextLayout->SetTextAlignment(_TextAlignment);
+
+                DWRITE_PARAGRAPH_ALIGNMENT _ParagraphAlignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR;
+                if (HasFlags(_fTextAlign, ContentAlignStyle::Bottom))
+                {
+                    _ParagraphAlignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_FAR;
+                }
+                else if (HasFlags(_fTextAlign, ContentAlignStyle::Middle))
+                {
+                    _ParagraphAlignment = DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_CENTER;
+                }
+                _pGdiPlusTextLayout->SetParagraphAlignment(_ParagraphAlignment);
+
+                auto _WordWrapping = HasFlags(_fTextAlign, ContentAlignStyle::Wrap) ? DWRITE_WORD_WRAPPING::DWRITE_WORD_WRAPPING_WRAP : DWRITE_WORD_WRAPPING::DWRITE_WORD_WRAPPING_NO_WRAP;
+                _pGdiPlusTextLayout->SetWordWrapping(_WordWrapping);
+
+                if (HasFlags(_fTextAlign, ContentAlignStyle::EndEllipsis))
+                {
+                    //RefPtr<IDWriteInlineObject> pDWriteInlineObject;
+                    //auto _hr = _pDWriteFactory->CreateEllipsisTrimmingSign(_pTextFormat, pDWriteInlineObject.ReleaseAndGetAddressOf());
+                    //if (SUCCEEDED(_hr))
+                    //{
+                    //    DWRITE_TRIMMING trim;
+                    //    trim.granularity = DWRITE_TRIMMING_GRANULARITY_CHARACTER;
+                    //    trim.delimiter = 1;
+                    //    trim.delimiterCount = 3;
+                    //    _pTextFormat->SetTrimming(&trim, pDWriteInlineObject);
+                    //}
+                }
+
+                /*RefPtr<IDWriteTextLayout> _pTextLayout;
+                auto _hr = _pDWriteFactory->CreateTextLayout(
+                    _szText.GetConstString(),
+                    (UINT32)_szText.GetSize(),
+                    _pTextFormat,
+                    _Maxbound.Width,
+                    _Maxbound.Height,
+                    _pTextLayout.ReleaseAndGetAddressOf());
+                if (FAILED(_hr))
+                    return _hr;*/
+
+                //if (HasFlags(_fTextStyle, FontStyle::Underline))
+                //{
+                //    _hr = _pTextLayout->SetUnderline(TRUE, DWRITE_TEXT_RANGE{ 0, (UINT32)_szText.GetSize() });
+                //    if (FAILED(_hr))
+                //        return _hr;
+                //}
+
+                //if (HasFlags((FontStyle)_fTextStyle, FontStyle::StrikeOut))
+                //{
+                //    _hr = _pTextLayout->SetStrikethrough(TRUE, DWRITE_TEXT_RANGE{ 0, (UINT32)_szText.GetSize() });
+                //    if (FAILED(_hr))
+                //        return _hr;
+                //}
+
+                //*_ppTextLayout = _pTextLayout.Detach();
+                return RefPtr<IDWriteTextLayout>::FromPtr(_pGdiPlusTextLayout);
+            }
+
+            void __YYAPI GDIPlusDrawContext::DrawString2(const Point& _Origin, RefPtr<IDWriteTextLayout> _pTextLayout, Brush _oBrush)
+            {
+                GdiPlusTextLayoutDrawContext _oContext = { this, _oBrush };
+                _pTextLayout->Draw(&_oContext, nullptr, _Origin.X, _Origin.Y);
             }
 
             Gdiplus::Graphics* __YYAPI GDIPlusDrawContext::GetSurface()
