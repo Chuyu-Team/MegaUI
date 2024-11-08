@@ -431,7 +431,14 @@ namespace YY::Base::Threading
         /// </summary>
         /// <returns></returns>
         virtual uint32_t __YYAPI GetThreadId() = 0;
-                
+
+        /// <summary>
+        /// 将ThreadTaskRunner与当前物理线程绑定。便于其他线程向该线程投递任务。成功后需要调用RunUIMessageLoop进行任务调度。
+        ///
+        /// 一般来说，此函数是给主线程使用的。如果函数返回成功，那么必须持续持有该TaskRunner！因为一旦释放并且引用计数归0，将解除绑定关系！
+        /// </summary>
+        /// <returns>如果调用者线程不是主线程，该函数可能返回nullptr。</returns>
+        static RefPtr<ThreadTaskRunner> __YYAPI BindCurrentThread();            
 
         /// <summary>
         /// 运行UI线程专属消息循环。
@@ -441,26 +448,7 @@ namespace YY::Base::Threading
         /// <param name="_pfnCallback">启动循环之前进行的函数调用，Callback发生期间可以使用`ThreadTaskRunner::GetCurrent()`。</param>
         /// <param name="_pUserData">后续传递给 _pfnCallback 的 _pUserData</param>
         /// <returns>消息循环退出代码。</returns>
-        static uintptr_t __YYAPI RunUIMessageLoop(_In_opt_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
-
-        /// <summary>
-        /// 运行UI线程专属消息循环。
-        /// * 主线程运行消息循环后才能正常使用 ThreadTaskRunner::GetCurrent();
-        /// * 如果 RunUIMessageLoop 退出，后续的PostTask等请求将失败。
-        /// </summary>
-        /// <param name="_pfnLambdaCallback"></param>
-        /// <returns></returns>
-        template<typename LambdaCallback>
-        static uintptr_t __YYAPI RunUIMessageLoop(_In_ LambdaCallback&& _pfnLambdaCallback)
-        {
-            return RunUIMessageLoop(
-                [](void* _pUserData)
-                {
-                    auto& _pfnLambdaCallback = *(LambdaCallback*)_pUserData;
-                    _pfnLambdaCallback();
-                },
-                (void*)&_pfnLambdaCallback);
-        }
+        static uintptr_t __YYAPI RunUIMessageLoop();
     };
 
     // 自动将任务并行处理且负载均衡

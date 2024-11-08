@@ -8,10 +8,6 @@ __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY::Base::Threading
 {
-    // RunUIMessageLoop 进入的次数。
-    // 对于 ThreadTaskRunner 来说必须保证消息循环在才能正常工作。
-    static thread_local uint32_t s_uUIMessageLoopEnterCount = 0u;
-
     ThreadTaskRunnerImpl::ThreadTaskRunnerImpl(uint32_t _uThreadId, bool _bBackgroundLoop)
         : uWakeupCountAndPushLock(_bBackgroundLoop ? (WakeupOnceRaw | BackgroundLoopRaw) : WakeupOnceRaw)
         , uThreadId(_uThreadId)
@@ -39,14 +35,8 @@ namespace YY::Base::Threading
     }
             
 #ifdef _WIN32
-    uintptr_t __YYAPI ThreadTaskRunnerImpl::RunUIMessageLoop(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
+    uintptr_t __YYAPI ThreadTaskRunnerImpl::RunUIMessageLoop()
     {
-        EnterLoop();
-
-        if (_pfnCallback)
-            _pfnCallback(_pUserData);
-
-
         MSG _oMsg;
         for (;;)
         {
@@ -89,15 +79,12 @@ namespace YY::Base::Threading
                 Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
             }
         }
-        LeaveLoop();
         return _oMsg.wParam;
     }
 #endif
 
     void __YYAPI ThreadTaskRunnerImpl::RunBackgroundLoop()
     {
-        EnterLoop();
-
         for (;;)
         {
             if (!IsShared())
@@ -129,7 +116,7 @@ namespace YY::Base::Threading
         }
         
     END_LOOP:
-        LeaveLoop();
+        ;
     }
 
     void __YYAPI ThreadTaskRunnerImpl::EnableWakeup(bool _bEnable)
@@ -175,9 +162,9 @@ namespace YY::Base::Threading
 
     void __YYAPI ThreadTaskRunnerImpl::operator()()
     {
-        s_uUIMessageLoopEnterCount = 0;
         uThreadId = GetCurrentThreadId();
         Sync::WakeByAddressAll(const_cast<uint32_t*>(&uThreadId));
+        g_pTaskRunnerWeak = this;
 
         if (bBackgroundLoop)
         {
@@ -185,7 +172,7 @@ namespace YY::Base::Threading
         }
         else
         {
-            RunUIMessageLoop(nullptr, nullptr);
+            RunUIMessageLoop();
         }
 
         uThreadId = UINT32_MAX;
@@ -226,31 +213,4 @@ namespace YY::Base::Threading
         }
     }
 #endif
-    
-    void __YYAPI ThreadTaskRunnerImpl::EnterLoop() noexcept
-    {
-        ++s_uUIMessageLoopEnterCount;
-        if (s_uUIMessageLoopEnterCount == 1)
-        {
-            g_pTaskRunnerWeak = this;
-            EnableWakeup(true);
-        }
-    }
-    
-    void __YYAPI ThreadTaskRunnerImpl::LeaveLoop() noexcept
-    {
-        if (s_uUIMessageLoopEnterCount == 0)
-        {
-            std::abort();
-        }
-
-        --s_uUIMessageLoopEnterCount;
-        if (s_uUIMessageLoopEnterCount == 0)
-        {
-            // 对于线程来说，交给weak_ptr控制
-            // 线程退出或者交还线程池时再统释放。
-            // g_pTaskRunnerWeak = nullptr;
-            EnableWakeup(false);
-        }
-    }
 } // namespace YY

@@ -70,7 +70,7 @@ namespace YY::Base::Threading
         //
         ////////////////////////////////////////////////////
 
-        uintptr_t __YYAPI RunUIMessageLoop(_In_opt_ TaskRunnerSimpleCallback _pfnCallback, _In_opt_ void* _pUserData);
+        uintptr_t __YYAPI RunUIMessageLoop();
 
         /// <summary>
         /// 运行后台循环，改模式无法支持UI相关工作。
@@ -88,10 +88,6 @@ namespace YY::Base::Threading
         void __YYAPI CleanupTaskQueue() noexcept;
 
         HRESULT __YYAPI Wakeup() noexcept;
-
-        void __YYAPI EnterLoop() noexcept;
-
-        void __YYAPI LeaveLoop() noexcept;
     };
 } // namespace YY
 

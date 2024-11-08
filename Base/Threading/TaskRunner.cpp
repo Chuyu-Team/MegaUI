@@ -162,7 +162,36 @@ namespace YY::Base::Threading
         return RefPtr<ThreadTaskRunner>(std::move(_pTaskRunner));
     }
 
-    uintptr_t __YYAPI ThreadTaskRunner::RunUIMessageLoop(TaskRunnerSimpleCallback _pfnCallback, void* _pUserData)
+    RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::BindCurrentThread()
+    {
+        RefPtr<ThreadTaskRunnerImpl> _pThreadTaskRunnerImpl;
+
+        if (auto _pTaskRunner = g_pTaskRunnerWeak.Get())
+        {
+            if (!HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle::FixedThread))
+            {
+                // 非物理线程不能进行UI消息循环！！！
+                // 暂时设计如此，未来再说。
+                return nullptr;
+            }
+
+            _pThreadTaskRunnerImpl = std::move(_pTaskRunner);
+        }
+        else
+        {
+            // 这是主线程？？？
+            _pThreadTaskRunnerImpl = RefPtr<ThreadTaskRunnerImpl>::Create();
+            if (!_pThreadTaskRunnerImpl)
+            {
+                return nullptr;
+            }
+            g_pTaskRunnerWeak = _pThreadTaskRunnerImpl;
+        }
+
+        return _pThreadTaskRunnerImpl;
+    }
+
+    uintptr_t __YYAPI ThreadTaskRunner::RunUIMessageLoop()
     {
         RefPtr<ThreadTaskRunnerImpl> _pThreadTaskRunnerImpl;
 
@@ -179,17 +208,10 @@ namespace YY::Base::Threading
         }
         else
         {
-            // 这是主线程？？？
-            _pThreadTaskRunnerImpl = RefPtr<ThreadTaskRunnerImpl>::Create();
-            if (!_pThreadTaskRunnerImpl)
-            {
-                return (uintptr_t)E_OUTOFMEMORY;
-            }
+            throw Exception(L"尚未调用 BindCurrentThread。", E_INVALIDARG);
         }
 
-        _pThreadTaskRunnerImpl->AddRef();
-        auto _uResult = _pThreadTaskRunnerImpl->RunUIMessageLoop(_pfnCallback, _pUserData);
-        _pThreadTaskRunnerImpl->Release();
+        auto _uResult = _pThreadTaskRunnerImpl->RunUIMessageLoop();
         return _uResult;
     }
 

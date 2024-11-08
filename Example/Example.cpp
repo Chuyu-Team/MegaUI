@@ -98,102 +98,98 @@ Task TestCoroutine()
 
 int wmain()
 {
+    auto _pMainThreadRunner = YY::Base::Threading::ThreadTaskRunner::BindCurrentThread();
+
+    _pMainThreadRunner->PostTask(
+        []()
+        {
+            std::cout << "TID : " << ::GetCurrentThreadId() << " 投递的任务需要等 RunUIMessageLoop 开始。\n";
+        });
+
     // 注意保留生命周期，如果TaskRunner生命周期结束则自动取消内部所有任务！
     auto _pAsynTaskRunner = Threading::SequencedTaskRunner::Create();
 
-    return YY::Base::Threading::ThreadTaskRunner::RunUIMessageLoop(
-        [&, _pAsynTaskRunner]()
+    _pAsynTaskRunner->PostTask(
+        [_pMainThreadRunner]()
         {
+            std::cout << "TID : " << ::GetCurrentThreadId() << "我是另外一个异步线程。\n";
 
-            
-            auto _pAsynTaskRunner = Threading::SequencedTaskRunner::Create();
+            std::vector<int> DDD = {1, 2, 3};
 
-            auto _pMainThreadRunner = Threading::SequencedTaskRunner::GetCurrent();
-
-            _pAsynTaskRunner->PostTask(
-                [_pMainThreadRunner]()
+            // 将结果回传主线程
+            _pMainThreadRunner->PostTask(
+                [DDD = std::move(DDD)]()
                 {
-                    std::cout << "TID : " << ::GetCurrentThreadId() << "我是另外一个异步线程。\n";
-
-                    std::vector<int> DDD = {1,2,3};
-
-                    // 将结果回传主线程
-                    _pMainThreadRunner->PostTask(
-                        [DDD = std::move(DDD)]()
-                        {
-                            // 主线程
-                            for (auto _nData : DDD)
-                            {
-                                std::cout << "TID : " << ::GetCurrentThreadId() << "_nData = " << _nData << "\n";
-                            }
-                        });
+                    // 主线程
+                    for (auto _nData : DDD)
+                    {
+                        std::cout << "TID : " << ::GetCurrentThreadId() << "_nData = " << _nData << "\n";
+                    }
                 });
+        });
 
+    std::cout << std::endl;
+    std::cout << "TID : " << ::GetCurrentThreadId() << " 测试进程启动，我是主线程。\n";
 
+    // AsyncReadCoroutineTest(LR"(E:\软件程序\WDK 10.0.10586.0.iso)");
 
-            std::cout << std::endl;
-            std::cout << "TID : " << ::GetCurrentThreadId() << " 测试进程启动，我是主线程。\n";
+#if 1
+    // YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
+    WindowElement::Register();
+    Button::Register();
+    TextBox::Register();
 
-            // AsyncReadCoroutineTest(LR"(E:\软件程序\WDK 10.0.10586.0.iso)");
+    StyleSheet::AddGlobalStyleSheet(GetUiResource(IDR_UI_COMMON));
 
-            #if 1
-            // YY::MegaUI::NativeWindowHost::Create(L"YY Mega DirectUI Test", NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, &_pWindows);
-            WindowElement::Register();
-            Button::Register();
-            TextBox::Register();
+    UIParser _Parser;
 
-            StyleSheet::AddGlobalStyleSheet(GetUiResource(IDR_UI_COMMON));
+    _Parser.ParserByXmlString(GetUiResource(IDR_UI1));
 
+    UIParserPlayContext _Context;
+    _Context.iDPI = 96;
+    {
+        Window* _pTestWindow = HNew<Window>();
+        YY::MegaUI::WindowElement* pWindowElement;
+        intptr_t Cooike;
+        _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
 
-            UIParser _Parser;
+        _pTestWindow->SetHost(pWindowElement);
 
-            _Parser.ParserByXmlString(GetUiResource(IDR_UI1));
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, D2D1_1DrawContext::GetDrawContextFactory());
+        pWindowElement->EndDefer(Cooike);
+        SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.1");
+        _pTestWindow->ShowWindow(SW_SHOWNORMAL);
+    }
 
-            UIParserPlayContext _Context;
-            _Context.iDPI = 96;
-            {
-                Window* _pTestWindow = HNew<Window>();
-                YY::MegaUI::WindowElement* pWindowElement;
-                intptr_t Cooike;
-                _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+    {
+        Window* _pTestWindow = HNew<Window>();
+        YY::MegaUI::WindowElement* pWindowElement;
+        intptr_t Cooike;
+        _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
 
-                _pTestWindow->SetHost(pWindowElement);
+        _pTestWindow->SetHost(pWindowElement);
 
-                _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, D2D1_1DrawContext::GetDrawContextFactory());
-                pWindowElement->EndDefer(Cooike);
-                SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.1");
-                _pTestWindow->ShowWindow(SW_SHOWNORMAL);
-            }
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, D2D1_0DrawContext::GetDrawContextFactory());
+        pWindowElement->EndDefer(Cooike);
+        SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.0");
+        _pTestWindow->ShowWindow(SW_SHOWNORMAL);
+    }
 
-            {
-                Window* _pTestWindow = HNew<Window>();
-                YY::MegaUI::WindowElement* pWindowElement;
-                intptr_t Cooike;
-                _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
+    if (1)
+    {
+        Window* _pTestWindow = HNew<Window>();
+        YY::MegaUI::WindowElement* pWindowElement;
+        intptr_t Cooike;
+        _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
 
-                _pTestWindow->SetHost(pWindowElement);
+        _pTestWindow->SetHost(pWindowElement);
 
-                _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, D2D1_0DrawContext::GetDrawContextFactory());
-                pWindowElement->EndDefer(Cooike);
-                SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.0");
-                _pTestWindow->ShowWindow(SW_SHOWNORMAL);
-            }
-
-            if(1)
-            {
-                Window* _pTestWindow = HNew<Window>();
-                YY::MegaUI::WindowElement* pWindowElement;
-                intptr_t Cooike;
-                _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
-
-                _pTestWindow->SetHost(pWindowElement);
-
-                _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, GDIPlusDrawContext::GetDrawContextFactory());
-                pWindowElement->EndDefer(Cooike);
-                SetWindowTextW(_pTestWindow->GetWnd(), L"GDIPlus");
-                _pTestWindow->ShowWindow(SW_SHOWNORMAL);
-            }
-            #endif
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, GDIPlusDrawContext::GetDrawContextFactory());
+        pWindowElement->EndDefer(Cooike);
+        SetWindowTextW(_pTestWindow->GetWnd(), L"GDIPlus");
+        _pTestWindow->ShowWindow(SW_SHOWNORMAL);
+    }
+#endif
 // YY::MegaUI::Element* p;
 // YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);
 #if 0
@@ -292,5 +288,6 @@ int wmain()
 
     //_pWindows->ShowWindow(SW_SHOW);
 #endif
-        });
+
+    return YY::Base::Threading::ThreadTaskRunner::RunUIMessageLoop();
 }
