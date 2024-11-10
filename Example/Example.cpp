@@ -29,6 +29,9 @@
 #include <Media/Graphics/GDIPlus/GDIPlusDrawContext.h>
 #endif
 
+#include <functional>
+
+
 using namespace YY;
 
 #if defined(_WIN32)
@@ -41,7 +44,6 @@ static u8String GetUiResource(DWORD _uResourceId)
     {
         return u8String((u8char_t*)LockResource(LoadResource(NULL, _hRes)), SizeofResource(NULL, _hRes));
     }
-
     return u8String();
 }
 #endif
@@ -98,13 +100,26 @@ Task TestCoroutine()
 
 int wmain()
 {
+
     auto _pMainThreadRunner = YY::Base::Threading::ThreadTaskRunner::BindCurrentThread();
 
     _pMainThreadRunner->PostTask(
         []()
         {
-            std::cout << "TID : " << ::GetCurrentThreadId() << " 投递的任务需要等 RunUIMessageLoop 开始。\n";
+            std::cout << "TID : " << ::GetCurrentThreadId() << "Tick " << GetTickCount() << " 投递的任务需要等 RunUIMessageLoop 开始。\n";
         });
+
+
+    auto _pTimer = _pMainThreadRunner->CreateTimer(TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(1000),
+        []()
+        {
+            std::cout << "TID : " << ::GetCurrentThreadId() << " Tick " << GetTickCount() << " 5秒后定时任务。\n";
+        });
+
+
+    //_pMainThreadRunner->PostDelayTask(
+    //    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+    //    );
 
     // 注意保留生命周期，如果TaskRunner生命周期结束则自动取消内部所有任务！
     auto _pAsynTaskRunner = Threading::SequencedTaskRunner::Create();

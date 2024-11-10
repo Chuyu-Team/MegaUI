@@ -1,7 +1,12 @@
 ﻿#include "pch.h"
 #include "SRWLock.h"
 
-namespace YY::Base::Sync
+namespace YY
 {
-    constexpr const SRWLock TTT;
+    namespace Base
+    {
+        namespace Sync
+        {
+        }
+    }
 }

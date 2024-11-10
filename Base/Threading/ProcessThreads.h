@@ -7,27 +7,33 @@
 #include <sys/syscall.h>
 #endif
 
-namespace YY::Base::Threading
+namespace YY
 {
+    namespace Base
+    {
+        namespace Threading
+        {
 #ifdef _WIN32
-    using ThreadId = DWORD;
-    using ThreadHandle = HANDLE;
-    constexpr ThreadHandle NullThreadHandle = NULL;
+            using ThreadId = DWORD;
+            using ThreadHandle = HANDLE;
+            constexpr ThreadHandle NullThreadHandle = NULL;
 
-    inline ThreadId __YYAPI GetCurrentThreadId()
-    {
-        return ::GetCurrentThreadId();
-    }
+            inline ThreadId __YYAPI GetCurrentThreadId()
+            {
+                return ::GetCurrentThreadId();
+            }
 #else
-    using ThreadId = pid_t;
-    using ThreadHandle = pthread_t;
-    constexpr ThreadHandle NullThreadHandle = 0;
+            using ThreadId = pid_t;
+            using ThreadHandle = pthread_t;
+            constexpr ThreadHandle NullThreadHandle = 0;
 
-    inline ThreadId __YYAPI GetCurrentThreadId()
-    {
-        return static_cast<ThreadId>(syscall(SYS_gettid));
-    }
+            inline ThreadId __YYAPI GetCurrentThreadId()
+            {
+                return static_cast<ThreadId>(syscall(SYS_gettid));
+            }
 #endif
+        }
+    }
 } // namespace YY::Base::Threading
 
 namespace YY

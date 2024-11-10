@@ -199,7 +199,8 @@ namespace YY::MegaUI
     _APPLY(AccDescription, PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
     _APPLY(AccItemType,    PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
     _APPLY(AccItemStatus,  PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(Pressed,        PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) 
+    _APPLY(Pressed,        PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) \
+    _APPLY(Cursor,         PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) 
 
 // clang-format on
 

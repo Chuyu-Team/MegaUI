@@ -357,6 +357,12 @@
     <ClInclude Include="..\Media\Graphics\GDIPlus\GdiPlusTextLayout.hpp">
       <Filter>Media\Graphics\GDIPlus</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Threading\ThreadPoolTimerManger.h">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Threading\ThreadPoolWaitManger.h">
+      <Filter>Base\Threading\TaskRunner</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

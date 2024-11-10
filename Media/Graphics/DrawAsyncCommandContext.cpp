@@ -203,11 +203,10 @@ namespace YY
                 pCurrentCommandEntry = nullptr;
 
                 pSequencedTaskRunner->PostTask(
-                    [](void* _pUserData)
+                    [this]()
                     {
-                        auto _pAsyncCommandContext = (DrawAsyncCommandContext*)_pUserData;
-                        _pAsyncCommandContext->RunLoop();
-                    }, this);
+                        RunLoop();
+                    });
 
                 // 唤醒异步绘制队列
                 return S_OK;

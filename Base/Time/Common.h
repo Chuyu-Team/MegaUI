@@ -1,20 +1,26 @@
 ﻿#pragma once
 
-namespace YY::Base::Time
+namespace YY
 {
-    enum class TimePrecise
+    namespace Base
     {
-        // Nanosecond,
-        Microsecond,
-        Millisecond,
-    };
+        namespace Time
+        {
+            enum class TimePrecise
+            {
+                // Nanosecond,
+                Microsecond,
+                Millisecond,
+            };
 
-    constexpr int64_t MicrosecondPerNanosecond = 1000000;
-    constexpr int64_t MillisecondsPerMicrosecond = 1000;
-    constexpr int64_t SecondsPerMillisecond = 1000;
-    constexpr int64_t MinutesPerSecond = 60;
-    constexpr int64_t HoursPerMinute = 60;
-    constexpr int64_t DaysPerHour = 24;
+            constexpr int64_t MicrosecondPerNanosecond = 1000000;
+            constexpr int64_t MillisecondsPerMicrosecond = 1000;
+            constexpr int64_t SecondsPerMillisecond = 1000;
+            constexpr int64_t MinutesPerSecond = 60;
+            constexpr int64_t HoursPerMinute = 60;
+            constexpr int64_t DaysPerHour = 24;
+        }
+    }
 }
 
 namespace YY

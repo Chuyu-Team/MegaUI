@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <UIAutomationClient.h>
 #include <UIAutomationCore.h>
 
@@ -513,12 +513,10 @@ namespace YY
             virtual HRESULT STDMETHODCALLTYPE Invoke() override
             {
                 pTaskRunner->PostTask(
-                    [](void* _pUserData)
+                    [this]()
                     {
-                        auto _pElement = (Element*)_pUserData;
-                        _pElement->DefaultAction();
-                    },
-                    pElement);
+                        pElement->DefaultAction();
+                    });
 
                 return S_OK;
             }

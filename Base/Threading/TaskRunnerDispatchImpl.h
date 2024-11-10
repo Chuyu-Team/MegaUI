@@ -7,6 +7,8 @@
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Containers/BitMap.h>
 #include <Base/Threading/ProcessThreads.h>
+#include <Base/Threading/ThreadPoolTimerManger.h>
+#include <Base/Threading/ThreadPoolWaitManger.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -15,144 +17,70 @@ TaskRunnerDispatch 仅处理调度任务（比如定时器、异步IO），无�
 
 */
 
-namespace YY::Base::Threading
+namespace YY
 {
-#if defined(_WIN32)
-    struct IoTaskEntry
-        : public TaskEntry
-        , public OVERLAPPED
-
+    namespace Base
     {
-        IoTaskEntry()
-            : TaskEntry(TaskEntryStyle::None)
-            , OVERLAPPED {}
+        namespace Threading
         {
-        }
-    };
+#if defined(_WIN32)
+            struct IoTaskEntry
+                : public TaskEntry
+                , public OVERLAPPED
+
+            {
+                IoTaskEntry()
+                    : TaskEntry()
+                    , OVERLAPPED{}
+                {
+                }
+            };
 #endif
 
-    struct TimingWheelSimpleList
-    {
-        TaskEntry* pFirst = nullptr;
-        TaskEntry* pLast = nullptr;
-
-        TimingWheelSimpleList() = default;
-        
-        TimingWheelSimpleList(const TimingWheelSimpleList&) = delete;
-        TimingWheelSimpleList& operator=(const TimingWheelSimpleList&) = delete;
-        TimingWheelSimpleList& operator=(TimingWheelSimpleList&&) = default;
-
-
-        _Ret_maybenull_ TaskEntry* Pop() noexcept
-        {
-            if (pFirst == nullptr)
-                return nullptr;
-
-            auto _pOldFirst = pFirst;
-            pFirst = _pOldFirst->pNext;
-
-            if (!pFirst)
+            class TaskRunnerDispatchImplByIoCompletionImpl
+                : public ThreadPoolTimerManger
+                , public ThreadPoolWaitManger
             {
-                pLast = nullptr;
-            }
-
-            return _pOldFirst;
-        }
-
-        void Push(_In_ TaskEntry* _pEntry) noexcept
-        {
-            _pEntry->pNext = nullptr;
-
-            if (pLast)
-            {
-                pLast->pNext = _pEntry;
-            }
-            else
-            {
-                pFirst = _pEntry;
-            }
-
-            pLast = _pEntry;
-        }
-
-        bool IsEmpty() const noexcept
-        {
-            return pFirst == nullptr;
-        }
-    };
-
-    class TaskRunnerDispatchImplByIoCompletionImpl
-    {
-        friend ThreadPool;
-    private:
+                friend ThreadPool;
+            private:
 #if defined(_WIN32)
-        HANDLE hIoCompletionPort;
+                HANDLE hIoCompletionPort;
 #else
-        ThreadHandle hThread = NullThreadHandle;
+                ThreadHandle hThread = NullThreadHandle;
 #endif
-        uint32_t fFlags;
-        TickCount<TimePrecise::Millisecond> uTimingWheelCurrentTick;
+                uint32_t fFlags = 0ul;
 
-        // 时间轮: UI库一般定时数百毫秒或者几分钟所以轮子设计时越容纳1小时左右，超过1小时的全部进入 arrTimingWheelOthers
-        // 步进 10ms，0ms ~ 128'0 ms
-        TimingWheelSimpleList arrTimingWheel1[128];
-        // 步进 128'0 ms
-        TimingWheelSimpleList arrTimingWheel2[64];
-        TimingWheelSimpleList arrTimingWheel3[64];
-        // 其余：655'360ms + 的元素
-        TimingWheelSimpleList arrTimingWheelOthers;
-        // 等待加入的列表
-        InterlockedQueue<TaskEntry> arrTimerDispatchPending;
+                TaskRunnerDispatchImplByIoCompletionImpl();
 
-        // TimingWheel的位图缓存，加速轮子的遍历过程
-        BitMap<sizeof(arrTimingWheel1) / sizeof(arrTimingWheel1[0])> oTimingWheel1BitMap;
-        BitMap<sizeof(arrTimingWheel2) / sizeof(arrTimingWheel2[0])> oTimingWheel2BitMap;
-        BitMap<sizeof(arrTimingWheel3) / sizeof(arrTimingWheel3[0])> oTimingWheel3BitMap;
+            public:
+                TaskRunnerDispatchImplByIoCompletionImpl(const TaskRunnerDispatchImplByIoCompletionImpl&) = delete;
 
-        TaskRunnerDispatchImplByIoCompletionImpl();
+                TaskRunnerDispatchImplByIoCompletionImpl& operator=(const TaskRunnerDispatchImplByIoCompletionImpl&) = delete;
 
-    public:
-        TaskRunnerDispatchImplByIoCompletionImpl(const TaskRunnerDispatchImplByIoCompletionImpl&) = delete;
+                ~TaskRunnerDispatchImplByIoCompletionImpl();
 
-        TaskRunnerDispatchImplByIoCompletionImpl& operator=(const TaskRunnerDispatchImplByIoCompletionImpl&) = delete;
-
-        ~TaskRunnerDispatchImplByIoCompletionImpl();
-
-        static _Ret_notnull_ TaskRunnerDispatchImplByIoCompletionImpl* __YYAPI Get() noexcept;
+                static _Ret_notnull_ TaskRunnerDispatchImplByIoCompletionImpl* __YYAPI Get() noexcept;
 
 #if defined(_WIN32)
-        bool __YYAPI BindIO(_In_ HANDLE _hHandle) const noexcept;
+                bool __YYAPI BindIO(_In_ HANDLE _hHandle) const noexcept;
 #endif
 
-        void __YYAPI Weakup();
+                void __YYAPI SetTimerInternal(_In_ RefPtr<Timer> _pDispatchTask) noexcept;
 
-        void __YYAPI AddDelayTask(_In_ RefPtr<TaskEntry> _pDispatchTask) noexcept;
+                void __YYAPI Weakup();
 
-    protected:
-        void __YYAPI operator()();
+                void __YYAPI SetWaitInternal(_In_ RefPtr<Wait> _pTask) noexcept;
 
-    private:
-        void __YYAPI ExecuteTaskRunner();
+            protected:
+                void __YYAPI operator()();
 
-        void __YYAPI ProcessingPending() noexcept;
+            private:
+                void __YYAPI ExecuteTaskRunner();
 
-        void __YYAPI Dispatch(_In_ RefPtr<TaskEntry> _pTask);
-
-        void __YYAPI Dispatch(_In_ TimingWheelSimpleList& _oTimingWheelList);
-
-        void __YYAPI FetchTimingWheel1(uint64_t _uTimingWheel2Index, TickCount<TimePrecise::Millisecond> _oCurrent);
-
-        void __YYAPI FetchTimingWheel2(uint64_t _uTimingWheel3Index, TickCount<TimePrecise::Millisecond> _oCurrent);
-
-        void __YYAPI FetchTimingWheel3(TickCount<TimePrecise::Millisecond> _oCurrent);
-
-        void __YYAPI DispatchTimingWheel(TickCount<TimePrecise::Millisecond> _oCurrent);
-
-
-        void __YYAPI AddTimingWheel(_In_ RefPtr<TaskEntry> _pDispatchTask) noexcept;
-
-        uint32_t __YYAPI GetMinimumWaitTime() const noexcept;
-    };
+                void __YYAPI DispatchWaitTask(Wait* _pWaitTask, DWORD _uWaitResult) override;
+            };
+        }
+    }
 } // namespace YY
 
 #pragma pack(pop)

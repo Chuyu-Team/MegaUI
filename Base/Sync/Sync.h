@@ -13,7 +13,7 @@ namespace YY
             using ::WakeByAddressSingle;
             using ::WakeByAddressAll;
 
-            #pragma comment(lib, "Synchronization.lib")
+#pragma comment(lib, "Synchronization.lib")
 
 #else // !_WIN32
             bool

@@ -46,7 +46,7 @@
           <TextBox LayoutPos="Absolute" X="10dp" Y="10dp" Height="50dp" Content="𤭢j你jā𤭢𤭢āā编辑框测试文字123456789" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)"
                    Background="ARGB(255, 163, 73, 164)" Foreground="RGB(50,0,0)" Padding="Rect(4dp, 4dp, 4dp, 4dp)"
                    BorderColor="ARGB(255, 255, 0, 0)" Active="Mouse|Keyboard" FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FontSize="16pt"
-                   FocusColor="RGB(0, 0, 0)" AccName="内部小文本" FontFamily="微软雅黑"/>
+                   FocusColor="RGB(0, 0, 0)" AccName="内部小文本" FontFamily="Microsoft YaHei"/>
 
           <Element Class="FocusVisible" Active="Mouse | Keyboard" Accessible="true" AccName="大号文本" AccRole="Text"
                 LayoutPos="Absolute" X="100dp" Y="100dp" Width="300dp" Background="ARGB(128, 255, 255, 0)"

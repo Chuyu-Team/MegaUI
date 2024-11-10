@@ -5,141 +5,169 @@
 
 #pragma pack(push, __YY_PACKING)
 
-namespace YY::Base::Time
+namespace YY
 {
-    template<TimePrecise kPrecise>
-    class TickCountCommon;
-
-    template<>
-    class TickCountCommon<TimePrecise::Microsecond>
+    namespace Base
     {
-    public:
-#if _WIN32
-        static uint64_t __YYAPI GetCurrentInternalValue() noexcept
+        namespace Time
         {
-            LARGE_INTEGER _PerformanceCounter = {};
-            QueryPerformanceCounter(&_PerformanceCounter);
-            return _PerformanceCounter.QuadPart;
-        }
+            template<TimePrecise kPrecise>
+            class TickCountCommon;
 
-        static int64_t __YYAPI GetSecondsPerInternal() noexcept
-        {
-            static LARGE_INTEGER s_Frequency = {};
-            if (s_Frequency.QuadPart == 0)
+            template<>
+            class TickCountCommon<TimePrecise::Microsecond>
             {
-                QueryPerformanceFrequency(&s_Frequency);
-            }
-            return s_Frequency.QuadPart;
-        }
-#else
-        static uint64_t __YYAPI GetCurrentInternalValue() noexcept;
-
-        static int64_t __YYAPI GetSecondsPerInternal() noexcept;
-#endif
-    };
-
-    template<>
-    class TickCountCommon<TimePrecise::Millisecond>
-    {
-    public:
+            public:
 #if _WIN32
-        static uint64_t __YYAPI GetCurrentInternalValue() noexcept
-        {
-            return GetTickCount64();
-        }
+                static uint64_t __YYAPI GetCurrentInternalValue() noexcept
+                {
+                    LARGE_INTEGER _PerformanceCounter = {};
+                    QueryPerformanceCounter(&_PerformanceCounter);
+                    return _PerformanceCounter.QuadPart;
+                }
+
+                static int64_t __YYAPI GetSecondsPerInternal() noexcept
+                {
+                    static LARGE_INTEGER s_Frequency = {};
+                    if (s_Frequency.QuadPart == 0)
+                    {
+                        QueryPerformanceFrequency(&s_Frequency);
+                    }
+                    return s_Frequency.QuadPart;
+                }
 #else
-        static uint64_t __YYAPI GetCurrentInternalValue() noexcept;
+                static uint64_t __YYAPI GetCurrentInternalValue() noexcept;
+
+                static int64_t __YYAPI GetSecondsPerInternal() noexcept;
 #endif
-        constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
-        {
-            return SecondsPerMillisecond;
-        }
-    };
+            };
 
-    template<TimePrecise ePrecise>
-    class TickCount
-    {
-    private:
-        // 防止错误的从 uint64_t 构造，声明 为 private
-        // 如有需要请使用 TickCount::FromInternalValue
-        constexpr TickCount(uint64_t _uTickCountInternal) noexcept
-            : uTickCountInternal(_uTickCountInternal)
-        {
-        }
+            template<>
+            class TickCountCommon<TimePrecise::Millisecond>
+            {
+            public:
+#if _WIN32
+                static uint64_t __YYAPI GetCurrentInternalValue() noexcept
+                {
+                    return GetTickCount64();
+                }
+#else
+                static uint64_t __YYAPI GetCurrentInternalValue() noexcept;
+#endif
+                constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
+                {
+                    return SecondsPerMillisecond;
+                }
+            };
 
-    public:
-        uint64_t uTickCountInternal = 0u;
+            template<TimePrecise ePrecise>
+            class TickCount
+            {
+            private:
+                // 防止错误的从 uint64_t 构造，声明 为 private
+                // 如有需要请使用 TickCount::FromInternalValue
+                constexpr TickCount(uint64_t _uTickCountInternal) noexcept
+                    : uTickCountInternal(_uTickCountInternal)
+                {
+                }
 
-        using TickCountCommon_t = TickCountCommon<ePrecise>;
+            public:
+                uint64_t uTickCountInternal = 0u;
 
-        constexpr TickCount() noexcept = default;
+                using TickCountCommon_t = TickCountCommon<ePrecise>;
 
-        constexpr TickCount(const TickCount&) noexcept = default;
+                constexpr TickCount() noexcept = default;
 
-        static TickCount __YYAPI GetCurrent() noexcept
-        {
-            return TickCount(TickCountCommon_t::GetCurrentInternalValue());
-        }
+                constexpr TickCount(const TickCount&) noexcept = default;
 
-        constexpr static TickCount __YYAPI FromInternalValue(uint64_t _uTickCountInternal) noexcept
-        {
-            return TickCount(_uTickCountInternal);
-        }
+                static TickCount __YYAPI GetCurrent() noexcept
+                {
+                    return TickCount(TickCountCommon_t::GetCurrentInternalValue());
+                }
 
-        constexpr uint64_t __YYAPI GetInternalValue() const noexcept
-        {
-            return uTickCountInternal;
-        }
+                constexpr static TickCount __YYAPI FromInternalValue(uint64_t _uTickCountInternal) noexcept
+                {
+                    return TickCount(_uTickCountInternal);
+                }
 
-        constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
-        {
-            return TickCountCommon_t::GetSecondsPerInternal();
-        }
+                constexpr uint64_t __YYAPI GetInternalValue() const noexcept
+                {
+                    return uTickCountInternal;
+                }
+
+                constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
+                {
+                    return TickCountCommon_t::GetSecondsPerInternal();
+                }
         
-        constexpr TickCount& operator=(const TickCount&) noexcept = default;
+                constexpr TickCount& operator=(const TickCount&) noexcept = default;
 
-        constexpr bool operator==(const TickCount& _oOther) const noexcept
-        {
-            return uTickCountInternal == _oOther.uTickCountInternal;
+#if defined(_HAS_CXX20) && _HAS_CXX20
+                constexpr auto operator<=>(const TickCount& _oOther) const noexcept = default;
+#else
+                constexpr bool operator>(const TickCount& _oOther) const noexcept
+                {
+                    return uTickCountInternal > _oOther.uTickCountInternal;
+                }
+
+                constexpr bool operator>=(const TickCount& _oOther) const noexcept
+                {
+                    return uTickCountInternal >= _oOther.uTickCountInternal;
+                }
+
+                constexpr bool operator==(const TickCount& _oOther) const noexcept
+                {
+                    return uTickCountInternal == _oOther.uTickCountInternal;
+                }
+
+                constexpr bool operator<=(const TickCount& _oOther) const noexcept
+                {
+                    return uTickCountInternal <= _oOther.uTickCountInternal;
+                }
+
+                constexpr bool operator<(const TickCount& _oOther) const noexcept
+                {
+                    return uTickCountInternal < _oOther.uTickCountInternal;
+                }
+#endif
+
+                template<TimePrecise InputPrecise>
+                constexpr TickCount& operator+=(const TimeSpan<InputPrecise>& _nSpan) noexcept
+                {
+                    uTickCountInternal += _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
+                    return *this;
+                }
+
+                template<TimePrecise InputPrecise>
+                constexpr TickCount operator+(const TimeSpan<InputPrecise>& _nSpan) noexcept
+                {
+                    TickCount _oTmp = *this;
+                    _oTmp += _nSpan;
+                    return _oTmp;
+                }
+
+                template<TimePrecise InputPrecise>
+                constexpr TickCount& operator-=(const TimeSpan<InputPrecise>& _nSpan) noexcept
+                {
+                    uTickCountInternal -= _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
+                    return *this;
+                }
+
+                template<TimePrecise InputPrecise>
+                constexpr TickCount operator-(const TimeSpan<InputPrecise>& _nSpan) noexcept
+                {
+                    TickCount _oTmp = *this;
+                    _oTmp -= _nSpan;
+                    return _oTmp;
+                }
+
+                constexpr TimeSpan<ePrecise> operator-(const TickCount& _oOther) const noexcept
+                {
+                    return TimeSpan<ePrecise>::FromInternalValue((uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / GetSecondsPerInternal());
+                }
+            };
         }
-
-        constexpr auto operator<=>(const TickCount& _oOther) const noexcept = default;
-
-        template<TimePrecise InputPrecise>
-        constexpr TickCount& operator+=(const TimeSpan<InputPrecise>& _nSpan) noexcept
-        {
-            uTickCountInternal += _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
-            return *this;
-        }
-
-        template<TimePrecise InputPrecise>
-        constexpr TickCount operator+(const TimeSpan<InputPrecise>& _nSpan) noexcept
-        {
-            TickCount _oTmp = *this;
-            _oTmp += _nSpan;
-            return _oTmp;
-        }
-
-        template<TimePrecise InputPrecise>
-        constexpr TickCount& operator-=(const TimeSpan<InputPrecise>& _nSpan) noexcept
-        {
-            uTickCountInternal -= _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
-            return *this;
-        }
-
-        template<TimePrecise InputPrecise>
-        constexpr TickCount operator-(const TimeSpan<InputPrecise>& _nSpan) noexcept
-        {
-            TickCount _oTmp = *this;
-            _oTmp -= _nSpan;
-            return _oTmp;
-        }
-
-        constexpr TimeSpan<ePrecise> operator-(const TickCount& _oOther) const noexcept
-        {
-            return TimeSpan<ePrecise>::FromInternalValue((uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / GetSecondsPerInternal());
-        }
-    };
+    }
 }
 
 #pragma pack(pop)

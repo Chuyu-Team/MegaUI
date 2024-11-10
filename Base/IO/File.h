@@ -82,6 +82,26 @@ namespace YY::Base::IO
             return AsyncFile(_hFile);
         }
 
+        template<typename LambdaCallback>
+        HRESULT __YYAPI AsyncRead(
+            _In_ uint64_t _uOffset,
+            _In_reads_bytes_(_cbBuffer) void* _pBuffer,
+            _In_ uint32_t _cbBuffer,
+            _In_ LambdaCallback&& _pfnResultCallback) noexcept
+        {
+            struct AsyncReadLambda : public IoTaskEntry
+            {
+                LambdaCallback pfnLambdaCallback;
+
+                void __YYAPI RunTask() override
+                {
+                    lStatus = DosErrorFormNtStatus(Internal);
+
+                    pfnLambdaCallback(lStatus, lStatus == ERROR_SUCCESS ? InternalHigh : 0ul);
+                }
+            };
+        }
+
         auto __YYAPI AsyncRead(
             _In_ uint64_t _uOffset,
             _Out_writes_bytes_(_cbToRead) void* _pBuffer,
@@ -159,6 +179,41 @@ namespace YY::Base::IO
         }
 
     private:
+        HRESULT __YYAPI AsyncReadInternal(
+            _In_ uint64_t _uOffset,
+            _In_reads_bytes_(_cbBuffer) void* _pBuffer,
+            _In_ uint32_t _cbBuffer,
+            _In_ RefPtr<IoTaskEntry> _pIoTask) noexcept
+        {
+            _pIoTask->pOwnerTaskRunnerWeak = TaskRunner::GetCurrent();
+            _pIoTask->Offset = (uint32_t)_uOffset;
+            _pIoTask->OffsetHigh = (uint32_t)(_uOffset >> 32);
+
+            if (ReadFile(hFile, _pBuffer, _cbBuffer, nullptr, _pIoTask.Clone()))
+            {
+                // 读取成功
+                _pIoTask->operator()();
+                _pIoTask->Release();
+                return S_OK;
+            }
+            else
+            {
+                const auto _lStatus = GetLastError();
+                if (_lStatus == ERROR_IO_PENDING)
+                {
+                    // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
+                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->Weakup();
+                    return S_FALSE;
+                }
+                else
+                {
+                    // 失败！
+                    _pIoTask->Release();
+                    return __HRESULT_FROM_WIN32(_lStatus);
+                }
+            }
+        }
+
         struct AsyncTaskEntry : public IoTaskEntry
         {
             // 0，协程句柄表示尚未设置，-1表示任务完成。
@@ -171,7 +226,7 @@ namespace YY::Base::IO
             {
             }
 
-            void __YYAPI RunTask() override
+            HRESULT __YYAPI RunTask() override
             {
                 lStatus = DosErrorFormNtStatus(Internal);
                 auto _hHandle = (void*)YY::Base::Sync::Exchange(&hHandle, /*hReadyHandle*/ (intptr_t)-1);
@@ -179,6 +234,8 @@ namespace YY::Base::IO
                 {
                     std::coroutine_handle<>::from_address(_hHandle).resume();
                 }
+
+                return S_OK;
             }
         };
 
