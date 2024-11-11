@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Base/YY.h>
 #include <Base/Exception.h>
 #include <Base/Sync/Interlocked.h>
@@ -16,14 +16,49 @@ namespace YY
             class Optional
             {
             private:
-                char oBuffer[sizeof(_Type)];
-                bool bHasValue;
+                union
+                {
+                    _Type oValue;
+                    char oValueBuffer[sizeof(_Type)];
+                };
+
+                bool bHasValue = false;
 
             public:
-                Optional()
-                    : bHasValue(false)
+                constexpr Optional()
                 {
                     __YY_IGNORE_UNINITIALIZED_VARIABLE(oBuffer);
+                }
+
+                constexpr Optional(const _Type& _oValue)
+                    : oValue(_oValue)
+                    , bHasValue(true)
+                {
+                }
+                
+                constexpr Optional(_Type&& _oValue)
+                    : oValue(std::move(_oValue))
+                    , bHasValue(true)
+                {
+                }
+
+                constexpr Optional(const Optional& _oOther)
+                {
+                    if (_oOther.bHasValue)
+                    {
+                        new (&oValue) _Type(_oOther.oValue);
+                        bHasValue = true;
+                    }
+                }
+
+                constexpr Optional(Optional&& _oOther) noexcept
+                {
+                    if (_oOther.bHasValue)
+                    {
+                        new (&oValue) _Type(std::move(_oOther.oValue));
+                        _oOther.Reset();
+                        bHasValue = true;
+                    }
                 }
 
                 ~Optional()
@@ -38,7 +73,7 @@ namespace YY
 
                 _Type* GetValuePtr()
                 {
-                    return bHasValue ? (_Type*)oBuffer : nullptr;
+                    return bHasValue ? &oValue : nullptr;
                 }
 
                 inline const _Type* GetValuePtr() const
@@ -57,32 +92,86 @@ namespace YY
                 }
 
                 template<typename... Args>
-                void Emplace(Args&&... oArgs)
+                _Type& Emplace(Args&&... oArgs)
                 {
                     Reset();
-                    new (oBuffer) _Type(std::forward<Args>(oArgs)...);
+                    new (&oValue) _Type(std::forward<Args>(oArgs)...);
                     bHasValue = true;
+                    return oValue;
                 }
 
                 void Reset()
                 {
                     if (bHasValue)
                     {
-                        ((_Type*)oBuffer)->~_Type();
+                        oValue.~_Type();
                         bHasValue = false;
                     }
                 }
 
-                Optional& operator=(const _Type& _oOther)
+                Optional& operator=(const _Type& _oValue)
                 {
                     if (bHasValue)
                     {
-                        *(_Type*)oBuffer = _oOther;
+                        if (&oValue != &_oValue)
+                        {
+                            oValue = _oValue;
+                        }
                     }
                     else
                     {
-                        new (oBuffer) _Type(_oOther);
+                        new (&oValue) _Type(_oValue);
                         bHasValue = true;
+                    }
+
+                    return *this;
+                }
+
+                Optional& operator=(_Type&& _oValue)
+                {
+                    if (bHasValue)
+                    {
+                        if (&oValue != &_oValue)
+                        {
+                            oValue = std::move(_oValue);
+                        }
+                    }
+                    else
+                    {
+                        new (&oValue) _Type(std::move(_oValue));
+                        bHasValue = true;
+                    }
+
+                    return *this;
+                }
+
+                Optional& operator=(const Optional& _oOther)
+                {
+                    if (_oOther.HasValue())
+                    {
+                        operator=(_oOther);
+                    }
+                    else
+                    {
+                        Reset();
+                    }
+
+                    return *this;
+                }
+
+                Optional& operator=(Optional&& _oOther)
+                {
+                    if(this == &_oOther)
+                        return *this;
+
+                    if (_oOther.HasValue())
+                    {
+                        operator=(std::move(_oOther));
+                        _oOther.Reset();
+                    }
+                    else
+                    {
+                        Reset();
                     }
 
                     return *this;
@@ -90,6 +179,8 @@ namespace YY
             };
         }
     } // namespace Base
+
+    using namespace YY::Base::Containers;
 } // namespace YY
 
 #pragma pack(pop)
