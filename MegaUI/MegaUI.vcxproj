@@ -183,6 +183,7 @@
     <ClInclude Include="..\Base\Strings\String.h" />
     <ClInclude Include="..\Base\Strings\StringTransform.h" />
     <ClInclude Include="..\Base\Strings\StringView.h" />
+    <ClInclude Include="..\Base\Sync\AutoLock.h" />
     <ClInclude Include="..\Base\Sync\Interlocked.h" />
     <ClInclude Include="..\Base\Sync\InterlockedQueue.h" />
     <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h" />

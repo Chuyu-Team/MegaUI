@@ -39,16 +39,24 @@ namespace YY
 
             class TaskRunnerDispatchImplByIoCompletionImpl
                 : public ThreadPoolTimerManger
-                , public ThreadPoolWaitManger
+                , public ThreadPoolWaitMangerForMultiThreading
             {
                 friend ThreadPool;
             private:
 #if defined(_WIN32)
-                HANDLE hIoCompletionPort;
+                // HANDLE hIoCompletionPort;
 #else
                 ThreadHandle hThread = NullThreadHandle;
 #endif
+                enum : uint32_t
+                {
+                    SetTimerLockIndex = 1,
+                    SetWaitLockIndex,
+                };
                 uint32_t fFlags = 0ul;
+                
+                InterlockedQueue<Timer> oPendingTimerTaskQueue;
+                InterlockedQueue<Wait> oPendingWaitTaskQueue;
 
                 TaskRunnerDispatchImplByIoCompletionImpl();
 
@@ -69,7 +77,7 @@ namespace YY
 
                 void __YYAPI Weakup();
 
-                void __YYAPI SetWaitInternal(_In_ RefPtr<Wait> _pTask) noexcept;
+                HRESULT __YYAPI SetWaitInternal(_In_ RefPtr<Wait> _pTask) noexcept;
 
             protected:
                 void __YYAPI operator()();
@@ -77,7 +85,13 @@ namespace YY
             private:
                 void __YYAPI ExecuteTaskRunner();
 
-                void __YYAPI DispatchWaitTask(Wait* _pWaitTask, DWORD _uWaitResult) override;
+                void ProcessingPendingTaskQueue() noexcept;
+
+                void __YYAPI DispatchTask(RefPtr<TaskEntry> _pDispatchTask);
+
+                void __YYAPI DispatchTimerTask(RefPtr<Timer> _pTimerTask) override;
+
+                void __YYAPI DispatchWaitTask(RefPtr<Wait> _pWaitTask) override;
             };
         }
     }

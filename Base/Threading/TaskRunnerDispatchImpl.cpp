@@ -17,19 +17,16 @@ namespace YY
         namespace Threading
         {
             TaskRunnerDispatchImplByIoCompletionImpl::TaskRunnerDispatchImplByIoCompletionImpl()
-            {
 #ifdef _WIN32
-                hIoCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1u);
+                : ThreadPoolWaitMangerForMultiThreading(CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1u))
 #endif
+            {
             }
 
             TaskRunnerDispatchImplByIoCompletionImpl::~TaskRunnerDispatchImplByIoCompletionImpl()
             {
 #ifdef _WIN32
-                if (hIoCompletionPort)
-                {
-                    CloseHandle(hIoCompletionPort);
-                }
+
 #else
                 hThread = NullThreadHandle;
 #endif
@@ -49,7 +46,7 @@ namespace YY
                     return false;
                 }
 
-                if (CreateIoCompletionPort(_hHandle, hIoCompletionPort, 0, 1) != hIoCompletionPort)
+                if (CreateIoCompletionPort(_hHandle, oDefaultWaitBlock.hTaskRunnerServerHandle, 0, 1) != oDefaultWaitBlock.hTaskRunnerServerHandle)
                 {
                     return false;
                 }
@@ -64,31 +61,33 @@ namespace YY
 
                 for (;;)
                 {
-                    if (!Sync::BitSet(&fFlags, 1))
+                    if (!Sync::BitSet(&fFlags, SetTimerLockIndex))
                     {
-                        ThreadPoolTimerManger::SetTimerInternalNolock(std::move(_pDispatchTask));
-                        Sync::BitReset(&fFlags, 1);
+                        oPendingTimerTaskQueue.Push(_pDispatchTask.Detach());
+                        Sync::BitReset(&fFlags, SetTimerLockIndex);
                         break;
                     }
                 }
                 Weakup();
             }
 
-            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::SetWaitInternal(RefPtr<Wait> _pTask) noexcept
+            HRESULT __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::SetWaitInternal(RefPtr<Wait> _pTask) noexcept
             {
-                if (!_pTask)
-                    return;
+                if (_pTask == nullptr || _pTask->hHandle == NULL)
+                    return E_INVALIDARG;
+
                 for (;;)
                 {
-                    if (!Sync::BitSet(&fFlags, 2))
+                    if (!Sync::BitSet(&fFlags, SetWaitLockIndex))
                     {
-                        ThreadPoolWaitManger::SetWaitInternalNolock(std::move(_pTask));
-                        Sync::BitReset(&fFlags, 2);
+                        oPendingWaitTaskQueue.Push(_pTask.Detach());
+                        Sync::BitReset(&fFlags, SetWaitLockIndex);
                         break;
                     }
                 }
 
                 Weakup();
+                return S_OK;
             }
 
             void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Weakup()
@@ -106,7 +105,7 @@ namespace YY
 #ifdef _WIN32
 
                     // TODO: 按需唤醒
-                    PostQueuedCompletionStatus(hIoCompletionPort, 0, 0, nullptr);
+                    PostQueuedCompletionStatus(oDefaultWaitBlock.hTaskRunnerServerHandle, 0, 0, nullptr);
 #else
                     if (hThread != NullThreadHandle)
                     {
@@ -128,31 +127,29 @@ namespace YY
                 ULONG _uNumEntriesRemoved;
 
                 for (;;)
-                {                
-                    DispatchTimingWheel();
+                {
+                    ProcessingPendingTaskQueue();
+
+                    ProcessingTimerTasks();
                     auto uMinimumWaitTime = GetMinimumWaitTime();
 
-                    ProcessingPendingWaitQueue();
-
                     BOOL _bRet;
-                    if (cWaitHandle)
+                    if (oDefaultWaitBlock.cWaitHandle > 1)
                     {
-                        hWaitHandles[cWaitHandle] = hIoCompletionPort;
-                        // 额外等待完成端口，所以 cWaitHandle + 1
-                        const auto uWaitResult = WaitForMultipleObjectsEx(cWaitHandle + 1, hWaitHandles, FALSE, uMinimumWaitTime, FALSE);
-                        if (uWaitResult == WAIT_OBJECT_0 + cWaitHandle)
+                        const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, uMinimumWaitTime, FALSE);
+                        if (uWaitResult == WAIT_OBJECT_0)
                         {
-                            _bRet = GetQueuedCompletionStatusEx(hIoCompletionPort, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, 0, FALSE);
+                            _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, 0, FALSE);
                         }
                         else
                         {
-                            ProcessingWaitResult(uWaitResult);
+                            ProcessingWaitTasks(oDefaultWaitBlock, uWaitResult, oDefaultWaitBlock.cWaitHandle);
                             continue;
                         }
                     }
                     else
                     {
-                        _bRet = GetQueuedCompletionStatusEx(hIoCompletionPort, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, uMinimumWaitTime, FALSE);
+                        _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, uMinimumWaitTime, FALSE);
                     }
 
                     if (!_bRet)
@@ -184,13 +181,64 @@ namespace YY
                 }
             }
 
-            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::DispatchWaitTask(Wait* _pWaitTask, DWORD _uWaitResult)
+            void TaskRunnerDispatchImplByIoCompletionImpl::ProcessingPendingTaskQueue() noexcept
             {
-                if (!_pWaitTask)
+                for (;;)
+                {
+                    auto _pTimerTask = oPendingTimerTaskQueue.Pop();
+                    if (!_pTimerTask)
+                        break;
+
+                    ThreadPoolTimerManger::SetTimerInternal(RefPtr<Timer>::FromPtr(_pTimerTask));
+                }
+
+                for (;;)
+                {
+                    auto _pWait = oPendingWaitTaskQueue.Pop();
+                    if (!_pWait)
+                        break;
+
+                    ThreadPoolWaitMangerForMultiThreading::SetWaitInternal(RefPtr<Wait>::FromPtr(_pWait));
+                }
+            }
+
+            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::DispatchTask(RefPtr<TaskEntry> _pDispatchTask)
+            {
+                if (!_pDispatchTask)
                     return;
 
-                _pWaitTask->uWaitResult = _uWaitResult;
-                ThreadPoolTimerManger::DispatchTask(RefPtr<TaskEntry>::FromPtr(_pWaitTask));
+                do
+                {
+                    if (_pDispatchTask->IsCanceled())
+                        break;
+
+                    // 不属于任何TaskRunner，因此在线程池随机唤醒
+                    if (_pDispatchTask->pOwnerTaskRunnerWeak == nullptr)
+                    {
+                        auto _hr = ThreadPool::PostTaskInternal(_pDispatchTask.Get());
+                        return;
+                    }
+
+                    // 任务所属的 TaskRunner 已经释放？
+                    auto _pResumeTaskRunner = _pDispatchTask->pOwnerTaskRunnerWeak.Get();
+                    if (_pResumeTaskRunner == nullptr)
+                        break;
+
+                    _pResumeTaskRunner->PostTaskInternal(std::move(_pDispatchTask));
+                    return;
+                } while (false);
+
+                _pDispatchTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+            }
+
+            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::DispatchTimerTask(RefPtr<Timer> _pTimerTask)
+            {
+                DispatchTask(std::move(_pTimerTask));
+            }
+
+            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::DispatchWaitTask(RefPtr<Wait> _pWaitTask)
+            {
+                DispatchTask(std::move(_pWaitTask));
             }
 #else
             void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::ExecuteTaskRunner()

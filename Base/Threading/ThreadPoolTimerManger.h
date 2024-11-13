@@ -56,6 +56,28 @@ namespace YY
                     pLast = _pEntry;
                 }
 
+                void Push(TimingWheelSimpleList&& _oList) noexcept
+                {
+                    if (this == &_oList)
+                        return;
+
+                    if (_oList.IsEmpty())
+                        return;
+
+                    if (pLast == nullptr)
+                    {
+                        pFirst = _oList.pFirst;
+                        pLast = _oList.pLast;
+                    }
+                    else
+                    {
+                        pLast->pNext = _oList.pFirst;
+                        pLast = _oList.pLast;
+                    }
+                    _oList.pFirst = nullptr;
+                    _oList.pLast = nullptr;
+                }
+
                 bool IsEmpty() const noexcept
                 {
                     return pFirst == nullptr;
@@ -67,6 +89,9 @@ namespace YY
             class ThreadPoolTimerManger
             {
             private:
+                // 时间轮的最小分辨率，单位 ms
+                static constexpr auto kTimingWheelBaseTick = 10;
+
                 // 当前时间
                 TickCount<TimePrecise::Millisecond> uTimingWheelCurrentTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
@@ -78,8 +103,6 @@ namespace YY
                 TimingWheelSimpleList arrTimingWheel3[64];
                 // 其余：655'360ms + 的元素
                 TimingWheelSimpleList arrTimingWheelOthers;
-                // 等待加入的列表
-                InterlockedQueue<Timer> arrTimerDispatchPending;
 
                 // TimingWheel的位图缓存，加速轮子的遍历过程
                 BitMap<sizeof(arrTimingWheel1) / sizeof(arrTimingWheel1[0])> oTimingWheel1BitMap;
@@ -87,40 +110,57 @@ namespace YY
                 BitMap<sizeof(arrTimingWheel3) / sizeof(arrTimingWheel3[0])> oTimingWheel3BitMap;
 
             protected:
-                void __YYAPI SetTimerInternalNolock(_In_ RefPtr<Timer> _pDispatchTask) noexcept
+                HRESULT __YYAPI SetTimerInternal(_In_ RefPtr<Timer> _pDispatchTask) noexcept
                 {
                     if (!_pDispatchTask)
-                        return;
-                    arrTimerDispatchPending.Push(_pDispatchTask.Detach());                  
-                }
+                        return E_INVALIDARG;
 
-                void __YYAPI ProcessingPending() noexcept
-                {
-                    for (;;)
+                    if (_pDispatchTask->uExpire <= uTimingWheelCurrentTick)
                     {
-                        auto _pDispatchTask = RefPtr<Timer>::FromPtr(arrTimerDispatchPending.Pop());
-                        if (!_pDispatchTask)
-                            break;
+                        DispatchTimerTask(std::move(_pDispatchTask));
+                        return S_OK;
+                    }
 
-                        /*if (_pDispatchTask->uExpire <= uTimingWheelCurrentTick)
-                        {
-                            DispatchTask(std::move(_pDispatchTask));
-                            continue;
-                        }*/
+                    const auto _uSpanBlock = (_pDispatchTask->uExpire - uTimingWheelCurrentTick).GetMilliseconds() / kTimingWheelBaseTick;
+                    auto _uBase1 = (uTimingWheelCurrentTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / kTimingWheelBaseTick + _uSpanBlock;
 
-                        AddTimingWheel(std::move(_pDispatchTask));
+                    if (_uSpanBlock <= std::size(arrTimingWheel1))
+                    {
+                        // 可以容纳到一级时间轮
+                        const uint32_t _uIndex = (_uBase1) % std::size(arrTimingWheel1);
+                        arrTimingWheel1[_uIndex].Push(_pDispatchTask.Detach());
+                        oTimingWheel1BitMap.SetItem(_uIndex, true);
+                        return S_OK;
+                    }
+                    else if (_uSpanBlock <= std::size(arrTimingWheel1) * std::size(arrTimingWheel2))
+                    {
+                        const uint32_t _uIndex = _uBase1 / std::size(arrTimingWheel1) % std::size(arrTimingWheel2);
+                        arrTimingWheel2[_uIndex].Push(_pDispatchTask.Detach());
+                        oTimingWheel2BitMap.SetItem(_uIndex, true);
+                        return S_OK;
+                    }
+                    else if (_uSpanBlock <= std::size(arrTimingWheel1) * std::size(arrTimingWheel2) * std::size(arrTimingWheel3))
+                    {
+                        const uint32_t _uIndex = _uBase1 / std::size(arrTimingWheel1) / std::size(arrTimingWheel2) % std::size(arrTimingWheel3);
+                        arrTimingWheel3[_uIndex].Push(_pDispatchTask.Detach());
+                        oTimingWheel3BitMap.SetItem(_uIndex, true);
+                        return S_OK;
+                    }
+                    else
+                    {
+                        // 保底
+                        arrTimingWheelOthers.Push(_pDispatchTask.Detach());
+                        return S_OK;
                     }
                 }
 
-                void __YYAPI DispatchTimingWheel()
+                void __YYAPI ProcessingTimerTasks() noexcept
                 {
-                    ProcessingPending();
-
                     TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
-                    uint64_t _uFirstBlockIndex = (uTimingWheelCurrentTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick;
+                    uint64_t _uFirstBlockIndex = (uTimingWheelCurrentTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / kTimingWheelBaseTick;
 
-                    uint64_t _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick;
+                    uint64_t _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / kTimingWheelBaseTick;
 
                     uint64_t _uTimingWheelTickSpand = _uLastBlockIndexIndex - _uFirstBlockIndex;
 
@@ -130,6 +170,9 @@ namespace YY
                         uTimingWheelCurrentTick = _oCurrent;
                         return;
                     }
+
+                    // 防止 DispatchTimerTask 期间又插入时间轮，所有我们先把所有满足条件的Timer暂存在_oTimerPendingDispatchList。最后再一次性的 Dispatch
+                    TimingWheelSimpleList _oTimerPendingDispatchList;
 
                     if (_uTimingWheelTickSpand < std::size(arrTimingWheel1))
                     {
@@ -153,7 +196,7 @@ namespace YY
                             const auto _uIndex = (uint32_t)_iIndex;
                             if (_uIndex >= _uMaxRigthEndIndex1)
                                 break;
-                            Dispatch(arrTimingWheel1[_uIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel1[_uIndex]));
                             oTimingWheel1BitMap.SetItem(_uIndex, false);
                         }
 
@@ -170,7 +213,7 @@ namespace YY
                                 if (_uIndex >= _uEndIndex1)
                                     break;
 
-                                Dispatch(arrTimingWheel1[_uIndex]);
+                                _oTimerPendingDispatchList.Push(std::move(arrTimingWheel1[_uIndex]));
                                 oTimingWheel1BitMap.SetItem(_uIndex, false);
                             }
                         }
@@ -178,7 +221,7 @@ namespace YY
                         if (_uStartIndex1 == 0 || _uStartIndex1 > _uEndIndex1)
                         {
                             const uint64_t _uTimingWheelIndex2 = _uFirstBlockIndex / std::size(arrTimingWheel1) + 1;
-                            FetchTimingWheel1(_uTimingWheelIndex2, _oCurrent);
+                            FetchTimingWheel1(_uTimingWheelIndex2, _oCurrent, &_oTimerPendingDispatchList);
                         }
                     }
                     else if (_uTimingWheelTickSpand < std::size(arrTimingWheel1) * std::size(arrTimingWheel2))
@@ -191,7 +234,7 @@ namespace YY
                             if (_iIndex < 0)
                                 break;
                             auto _uIndex = (uint32_t)_iIndex;
-                            Dispatch(arrTimingWheel1[_uIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel1[_uIndex]));
                             oTimingWheel1BitMap.SetItem(_uIndex, false);
                         }
                         //
@@ -214,7 +257,7 @@ namespace YY
                             if (_uIndex >= _uMaxRigthEndIndex2)
                                 break;
 
-                            Dispatch(arrTimingWheel2[_uIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel2[_uIndex]));
                             oTimingWheel2BitMap.SetItem(_uIndex, false);
                         }
 
@@ -231,20 +274,20 @@ namespace YY
                                 const auto _uIndex = (uint32_t)_iIndex;
                                 if (_uIndex >= _uEndIndex2)
                                     break;
-                                Dispatch(arrTimingWheel2[_uIndex]);
+                                _oTimerPendingDispatchList.Push(std::move(arrTimingWheel2[_uIndex]));
                                 oTimingWheel2BitMap.SetItem(_uIndex, false);
                             }
                         }
 
                         if (_uEndBlockIndex2 == _uLastBlockIndex2)
                         {
-                            FetchTimingWheel1(_uEndBlockIndex2, _oCurrent);
+                            FetchTimingWheel1(_uEndBlockIndex2, _oCurrent, &_oTimerPendingDispatchList);
                         }
 
                         if (_uStartIndex2 == 0 || _uStartIndex2 > _uEndIndex2)
                         {
                             const uint64_t _uTimingWheelIndex3 = _uFirstBlockIndex / std::size(arrTimingWheel1) / std::size(arrTimingWheel2) + 1;
-                            FetchTimingWheel2(_uTimingWheelIndex3, _oCurrent);
+                            FetchTimingWheel2(_uTimingWheelIndex3, _oCurrent, &_oTimerPendingDispatchList);
                         }
                     }
                     else if (_uTimingWheelTickSpand < std::size(arrTimingWheel1) * std::size(arrTimingWheel2) * std::size(arrTimingWheel3))
@@ -257,7 +300,7 @@ namespace YY
                             if (_iIndex < 0)
                                 break;
 
-                            Dispatch(arrTimingWheel1[_iIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel1[_iIndex]));
                             oTimingWheel1BitMap.SetItem(_iIndex, false);
                         }
 
@@ -267,7 +310,7 @@ namespace YY
                             if (_iIndex < 0)
                                 break;
                             const auto _uIndex = (uint32_t)_iIndex;
-                            Dispatch(arrTimingWheel2[_uIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel2[_uIndex]));
                             oTimingWheel2BitMap.SetItem(_uIndex, false);
                         }
                         //
@@ -291,7 +334,7 @@ namespace YY
                             if (_uIndex >= _uMaxRigthEndIndex3)
                                 break;
 
-                            Dispatch(arrTimingWheel3[_uIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel3[_uIndex]));
                             oTimingWheel3BitMap.SetItem(_uIndex, false);
                         }
 
@@ -307,19 +350,19 @@ namespace YY
                                 const auto _uIndex = (uint32_t)_iIndex;
                                 if (_uIndex >= _uEndIndex3)
                                     break;
-                                Dispatch(arrTimingWheel3[_uIndex]);
+                                _oTimerPendingDispatchList.Push(std::move(arrTimingWheel3[_uIndex]));
                                 oTimingWheel3BitMap.SetItem(_uIndex, false);
                             }
                         }
 
                         if (_uEndBlockIndex3 == _uLastBlockIndex3)
                         {
-                            FetchTimingWheel2(_uEndBlockIndex3, _oCurrent);
+                            FetchTimingWheel2(_uEndBlockIndex3, _oCurrent, &_oTimerPendingDispatchList);
                         }
 
                         if (_uStartIndex3 == 0 || _uStartIndex3 > _uEndIndex3)
                         {
-                            FetchTimingWheel3(_oCurrent);
+                            FetchTimingWheel3(_oCurrent, &_oTimerPendingDispatchList);
                         }
                     }
                     else
@@ -332,7 +375,7 @@ namespace YY
                             if (_iIndex < 0)
                                 break;
 
-                            Dispatch(arrTimingWheel1[_iIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel1[_iIndex]));
                             oTimingWheel1BitMap.SetItem(_iIndex, false);
                         }
 
@@ -342,7 +385,7 @@ namespace YY
                             if (_iIndex < 0)
                                 break;
 
-                            Dispatch(arrTimingWheel2[_iIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel2[_iIndex]));
                             oTimingWheel2BitMap.SetItem(_iIndex, false);
                         }
 
@@ -352,74 +395,44 @@ namespace YY
                             if (_iIndex < 0)
                                 break;
 
-                            Dispatch(arrTimingWheel3[_iIndex]);
+                            _oTimerPendingDispatchList.Push(std::move(arrTimingWheel3[_iIndex]));
                             oTimingWheel3BitMap.SetItem(_iIndex, false);
                         }
                         //
                         /////////////////////////////////////////
 
-                        FetchTimingWheel3(_oCurrent);
+                        FetchTimingWheel3(_oCurrent, &_oTimerPendingDispatchList);
                     }
 
                     uTimingWheelCurrentTick = _oCurrent;
-                }
 
-                void __YYAPI AddTimingWheel(RefPtr<Timer> _pDispatchTask) noexcept
-                {
-                    const auto _uSpanBlock = (_pDispatchTask->uExpire - uTimingWheelCurrentTick).GetMilliseconds() / TimingWheelBaseTick;
-                    auto _uBase1 = (uTimingWheelCurrentTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick + _uSpanBlock;
-
-                    if (_uSpanBlock <= std::size(arrTimingWheel1))
+                    for (auto _pItem = _oTimerPendingDispatchList.pFirst; _pItem; )
                     {
-                        // 可以容纳到一级时间轮
-                        const uint32_t _uIndex = (_uBase1) % std::size(arrTimingWheel1);
-                        arrTimingWheel1[_uIndex].Push(_pDispatchTask.Detach());
-                        oTimingWheel1BitMap.SetItem(_uIndex, true);
-                        return;
-                    }
-                    else if (_uSpanBlock <= std::size(arrTimingWheel1) * std::size(arrTimingWheel2))
-                    {
-                        const uint32_t _uIndex = _uBase1 / std::size(arrTimingWheel1) % std::size(arrTimingWheel2);
-                        arrTimingWheel2[_uIndex].Push(_pDispatchTask.Detach());
-                        oTimingWheel2BitMap.SetItem(_uIndex, true);
-                        return;
-                    }
-                    else if (_uSpanBlock <= std::size(arrTimingWheel1) * std::size(arrTimingWheel2) * std::size(arrTimingWheel3))
-                    {
-                        const uint32_t _uIndex = _uBase1 / std::size(arrTimingWheel1) / std::size(arrTimingWheel2) % std::size(arrTimingWheel3);
-                        arrTimingWheel3[_uIndex].Push(_pDispatchTask.Detach());
-                        oTimingWheel3BitMap.SetItem(_uIndex, true);
-                        return;
-                    }
-                    else
-                    {
-                        // 保底
-                        arrTimingWheelOthers.Push(_pDispatchTask.Detach());
+                        auto _pNext = _pItem->pNext;
+                        DispatchTimerTask(RefPtr<Timer>::FromPtr(_pItem));
+                        _pItem = _pNext;
                     }
                 }
 
                 uint32_t __YYAPI GetMinimumWaitTime() noexcept
                 {
-                    ProcessingPending();
-
-                    const auto _uTimingWheel1NextTick = (uTimingWheelCurrentTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick + 1;
-                    const auto _uTimingWheel1BlockSize = TimingWheelBaseTick;
+                    const auto _uTimingWheel1NextTick = (uTimingWheelCurrentTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / kTimingWheelBaseTick + 1;
 
                     {
                         const uint32_t _uFirstIndex = _uTimingWheel1NextTick % std::size(arrTimingWheel1);
                         auto _nFind = oTimingWheel1BitMap.Find(_uFirstIndex);
                         if (_nFind >= 0)
                         {
-                            return (_nFind - _uFirstIndex + 1) * _uTimingWheel1BlockSize;
+                            return (_nFind - _uFirstIndex + 1) * kTimingWheelBaseTick;
                         }
                         else if (!oTimingWheel1BitMap.IsEmpty())
                         {
-                            return (std::size(arrTimingWheel1) - _uFirstIndex) * _uTimingWheel1BlockSize;
+                            return (std::size(arrTimingWheel1) - _uFirstIndex) * kTimingWheelBaseTick;
                         }
                     }
 
                     const auto _uTimingWheel2NextTick = _uTimingWheel1NextTick / std::size(arrTimingWheel1) + 1;
-                    const auto _uTimingWheel2BlockSize = _uTimingWheel1BlockSize * std::size(arrTimingWheel1);
+                    const auto _uTimingWheel2BlockSize = kTimingWheelBaseTick * std::size(arrTimingWheel1);
 
                     {
                         const uint32_t _uSecondIndex = _uTimingWheel2NextTick % std::size(arrTimingWheel2);
@@ -453,53 +466,22 @@ namespace YY
                     // 当前没有任何任务，可以进行无限期等待
                     return UINT32_MAX;
                 }
+                
+            private:
+                virtual void __YYAPI DispatchTimerTask(RefPtr<Timer> _pTimerTask) = 0;
 
-                void __YYAPI DispatchTask(RefPtr<TaskEntry> _pDispatchTask)
-                {
-                    do
-                    {
-                        if (_pDispatchTask->IsCanceled())
-                            break;
-
-                        // 不属于任何TaskRunner，因此在线程池随机唤醒
-                        if (_pDispatchTask->pOwnerTaskRunnerWeak == nullptr)
-                        {
-                            auto _hr = ThreadPool::PostTaskInternal(_pDispatchTask.Get());
-                            return;
-                        }
-
-                        // 任务所属的 TaskRunner 已经释放？
-                        auto _pResumeTaskRunner = _pDispatchTask->pOwnerTaskRunnerWeak.Get();
-                        if (_pResumeTaskRunner == nullptr)
-                            break;
-
-                        _pResumeTaskRunner->PostTaskInternal(std::move(_pDispatchTask));
-                        return;
-                    } while (false);
-
-                    _pDispatchTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-                }
-
-                void __YYAPI Dispatch(TimingWheelSimpleList& _oTimingWheelList)
-                {
-                    while (auto _pItem = _oTimingWheelList.Pop())
-                    {
-                        DispatchTask(RefPtr<TaskEntry>::FromPtr(_pItem));
-                    }
-                }
-
-                void __YYAPI FetchTimingWheel1(uint64_t _uTimingWheel2Index, TickCount<TimePrecise::Millisecond> _oCurrent)
+                void __YYAPI FetchTimingWheel1(uint64_t _uTimingWheel2Index, TickCount<TimePrecise::Millisecond> _oCurrent, _Out_ TimingWheelSimpleList* _pTimerPendingDispatchList)
                 {
                     const uint32_t _uTimingWheel2BlockIndex = _uTimingWheel2Index % std::size(arrTimingWheel2);
 
                     if (_uTimingWheel2BlockIndex == 0u)
                     {
                         auto _uTimingWheel3Index = _uTimingWheel2Index / std::size(arrTimingWheel2);
-                        FetchTimingWheel2(_uTimingWheel3Index, _oCurrent);
+                        FetchTimingWheel2(_uTimingWheel3Index, _oCurrent, _pTimerPendingDispatchList);
                         return;
                     }
 
-                    auto _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick;
+                    auto _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / kTimingWheelBaseTick;
 
                     auto& _oTimingWheel2 = arrTimingWheel2[_uTimingWheel2BlockIndex];
 
@@ -507,11 +489,11 @@ namespace YY
                     {
                         if (_pItem->IsCanceled() || _pItem->uExpire <= _oCurrent)
                         {
-                            DispatchTask(RefPtr<Timer>::FromPtr(_pItem));
+                            _pTimerPendingDispatchList->Push(_pItem);
                             continue;
                         }
 
-                        const uint64_t _uBaseBlockCount = (_pItem->uExpire - _oCurrent).GetMilliseconds() / TimingWheelBaseTick;
+                        const uint64_t _uBaseBlockCount = (_pItem->uExpire - _oCurrent).GetMilliseconds() / kTimingWheelBaseTick;
                         auto _uNewLastBlockIndexIndex = _uLastBlockIndexIndex + _uBaseBlockCount;
 
                         if (_uBaseBlockCount < std::size(arrTimingWheel1))
@@ -526,24 +508,24 @@ namespace YY
 
                             assert(false);
 
-                            DispatchTask(RefPtr<Timer>::FromPtr(_pItem));
+                            _pTimerPendingDispatchList->Push(_pItem);
                         }
                     }
 
                     oTimingWheel2BitMap.SetItem(_uTimingWheel2BlockIndex, false);
                 }
 
-                void __YYAPI FetchTimingWheel2(uint64_t _uTimingWheel3Index, TickCount<TimePrecise::Millisecond> _oCurrent)
+                void __YYAPI FetchTimingWheel2(uint64_t _uTimingWheel3Index, TickCount<TimePrecise::Millisecond> _oCurrent, _Out_ TimingWheelSimpleList* _pTimerPendingDispatchList)
                 {
                     const uint32_t _uTimingWheel3BlockIndex = _uTimingWheel3Index % std::size(arrTimingWheel2);
 
                     if (_uTimingWheel3BlockIndex == 0u)
                     {
-                        FetchTimingWheel3(_oCurrent);
+                        FetchTimingWheel3(_oCurrent, _pTimerPendingDispatchList);
                         return;
                     }
 
-                    auto _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick;
+                    auto _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / kTimingWheelBaseTick;
 
                     auto& _oTimingWheel3 = arrTimingWheel3[_uTimingWheel3BlockIndex];
 
@@ -551,11 +533,11 @@ namespace YY
                     {
                         if (_pItem->IsCanceled() || _pItem->uExpire <= _oCurrent)
                         {
-                            DispatchTask(RefPtr<Timer>::FromPtr(_pItem));
+                            _pTimerPendingDispatchList->Push(_pItem);
                             continue;
                         }
 
-                        const uint64_t _uBaseBlockCount = (_pItem->uExpire - _oCurrent).GetMilliseconds() / TimingWheelBaseTick;
+                        const uint64_t _uBaseBlockCount = (_pItem->uExpire - _oCurrent).GetMilliseconds() / kTimingWheelBaseTick;
                         auto _uNewLastBlockIndexIndex = _uLastBlockIndexIndex + _uBaseBlockCount;
 
                         if (_uBaseBlockCount < std::size(arrTimingWheel1))
@@ -576,16 +558,16 @@ namespace YY
 
                             assert(false);
 
-                            DispatchTask(RefPtr<Timer>::FromPtr(_pItem));
+                            _pTimerPendingDispatchList->Push(_pItem);
                         }
                     }
 
                     oTimingWheel3BitMap.SetItem(_uTimingWheel3BlockIndex, false);
                 }
 
-                void __YYAPI FetchTimingWheel3(TickCount<TimePrecise::Millisecond> _oCurrent)
+                void __YYAPI FetchTimingWheel3(TickCount<TimePrecise::Millisecond> _oCurrent, _Out_ TimingWheelSimpleList* _pTimerPendingDispatchList)
                 {
-                    auto _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / TimingWheelBaseTick;
+                    auto _uLastBlockIndexIndex = (_oCurrent - TickCount<TimePrecise::Millisecond>()).GetMilliseconds() / kTimingWheelBaseTick;
 
                     TimingWheelSimpleList _oNewTimingWheelOthers;
 
@@ -593,11 +575,11 @@ namespace YY
                     {
                         if (_pItem->IsCanceled() || _pItem->uExpire <= _oCurrent)
                         {
-                            DispatchTask(RefPtr<Timer>::FromPtr(_pItem));
+                            _pTimerPendingDispatchList->Push(_pItem);
                             continue;
                         }
 
-                        const uint64_t _uBaseBlockCount = (_pItem->uExpire - _oCurrent).GetMilliseconds() / TimingWheelBaseTick;
+                        const uint64_t _uBaseBlockCount = (_pItem->uExpire - _oCurrent).GetMilliseconds() / kTimingWheelBaseTick;
                         auto _uNewLastBlockIndexIndex = _uLastBlockIndexIndex + _uBaseBlockCount;
 
                         if (_uBaseBlockCount < std::size(arrTimingWheel1))
@@ -629,18 +611,6 @@ namespace YY
                 }
                 
             private:
-                // 时间轮的最小分辨率，单位 ms
-                static constexpr auto TimingWheelBaseTick = 10;
-
-                static TickCount<TimePrecise::Millisecond> __YYAPI GetNearTick(TickCount<TimePrecise::Millisecond> _uTick) noexcept
-                {
-                    // 故意对齐到就近的 TimingWheelBaseTick 值。便于快速判断。
-                    auto _nMillisecond = (_uTick - TickCount<TimePrecise::Millisecond>()).GetMilliseconds();
-                    _nMillisecond += TimingWheelBaseTick / 2;
-                    _nMillisecond -= _nMillisecond % TimingWheelBaseTick;
-                    _nMillisecond += TimingWheelBaseTick - 1;
-                    return TickCount<TimePrecise::Millisecond>() + TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(_nMillisecond);
-                }
             };
         }
     }

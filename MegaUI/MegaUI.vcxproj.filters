@@ -363,6 +363,9 @@
     <ClInclude Include="..\Base\Threading\ThreadPoolWaitManger.h">
       <Filter>Base\Threading\TaskRunner</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Sync\AutoLock.h">
+      <Filter>Base\Sync</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

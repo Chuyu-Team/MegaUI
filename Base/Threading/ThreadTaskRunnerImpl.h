@@ -8,6 +8,7 @@
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Threading/ProcessThreads.h>
 #include <Base/Threading/ThreadPoolTimerManger.h>
+#include <Base/Threading/ThreadPoolWaitManger.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -20,6 +21,7 @@ namespace YY
             class ThreadTaskRunnerImpl
                 : public ThreadTaskRunner
                 , public ThreadPoolTimerManger
+                , public ThreadPoolWaitMangerForSingleThreading
             {
             private:
                 InterlockedQueue<TaskEntry> oTaskQueue;
@@ -80,10 +82,10 @@ namespace YY
                 uintptr_t __YYAPI RunUIMessageLoop();
 
                 /// <summary>
-                /// 运行后台循环，改模式无法支持UI相关工作。
+                /// 运行后台循环，改模式UI相关处理极为滞后！
                 /// </summary>
                 /// <returns></returns>
-                void __YYAPI RunBackgroundLoop();
+                uintptr_t __YYAPI RunBackgroundLoop();
 
                 void __YYAPI EnableWakeup(_In_ bool _bEnable);
 
@@ -93,6 +95,12 @@ namespace YY
                 HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) override;
 
                 HRESULT __YYAPI SetTimerInternal(_In_ RefPtr<Timer> _pTask) override;
+
+                HRESULT __YYAPI SetWaitInternal(_In_ RefPtr<Wait> _pTask) override;
+
+                void __YYAPI DispatchTimerTask(RefPtr<Timer> _pTimerTask) override;
+
+                void __YYAPI DispatchWaitTask(RefPtr<Wait> _pWaitTask) override;
 
                 void __YYAPI CleanupTaskQueue() noexcept;
 

@@ -10,7 +10,7 @@ namespace YY
     {
         namespace Sync
         {
-        #ifdef _WIN32
+#ifdef _WIN32
             class SRWLock
             {
             private:
@@ -59,7 +59,7 @@ namespace YY
                 }
             };
 
-        #else
+#else
             class SRWLock
             {
             private:
@@ -89,7 +89,7 @@ namespace YY
                 _Releases_shared_lock_(this->oSRWLock)
                 void __YYAPI UnlockShared() noexcept;
             };
-        #endif
+#endif
         }
     }
 }

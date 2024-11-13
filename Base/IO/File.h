@@ -82,25 +82,25 @@ namespace YY::Base::IO
             return AsyncFile(_hFile);
         }
 
-        template<typename LambdaCallback>
-        HRESULT __YYAPI AsyncRead(
-            _In_ uint64_t _uOffset,
-            _In_reads_bytes_(_cbBuffer) void* _pBuffer,
-            _In_ uint32_t _cbBuffer,
-            _In_ LambdaCallback&& _pfnResultCallback) noexcept
-        {
-            struct AsyncReadLambda : public IoTaskEntry
-            {
-                LambdaCallback pfnLambdaCallback;
+        //template<typename LambdaCallback>
+        //HRESULT __YYAPI AsyncRead(
+        //    _In_ uint64_t _uOffset,
+        //    _In_reads_bytes_(_cbBuffer) void* _pBuffer,
+        //    _In_ uint32_t _cbBuffer,
+        //    _In_ LambdaCallback&& _pfnResultCallback) noexcept
+        //{
+        //    struct AsyncReadLambda : public IoTaskEntry
+        //    {
+        //        LambdaCallback pfnLambdaCallback;
 
-                void __YYAPI RunTask() override
-                {
-                    lStatus = DosErrorFormNtStatus(Internal);
+        //        void __YYAPI RunTask() override
+        //        {
+        //            lStatus = DosErrorFormNtStatus(Internal);
 
-                    pfnLambdaCallback(lStatus, lStatus == ERROR_SUCCESS ? InternalHigh : 0ul);
-                }
-            };
-        }
+        //            pfnLambdaCallback(lStatus, lStatus == ERROR_SUCCESS ? InternalHigh : 0ul);
+        //        }
+        //    };
+        //}
 
         auto __YYAPI AsyncRead(
             _In_ uint64_t _uOffset,

@@ -122,7 +122,7 @@ namespace YY
                 DWORD uWaitResult = WAIT_FAILED;
 
                 std::function<void(DWORD _uWaitResult)> pfnWaitTaskCallback;
-
+                Wait* pPrior = nullptr;
                 Wait* pNext = nullptr;
 
                 HRESULT __YYAPI RunTask() override
@@ -135,12 +135,12 @@ namespace YY
                 }
             };
 
-            class ThreadPoolTimerManger;
+            class TaskRunnerDispatchImplByIoCompletionImpl;
 
             // 通用任务执行器的抽象层
             class TaskRunner : public RefValue
             {
-                friend ThreadPoolTimerManger;
+                friend TaskRunnerDispatchImplByIoCompletionImpl;
                 friend Timer;
 
             protected:
@@ -346,12 +346,22 @@ namespace YY
                 }
 
                 /// <summary>
-                /// 监听指定句柄状态。如果句柄处于有信号状态则调用 _pfnTaskCallback。
-                /// TODO：句柄目前最多监听63个。未来再改进。
+                /// 监听指定句柄状态。如果句柄处于有信号状态则调用 _pfnTaskCallback。如果同一个句柄多次调用CreateWait，对应的_pfnTaskCallback也将多次调用。
+                /// 
+                /// 
+                /// 注意：虽然可以无数量限制的等待句柄，但是数量越多开销可能越高。TaskRunner实现中，每个线程最多等待63个句柄。
+                /// 
+                /// 如果等待句柄数量小于等于 63，这时几乎没有额外开销，因为当前线程自身即可等待这些句柄。
+                /// 如果等待句柄数量大于等于 64，从第64个句柄开始，剩余句柄将安排到单独的线程，每个线程最多等待63个句柄，因此等待的句柄数量越多，额外进行安排的线程也就越多。
                 /// </summary>
                 /// <param name="_hHandle">需要监听的句柄</param>
-                /// <param name="_pfnTaskCallback"></param>
-                /// <returns></returns>
+                /// <param name="_pfnTaskCallback">有信号时、等待失败，或者超时时将触发的回调函数。
+                /// _uWaitResult 可以是WAIT_ABANDONED、WAIT_OBJECT_0、WAIT_TIMEOUT、WAIT_FAILED。
+                /// </param>
+                /// <returns>
+                /// 返回 Wait对象，Wait对象可以取消任务。
+                /// 如果函数返回 nullptr，那么可能是句柄无效、_pfnTaskCallback无效亦或者内存不足。
+                /// </returns>
                 RefPtr<Wait> __YYAPI CreateWait(_In_ HANDLE _hHandle, _In_ std::function<void(DWORD _uWaitResult)>&& _pfnTaskCallback)
                 {
                     if (_hHandle == nullptr || _hHandle == INVALID_HANDLE_VALUE)

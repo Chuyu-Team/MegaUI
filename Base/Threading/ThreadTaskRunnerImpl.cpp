@@ -2,6 +2,7 @@
 
 #include <Base/ErrorCode.h>
 #include <Base/Sync/Sync.h>
+#include <Base/Threading/TaskRunnerDispatchImpl.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -65,8 +66,6 @@ namespace YY
                         DispatchMessage(&_oMsg);
                     }
 
-                    DispatchTimingWheel();
-
                     auto _uWakeupCount = Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) / WakeupOnceRaw;
                     const auto _uWakeupCountBackup = _uWakeupCount;
                     for (;;)
@@ -77,15 +76,23 @@ namespace YY
                             if (_uWakeupCountBackup && Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw * _uWakeupCountBackup) >= WakeupOnceRaw)
                             {
                                 // 队列已经插入新的Task，重新检查消息循环。
+
+                                // 消息循环本身因为处于激活状态，所以，重新 + 1
+                                Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
                             }
                             else
                             {
-                                // uWakeupCount 已经归零，进入睡眠状态
-                                const auto _uWaitTIme = GetMinimumWaitTime();
-                                MsgWaitForMultipleObjectsEx(0, nullptr, _uWaitTIme, QS_ALLINPUT, MWMO_ALERTABLE);
+                                // uWakeupCount 已经归零，准备进入睡眠状态
+
+                                ProcessingTimerTasks();
+                                const auto _uWaitTime = GetMinimumWaitTime();
+                                auto _uWaitResult = MsgWaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, _uWaitTime, QS_ALLINPUT, MWMO_ALERTABLE);
+                                // 消息循环本身因为处于激活状态，所以，重新 + 1
+                                Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
+
+                                // 因为是MsgWait，额外 cWaitHandle + 1，代表消息循环
+                                ProcessingWaitTasks(_uWaitResult, oDefaultWaitBlock.cWaitHandle + 1, oDefaultWaitBlock.cWaitHandle);
                             }
-                            // 消息循环本身因为处于激活状态，所以
-                            Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
                             break;
                         }
                         else
@@ -111,41 +118,87 @@ namespace YY
             }
 #endif
 
-            void __YYAPI ThreadTaskRunnerImpl::RunBackgroundLoop()
+            uintptr_t __YYAPI ThreadTaskRunnerImpl::RunBackgroundLoop()
             {
+                MSG _oMsg;
                 for (;;)
                 {
-                    if (!IsShared())
+                    auto _uWakeupCount = Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) / WakeupOnceRaw;
+                    const auto _uWakeupCountBackup = _uWakeupCount;
+                    for (;;)
                     {
-                        break;
-                    }
-
-                    auto _pTask = oTaskQueue.Pop();
-                    if (_pTask)
-                    {
-                        _pTask->operator()();
-                        _pTask->Release();
-                    }
-
-                    if (Sync::Subtract(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw)) < WakeupOnceRaw)
-                    {
-                        for (auto _uCurrent = uWakeupCountAndPushLock; _uCurrent < WakeupOnceRaw; _uCurrent = uWakeupCountAndPushLock)
+                        // uPushLock 占用1bit，所以 uWakeupCount += 1 等价于 uWakeupCountAndPushLock += 2
+                        if (_uWakeupCount == 0)
                         {
-                            DispatchTimingWheel();
-                            Sync::WaitOnAddress(&uWakeupCountAndPushLock, &_uCurrent, sizeof(_uCurrent), GetMinimumWaitTime());
+                            if (_uWakeupCountBackup && Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw * _uWakeupCountBackup) >= WakeupOnceRaw)
+                            {
+                                // 队列已经插入新的Task，重新检查消息循环。
 
+                                // 消息循环本身因为处于激活状态，所以，重新 + 1
+                                Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
+                            }
+                            else
+                            {
+                                // uWakeupCount 已经归零，准备进入睡眠状态
+
+                                ProcessingTimerTasks();
+                                const auto _uWaitTime = GetMinimumWaitTime();
+                                const auto _uWaitResult = MsgWaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, _uWaitTime, QS_ALLINPUT, MWMO_ALERTABLE);
+                                // 消息循环本身因为处于激活状态，所以，重新 + 1
+                                Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
+
+                                if (_uWaitResult == WAIT_OBJECT_0 + oDefaultWaitBlock.cWaitHandle)
+                                {
+                                    for (;;)
+                                    {
+                                        if (!IsShared())
+                                        {
+                                            return HRESULT_From_LSTATUS(ERROR_CANCELLED);
+                                        }
+
+                                        const auto _bRet = PeekMessageW(&_oMsg, NULL, 0, 0, PM_REMOVE);
+                                        if (_bRet == -1)
+                                            continue;
+
+                                        if (!_bRet)
+                                            break;
+
+                                        if (_oMsg.message == WM_QUIT)
+                                        {
+                                            break;
+                                        }
+                                        TranslateMessage(&_oMsg);
+                                        DispatchMessage(&_oMsg);
+                                    }
+                                }
+                                else
+                                {
+                                    // 因为是MsgWait，额外 cWaitHandle，代表消息循环
+                                    ProcessingWaitTasks(_uWaitResult, oDefaultWaitBlock.cWaitHandle + 1, oDefaultWaitBlock.cWaitHandle);
+                                }
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            --_uWakeupCount;
                             if (!IsShared())
                             {
-                                goto END_LOOP;
+                                return HRESULT_From_LSTATUS(ERROR_CANCELLED);
+                            }
+
+                            auto _pTask = oTaskQueue.Pop();
+                            assert(_pTask != nullptr);
+
+                            if (_pTask)
+                            {
+                                _pTask->operator()();
+                                _pTask->Release();
                             }
                         }
-
-                        Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
                     }
                 }
-
-            END_LOOP:
-                ;
+                return _oMsg.wParam;
             }
 
             void __YYAPI ThreadTaskRunnerImpl::EnableWakeup(bool _bEnable)
@@ -200,17 +253,54 @@ namespace YY
 
                 if (uThreadId != GetCurrentThreadId())
                 {
-                    PostTask([this, _pTask]() mutable
+                    return PostTask([this, _pTask]() mutable
                         {
-                            ThreadPoolTimerManger::SetTimerInternalNolock(std::move(_pTask));
+                            ThreadPoolTimerManger::SetTimerInternal(std::move(_pTask));
                         });
                 }
                 else
                 {
-                    ThreadPoolTimerManger::SetTimerInternalNolock(std::move(_pTask));
+                    return ThreadPoolTimerManger::SetTimerInternal(std::move(_pTask));
                 }
+            }
 
-                return S_OK;
+            HRESULT __YYAPI ThreadTaskRunnerImpl::SetWaitInternal(RefPtr<Wait> _pTask)
+            {
+                if (_pTask == nullptr || _pTask->hHandle == NULL)
+                    return E_INVALIDARG;
+
+                if (_pTask->IsCanceled())
+                    return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
+
+                if (uThreadId != GetCurrentThreadId())
+                {
+                    return PostTask([this, _pTask]() mutable
+                             {
+                                SetWaitInternal(std::move(_pTask));
+                             });
+                }
+                else
+                {
+                    _pTask->pOwnerTaskRunnerWeak = this;
+                    auto _hr = ThreadPoolWaitMangerForSingleThreading::SetWaitInternal(_pTask);
+                    if (_hr == E_NOTIMPL)
+                    {
+                        _hr = TaskRunnerDispatchImplByIoCompletionImpl::Get()->SetWaitInternal(std::move(_pTask));
+                    }
+                    return _hr;
+                }
+            }
+
+            void __YYAPI ThreadTaskRunnerImpl::DispatchTimerTask(RefPtr<Timer> _pTimerTask)
+            {
+                if(_pTimerTask)
+                    _pTimerTask->operator()();
+            }
+
+            void __YYAPI ThreadTaskRunnerImpl::DispatchWaitTask(RefPtr<Wait> _pWaitTask)
+            {
+                if(_pWaitTask)
+                    _pWaitTask->operator()();
             }
 
             void __YYAPI ThreadTaskRunnerImpl::operator()()
