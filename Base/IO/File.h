@@ -35,12 +35,17 @@ namespace YY::Base::IO
 
     class AsyncFile
     {
-    private:
+    protected:
         HANDLE hFile = INVALID_HANDLE_VALUE;
+        bool bSkipCompletionNotificationOnSuccess = false;
 
-        AsyncFile(HANDLE _hFile = INVALID_HANDLE_VALUE)
+        constexpr AsyncFile(HANDLE _hFile = INVALID_HANDLE_VALUE)
             : hFile(_hFile)
         {
+            if (_hFile != INVALID_HANDLE_VALUE)
+            {
+                bSkipCompletionNotificationOnSuccess = SetFileCompletionNotificationModes(hFile, FILE_SKIP_COMPLETION_PORT_ON_SUCCESS | FILE_SKIP_SET_EVENT_ON_HANDLE);
+            }
         }
 
         struct Awaitable;
@@ -117,8 +122,15 @@ namespace YY::Base::IO
                 if (ReadFile(hFile, _pBuffer, _cbToRead, nullptr, _pAsyncTaskEntry.Clone()))
                 {
                     // 读取成功
-                    _pAsyncTaskEntry->operator()();
-                    _pAsyncTaskEntry->Release();
+                    if (_pAsyncTaskEntry->OnComplete(ERROR_SUCCESS))
+                    {
+                        _pAsyncTaskEntry->operator()();
+                    }
+
+                    if (bSkipCompletionNotificationOnSuccess)
+                    {
+                        _pAsyncTaskEntry->Release();
+                    }
                 }
                 else
                 {
@@ -131,8 +143,10 @@ namespace YY::Base::IO
                     else
                     {
                         // 失败！
-                        _pAsyncTaskEntry->lStatus = _lStatus;
-                        _pAsyncTaskEntry->hHandle = -1;
+                        if (_pAsyncTaskEntry->OnComplete(_lStatus))
+                        {
+                            _pAsyncTaskEntry->hHandle = -1;
+                        }
                         _pAsyncTaskEntry->Release();
                     }
                 }
@@ -142,7 +156,7 @@ namespace YY::Base::IO
         
         auto __YYAPI AsyncWrite(
             _In_ uint64_t _uOffset,
-            _In_reads_bytes_(_cbBuffer) void* _pBuffer,
+            _In_reads_bytes_(_cbBuffer) const void* _pBuffer,
             _In_ uint32_t _cbBuffer) noexcept
         {
             auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create();
@@ -155,8 +169,15 @@ namespace YY::Base::IO
                 if (WriteFile(hFile, _pBuffer, _cbBuffer, nullptr, _pAsyncTaskEntry.Clone()))
                 {
                     // 读取成功
-                    _pAsyncTaskEntry->operator()();
-                    _pAsyncTaskEntry->Release();
+                    if (_pAsyncTaskEntry->OnComplete(ERROR_SUCCESS))
+                    {
+                        _pAsyncTaskEntry->operator()();
+                    }
+
+                    if (bSkipCompletionNotificationOnSuccess)
+                    {
+                        _pAsyncTaskEntry->Release();
+                    }
                 }
                 else
                 {
@@ -169,8 +190,10 @@ namespace YY::Base::IO
                     else
                     {
                         // 失败！
-                        _pAsyncTaskEntry->lStatus = _lStatus;
-                        _pAsyncTaskEntry->hHandle = -1;
+                        if (_pAsyncTaskEntry->OnComplete(_lStatus))
+                        {
+                            _pAsyncTaskEntry->hHandle = -1;
+                        }
                         _pAsyncTaskEntry->Release();
                     }
                 }
@@ -178,7 +201,7 @@ namespace YY::Base::IO
             return Awaitable(std::move(_pAsyncTaskEntry));
         }
 
-    private:
+    protected:
         HRESULT __YYAPI AsyncReadInternal(
             _In_ uint64_t _uOffset,
             _In_reads_bytes_(_cbBuffer) void* _pBuffer,
@@ -192,8 +215,15 @@ namespace YY::Base::IO
             if (ReadFile(hFile, _pBuffer, _cbBuffer, nullptr, _pIoTask.Clone()))
             {
                 // 读取成功
-                _pIoTask->operator()();
-                _pIoTask->Release();
+                if (_pIoTask->OnComplete(ERROR_SUCCESS))
+                {
+                    _pIoTask->operator()();
+                }
+
+                if (bSkipCompletionNotificationOnSuccess)
+                {
+                    _pIoTask->Release();
+                }
                 return S_OK;
             }
             else
@@ -208,6 +238,7 @@ namespace YY::Base::IO
                 else
                 {
                     // 失败！
+                    _pIoTask->OnComplete(_lStatus);
                     _pIoTask->Release();
                     return __HRESULT_FROM_WIN32(_lStatus);
                 }
@@ -217,18 +248,10 @@ namespace YY::Base::IO
         struct AsyncTaskEntry : public IoTaskEntry
         {
             // 0，协程句柄表示尚未设置，-1表示任务完成。
-            intptr_t hHandle;
-            LSTATUS lStatus;
-
-            AsyncTaskEntry()
-                : hHandle(0u)
-                , lStatus(ERROR_IO_PENDING)
-            {
-            }
+            intptr_t hHandle = 0u;
 
             HRESULT __YYAPI RunTask() override
             {
-                lStatus = DosErrorFormNtStatus(Internal);
                 auto _hHandle = (void*)YY::Base::Sync::Exchange(&hHandle, /*hReadyHandle*/ (intptr_t)-1);
                 if (_hHandle)
                 {
@@ -280,7 +303,120 @@ namespace YY::Base::IO
                 }
             }
         };
+    };
 
+    class AsyncPipe : public AsyncFile
+    {
+        constexpr AsyncPipe(HANDLE _hFile = INVALID_HANDLE_VALUE)
+            : AsyncFile(_hFile)
+        {
+        }
+    protected:
+        struct ConnectAwaitable
+        {
+        private:
+            RefPtr<AsyncTaskEntry> pAsyncTaskEntry;
+
+        public:
+            ConnectAwaitable(RefPtr<AsyncTaskEntry> _pAsyncTaskEntry)
+                : pAsyncTaskEntry(std::move(_pAsyncTaskEntry))
+            {
+            }
+
+            ConnectAwaitable(ConnectAwaitable&&) noexcept = default;
+
+            bool await_ready() noexcept
+            {
+                return pAsyncTaskEntry == nullptr || pAsyncTaskEntry->hHandle == /*hReadyHandle*/ (intptr_t)-1;
+            }
+
+            bool await_suspend(std::coroutine_handle<> _hHandle) noexcept
+            {
+                return YY::Base::Sync::CompareExchange(&pAsyncTaskEntry->hHandle, (intptr_t)_hHandle.address(), 0) == 0;
+            }
+
+            LSTATUS await_resume() noexcept
+            {
+                return pAsyncTaskEntry ? pAsyncTaskEntry->lStatus : ERROR_OUTOFMEMORY;
+            }
+        };
+
+    public:
+        static AsyncPipe Create(
+            _In_z_ const uchar_t* _szPipeName,
+            _In_ DWORD _fOpenMode,
+            _In_ DWORD _fPipeMode,
+            _In_ DWORD _uMaxInstances,
+            _In_ DWORD _cbOutBufferSize,
+            _In_ DWORD _cbInBufferSize,
+            _In_ DWORD _uDefaultTimeOut,
+            _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes = nullptr)
+        {
+            auto hPipe = CreateNamedPipeW(
+                _szPipeName,
+                _fOpenMode | FILE_FLAG_OVERLAPPED,
+                _fPipeMode,
+                _uMaxInstances,
+                _cbOutBufferSize,
+                _cbInBufferSize,
+                _uDefaultTimeOut,
+                nullptr);
+
+            if (hPipe != INVALID_HANDLE_VALUE)
+            {
+                if (!TaskRunnerDispatchImplByIoCompletionImpl::Get()->BindIO(hPipe))
+                {
+                    CloseHandle(hPipe);
+                    hPipe = INVALID_HANDLE_VALUE;
+                }
+            }
+
+            return AsyncPipe(hPipe);
+        }
+
+        ConnectAwaitable AsyncConnect()
+        {
+            auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create();
+            if (_pAsyncTaskEntry)
+            {
+                _pAsyncTaskEntry->pOwnerTaskRunnerWeak = TaskRunner::GetCurrent();
+                _pAsyncTaskEntry->Offset = 0;
+                _pAsyncTaskEntry->OffsetHigh = 0;
+
+                auto _bSuccess = ConnectNamedPipe(hFile, _pAsyncTaskEntry.Clone());
+                if (_bSuccess)
+                {
+                    if (_pAsyncTaskEntry->OnComplete(ERROR_SUCCESS))
+                    {
+                        _pAsyncTaskEntry->operator()();
+                    }
+
+                    if (bSkipCompletionNotificationOnSuccess)
+                    {
+                        _pAsyncTaskEntry->Release();
+                    }
+                }
+                else
+                {
+                    const auto _lStatus = GetLastError();
+                    if (_lStatus == ERROR_IO_PENDING)
+                    {
+                        // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
+                        TaskRunnerDispatchImplByIoCompletionImpl::Get()->Weakup();
+                    }
+                    else
+                    {
+                        // 失败！
+                        if (_pAsyncTaskEntry->OnComplete(_lStatus))
+                        {
+                            _pAsyncTaskEntry->hHandle = -1;
+                        }
+                        _pAsyncTaskEntry->Release();
+                    }
+                }
+            }
+            return ConnectAwaitable(std::move(_pAsyncTaskEntry));
+        }
     };
 }
 

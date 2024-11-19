@@ -12,6 +12,7 @@
 #include <Base/ErrorCode.h>
 #include <Base/Memory/WeakPtr.h>
 #include <Base/Time/TickCount.h>
+#include <Base/Time/TimeSpan.h>
 #include <Base/Threading/ThreadPool.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -119,6 +120,7 @@ namespace YY
             struct Wait : public TaskEntry
             {
                 HANDLE hHandle = nullptr;
+                TickCount<TimePrecise::Millisecond> uTimeOut;
                 DWORD uWaitResult = WAIT_FAILED;
 
                 std::function<void(DWORD _uWaitResult)> pfnWaitTaskCallback;
@@ -355,6 +357,7 @@ namespace YY
                 /// 如果等待句柄数量大于等于 64，从第64个句柄开始，剩余句柄将安排到单独的线程，每个线程最多等待63个句柄，因此等待的句柄数量越多，额外进行安排的线程也就越多。
                 /// </summary>
                 /// <param name="_hHandle">需要监听的句柄</param>
+                /// <param name="_nWaitTimeOut">最大超时等待的时间。</param>
                 /// <param name="_pfnTaskCallback">有信号时、等待失败，或者超时时将触发的回调函数。
                 /// _uWaitResult 可以是WAIT_ABANDONED、WAIT_OBJECT_0、WAIT_TIMEOUT、WAIT_FAILED。
                 /// </param>
@@ -362,7 +365,10 @@ namespace YY
                 /// 返回 Wait对象，Wait对象可以取消任务。
                 /// 如果函数返回 nullptr，那么可能是句柄无效、_pfnTaskCallback无效亦或者内存不足。
                 /// </returns>
-                RefPtr<Wait> __YYAPI CreateWait(_In_ HANDLE _hHandle, _In_ std::function<void(DWORD _uWaitResult)>&& _pfnTaskCallback)
+                RefPtr<Wait> __YYAPI CreateWait(
+                    _In_ HANDLE _hHandle,
+                    _In_ TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut,
+                    _In_ std::function<void(DWORD _uWaitResult)>&& _pfnTaskCallback)
                 {
                     if (_hHandle == nullptr || _hHandle == INVALID_HANDLE_VALUE)
                         return nullptr;
@@ -374,13 +380,30 @@ namespace YY
                     if (!_pWait)
                         return nullptr;
 
-                    _pWait->pfnWaitTaskCallback = std::move(_pfnTaskCallback);
                     _pWait->hHandle = _hHandle;
+                    // >= UINT32_MAX 时认为是无限等待。
+                    if (_nWaitTimeOut >= TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(UINT32_MAX))
+                    {
+                        _pWait->uTimeOut = TickCount<TimePrecise::Millisecond>::GetMax();
+                    }
+                    else
+                    {
+                        _pWait->uTimeOut = TickCount<TimePrecise::Millisecond>::GetCurrent() + _nWaitTimeOut;
+                    }
+
+                    _pWait->pfnWaitTaskCallback = std::move(_pfnTaskCallback);
                     auto _hr = SetWaitInternal(_pWait);
                     if (FAILED(_hr))
                         return nullptr;
 
                     return _pWait;
+                }
+
+                RefPtr<Wait> __YYAPI CreateWait(
+                    _In_ HANDLE _hHandle,
+                    _In_ std::function<void(DWORD _uWaitResult)>&& _pfnTaskCallback)
+                {
+                    return CreateWait(_hHandle, TimeSpan<TimePrecise::Millisecond>::GetMax(), std::move(_pfnTaskCallback));
                 }
 
             protected:

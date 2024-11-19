@@ -59,6 +59,11 @@ namespace YY
                     return uElapsedInternal;
                 }
 
+                constexpr static TimeSpan __YYAPI GetMax() noexcept
+                {
+                    return TimeSpan(INT64_MAX);
+                }
+
                 constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
                 {
                     return TimeSpanCommon_t::GetSecondsPerInternal();

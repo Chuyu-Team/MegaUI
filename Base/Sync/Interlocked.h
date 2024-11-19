@@ -267,6 +267,16 @@ namespace YY
                 return (uint32_t)CompareExchange((int32_t*)_pDestination, (int32_t)_iExchange, (int32_t)_iComparand);
             }
 
+            inline uint32_t __YYAPI CompareExchange(volatile uint32_t* _pDestination, uint32_t _iExchange, uint32_t _iComparand)
+            {
+                return (uint32_t)CompareExchange((int32_t*)_pDestination, (int32_t)_iExchange, (int32_t)_iComparand);
+            }
+
+            inline long __YYAPI CompareExchange(long* _pDestination, long _iExchange, long _iComparand)
+            {
+                return (long)CompareExchange((int32_t*)_pDestination, (int32_t)_iExchange, (int32_t)_iComparand);
+            }
+
             inline int64_t __YYAPI CompareExchange(int64_t* _pDestination, int64_t _iExchange, int64_t _iComparand)
             {
 #ifdef _MSC_VER
@@ -281,11 +291,16 @@ namespace YY
                 return (uint64_t)CompareExchange((int64_t*)_pDestination, (uint64_t)_iExchange, (uint64_t)_iComparand);
             }
 
-            template<typename _Type>
-            inline _Type __YYAPI CompareExchange(volatile _Type* _pDestination, _Type _iExchange, _Type _iComparand)
+            inline uint64_t __YYAPI CompareExchange(volatile uint64_t* _pDestination, uint64_t _iExchange, uint64_t _iComparand)
             {
-                return (_Type)CompareExchange((_Type*)_pDestination, _iExchange, _iComparand);
+                return (uint64_t)CompareExchange((int64_t*)_pDestination, (uint64_t)_iExchange, (uint64_t)_iComparand);
             }
+
+            //template<typename _Type>
+            //inline _Type __YYAPI CompareExchange(volatile _Type* _pDestination, _Type _iExchange, _Type _iComparand)
+            //{
+            //    return (_Type)CompareExchange((_Type*)_pDestination, _iExchange, _iComparand);
+            //}
 
             /*inline void* __YYAPI CompareExchangePoint(volatile void** _ppDestination, const void* _pExchange, const void* _pComparand)
             {

@@ -7,6 +7,7 @@
 #endif
 
 #include <Base/Time/TimeSpan.h>
+#include <Base/Sync/Interlocked.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -50,6 +51,7 @@ namespace YY
                 {
                     return false;
                 }
+
                 return true;
             }
 #endif
@@ -172,11 +174,15 @@ namespace YY
                     // 处理完成端口的数据，它的优先级最高
                     for (ULONG _uIndex = 0; _uIndex != _uNumEntriesRemoved; ++_uIndex)
                     {
-                        auto _pDispatchTask = RefPtr<TaskEntry>::FromPtr(static_cast<IoTaskEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped));
+                        auto _pDispatchTask = RefPtr<IoTaskEntry>::FromPtr(static_cast<IoTaskEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped));
                         if (!_pDispatchTask)
                             continue;
 
-                        DispatchTask(std::move(_pDispatchTask));
+                        // 错误代码如果已经设置，那么可能调用者线程已经事先处理了。
+                        if (_pDispatchTask->OnComplete(DosErrorFormNtStatus(_pDispatchTask->Internal)))
+                        {
+                            DispatchTask(std::move(_pDispatchTask));
+                        }
                     }
                 }
             }

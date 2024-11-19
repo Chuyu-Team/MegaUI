@@ -29,10 +29,17 @@ namespace YY
                 , public OVERLAPPED
 
             {
+                LSTATUS lStatus = ERROR_IO_PENDING;
+
                 IoTaskEntry()
                     : TaskEntry()
                     , OVERLAPPED{}
                 {
+                }
+
+                bool __YYAPI OnComplete(LSTATUS _lStatus)
+                {
+                    return Sync::CompareExchange(&lStatus, _lStatus, ERROR_IO_PENDING) == ERROR_IO_PENDING;
                 }
             };
 #endif

@@ -85,6 +85,11 @@ namespace YY
                     return TickCount(TickCountCommon_t::GetCurrentInternalValue());
                 }
 
+                constexpr static TickCount __YYAPI GetMax() noexcept
+                {
+                    return TickCount(UINT64_MAX);
+                }
+
                 constexpr static TickCount __YYAPI FromInternalValue(uint64_t _uTickCountInternal) noexcept
                 {
                     return TickCount(_uTickCountInternal);
