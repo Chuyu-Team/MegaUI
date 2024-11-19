@@ -72,7 +72,7 @@ namespace YY
                         }
                     }
 
-                    UniquePtr<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX> _pBuffer((SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)HAlloc(_cbData));
+                    UniquePtr<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX> _pBuffer((SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)Alloc(_cbData));
                     if (!_pBuffer)
                         break;
 

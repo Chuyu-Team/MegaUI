@@ -50,7 +50,7 @@ namespace YY
                 ~UniquePtr()
                 {
                     if (p)
-                        HDelete(p);
+                        Delete(p);
                 }
 
                 _Ret_maybenull_ _Type* __YYAPI Get() const
@@ -61,7 +61,7 @@ namespace YY
                 inline void __YYAPI Attach(_In_opt_ _Type* _pOther)
                 {
                     if (p)
-                        HDelete(p);
+                        Delete(p);
                     p = _pOther;
                 }
 

@@ -60,7 +60,7 @@ namespace YY
 
                         auto _pPendingDelete = pFirstReadBlock;
                         pFirstReadBlock = pFirstReadBlock->pNextBlock;
-                        HDelete(_pPendingDelete);
+                        Delete(_pPendingDelete);
                     }
 
                     return nullptr;
@@ -70,13 +70,13 @@ namespace YY
                 {
                     if (!pLastWriteBlock)
                     {
-                        pFirstReadBlock = pLastWriteBlock = HNew<Block>();
+                        pFirstReadBlock = pLastWriteBlock = New<Block>();
                     }
 
                     // 如果满了就尝试链接到下一块
                     if (pLastWriteBlock->IsFull())
                     {
-                        auto _pNextBlock = HNew<Block>();
+                        auto _pNextBlock = New<Block>();
                         pLastWriteBlock->pNextBlock = _pNextBlock;
                         pLastWriteBlock = _pNextBlock;
                     }

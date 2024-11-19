@@ -974,7 +974,7 @@ namespace YY::MegaUI
         if (_fDelayed == false || pWindow == nullptr)
         {
             DestroyAllChildren(false);
-            HDelete(this);
+            Delete(this);
             return S_OK;
         }
         else

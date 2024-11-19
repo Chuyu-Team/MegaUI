@@ -410,13 +410,13 @@ namespace YY
 
                         if constexpr (std::is_trivially_copyable<_Type>::value)
                         {
-                            _pNewSharedData = (SharedData*)HReAlloc(_pOldSharedData, sizeof(SharedData) + sizeof(_Type) * _uNewCapacity);
+                            _pNewSharedData = (SharedData*)YY::Base::Memory::ReAlloc(_pOldSharedData, sizeof(SharedData) + sizeof(_Type) * _uNewCapacity);
                             if (!_pNewSharedData)
                                 return nullptr;
                         }
                         else
                         {
-                            _pNewSharedData = (SharedData*)HAlloc(sizeof(SharedData) + sizeof(_Type) * _uNewCapacity);
+                            _pNewSharedData = (SharedData*)Alloc(sizeof(SharedData) + sizeof(_Type) * _uNewCapacity);
                             if (!_pNewSharedData)
                                 return nullptr;
 
@@ -440,7 +440,7 @@ namespace YY
                         if (_uNewCapacity == 0)
                             return SharedData::GetEmptySharedData();
 
-                        auto _pNewSharedData = (SharedData*)HAlloc(sizeof(SharedData) + sizeof(_Type) * _uNewCapacity);
+                        auto _pNewSharedData = (SharedData*)YY::Base::Memory::Alloc(sizeof(SharedData) + sizeof(_Type) * _uNewCapacity);
                         if (!_pNewSharedData)
                             return nullptr;
                         _pNewSharedData->fMarks = 0;
@@ -472,7 +472,7 @@ namespace YY
                             return;
 
                         _pSharedData->~SharedData();
-                        HFree(_pSharedData);
+                        YY::Base::Memory::Free(_pSharedData);
                     }
                 };
 
@@ -810,7 +810,7 @@ namespace YY
                                 return E_INVALIDARG;
                             }
 
-                            auto _pData = (_Type*)HAlloc(_uNewCapacity * sizeof(_Type));
+                            auto _pData = (_Type*)Alloc(_uNewCapacity * sizeof(_Type));
                             if(!_pData)
                                 return E_OUTOFMEMORY;
                 
@@ -835,7 +835,7 @@ namespace YY
 
                             if constexpr (std::is_trivially_copyable<_Type>::value)
                             {
-                                auto _pData = (_Type*)HReAlloc(Large.pData, _uNewCapacity * sizeof(_Type));
+                                auto _pData = (_Type*)ReAlloc(Large.pData, _uNewCapacity * sizeof(_Type));
                                 if (!_pData)
                                     return E_OUTOFMEMORY;
 
@@ -844,7 +844,7 @@ namespace YY
                             }
                             else
                             {
-                                auto _pData = (_Type*)HAlloc(_uNewCapacity * sizeof(_Type));
+                                auto _pData = (_Type*)Alloc(_uNewCapacity * sizeof(_Type));
                                 if(!_pData)
                                     return E_OUTOFMEMORY;
 

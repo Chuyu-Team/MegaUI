@@ -402,7 +402,7 @@ namespace YY
                         return E_OUTOFMEMORY;
                     }
 
-                    auto _pWaitHandleEntry = HNew<WaitHandleEntry>();
+                    auto _pWaitHandleEntry = New<WaitHandleEntry>();
                     if (!_pWaitHandleEntry)
                     {
                         return E_OUTOFMEMORY;
@@ -528,7 +528,7 @@ namespace YY
                         } while (_pItem != _pFirst);
                     }
 
-                    UniquePtr<WaitHandleBlock> _pNewTaskRunner(HNew<WaitHandleBlock>());
+                    UniquePtr<WaitHandleBlock> _pNewTaskRunner(New<WaitHandleBlock>());
                     if (!_pNewTaskRunner)
                         return nullptr;
 

@@ -636,7 +636,7 @@ namespace YY
 
                 SetWindowLongPtrW(_hWnd, GWLP_USERDATA, NULL);
                 hWnd = NULL;
-                HDelete(this);
+                Delete(this);
                 break;
             case WM_STYLECHANGED:
                 if (GWL_STYLE == _wParam && _lParam)

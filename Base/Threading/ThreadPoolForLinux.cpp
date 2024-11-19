@@ -30,7 +30,7 @@ namespace YY::Base::Threading
             if (uCurrentThreadCount >= MaxThreadsCount)
             {
                 // 达到线程创建上限
-                auto _pTask = HNew<ThreadPoolTaskEntry>(_pfnCallback, _pUserData);
+                auto _pTask = New<ThreadPoolTaskEntry>(_pfnCallback, _pUserData);
                 if(!_pTask)
                     return E_OUTOFMEMORY;
 
@@ -47,7 +47,7 @@ namespace YY::Base::Threading
             uCurrentThreadCount = _uLast;
         }
 
-        _pThread = HNew<ThreadInfoEntry>();
+        _pThread = New<ThreadInfoEntry>();
         if (!_pThread)
         {
             Sync::Decrement(&uThreadCount);
@@ -71,7 +71,7 @@ namespace YY::Base::Threading
         }
 
         Sync::Decrement(&uThreadCount);
-        HDelete(_pThread);
+        Delete(_pThread);
 
         // TODO: 错误代码转换
         return E_FAIL;
@@ -101,7 +101,7 @@ namespace YY::Base::Threading
 
                 _pTask->pfnCallback(_pTask->pUserData);
 
-                HDelete(_pTask);
+                Delete(_pTask);
             }
 
 
@@ -118,7 +118,7 @@ namespace YY::Base::Threading
         }
 
         Sync::Decrement(&uThreadCount);
-        HDelete(_pThread);
+        Delete(_pThread);
         pthread_detach(pthread_self());
         return nullptr;
     }

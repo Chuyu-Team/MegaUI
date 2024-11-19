@@ -76,7 +76,7 @@ namespace YY
 
                     if (_uNewWeakRef == 0)
                     {
-                        HFree(this);
+                        Free(this);
                     }
 
                     return _uNewWeakRef;
@@ -223,7 +223,7 @@ namespace YY
                 template<typename... Args>
                 static RefPtr __YYAPI Create(Args&&... _args) noexcept
                 {
-                    return FromPtr(HNew<_Type>(std::forward<Args>(_args)...));
+                    return FromPtr(New<_Type>(std::forward<Args>(_args)...));
                 }
 
                 /// <summary>

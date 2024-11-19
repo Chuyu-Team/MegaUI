@@ -39,7 +39,7 @@ namespace YY
                 {
                     UnregisterControlInternal(false);
                     _Class::g_ControlInfoData.pControlInfoPtr = nullptr;
-                    HDelete(this);
+                    Delete(this);
                 }
 
                 return _uNewRef;
@@ -163,14 +163,14 @@ namespace YY
                 else
                 {
                     // 这里不会增加引用计数
-                    auto _pTmp = HNewAndZero<typename _Class::StaticControlInfo::ControlInfoType>();
+                    auto _pTmp = NewAndZero<typename _Class::StaticControlInfo::ControlInfoType>();
                     if (!_pTmp)
                         return E_OUTOFMEMORY;
 
                     _hr = _pTmp->RegisterControlInternal(_bExplicitRegister);
                     if (FAILED(_hr))
                     {
-                        HDelete(_pTmp);
+                        Delete(_pTmp);
                     }
                     else
                     {
@@ -235,7 +235,7 @@ namespace YY
                 {
                     UnregisterControlInternal(false);
                     Element::g_ControlInfoData.pControlInfoPtr = nullptr;
-                    HDelete(this);
+                    Delete(this);
                 }
 
                 return _uNewRef;
@@ -343,14 +343,14 @@ namespace YY
                 else
                 {
                     // 这里不会增加引用计数
-                    auto _pTmp = HNewAndZero<Element::StaticControlInfo::ControlInfoType>();
+                    auto _pTmp = NewAndZero<Element::StaticControlInfo::ControlInfoType>();
                     if (!_pTmp)
                         return E_OUTOFMEMORY;
 
                     _hr = _pTmp->RegisterControlInternal(_bExplicitRegister);
                     if (FAILED(_hr))
                     {
-                        HDelete(_pTmp);
+                        Delete(_pTmp);
                     }
                     else
                     {

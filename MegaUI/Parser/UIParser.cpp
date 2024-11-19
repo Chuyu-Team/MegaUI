@@ -198,12 +198,12 @@ namespace YY
 
         static void* rapidxml_alloc(std::size_t _uByteSize)
         {
-            return HAlloc(_uByteSize);
+            return Alloc(_uByteSize);
         }
 
         static void rapidxml_free(void* _pAddress)
         {
-            HFree(_pAddress);
+            Free(_pAddress);
         }
 
         void __YYAPI UIParser::Clear()
@@ -268,7 +268,7 @@ namespace YY
                         }
 
                         RefPtr<StyleSheet> _pStyleSheet;
-                        _pStyleSheet.Attach(HNew<StyleSheet>(_pInherit));
+                        _pStyleSheet.Attach(New<StyleSheet>(_pInherit));
                         if (!_pStyleSheet)
                         {
                             _hr = E_OUTOFMEMORY;
@@ -1369,7 +1369,7 @@ namespace YY
 
                     if (!_pElementArray->EmplacePtr(_pCurrentElement))
                     {
-                        HDelete(_pCurrentElement);
+                        Delete(_pCurrentElement);
                         _pCurrentElement = nullptr;
                         _hr = E_OUTOFMEMORY;
                         break;

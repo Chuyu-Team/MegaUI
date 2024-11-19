@@ -91,7 +91,7 @@ namespace YY
                 }
             }
 
-            HFree(this);
+            Free(this);
         }
 
         bool __YYAPI Value::SharedData::IsReadOnly()
@@ -243,7 +243,7 @@ namespace YY
             if (_iValue == 0)
                 return CreateInt32Zero();
 
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::int32_t);
@@ -256,7 +256,7 @@ namespace YY
 
         Value __YYAPI Value::CreateFloat(float _iValue, ValueSuffix _Suffix)
         {
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::float_t);
@@ -278,7 +278,7 @@ namespace YY
             if (_pValue == nullptr)
                 return CreateElementNull();
 
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::Element);
@@ -294,7 +294,7 @@ namespace YY
             if (_pListValue.GetSize() == 0)
                 return CreateEmptyElementList();
 
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::ElementList);
@@ -310,7 +310,7 @@ namespace YY
             if (_szValue.GetSize() == 0)
                 return CreateEmptyString();
 
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::uString);
@@ -323,7 +323,7 @@ namespace YY
         
         Value __YYAPI Value::CreatePoint(float _iX, float _iY)
         {
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::Point);
@@ -338,7 +338,7 @@ namespace YY
         
         Value __YYAPI Value::CreateSize(float _iCX, float _iCY, ValueSuffix _Suffix)
         {
-            auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)AllocAndZero(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::Size);
@@ -354,7 +354,7 @@ namespace YY
         
         Value __YYAPI Value::CreateRect(float _iLeft, float _iTop, float _iRight, float _iBottom, ValueSuffix _Suffix)
         {
-            auto pValue = (Value::SharedData*)HAllocAndZero(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)AllocAndZero(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::Rect);
@@ -378,7 +378,7 @@ namespace YY
         
         Value __YYAPI Value::CreateAtom(ATOM _uAtomValue)
         {
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::ATOM);
@@ -406,7 +406,7 @@ namespace YY
         
         Value __YYAPI Value::CreateCursor(HCURSOR _hCursorValue)
         {
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::HCURSOR);
@@ -420,7 +420,7 @@ namespace YY
 
         Value __YYAPI Value::CreateColor(Color _Color)
         {
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::Color);
@@ -436,7 +436,7 @@ namespace YY
             if (!_pStyleSheet)
                 return Value::CreateSheetNull();
 
-            auto pValue = (Value::SharedData*)HAlloc(sizeof(Value::SharedData));
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
             if (pValue)
             {
                 pValue->eType = uint_t(ValueType::StyleSheet);

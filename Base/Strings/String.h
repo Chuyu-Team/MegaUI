@@ -714,7 +714,7 @@ namespace YY
 
                         const auto _cbStringDataBuffer = sizeof(StringData) + _uNewCapacity * sizeof(char_t);
 
-                        auto _pNewStringData = (StringData*)HReAlloc(_pOldStringData, _cbStringDataBuffer);
+                        auto _pNewStringData = (StringData*)ReAlloc(_pOldStringData, _cbStringDataBuffer);
                         if (!_pNewStringData)
                             return nullptr;
 
@@ -734,7 +734,7 @@ namespace YY
 
                         const auto _cbNewStringData = sizeof(StringData) + _uAllocLength * sizeof(char_t);
 
-                        auto _pNewStringData = (StringData*)HAlloc(_cbNewStringData);
+                        auto _pNewStringData = (StringData*)Alloc(_cbNewStringData);
                         if (!_pNewStringData)
                             return nullptr;
 

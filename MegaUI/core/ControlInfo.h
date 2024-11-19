@@ -77,7 +77,7 @@ public:                                                                         
             return E_INVALIDARG;                                                                                                                   \
         *_ppOut = nullptr;                                                                                                                         \
                                                                                                                                                    \
-        auto _pElement = HNew<_CONTROL_NAME>();                                                                                                    \
+        auto _pElement = New<_CONTROL_NAME>();                                                                                                    \
         if (!_pElement)                                                                                                                            \
             return E_OUTOFMEMORY;                                                                                                                  \
                                                                                                                                                    \
@@ -88,7 +88,7 @@ public:                                                                         
         }                                                                                                                                          \
         else                                                                                                                                       \
         {                                                                                                                                          \
-            HDelete(_pElement);                                                                                                                    \
+            Delete(_pElement);                                                                                                                    \
         }                                                                                                                                          \
         return _hr;                                                                                                                                \
     }
