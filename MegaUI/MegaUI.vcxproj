@@ -191,6 +191,7 @@
     <ClInclude Include="..\Base\Sync\SRWLock.h" />
     <ClInclude Include="..\Base\Sync\Sync.h" />
     <ClInclude Include="..\Base\tchar.h" />
+    <ClInclude Include="..\Base\Threading\Coroutine.h" />
     <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp" />
     <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.h" />
     <ClInclude Include="..\Base\Threading\ProcessThreads.h" />

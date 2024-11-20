@@ -366,6 +366,9 @@
     <ClInclude Include="..\Base\Sync\AutoLock.h">
       <Filter>Base\Sync</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Threading\Coroutine.h">
+      <Filter>Base\Threading</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

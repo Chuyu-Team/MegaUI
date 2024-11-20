@@ -163,7 +163,7 @@ int wmain()
     UIParserPlayContext _Context;
     _Context.iDPI = 96;
     {
-        Window* _pTestWindow = HNew<Window>();
+        Window* _pTestWindow = New<Window>();
         YY::MegaUI::WindowElement* pWindowElement;
         intptr_t Cooike;
         _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
@@ -177,7 +177,7 @@ int wmain()
     }
 
     {
-        Window* _pTestWindow = HNew<Window>();
+        Window* _pTestWindow = New<Window>();
         YY::MegaUI::WindowElement* pWindowElement;
         intptr_t Cooike;
         _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);
@@ -192,7 +192,7 @@ int wmain()
 
     if (1)
     {
-        Window* _pTestWindow = HNew<Window>();
+        Window* _pTestWindow = New<Window>();
         YY::MegaUI::WindowElement* pWindowElement;
         intptr_t Cooike;
         _Parser.Play(u8"测试窗口", &_Context, &Cooike, &pWindowElement);

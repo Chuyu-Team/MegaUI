@@ -1,9 +1,6 @@
 ﻿#pragma once
 #include <type_traits>
 #include <functional>
-#if defined(_HAS_CXX20) && _HAS_CXX20
-#include <coroutine>
-#endif
 
 #include <Base/YY.h>
 #include <Base/Memory/RefPtr.h>
@@ -14,6 +11,7 @@
 #include <Base/Time/TickCount.h>
 #include <Base/Time/TimeSpan.h>
 #include <Base/Threading/ThreadPool.h>
+#include <Base/Threading/Coroutine.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -137,6 +135,104 @@ namespace YY
                 }
             };
 
+#if defined(_HAS_CXX20) && _HAS_CXX20
+            template<typename ResumeType_>
+            class TaskAwaiter
+            {
+            public:
+                using ResumeType = ResumeType_;
+
+                class RefData
+                {
+                public:
+                    // 协程句柄
+                    intptr_t hCoroutineHandle = 0;
+
+                    virtual uint32_t __YYAPI AddRef() noexcept = 0;
+
+                    virtual uint32_t __YYAPI Release() noexcept = 0;
+
+                    virtual ResumeType_ __YYAPI Resume() noexcept = 0;
+                };
+
+            private:
+                RefPtr<RefData> pAwaiterData;
+
+            public:
+                TaskAwaiter(_In_ RefPtr<RefData> _pAwaiterData)
+                    : pAwaiterData(std::move(_pAwaiterData))
+                {
+                }
+
+                TaskAwaiter(TaskAwaiter&&) = default;
+
+                TaskAwaiter(const TaskAwaiter&) = delete;
+                TaskAwaiter& operator=(const TaskAwaiter&) = delete;
+
+                bool await_ready() noexcept
+                {
+                    return pAwaiterData->hCoroutineHandle == /*hReadyHandle*/ (intptr_t)-1;
+                }
+
+                bool await_suspend(std::coroutine_handle<> _hHandle) noexcept
+                {
+                    return YY::Base::Sync::CompareExchange(&pAwaiterData->hCoroutineHandle, (intptr_t)_hHandle.address(), 0) == 0;
+                }
+
+                ResumeType await_resume() noexcept
+                {
+                    return pAwaiterData->Resume();
+                }
+            };
+            
+            template<>
+            class TaskAwaiter<void>
+            {
+            public:
+                using ResumeType = void;
+
+                class RefData
+                {
+                public:
+                    // 协程句柄
+                    intptr_t hCoroutineHandle = 0;
+
+                    virtual uint32_t __YYAPI AddRef() noexcept = 0;
+
+                    virtual uint32_t __YYAPI Release() noexcept = 0;
+                };
+
+            private:
+                RefPtr<RefData> pAwaiterData;
+
+            public:
+                TaskAwaiter(_In_ RefPtr<RefData> _pAwaiterData)
+                    : pAwaiterData(std::move(_pAwaiterData))
+                {
+                }
+
+                TaskAwaiter(TaskAwaiter&&) = default;
+
+                TaskAwaiter(const TaskAwaiter&) = delete;
+                TaskAwaiter& operator=(const TaskAwaiter&) = delete;
+
+                bool await_ready() noexcept
+                {
+                    return pAwaiterData->hCoroutineHandle == /*hReadyHandle*/ (intptr_t)-1;
+                }
+
+                bool await_suspend(std::coroutine_handle<> _hHandle) noexcept
+                {
+                    return YY::Base::Sync::CompareExchange(&pAwaiterData->hCoroutineHandle, (intptr_t)_hHandle.address(), 0) == 0;
+                }
+
+                void await_resume() noexcept
+                {
+                    // 因为没有返回值，所以空函数占坑
+                }
+            };
+#endif // defined(_HAS_CXX20) && _HAS_CXX20
+
             class TaskRunnerDispatchImplByIoCompletionImpl;
 
             // 通用任务执行器的抽象层
@@ -209,16 +305,26 @@ namespace YY
                 /// <summary>
                 /// 创建一个异步可 co_await 任务。
                 /// </summary>
+                /// <param name="_uAfter">需要延迟执行的时间</param> 
                 /// <param name="_pfnLambdaCallback">需要异步执行的 Lambda 表达式</param>
-                /// <returns>awaitable</returns>
-                auto __YYAPI AsyncDelayTask(
+                /// <returns>TaskAwaiter<void></returns>
+                TaskAwaiter<void> __YYAPI AsyncDelayTask(
                     _In_ TimeSpan<TimePrecise::Millisecond> _uAfter,
                     _In_ std::function<void(void)>&& _pfnTaskCallback)
                 {
-                    struct AsyncTaskEntry : public Timer
+                    struct AsyncTaskEntry
+                        : public Timer
+                        , public TaskAwaiter<void>::RefData
                     {
-                        // 0，表示尚未设置，-1表示任务完成。
-                        intptr_t hHandle = 0;
+                        uint32_t __YYAPI AddRef() noexcept override
+                        {
+                            return Timer::AddRef();
+                        }
+
+                        uint32_t __YYAPI Release() noexcept override
+                        {
+                            return Timer::Release();
+                        }
 
                         HRESULT __YYAPI RunTask() override
                         {
@@ -226,7 +332,7 @@ namespace YY
                             if (FAILED(_hr))
                                 return _hr;
 
-                            auto _hHandle = (void*)YY::Base::Sync::Exchange(&hHandle, /*hReadyHandle*/ (intptr_t)-1);
+                            auto _hHandle = (void*)YY::Base::Sync::Exchange(&hCoroutineHandle, /*hReadyHandle*/ (intptr_t)-1);
                             if (!_hHandle)
                                 return S_OK;
 
@@ -240,6 +346,7 @@ namespace YY
                             }
                             else if (_pResumeTaskRunner)
                             {
+                                // TODO: 如果 _pResumeTaskRunner 没有执行 resume，则将发生内存泄漏。
                                 _pResumeTaskRunner->PostTask(
                                     [_hHandle]()
                                     {
@@ -265,35 +372,6 @@ namespace YY
                     _pAsyncTaskEntry->pfnTaskCallback = std::move(_pfnTaskCallback);
                     _pAsyncTaskEntry->pResumeTaskRunnerWeak = _pCurrent;
 
-                    struct awaitable
-                    {
-                    private:
-                        RefPtr<AsyncTaskEntry> pAsyncTaskEntry;
-
-                    public:
-                        awaitable(RefPtr<AsyncTaskEntry> _pAsyncTaskEntry)
-                            : pAsyncTaskEntry(std::move(_pAsyncTaskEntry))
-                        {
-                        }
-
-                        awaitable(awaitable&&) = default;
-
-                        bool await_ready() noexcept
-                        {
-                            return pAsyncTaskEntry->hHandle == /*hReadyHandle*/ (intptr_t)-1;
-                        }
-
-                        bool await_suspend(std::coroutine_handle<> _hHandle) noexcept
-                        {
-                            return YY::Base::Sync::CompareExchange(&pAsyncTaskEntry->hHandle, (intptr_t)_hHandle.address(), 0) == 0;
-                        }
-
-                        void await_resume() noexcept
-                        {
-                        }
-                    };
-
-
                     HRESULT _hr;
                     if (_uAfter.GetInternalValue() > 0)
                     {
@@ -308,12 +386,12 @@ namespace YY
                     if (FAILED(_hr))
                         throw Exception();
 
-                    return awaitable(std::move(_pAsyncTaskEntry));
+                    return TaskAwaiter<void>(std::move(_pAsyncTaskEntry));
                 }
 #endif
 
 #if defined(_HAS_CXX20) && _HAS_CXX20
-                auto __YYAPI AsyncTask(
+                TaskAwaiter<void> __YYAPI AsyncTask(
                     _In_ std::function<void(void)>&& _pfnTaskCallback)
                 {
                     return AsyncDelayTask(TimeSpan<TimePrecise::Millisecond>(), std::move(_pfnTaskCallback));
