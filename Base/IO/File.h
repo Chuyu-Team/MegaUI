@@ -293,6 +293,10 @@ namespace YY::Base::IO
                 {
                     _pIoTask->Release();
                 }
+                else
+                {
+                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                }
                 return ERROR_SUCCESS;
             }
             else
@@ -301,7 +305,7 @@ namespace YY::Base::IO
                 if (_lStatus == ERROR_IO_PENDING)
                 {
                     // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->Weakup();
+                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
                     return ERROR_SUCCESS;
                 }
                 else
@@ -336,6 +340,10 @@ namespace YY::Base::IO
                 {
                     _pIoTask->Release();
                 }
+                else
+                {
+                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                }
                 return ERROR_SUCCESS;
             }
             else
@@ -344,7 +352,7 @@ namespace YY::Base::IO
                 if (_lStatus == ERROR_IO_PENDING)
                 {
                     // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->Weakup();
+                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
                     return ERROR_SUCCESS;
                 }
                 else
@@ -513,6 +521,10 @@ namespace YY::Base::IO
                 {
                     _pIoTask->Release();
                 }
+                else
+                {
+                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                }
                 return ERROR_SUCCESS;
             }
             else
@@ -521,7 +533,7 @@ namespace YY::Base::IO
                 if (_lStatus == ERROR_IO_PENDING)
                 {
                     // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->Weakup();
+                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
                     return ERROR_SUCCESS;
                 }
                 else

@@ -56,57 +56,38 @@ namespace YY
             }
 #endif
 
-            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::SetTimerInternal(RefPtr<Timer> _pDispatchTask) noexcept
+            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::SetTimerInternal(RefPtr<Timer> _pTimer) noexcept
             {
-                if (!_pDispatchTask)
+                if (!_pTimer)
                     return;
 
-                for (;;)
-                {
-                    if (!Sync::BitSet(&fFlags, SetTimerLockIndex))
-                    {
-                        oPendingTimerTaskQueue.Push(_pDispatchTask.Detach());
-                        Sync::BitReset(&fFlags, SetTimerLockIndex);
-                        break;
-                    }
-                }
-                Weakup();
+                JoinPendingTaskQueue(oPendingTimerTaskQueue, std::move(_pTimer));
             }
 
-            HRESULT __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::SetWaitInternal(RefPtr<Wait> _pTask) noexcept
+            HRESULT __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::SetWaitInternal(RefPtr<Wait> _pWait) noexcept
             {
-                if (_pTask == nullptr || _pTask->hHandle == NULL)
+                if (_pWait == nullptr || _pWait->hHandle == NULL)
                     return E_INVALIDARG;
 
-                for (;;)
-                {
-                    if (!Sync::BitSet(&fFlags, SetWaitLockIndex))
-                    {
-                        oPendingWaitTaskQueue.Push(_pTask.Detach());
-                        Sync::BitReset(&fFlags, SetWaitLockIndex);
-                        break;
-                    }
-                }
-
-                Weakup();
+                JoinPendingTaskQueue(oPendingWaitTaskQueue, std::move(_pWait));
                 return S_OK;
             }
 
-            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Weakup()
+            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Weakup(uint32_t _uNewDispatchTaskRef, uint32_t _uNewFlags)
             {
-                if (!Sync::BitSet(&fFlags, 0))
+                if (_uNewDispatchTaskRef == 1)
                 {
+                    // 之前等待任务计数是0，这说明它没有线程，我们需要给它安排一个线程。
                     auto _hr = ThreadPool::PostTaskInternalWithoutAddRef(this);
                     if (FAILED(_hr))
                     {
                         throw Exception(_hr);
                     }
                 }
-                else
+                else if(_uNewFlags < WakeupRefOnceRaw * 2)
                 {
+                    // 之前的WakeupRef计数为 0，所以我们需要重新唤醒 Dispatch 线程。
 #ifdef _WIN32
-
-                    // TODO: 按需唤醒
                     PostQueuedCompletionStatus(oDefaultWaitBlock.hTaskRunnerServerHandle, 0, 0, nullptr);
 #else
                     if (hThread != NullThreadHandle)
@@ -115,6 +96,12 @@ namespace YY
                     }
 #endif
                 }
+            }
+
+            void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::StartIo() noexcept
+            {
+                const auto _uNewDispatchTaskRef = YY::Sync::Increment(&nDispatchTaskRef);                
+                Weakup(_uNewDispatchTaskRef);
             }
 
             void __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::operator()()
@@ -128,7 +115,7 @@ namespace YY
                 OVERLAPPED_ENTRY _oCompletionPortEntries[16];
                 ULONG _uNumEntriesRemoved;
 
-                for (;;)
+                for (; nDispatchTaskRef > 0;)
                 {
                     ProcessingPendingTaskQueue();
 
@@ -154,35 +141,43 @@ namespace YY
                         _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, uMinimumWaitTime, FALSE);
                     }
 
-                    if (!_bRet)
+                    for(;;)
                     {
-                        _uNumEntriesRemoved = 0;
-
-                        auto _lStatus = GetLastError();
-
-                        if (_lStatus == WAIT_TIMEOUT || _lStatus == WAIT_IO_COMPLETION)
+                        if (!_bRet)
                         {
-                            // 非意外错误
-                        }
-                        else
-                        {
-                            // ERROR_ABANDONED_WAIT_0 ： 句柄关闭，线程应该退出。
-                            return;
-                        }
-                    }
+                            auto _lStatus = GetLastError();
 
-                    // 处理完成端口的数据，它的优先级最高
-                    for (ULONG _uIndex = 0; _uIndex != _uNumEntriesRemoved; ++_uIndex)
-                    {
-                        auto _pDispatchTask = RefPtr<IoTaskEntry>::FromPtr(static_cast<IoTaskEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped));
-                        if (!_pDispatchTask)
-                            continue;
-
-                        // 错误代码如果已经设置，那么可能调用者线程已经事先处理了。
-                        if (_pDispatchTask->OnComplete(DosErrorFormNtStatus(_pDispatchTask->Internal)))
-                        {
-                            DispatchTask(std::move(_pDispatchTask));
+                            if (_lStatus == WAIT_TIMEOUT || _lStatus == WAIT_IO_COMPLETION)
+                            {
+                                // 非意外错误
+                                break;
+                            }
+                            else
+                            {
+                                // ERROR_ABANDONED_WAIT_0 ： 句柄关闭，线程应该退出了。
+                                return;
+                            }
                         }
+
+                        // 处理完成端口的数据，它的优先级最高
+                        for (ULONG _uIndex = 0; _uIndex != _uNumEntriesRemoved; ++_uIndex)
+                        {
+                            auto _pDispatchTask = RefPtr<IoTaskEntry>::FromPtr(static_cast<IoTaskEntry*>(_oCompletionPortEntries[_uIndex].lpOverlapped));
+                            if (!_pDispatchTask)
+                                continue;
+
+                            // 错误代码如果已经设置，那么可能调用者线程已经事先处理了。
+                            if (_pDispatchTask->OnComplete(DosErrorFormNtStatus(_pDispatchTask->Internal)))
+                            {
+                                DispatchTask(std::move(_pDispatchTask));
+                            }
+                            else
+                            {
+                                YY::Sync::Decrement(&nDispatchTaskRef);
+                            }
+                        }
+
+                        _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, 0, FALSE);
                     }
                 }
             }
@@ -195,7 +190,12 @@ namespace YY
                     if (!_pTimerTask)
                         break;
 
-                    ThreadPoolTimerManger::SetTimerInternal(RefPtr<Timer>::FromPtr(_pTimerTask));
+                    YY::Sync::Subtract(&fFlags, WakeupRefOnceRaw);
+                    auto _hr = ThreadPoolTimerManger::SetTimerInternal(RefPtr<Timer>::FromPtr(_pTimerTask));
+                    if (FAILED(_hr))
+                    {
+                        YY::Sync::Decrement(&nDispatchTaskRef);
+                    }
                 }
 
                 for (;;)
@@ -204,7 +204,12 @@ namespace YY
                     if (!_pWait)
                         break;
 
-                    ThreadPoolWaitMangerForMultiThreading::SetWaitInternal(RefPtr<Wait>::FromPtr(_pWait));
+                    YY::Sync::Subtract(&fFlags, WakeupRefOnceRaw);
+                    auto _hr = ThreadPoolWaitMangerForMultiThreading::SetWaitInternal(RefPtr<Wait>::FromPtr(_pWait));
+                    if (FAILED(_hr))
+                    {
+                        YY::Sync::Decrement(&nDispatchTaskRef);
+                    }
                 }
             }
 
@@ -212,6 +217,8 @@ namespace YY
             {
                 if (!_pDispatchTask)
                     return;
+
+                YY::Sync::Decrement(&nDispatchTaskRef);
 
                 do
                 {
