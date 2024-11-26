@@ -39,9 +39,6 @@ namespace YY::Base::Threading
         constexpr ThreadPool() = default;
 
     public:
-
-        HRESULT __YYAPI ExecuteTask(_In_ ThreadPoolSimpleCallback _pfnCallback, _In_opt_ void* _pUserData) noexcept;
-
         template<typename Task>
         static HRESULT __YYAPI PostTaskInternalWithoutAddRef(_In_ Task* _pTask) noexcept
         {
@@ -78,6 +75,8 @@ namespace YY::Base::Threading
         void* TaskExecuteRoutine(ThreadInfoEntry* _pThread) noexcept;
 
         static _Ret_notnull_ ThreadPool* __YYAPI Get() noexcept;
+
+        HRESULT __YYAPI ExecuteTask(_In_ ThreadPoolSimpleCallback _pfnCallback, _In_opt_ void* _pUserData) noexcept;
     };
 }
 
