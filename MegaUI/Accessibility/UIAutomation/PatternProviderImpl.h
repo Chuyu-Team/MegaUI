@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 #include <combaseapi.h>
 #include <UIAutomationCore.h>
 
-#include <MegaUI/base/ComUnknowImpl.h>
+#include <Base/Utils/ComObjectImpl.h>
 #include <Base/Threading/TaskRunner.h>
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
 #include <Base/Memory/RefPtr.h>
@@ -18,7 +18,7 @@ namespace YY
         
         template<typename _RootType, typename _ElementType, typename _ProviderType>
         class PatternProviderBase
-            : public ComUnknowImpl<_RootType, _ProviderType>
+            : public ComObjectImpl<_RootType, _ProviderType>
         {
         protected:
             _ElementType* pElement;
@@ -49,7 +49,7 @@ namespace YY
             }
 
             /// <summary>
-            /// ÓÅÏÈÊ¹ÓÃ»º´æ£¬Èç¹û²»´æÔÚÔò´´½¨²¢Í¬²½µ½»º´æ¡£
+            /// ä¼˜å…ˆä½¿ç”¨ç¼“å­˜ï¼Œå¦‚æœä¸å­˜åœ¨åˆ™åˆ›å»ºå¹¶åŒæ­¥åˆ°ç¼“å­˜ã€‚
             /// </summary>
             /// <param name="_pProvider"></param>
             /// <param name="_ppPattern"></param>

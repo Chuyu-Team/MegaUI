@@ -207,6 +207,7 @@
     <ClInclude Include="..\Base\Time\Common.h" />
     <ClInclude Include="..\Base\Time\TickCount.h" />
     <ClInclude Include="..\Base\Time\TimeSpan.h" />
+    <ClInclude Include="..\Base\Utils\ComObjectImpl.h" />
     <ClInclude Include="..\Base\YY.h" />
     <ClInclude Include="..\Media\Brushes\Brush.h" />
     <ClInclude Include="..\Media\Color.h" />
@@ -234,7 +235,6 @@
     <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h" />
-    <ClInclude Include="Base\ComUnknowImpl.h" />
     <ClInclude Include="Base\MegaUITypeInt.h" />
     <ClInclude Include="Control\Button.h" />
     <ClInclude Include="Control\TextBox.h" />

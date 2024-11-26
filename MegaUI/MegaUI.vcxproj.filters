@@ -91,6 +91,12 @@
     <Filter Include="Base\Sync">
       <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\Utils">
+      <UniqueIdentifier>{5fdb3ef6-6993-4ef6-bf1e-57de7c90cc1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Utils\Windows">
+      <UniqueIdentifier>{34f8d820-a98e-4f29-8be8-c600d83b23b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -215,9 +221,6 @@
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\PatternProviderImpl.h">
       <Filter>UI\Accessibility\UIAutomation</Filter>
-    </ClInclude>
-    <ClInclude Include="base\ComUnknowImpl.h">
-      <Filter>UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h">
       <Filter>UI\Accessibility\UIAutomation</Filter>
@@ -368,6 +371,9 @@
     </ClInclude>
     <ClInclude Include="..\Base\Threading\Coroutine.h">
       <Filter>Base\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Utils\ComObjectImpl.h">
+      <Filter>Base\Utils\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

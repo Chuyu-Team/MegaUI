@@ -9,7 +9,7 @@
 #include <Base/Threading/TaskRunner.h>
 
 #include <MegaUI/core/Element.h>
-#include <MegaUI/base/ComUnknowImpl.h>
+#include <Base/Utils/ComObjectImpl.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -180,7 +180,7 @@ namespace YY
         }
 
         class ElementAccessibleProvider
-            : public ComUnknowImpl<ElementAccessibleProvider, IRawElementProviderSimple3, IRawElementProviderFragment, IRawElementProviderAdviseEvents>
+            : public ComObjectImpl<ElementAccessibleProvider, ComObjectInheritChain<IRawElementProviderSimple3, IRawElementProviderSimple2, IRawElementProviderSimple>, IRawElementProviderFragment, IRawElementProviderAdviseEvents>
         {
         protected:
             RefPtr<ThreadTaskRunner> pTaskRunner;
@@ -188,16 +188,7 @@ namespace YY
             // GetPatternProvider 接口的缓存
             IUnknown* PatternProviderCache[UIA_LastPatternId - UIA_FirstPatternId + 1];
 
-        public:           
-            __YY_BEGIN_COM_QUERY_MAP(ElementAccessibleProvider)
-                __YY_QUERY_ENTRY(IRawElementProviderSimple3)
-                __YY_QUERY_ENTRY(IRawElementProviderSimple2)
-                __YY_QUERY_ENTRY(IRawElementProviderSimple)
-                __YY_QUERY_ENTRY_WITH_BASE(IUnknown, IRawElementProviderSimple)
-                __YY_QUERY_ENTRY(IRawElementProviderFragment)
-                __YY_QUERY_ENTRY(IRawElementProviderAdviseEvents)
-            __YY_END_COM_QUERY_MAP();
-
+        public:
             ElementAccessibleProvider(Element* _pElement, RefPtr<YY::Base::Threading::ThreadTaskRunner> _pTaskRunner);
 
             virtual ~ElementAccessibleProvider();

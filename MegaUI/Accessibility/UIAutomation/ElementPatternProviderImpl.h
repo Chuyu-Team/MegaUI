@@ -488,11 +488,6 @@ namespace YY
             {
             }
 
-            __YY_BEGIN_COM_QUERY_MAP(PatternProvider)
-                __YY_QUERY_ENTRY(IUnknown)
-                __YY_QUERY_ENTRY(IInvokeProvider)
-            __YY_END_COM_QUERY_MAP();
-
             static bool __YYAPI IsPatternSupported(_In_ Element* _pElement)
             {
                 if (!_pElement)

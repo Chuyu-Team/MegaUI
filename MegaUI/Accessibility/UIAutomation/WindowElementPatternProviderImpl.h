@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <MegaUI/Accessibility/UIAutomation/PatternProviderImpl.h>
 #include <MegaUI/Window/WindowElement.h>
 #include <MegaUI/Window/Window.h>
@@ -11,19 +11,13 @@ namespace YY
     {
         template<>
         class PatternProvider<WindowElement, ITransformProvider2>
-            : public PatternProviderBase<PatternProvider<WindowElement, ITransformProvider2>, WindowElement, ITransformProvider2>
+            : public PatternProviderBase<PatternProvider<WindowElement, ITransformProvider2>, WindowElement, ComObjectInheritChain<ITransformProvider2, ITransformProvider>>
         {
         public:
             PatternProvider(_In_ ElementAccessibleProvider* _pProvider)
                 : PatternProviderBase(_pProvider)
             {
             }
-
-            __YY_BEGIN_COM_QUERY_MAP(PatternProvider)
-                __YY_QUERY_ENTRY(IUnknown)
-                __YY_QUERY_ENTRY(ITransformProvider)
-                __YY_QUERY_ENTRY(ITransformProvider2)
-            __YY_END_COM_QUERY_MAP();
 
             static bool __YYAPI IsPatternSupported(_In_ Element* _pElement)
             {
@@ -185,11 +179,6 @@ namespace YY
                 : PatternProviderBase(_pProvider)
             {
             }
-
-            __YY_BEGIN_COM_QUERY_MAP(PatternProvider)
-                __YY_QUERY_ENTRY(IUnknown)
-                __YY_QUERY_ENTRY(IWindowProvider)
-            __YY_END_COM_QUERY_MAP();
             
             static bool __YYAPI IsPatternSupported(_In_ Element* _pElement)
             {
