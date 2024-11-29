@@ -63,7 +63,7 @@ namespace YY
                     WakeupRefBitIndex,
 
                     WakeupRefOnceRaw = 1 << WakeupRefBitIndex,
-                    UnlockQueuePushLockBitAndWakeupRefOnceRaw = WakeupRefBitIndex - (1u << PendingTaskQueuePushLockBitIndex),
+                    UnlockQueuePushLockBitAndWakeupRefOnceRaw = WakeupRefOnceRaw - (1u << PendingTaskQueuePushLockBitIndex),
                 };
 
                 union

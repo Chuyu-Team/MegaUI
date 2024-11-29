@@ -19,6 +19,16 @@ namespace YY
 
                 TimingWheelSimpleList() = default;
 
+                ~TimingWheelSimpleList()
+                {
+                    while (auto _pTask = Pop())
+                    {
+                        _pTask->Cancel();
+                        _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                        _pTask->Release();
+                    }
+                }
+
                 TimingWheelSimpleList(const TimingWheelSimpleList&) = delete;
                 TimingWheelSimpleList& operator=(const TimingWheelSimpleList&) = delete;
                 TimingWheelSimpleList& operator=(TimingWheelSimpleList&&) = default;
@@ -406,11 +416,9 @@ namespace YY
 
                     uTimingWheelCurrentTick = _oCurrent;
 
-                    for (auto _pItem = _oTimerPendingDispatchList.pFirst; _pItem; )
+                    while (auto _pItem = _oTimerPendingDispatchList.Pop())
                     {
-                        auto _pNext = _pItem->pNext;
                         DispatchTimerTask(RefPtr<Timer>::FromPtr(_pItem));
-                        _pItem = _pNext;
                     }
                 }
 
@@ -609,8 +617,6 @@ namespace YY
 
                     arrTimingWheelOthers = std::move(_oNewTimingWheelOthers);
                 }
-                
-            private:
             };
         }
     }

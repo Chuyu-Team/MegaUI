@@ -197,11 +197,25 @@ namespace YY
             {
                 return BitSet((uint64_t*)_pBase, _uOffset);
             }
-
-            template<typename Type>
-            inline bool __YYAPI BitSet(volatile Type* _pBase, uint32_t _uOffset)
+            
+            inline bool __YYAPI BitSet(volatile uint32_t* _pBase, uint32_t _uOffset)
             {
-                return BitSet((Type*)_pBase, _uOffset);
+                return BitSet((uint32_t*)_pBase, _uOffset);
+            }
+
+            inline bool __YYAPI BitSet(volatile uint64_t* _pBase, uint32_t _uOffset)
+            {
+                return BitSet((uint64_t*)_pBase, _uOffset);
+            }
+
+            inline bool __YYAPI BitSet(volatile int32_t* _pBase, uint32_t _uOffset)
+            {
+                return BitSet((int32_t*)_pBase, _uOffset);
+            }
+
+            inline bool __YYAPI BitSet(volatile int64_t* _pBase, uint32_t _uOffset)
+            {
+                return BitSet((int64_t*)_pBase, _uOffset);
             }
 
             /// <summary>
@@ -247,10 +261,24 @@ namespace YY
                 return BitReset((uint64_t*)_pBase, _uOffset);
             }
 
-            template<typename Type>
-            inline bool __YYAPI BitReset(volatile Type* _pBase, uint32_t _uOffset)
+            inline bool __YYAPI BitReset(volatile uint32_t* _pBase, uint32_t _uOffset)
             {
-                return BitReset((Type*)_pBase, _uOffset);
+                return BitReset((uint32_t*)_pBase, _uOffset);
+            }
+
+            inline bool __YYAPI BitReset(volatile uint64_t* _pBase, uint32_t _uOffset)
+            {
+                return BitReset((uint64_t*)_pBase, _uOffset);
+            }
+
+            inline bool __YYAPI BitReset(volatile int32_t* _pBase, uint32_t _uOffset)
+            {
+                return BitReset((int32_t*)_pBase, _uOffset);
+            }
+
+            inline bool __YYAPI BitReset(volatile int64_t* _pBase, uint32_t _uOffset)
+            {
+                return BitReset((int64_t*)_pBase, _uOffset);
             }
 
             inline int32_t __YYAPI CompareExchange(int32_t* _pDestination, int32_t _iExchange, int32_t _iComparand)
@@ -296,17 +324,6 @@ namespace YY
                 return (uint64_t)CompareExchange((int64_t*)_pDestination, (uint64_t)_iExchange, (uint64_t)_iComparand);
             }
 
-            //template<typename _Type>
-            //inline _Type __YYAPI CompareExchange(volatile _Type* _pDestination, _Type _iExchange, _Type _iComparand)
-            //{
-            //    return (_Type)CompareExchange((_Type*)_pDestination, _iExchange, _iComparand);
-            //}
-
-            /*inline void* __YYAPI CompareExchangePoint(volatile void** _ppDestination, const void* _pExchange, const void* _pComparand)
-            {
-                return (void*)CompareExchange((intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
-            }*/
-
             template<typename Type1, typename Type2, typename Type3>
             inline Type1* __YYAPI CompareExchangePoint(Type1** _ppDestination, Type2 _pExchange, Type3 _pComparand)
             {
@@ -317,33 +334,8 @@ namespace YY
             template<typename Type1, typename Type2, typename Type3>
             inline Type1* __YYAPI CompareExchangePoint(volatile Type1** _ppDestination, Type2 _pExchange, Type3 _pComparand)
             {
-
-                return CompareExchangePoint((Type1**)_ppDestination, _pExchange, _pComparand);
+                return (Type1*)CompareExchange((intptr_t*)_ppDestination, reinterpret_cast<intptr_t>(static_cast<Type1*>(_pExchange)), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pComparand)));
             }
-
-            //template<typename Type>
-            //inline Type* __YYAPI CompareExchangePoint(volatile Type** _ppDestination, const Type* _pExchange, const Type* _pComparand)
-            //{
-            //    return (Type*)CompareExchange((volatile intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)_pComparand);
-            //}
-
-            /*template<typename Type>
-            inline Type* __YYAPI CompareExchangePoint(Type** _ppDestination, std::nullptr_t, const Type* _pComparand)
-            {
-                return (Type*)CompareExchange((volatile intptr_t*)_ppDestination, (intptr_t)nullptr, (intptr_t)_pComparand);
-            }
-
-            template<typename Type>
-            inline Type* __YYAPI CompareExchangePoint(Type** _ppDestination, const Type* _pExchange, std::nullptr_t)
-            {
-                return (Type*)CompareExchange((volatile intptr_t*)_ppDestination, (intptr_t)_pExchange, (intptr_t)nullptr);
-            }
-
-            template<typename Type>
-            inline Type* __YYAPI CompareExchangePoint(Type** _ppDestination, std::nullptr_t, std::nullptr_t)
-            {
-                return (Type*)CompareExchange((volatile intptr_t*)_ppDestination, (intptr_t)nullptr, (intptr_t)nullptr);
-            }*/
 
             inline int32_t __YYAPI Exchange(int32_t* _pDestination, int32_t _iExchange)
             {

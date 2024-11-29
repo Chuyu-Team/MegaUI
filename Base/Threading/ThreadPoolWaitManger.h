@@ -167,6 +167,19 @@ namespace YY
             protected:
                 WaitHandleBlock oDefaultWaitBlock;
 
+                ~ThreadPoolWaitMangerForSingleThreading()
+                {
+                    for (auto& _oWaitTaskList : oDefaultWaitBlock.oWaitTaskLists)
+                    {
+                        while (auto _pTask = _oWaitTaskList.PopFront())
+                        {
+                            _pTask->Cancel();
+                            _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                            _pTask->Release();
+                        }
+                    }
+                }
+
                 HRESULT __YYAPI SetWaitInternal(_In_ RefPtr<Wait> _pWaitTask) noexcept
                 {
                     if (!_pWaitTask)
@@ -309,6 +322,7 @@ namespace YY
                     SRWLock oLock;
                     // 执行等待任务的异步线程
                     RefPtr<SequencedTaskRunner> pWaitTaskRunner;
+                    volatile bool bTerminate = false;
 
                     WaitHandleBlock(HANDLE _hTaskRunnerServerHandle)
                         : hTaskRunnerServerHandle(_hTaskRunnerServerHandle)
@@ -382,6 +396,28 @@ namespace YY
                 {
                 }
 
+                ~ThreadPoolWaitMangerForMultiThreading()
+                {
+                    for (auto _pItem = oWaitBlockTaskRunnerList.GetFirst(); _pItem; _pItem = _pItem->pNext)
+                    {
+                        _pItem->bTerminate = true;
+                        SetEvent(_pItem->hTaskRunnerServerHandle);
+                    }
+
+                    while (auto _pItem = oWaitBlockTaskRunnerList.PopFront())
+                    {
+                        Delete(_pItem);
+                    }
+
+                    for (auto& _oHashList : arrWaitHandleHashTable)
+                    {
+                        while (auto _pItem = _oHashList.PopFront())
+                        {
+                            Delete(_pItem);
+                        }
+                    }
+                }
+
                 HRESULT __YYAPI SetWaitInternal(_In_ RefPtr<Wait> _pTask) noexcept
                 {
                     auto _pWaitHandleHashList = GetWaitHandleHashList(_pTask->hHandle);
@@ -436,7 +472,11 @@ namespace YY
                                     {
                                         _pWaitHandleBlock->oLock.LockShared();
                                         auto _cWaitHandle = _pWaitHandleBlock->cWaitHandle;
+                                        auto _bTerminate = _pWaitHandleBlock->bTerminate;
                                         _pWaitHandleBlock->oLock.UnlockShared();
+
+                                        if (_bTerminate)
+                                            break;
 
                                         if (_cWaitHandle <= 1)
                                             break;

@@ -31,6 +31,19 @@ namespace YY
 #else
                 hThread = NullThreadHandle;
 #endif
+                while (auto _pTask = oPendingTimerTaskQueue.Pop())
+                {
+                    _pTask->Cancel();
+                    _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                    _pTask->Release();
+                }
+
+                while (auto _pTask = oPendingWaitTaskQueue.Pop())
+                {
+                    _pTask->Cancel();
+                    _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                    _pTask->Release();
+                }
             }
 
             TaskRunnerDispatchImplByIoCompletionImpl* __YYAPI TaskRunnerDispatchImplByIoCompletionImpl::Get() noexcept

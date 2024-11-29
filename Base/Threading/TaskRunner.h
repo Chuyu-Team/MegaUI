@@ -89,7 +89,7 @@ namespace YY
 
                 void __YYAPI Cancel()
                 {
-                    YY::Sync::BitSet(&fStyle, 2);
+                    YY::Sync::BitSet((int32_t*)&fStyle, 2);
                 }
 
                 virtual HRESULT __YYAPI RunTask()
@@ -147,6 +147,14 @@ namespace YY
                 public:
                     // 协程句柄
                     intptr_t hCoroutineHandle = 0;
+                    
+                    ~RefData()
+                    {
+                        if (hCoroutineHandle && hCoroutineHandle != (intptr_t)-1)
+                        {
+                            std::coroutine_handle<>::from_address((void*)hCoroutineHandle).destroy();
+                        }
+                    }
 
                     virtual uint32_t __YYAPI AddRef() noexcept = 0;
 
@@ -197,6 +205,14 @@ namespace YY
                     // 协程句柄
                     intptr_t hCoroutineHandle = 0;
 
+                    ~RefData()
+                    {
+                        if (hCoroutineHandle && hCoroutineHandle != (intptr_t)-1)
+                        {
+                            std::coroutine_handle<>::from_address((void*)hCoroutineHandle).destroy();
+                        }
+                    }
+
                     virtual uint32_t __YYAPI AddRef() noexcept = 0;
 
                     virtual uint32_t __YYAPI Release() noexcept = 0;
@@ -215,6 +231,8 @@ namespace YY
 
                 TaskAwaiter(const TaskAwaiter&) = delete;
                 TaskAwaiter& operator=(const TaskAwaiter&) = delete;
+                
+                TaskAwaiter& operator=(TaskAwaiter&&) = default;
 
                 bool await_ready() noexcept
                 {
