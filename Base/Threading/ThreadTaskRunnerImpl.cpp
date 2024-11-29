@@ -60,8 +60,9 @@ namespace YY
 
                         if (_oMsg.message == WM_QUIT)
                         {
-                            break;
+                            return _oMsg.wParam;
                         }
+
                         TranslateMessage(&_oMsg);
                         DispatchMessage(&_oMsg);
                     }
@@ -165,7 +166,7 @@ namespace YY
 
                                         if (_oMsg.message == WM_QUIT)
                                         {
-                                            break;
+                                            return _oMsg.wParam;
                                         }
                                         TranslateMessage(&_oMsg);
                                         DispatchMessage(&_oMsg);
