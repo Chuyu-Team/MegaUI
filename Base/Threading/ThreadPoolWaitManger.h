@@ -144,6 +144,11 @@ namespace YY
                         pLast = _pPrior;
                     }
                 }
+
+                bool __YYAPI IsEmpty() const noexcept
+                {
+                    return pFirst == nullptr;
+                }
             };
 
             struct WaitTaskList : public List<Wait>
@@ -214,14 +219,15 @@ namespace YY
                     }
                 }
 
-                void __YYAPI ProcessingWaitTasks(DWORD uWaitResult, DWORD _cWaitHandle, DWORD _uTaskRunnerServerHandleIndex) noexcept
+                size_t __YYAPI ProcessingWaitTasks(DWORD uWaitResult, DWORD _cWaitHandle, DWORD _uTaskRunnerServerHandleIndex) noexcept
                 {
+                    size_t _cTaskProcessed = 0;
                     if (WAIT_OBJECT_0 <= uWaitResult && uWaitResult < WAIT_OBJECT_0 + _cWaitHandle)
                     {
                         uWaitResult -= WAIT_OBJECT_0;
                         if (uWaitResult != _uTaskRunnerServerHandleIndex)
                         {
-                            DispatchWaitList(uWaitResult, WAIT_OBJECT_0);
+                            _cTaskProcessed += DispatchWaitList(uWaitResult, WAIT_OBJECT_0);
                         }
                     }
                     else if (WAIT_ABANDONED_0 <= uWaitResult && uWaitResult < WAIT_ABANDONED_0 + _cWaitHandle)
@@ -229,10 +235,14 @@ namespace YY
                         uWaitResult -= WAIT_ABANDONED_0;
                         if (uWaitResult != _uTaskRunnerServerHandleIndex)
                         {
-                            DispatchWaitList(uWaitResult, WAIT_ABANDONED_0);
+                            _cTaskProcessed += DispatchWaitList(uWaitResult, WAIT_ABANDONED_0);
                         }
                     }
-                    else if (WAIT_FAILED == uWaitResult)
+                    else if (WAIT_IO_COMPLETION == uWaitResult)
+                    {
+                        // APC被执行，不是存在信号
+                    }
+                    else/* if (WAIT_FAILED == uWaitResult)*/
                     {
                         // 有句柄可能无效，检测一下无效句柄……然后报告
                         // 这里需要从后向前移动，避免 DispatchWaitList 后 cWaitHandle不停的减小
@@ -246,18 +256,20 @@ namespace YY
                                     const auto _uTaskWaitResult = WaitForSingleObject(oDefaultWaitBlock.hWaitHandles[_cWaitHandle], 0);
                                     if (_uTaskWaitResult != WAIT_TIMEOUT)
                                     {
-                                        DispatchWaitList(_cWaitHandle, _uTaskWaitResult);
+                                        _cTaskProcessed += DispatchWaitList(_cWaitHandle, _uTaskWaitResult);
                                     }
                                 }
                             } while (_cWaitHandle);
                         }
                     }
+
+                    return _cTaskProcessed;
                 }
 
             private:
                 virtual void __YYAPI DispatchWaitTask(RefPtr<Wait> _pWaitTask) = 0;
 
-                void __YYAPI DispatchWaitList(size_t _uDispatchIndex, DWORD _uWaitResult) noexcept
+                size_t __YYAPI DispatchWaitList(size_t _uDispatchIndex, DWORD _uWaitResult) noexcept
                 {
                     HANDLE _hWaitEvent = oDefaultWaitBlock.hWaitHandles[_uDispatchIndex];
                     auto _oWaitTaskList = oDefaultWaitBlock.oWaitTaskLists[_uDispatchIndex].Flush();
@@ -274,14 +286,18 @@ namespace YY
                     assert(_hWaitEvent);
                     if (_hWaitEvent == nullptr)
                     {
-                        return;
+                        return 0;
                     }
 
+                    size_t _cTaskProcessed = 0;
                     while (auto _pWaitTask = _oWaitTaskList.PopFront())
                     {
                         _pWaitTask->uWaitResult = _uWaitResult;
                         DispatchWaitTask(RefPtr<Wait>::FromPtr(_pWaitTask));
+                        ++_cTaskProcessed;
                     }
+
+                    return _cTaskProcessed;
                 }
             };
 
@@ -418,6 +434,15 @@ namespace YY
                     }
                 }
 
+                /// <summary>
+                /// 
+                /// </summary>
+                /// <param name="_pTask"></param>
+                /// <returns>
+                /// S_OK : 操作完成，成功添加到当前线程的等待队列。
+                /// S_FALSE : 操作完成，成功添加到线程池其他异步线程的等待队列。
+                /// < 0 : 操作失败，一般是内存不足等错误。 
+                /// </returns>
                 HRESULT __YYAPI SetWaitInternal(_In_ RefPtr<Wait> _pTask) noexcept
                 {
                     auto _pWaitHandleHashList = GetWaitHandleHashList(_pTask->hHandle);
@@ -486,25 +511,30 @@ namespace YY
                                     }
                                 });
 
-                            assert(SUCCEEDED(_hr));
+                            if (FAILED(_hr))
+                                return _hr;
                         }
                         else
                         {
                             SetEvent(_pWaitHandleBlock->hTaskRunnerServerHandle);
                         }
+
+                        return S_FALSE;
                     }
 
                     return S_OK;
                 }
                 
-                void __YYAPI ProcessingWaitTasks(WaitHandleBlock& oWaitBlockTaskRunner, DWORD uWaitResult, DWORD _cWaitHandle) noexcept
+                size_t __YYAPI ProcessingWaitTasks(WaitHandleBlock& oWaitBlockTaskRunner, DWORD uWaitResult, DWORD _cWaitHandle) noexcept
                 {
+                    size_t _cTaskProcessed = 0;
+
                     if (WAIT_OBJECT_0 <= uWaitResult && uWaitResult < WAIT_OBJECT_0 + _cWaitHandle)
                     {
                         uWaitResult -= WAIT_OBJECT_0;
                         if (uWaitResult != oWaitBlockTaskRunner.kTaskRunnerServerHandleIndex)
                         {
-                            DispatchWaitList(oWaitBlockTaskRunner, uWaitResult, WAIT_OBJECT_0);
+                            _cTaskProcessed += DispatchWaitList(oWaitBlockTaskRunner, uWaitResult, WAIT_OBJECT_0);
                         }
                     }
                     else if (WAIT_ABANDONED_0 <= uWaitResult && uWaitResult < WAIT_ABANDONED_0 + _cWaitHandle)
@@ -512,10 +542,13 @@ namespace YY
                         uWaitResult -= WAIT_ABANDONED_0;
                         if (uWaitResult != oWaitBlockTaskRunner.kTaskRunnerServerHandleIndex)
                         {
-                            DispatchWaitList(oWaitBlockTaskRunner, uWaitResult, WAIT_ABANDONED_0);
+                            _cTaskProcessed += DispatchWaitList(oWaitBlockTaskRunner, uWaitResult, WAIT_ABANDONED_0);
                         }
                     }
-                    else if (WAIT_FAILED == uWaitResult)
+                    else if (WAIT_IO_COMPLETION == uWaitResult)
+                    {
+                    }
+                    else/* if (WAIT_FAILED == uWaitResult)*/
                     {
                         // 有句柄可能无效，检测一下无效句柄……然后报告
                         // 这里需要从后向前移动，避免 DispatchWaitList 后 cWaitHandle不停的减小
@@ -529,12 +562,13 @@ namespace YY
                                     const auto _uTaskWaitResult = WaitForSingleObject(oWaitBlockTaskRunner.hWaitHandles[_cWaitHandle], 0);
                                     if (_uTaskWaitResult != WAIT_TIMEOUT)
                                     {
-                                        DispatchWaitList(oWaitBlockTaskRunner, _cWaitHandle, _uTaskWaitResult);
+                                        _cTaskProcessed += DispatchWaitList(oWaitBlockTaskRunner, _cWaitHandle, _uTaskWaitResult);
                                     }
                                 }
                             } while (_cWaitHandle);
                         }
                     }
+                    return _cTaskProcessed;
                 }
 
             private:
@@ -579,14 +613,14 @@ namespace YY
                     return  _pNewTaskRunner.Detach();
                 }
 
-                void __YYAPI DispatchWaitList(WaitHandleBlock& oWaitBlockTaskRunner, size_t _uDispatchIndex, DWORD _uWaitResult) noexcept
+                size_t __YYAPI DispatchWaitList(WaitHandleBlock& oWaitBlockTaskRunner, size_t _uDispatchIndex, DWORD _uWaitResult) noexcept
                 {
                     HANDLE _hWaitEvent = nullptr;
                     WaitHandleEntry* _pWaitHandleEntry = nullptr;
                     {
                         AutoLock _oDispatchLock(oWaitBlockTaskRunner.oLock);
                         if (oWaitBlockTaskRunner.cWaitHandle <= _uDispatchIndex)
-                            return;
+                            return 0;
 
                         _hWaitEvent = oWaitBlockTaskRunner.hWaitHandles[_uDispatchIndex];
                         _pWaitHandleEntry = oWaitBlockTaskRunner.oWaitHandleEntries[_uDispatchIndex];
@@ -606,7 +640,7 @@ namespace YY
                     assert(_hWaitEvent && _pWaitHandleEntry);
                     if (_hWaitEvent == nullptr || _pWaitHandleEntry == nullptr)
                     {
-                        return;
+                        return 0;
                     }
 
                     {
@@ -615,14 +649,17 @@ namespace YY
                         _pWaitHandleHashList->Remove(_pWaitHandleEntry);
                     }
 
+                    size_t _cTaskProcessed = 0;
                     while (auto _pWaitTask = _pWaitHandleEntry->oWaitTaskLists.PopFront())
                     {
                         _pWaitTask->uWaitResult = _uWaitResult;
                         DispatchWaitTask(RefPtr<Wait>::FromPtr(_pWaitTask));
+                        ++_cTaskProcessed;
                     }
+                    return _cTaskProcessed;
                 }
 
-                virtual void DispatchWaitTask(RefPtr<Wait> _pWaitTask) = 0;
+                virtual void __YYAPI DispatchWaitTask(RefPtr<Wait> _pWaitTask) = 0;
             };
         }
     }

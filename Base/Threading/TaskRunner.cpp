@@ -63,6 +63,16 @@ namespace YY
                 return g_pTaskRunnerWeak.Get();
             }
 
+            bool __YYAPI TaskRunner::BindIO(HANDLE _hHandle) noexcept
+            {
+                return TaskRunnerDispatch::Get()->BindIO(_hHandle);
+            }
+
+            void __YYAPI TaskRunner::StartIo() noexcept
+            {
+                return TaskRunnerDispatch::Get()->StartIo();
+            }
+
             RefPtr<SequencedTaskRunner> __YYAPI SequencedTaskRunner::GetCurrent()
             {
                 auto _pTaskRunner = g_pTaskRunnerWeak.Get();
@@ -120,7 +130,7 @@ namespace YY
                 }
                 else
                 {
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->SetTimerInternal(std::move(_pTask));
+                    TaskRunnerDispatch::Get()->SetTimerInternal(std::move(_pTask));
                     return S_OK;
                 }
             }
@@ -134,7 +144,7 @@ namespace YY
                     return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
                 }
 
-                TaskRunnerDispatchImplByIoCompletionImpl::Get()->SetWaitInternal(std::move(_pTask));
+                TaskRunnerDispatch::Get()->SetWaitInternal(std::move(_pTask));
                 return S_OK;
             }
 

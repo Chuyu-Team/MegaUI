@@ -5,7 +5,7 @@
 
 #include <Base/YY.h>
 #include <Base/Strings/StringView.h>
-#include <Base/Threading/TaskRunnerDispatchImpl.h>
+#include <Base/Threading/TaskRunner.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -135,7 +135,7 @@ namespace YY::Base::IO
 
             if (_hFile != INVALID_HANDLE_VALUE)
             {
-                if (!TaskRunnerDispatchImplByIoCompletionImpl::Get()->BindIO(_hFile))
+                if (!TaskRunner::BindIO(_hFile))
                 {
                     CloseHandle(_hFile);
                     _hFile = INVALID_HANDLE_VALUE;
@@ -295,7 +295,7 @@ namespace YY::Base::IO
                 }
                 else
                 {
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                    TaskRunner::StartIo();
                 }
                 return ERROR_SUCCESS;
             }
@@ -305,7 +305,7 @@ namespace YY::Base::IO
                 if (_lStatus == ERROR_IO_PENDING)
                 {
                     // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                    TaskRunner::StartIo();
                     return ERROR_SUCCESS;
                 }
                 else
@@ -342,7 +342,7 @@ namespace YY::Base::IO
                 }
                 else
                 {
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                    TaskRunner::StartIo();
                 }
                 return ERROR_SUCCESS;
             }
@@ -352,7 +352,7 @@ namespace YY::Base::IO
                 if (_lStatus == ERROR_IO_PENDING)
                 {
                     // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                    TaskRunner::StartIo();
                     return ERROR_SUCCESS;
                 }
                 else
@@ -397,7 +397,7 @@ namespace YY::Base::IO
 
             if (hPipe != INVALID_HANDLE_VALUE)
             {
-                if (!TaskRunnerDispatchImplByIoCompletionImpl::Get()->BindIO(hPipe))
+                if (!TaskRunner::BindIO(hPipe))
                 {
                     CloseHandle(hPipe);
                     hPipe = INVALID_HANDLE_VALUE;
@@ -523,7 +523,7 @@ namespace YY::Base::IO
                 }
                 else
                 {
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                    TaskRunner::StartIo();
                 }
                 return ERROR_SUCCESS;
             }
@@ -533,7 +533,7 @@ namespace YY::Base::IO
                 if (_lStatus == ERROR_IO_PENDING)
                 {
                     // 进入异步读取模式，唤醒一下 Dispatch，IO完成后Dispatch自动会将任务重新转发到调用者
-                    TaskRunnerDispatchImplByIoCompletionImpl::Get()->StartIo();
+                    TaskRunner::StartIo();
                     return ERROR_SUCCESS;
                 }
                 else

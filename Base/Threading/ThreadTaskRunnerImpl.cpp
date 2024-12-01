@@ -131,6 +131,7 @@ namespace YY
                         // uPushLock 占用1bit，所以 uWakeupCount += 1 等价于 uWakeupCountAndPushLock += 2
                         if (_uWakeupCount == 0)
                         {
+                            ProcessingTimerTasks();
                             if (_uWakeupCountBackup && Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw * _uWakeupCountBackup) >= WakeupOnceRaw)
                             {
                                 // 队列已经插入新的Task，重新检查消息循环。
@@ -141,8 +142,6 @@ namespace YY
                             else
                             {
                                 // uWakeupCount 已经归零，准备进入睡眠状态
-
-                                ProcessingTimerTasks();
                                 const auto _uWaitTime = GetMinimumWaitTime();
                                 const auto _uWaitResult = MsgWaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, _uWaitTime, QS_ALLINPUT, MWMO_ALERTABLE);
                                 // 消息循环本身因为处于激活状态，所以，重新 + 1
@@ -286,7 +285,7 @@ namespace YY
                     auto _hr = ThreadPoolWaitMangerForSingleThreading::SetWaitInternal(_pTask);
                     if (_hr == E_NOTIMPL)
                     {
-                        _hr = TaskRunnerDispatchImplByIoCompletionImpl::Get()->SetWaitInternal(std::move(_pTask));
+                        _hr = TaskRunnerDispatch::Get()->SetWaitInternal(std::move(_pTask));
                     }
                     return _hr;
                 }
@@ -333,7 +332,7 @@ namespace YY
 
                     _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
 
-                    if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
+                    if (Sync::Subtract(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw)) < uint32_t(WakeupOnceRaw))
                         break;
                 }
             }
@@ -344,17 +343,9 @@ namespace YY
                 if (uThreadId == UINT32_MAX)
                     return HRESULT_From_LSTATUS(ERROR_CANCELLED);
 
-                if (bBackgroundLoop)
-                {
-                    Sync::WakeByAddressAll((void*)(&uWakeupCountAndPushLock));
-                    return S_OK;
-                }
-                else
-                {
-                    // 因此调用 PostAppMessageW 尝试唤醒目标线程的消息循环。
-                    auto _bRet = PostAppMessageW(uThreadId, WM_APP, 0, 0);
-                    return _bRet ? S_OK : YY::Base::HRESULT_From_LSTATUS(GetLastError());
-                }
+                // 因此调用 PostAppMessageW 尝试唤醒目标线程的消息循环。
+                auto _bRet = PostAppMessageW(uThreadId, WM_APP, 0, 0);
+                return _bRet ? S_OK : YY::Base::HRESULT_From_LSTATUS(GetLastError());
             }
 #endif
         }

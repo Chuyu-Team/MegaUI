@@ -33,7 +33,7 @@
     <ClCompile Include="BitMapUnitTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="TaskRunnerDispatchUnitTest.cpp">
+    <ClCompile Include="AsyncFileUnitTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

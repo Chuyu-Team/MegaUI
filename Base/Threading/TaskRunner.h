@@ -135,6 +135,27 @@ namespace YY
                 }
             };
 
+#if defined(_WIN32)
+            struct IoTaskEntry
+                : public TaskEntry
+                , public OVERLAPPED
+
+            {
+                LSTATUS lStatus = ERROR_IO_PENDING;
+
+                IoTaskEntry()
+                    : TaskEntry()
+                    , OVERLAPPED{}
+                {
+                }
+
+                bool __YYAPI OnComplete(LSTATUS _lStatus)
+                {
+                    return Sync::CompareExchange(&lStatus, _lStatus, ERROR_IO_PENDING) == ERROR_IO_PENDING;
+                }
+            };
+#endif
+
 #if defined(_HAS_CXX20) && _HAS_CXX20
             template<typename ResumeType_>
             class TaskAwaiter
@@ -251,12 +272,12 @@ namespace YY
             };
 #endif // defined(_HAS_CXX20) && _HAS_CXX20
 
-            class TaskRunnerDispatchImplByIoCompletionImpl;
+            class TaskRunnerDispatch;
 
             // 通用任务执行器的抽象层
             class TaskRunner : public RefValue
             {
-                friend TaskRunnerDispatchImplByIoCompletionImpl;
+                friend TaskRunnerDispatch;
                 friend Timer;
 
             protected:
@@ -273,6 +294,22 @@ namespace YY
                 /// 如果返回 nullptr，可能当前调用者是线程池，也可能来自外部线程。
                 /// </returns>
                 static RefPtr<TaskRunner> __YYAPI GetCurrent();
+
+#if defined(_WIN32)
+                /// <summary>
+                /// 将文件句柄绑定到调度器内部的完成端口，便于调度器会将IO任务重新派发到指定TaskRunner。
+                /// 
+                /// 警告：调度器只能调度基于 IoTaskEntry 的任务！
+                /// </summary>
+                /// <param name="_hHandle"></param>
+                /// <returns></returns>
+                static bool __YYAPI BindIO(_In_ HANDLE _hHandle) noexcept;
+#endif
+                /// <summary>
+                /// 发起异步请求成功后请调用此函数。内部将对完成端口进行监听。
+                /// </summary>
+                /// <returns></returns>
+                static void __YYAPI StartIo() noexcept;
 
                 /// <summary>
                 /// 返回 TaskRunner 的唯一Id，注意，这不是线程Id。

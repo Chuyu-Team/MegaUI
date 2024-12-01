@@ -181,6 +181,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AsyncFileUnitTest.cpp" />
     <ClCompile Include="BitMapUnitTest.cpp" />
     <ClCompile Include="DynamicArrayUnitTest.cpp" />
     <ClCompile Include="pch.cpp">
@@ -190,7 +191,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StringUnitTest.cpp" />
-    <ClCompile Include="TaskRunnerDispatchUnitTest.cpp" />
     <ClCompile Include="TaskRunnerUnitTest.cpp" />
     <ClCompile Include="ValueParserUnitTest.cpp" />
   </ItemGroup>

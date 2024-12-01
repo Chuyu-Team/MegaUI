@@ -164,7 +164,7 @@ namespace YY
                     }
                 }
 
-                void __YYAPI ProcessingTimerTasks() noexcept
+                size_t __YYAPI ProcessingTimerTasks() noexcept
                 {
                     TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
@@ -178,7 +178,7 @@ namespace YY
                     if (_uTimingWheelTickSpand == 0u)
                     {
                         uTimingWheelCurrentTick = _oCurrent;
-                        return;
+                        return 0ul;
                     }
 
                     // 防止 DispatchTimerTask 期间又插入时间轮，所有我们先把所有满足条件的Timer暂存在_oTimerPendingDispatchList。最后再一次性的 Dispatch
@@ -416,10 +416,14 @@ namespace YY
 
                     uTimingWheelCurrentTick = _oCurrent;
 
+                    size_t _cTaskProcessed = 0;
                     while (auto _pItem = _oTimerPendingDispatchList.Pop())
                     {
                         DispatchTimerTask(RefPtr<Timer>::FromPtr(_pItem));
+                        ++_cTaskProcessed;
                     }
+
+                    return _cTaskProcessed;
                 }
 
                 uint32_t __YYAPI GetMinimumWaitTime() noexcept

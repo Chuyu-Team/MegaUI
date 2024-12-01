@@ -7,13 +7,17 @@
 
 #include <Base/Threading/TaskRunner.h>
 #include <Base/Threading/ProcessThreads.h>
+#include <Base/Time/TickCount.h>
+#include <Base/Strings/String.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 using namespace YY::Base;
 using namespace YY::Base::Threading;
+using namespace YY::Base::Memory;
+using namespace YY::Base::Time;
 
-namespace UnitTest
+namespace TaskRunnerUnitTest
 {
     TEST_CLASS(SequencedTaskRunnerUnitTest)
     {
@@ -100,6 +104,175 @@ namespace UnitTest
             Sleep(500);
             
             Assert::AreEqual((void*)_pOutTaskRunner.Get(), (void*)_pTaskRunner.Get());
+        }
+
+        TEST_METHOD(时间间隔检测)
+        {
+            auto _pTaskRunner = SequencedTaskRunner::Create();
+            HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+
+            {
+                auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+
+
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                    [_uStartTick, &_pTimer, _hEvent]()
+                    {
+                        auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
+
+                        Strings::uString _szTmp;
+                        _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
+
+                        OutputDebugStringW(_szTmp);
+
+                        Assert::IsTrue(_nSpan.GetMilliseconds() >= 500 - 100);
+                        Assert::IsTrue(_nSpan.GetMilliseconds() <= 500 + 100);
+
+                        _pTimer->Cancel();
+                        SetEvent(_hEvent);
+                    });
+
+                Assert::AreEqual(WaitForSingleObject(_hEvent, 5000), (DWORD)WAIT_OBJECT_0);
+            }
+
+            {
+                auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+
+
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+                    [_uStartTick, &_pTimer, _hEvent]()
+                    {
+                        auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
+
+                        Strings::uString _szTmp;
+                        _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
+
+                        OutputDebugStringW(_szTmp);
+
+                        Assert::IsTrue(_nSpan.GetMilliseconds() >= 5000 - 200);
+                        Assert::IsTrue(_nSpan.GetMilliseconds() <= 5000 + 200);
+
+                        _pTimer->Cancel();
+                        SetEvent(_hEvent);
+                    });
+
+
+                Assert::AreEqual(WaitForSingleObject(_hEvent, 10000), (DWORD)WAIT_OBJECT_0);
+            }
+        }
+
+        TEST_METHOD(周期性唤醒检查)
+        {
+            auto _pTaskRunner = SequencedTaskRunner::Create();
+
+
+            HANDLE _hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+
+            auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+
+            int nCount = 0;
+            RefPtr<Timer> _pTimer;
+            _pTimer = _pTaskRunner->CreateTimer(
+                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                [&nCount, _uStartTick, &_pTimer, _hEvent]()
+                {
+                    ++nCount;
+                    auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
+
+                    Strings::uString _szTmp;
+                    _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
+
+                    OutputDebugStringW(_szTmp);
+                    auto _uArg = _nSpan.GetMilliseconds() / nCount;
+
+                    Assert::IsTrue(_uArg >= 500 - 100);
+                    Assert::IsTrue(_uArg <= 500 + 100);
+
+                    if (nCount == 5)
+                    {
+                        _pTimer->Cancel();
+
+                        SetEvent(_hEvent);
+                    }
+                });
+
+
+            WaitForSingleObject(_hEvent, 5000);
+
+            Assert::IsTrue(nCount == 5);
+            _pTimer = nullptr;
+            _pTaskRunner = nullptr;
+
+        }
+
+        TEST_METHOD(Wait句柄测试)
+        {
+            auto _pTaskRunner = SequencedTaskRunner::Create();
+
+            for (int i = 0; i < 10; ++i)
+            {
+                HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+                volatile uint32_t _uWaitResultCount = 0;
+                volatile UINT64 _uTickCount = 0;
+
+                _pTaskRunner->CreateWait(_hEvent, [&](DWORD _uWaitResultT)
+                    {
+                        if (_uWaitResultT == WAIT_OBJECT_0)
+                        {
+                            YY::Increment(&_uWaitResultCount);
+                            _uTickCount = GetTickCount64();
+                        }
+                    });
+
+                Sleep(600);
+                SetEvent(_hEvent);
+                auto _uTickCountEnd = GetTickCount64();
+                Sleep(10);
+
+                Assert::IsTrue(abs((long long)(_uTickCountEnd - _uTickCount)) < 50);
+            }
+
+
+            // 超多句柄等待情况测试
+            {
+                HANDLE _hEvents[300];
+                volatile uint32_t _uWaitResultCount = 0;
+
+                for (auto& _hEvent : _hEvents)
+                {
+                    _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+                    _pTaskRunner->CreateWait(_hEvent, [&](DWORD _uWaitResultT)
+                        {
+                            if (_uWaitResultT == WAIT_OBJECT_0)
+                            {
+                                YY::Increment(&_uWaitResultCount);
+                            }
+                        });
+                }
+
+                Sleep(100);
+                Assert::AreEqual((uint32_t)_uWaitResultCount, uint32_t(0));
+
+                for (auto _hEvent : _hEvents)
+                {
+                    SetEvent(_hEvent);
+                }
+
+                Sleep(100);
+                Assert::AreEqual((uint32_t)_uWaitResultCount, uint32_t(std::size(_hEvents)));
+
+                for (auto _hEvent : _hEvents)
+                {
+                    SetEvent(_hEvent);
+                }
+
+                Sleep(100);
+                Assert::AreEqual((uint32_t)_uWaitResultCount, uint32_t(std::size(_hEvents)));
+            }
         }
     };
 
@@ -238,57 +411,241 @@ namespace UnitTest
     TEST_CLASS(ThreadTaskRunnerUnitTest)
     {
     public:
-        TEST_METHOD(后台模式检测)
+        TEST_METHOD(PostTask可用性检测)
         {
-            auto _pTaskRunner = ThreadTaskRunner::Create(true);
+            auto _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
 
-            volatile uint32_t _uCount2 = 0;
+            RefPtr<ThreadTaskRunner> _pTaskRunners[] = { ThreadTaskRunner::Create(false), ThreadTaskRunner::Create(true) };
+            for (auto& _pTaskRunner : _pTaskRunners)
+            {
+                volatile uint32_t _uCount2 = 0;
 
-            _pTaskRunner->PostTask([&_uCount2]()
-                {
-                    _uCount2 = 1;
-                });
+                _pTaskRunner->PostTask([&_uCount2, _hEvent]()
+                    {
+                        YY::Increment(&_uCount2);
+                        SetEvent(_hEvent);
+                    });
 
-            Sleep(100);
+                WaitForSingleObject(_hEvent, 100);
 
-            Assert::AreEqual((uint32_t)_uCount2, 1u);
+                Assert::AreEqual((uint32_t)_uCount2, 1u);
 
-            _pTaskRunner->PostTask([&_uCount2]()
-                {
-                    _uCount2 = 2;
-                });
+                _pTaskRunner->PostTask([&_uCount2, _hEvent]()
+                    {
+                        YY::Increment(&_uCount2);
+                        SetEvent(_hEvent);
+                    });
 
-            Sleep(100);
+                WaitForSingleObject(_hEvent, 100);
 
-            Assert::AreEqual((uint32_t)_uCount2, 2u);
+                Assert::AreEqual((uint32_t)_uCount2, 2u);
 
-            _pTaskRunner->PostTask([&_uCount2]()
-                {
-                    _uCount2 = 3;
-                });
+                _pTaskRunner->PostTask([&_uCount2, _hEvent]()
+                    {
+                        YY::Increment(&_uCount2);
+                        SetEvent(_hEvent);
+                    });
 
-            Sleep(100);
+                WaitForSingleObject(_hEvent, 100);
 
-            Assert::AreEqual((uint32_t)_uCount2, 3u);
+                Assert::AreEqual((uint32_t)_uCount2, 3u);
+            }
+
+            CloseHandle(_hEvent);
         }
 
 
         TEST_METHOD(线程Id获取)
         {
+            auto _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+
             auto _pTaskRunner = ThreadTaskRunner::Create(true);
 
             auto _oId = _pTaskRunner->GetThreadId();
-            decltype(_oId) _oId2 = 0xCC;
+            volatile decltype(_oId) _oId2 = 0xCC;
 
 
-            _pTaskRunner->PostTask([&_oId2]()
+            _pTaskRunner->PostTask([&_oId2, _hEvent]()
                 {
                     _oId2 = Threading::GetCurrentThreadId();
+                    SetEvent(_hEvent);
                 });
 
-            Sleep(10);
+            WaitForSingleObject(_hEvent, 100);
 
-            Assert::AreEqual(_oId, _oId2);
+            Assert::AreEqual(_oId, decltype(_oId)(_oId2));
+            CloseHandle(_hEvent);
+        }
+
+        TEST_METHOD(时间间隔检测)
+        {
+            HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+            RefPtr<ThreadTaskRunner> _pTaskRunners[] = { ThreadTaskRunner::Create(false), ThreadTaskRunner::Create(true) };
+            for (auto& _pTaskRunner : _pTaskRunners)
+            {
+                {
+                    auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                    TickCount<TimePrecise::Millisecond> _uEndTick;
+
+                    RefPtr<Timer> _pTimer;
+                    _pTimer = _pTaskRunner->CreateTimer(
+                        TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                        [&_uEndTick, &_pTimer, _hEvent]()
+                        {
+                            _uEndTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                            _pTimer->Cancel();
+                            SetEvent(_hEvent);
+                        });
+
+                    Assert::AreEqual(WaitForSingleObject(_hEvent, 5000), (DWORD)WAIT_OBJECT_0);
+                    Strings::uString _szTmp;
+                    auto _nSpan = _uEndTick - _uStartTick;
+                    _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
+
+                    OutputDebugStringW(_szTmp);
+
+                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 500 - 100);
+                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 500 + 100);
+                }
+
+                {
+                    auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                    TickCount<TimePrecise::Millisecond> _uEndTick;
+
+                    RefPtr<Timer> _pTimer;
+                    _pTimer = _pTaskRunner->CreateTimer(
+                        TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+                        [&_uEndTick, &_pTimer, _hEvent]()
+                        {
+                            _uEndTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                            _pTimer->Cancel();
+                            SetEvent(_hEvent);
+                        });
+
+                    Assert::AreEqual(WaitForSingleObject(_hEvent, 10000), (DWORD)WAIT_OBJECT_0);
+                    auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
+
+                    Strings::uString _szTmp;
+                    _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
+
+                    OutputDebugStringW(_szTmp);
+
+                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 5000 - 200);
+                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 5000 + 200);
+                }
+            }
+
+            CloseHandle(_hEvent);
+        }
+
+        TEST_METHOD(周期性唤醒检查)
+        {
+            HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+
+            RefPtr<ThreadTaskRunner> _pTaskRunners[] = { ThreadTaskRunner::Create(false), ThreadTaskRunner::Create(true)};
+            for (auto& _pTaskRunner : _pTaskRunners)
+            {
+                auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+
+                volatile int nCount = 0;
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                    [&nCount, _uStartTick, &_pTimer, _hEvent]()
+                    {
+                        ++nCount;
+                        if (nCount == 5)
+                        {
+                            _pTimer->Cancel();
+
+                            SetEvent(_hEvent);
+                        }
+                    });
+
+
+                WaitForSingleObject(_hEvent, 6000);
+                Sleep(1000);
+                Assert::AreEqual((int)nCount, 5);
+                _pTimer = nullptr;
+                _pTaskRunner = nullptr;
+            }
+
+            CloseHandle(_hEvent);
+        }
+
+        TEST_METHOD(Wait句柄测试)
+        {
+            RefPtr<ThreadTaskRunner> _pTaskRunners[] = { ThreadTaskRunner::Create(false), ThreadTaskRunner::Create(true) };
+            for (auto& _pTaskRunner : _pTaskRunners)
+            {
+                HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+
+                for (int i = 0; i < 10; ++i)
+                {
+                    volatile uint32_t _uWaitResultCount = 0;
+                    volatile UINT64 _uTickCount = 0;
+
+                    _pTaskRunner->CreateWait(_hEvent, [&](DWORD _uWaitResultT)
+                        {
+                            if (_uWaitResultT == WAIT_OBJECT_0)
+                            {
+                                YY::Increment(&_uWaitResultCount);
+                                _uTickCount = GetTickCount64();
+                            }
+                        });
+
+                    Sleep(600);
+                    SetEvent(_hEvent);
+                    auto _uTickCountEnd = GetTickCount64();
+                    Sleep(10);
+
+                    Assert::IsTrue(abs((long long)(_uTickCountEnd - _uTickCount)) < 50);
+                }
+
+                CloseHandle(_hEvent);
+
+                // 超多句柄等待情况测试
+                {
+                    HANDLE _hEvents[300];
+                    volatile uint32_t _uWaitResultCount = 0;
+
+                    for (auto& _hEvent : _hEvents)
+                    {
+                        _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+                        _pTaskRunner->CreateWait(_hEvent, [&](DWORD _uWaitResultT)
+                            {
+                                if (_uWaitResultT == WAIT_OBJECT_0)
+                                {
+                                    YY::Increment(&_uWaitResultCount);
+                                }
+                            });
+                    }
+
+                    Sleep(100);
+                    Assert::AreEqual((uint32_t)_uWaitResultCount, uint32_t(0));
+
+                    for (auto _hEvent : _hEvents)
+                    {
+                        SetEvent(_hEvent);
+                    }
+
+                    Sleep(100);
+                    Assert::AreEqual((uint32_t)_uWaitResultCount, uint32_t(std::size(_hEvents)));
+
+                    for (auto _hEvent : _hEvents)
+                    {
+                        SetEvent(_hEvent);
+                    }
+
+                    Sleep(100);
+                    Assert::AreEqual((uint32_t)_uWaitResultCount, uint32_t(std::size(_hEvents)));
+
+                    for (auto _hEvent : _hEvents)
+                    {
+                        CloseHandle(_hEvent);
+                    }
+                }
+            }
         }
     };
 } // namespace UnitTest
