@@ -311,7 +311,7 @@ namespace YY
                     {
                         _uNewFlags = _uOldFlags;
                         _uNewFlags.uWakeupCountAndPushLock -= WakeupOnceRaw;
-                        _bEixt = _uNewFlags.uWakeupCount < _uNewFlags.uParallelCurrent;
+                        _bEixt = _uNewFlags.uWakeupCount < (int32_t)_uNewFlags.uParallelCurrent;
                         if (_bEixt)
                             _uNewFlags.uParallelCurrent -= 1;
 

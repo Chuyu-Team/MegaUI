@@ -28,7 +28,7 @@ namespace YY
                 Multi,
             };
 
-            inline int32_t __YYAPI Increment(int32_t* _pAddend)
+            inline int32_t __YYAPI Increment(volatile int32_t* _pAddend)
             {
 #ifdef _MSC_VER
                 return (int32_t)_InterlockedIncrement(reinterpret_cast<long volatile*>(_pAddend));
@@ -37,12 +37,12 @@ namespace YY
 #endif
             }
 
-            inline int32_t __YYAPI Increment(volatile int32_t* _pAddend)
+            inline int32_t __YYAPI Increment(int32_t* _pAddend)
             {
-                return (int32_t)Increment(const_cast<int32_t*>(_pAddend));
+                return (int32_t)Increment(const_cast<volatile int32_t*>(_pAddend));
             }
 
-            inline int64_t __YYAPI Increment(int64_t* _pAddend)
+            inline int64_t __YYAPI Increment(volatile int64_t* _pAddend)
             {
 #ifdef _MSC_VER
                 return (int64_t)_interlockedincrement64(_pAddend);
@@ -51,29 +51,29 @@ namespace YY
 #endif
             }
 
-            inline int64_t __YYAPI Increment(volatile int64_t* _pAddend)
+            inline int64_t __YYAPI Increment(int64_t* _pAddend)
             {
-                return (int64_t)Increment(const_cast<int64_t*>(_pAddend));
-            }
-
-            inline uint32_t __YYAPI Increment(uint32_t* _pAddend)
-            {
-                return (uint32_t)Increment(reinterpret_cast<int32_t*>(_pAddend));
+                return Increment(const_cast<volatile int64_t*>(_pAddend));
             }
 
             inline uint32_t __YYAPI Increment(volatile uint32_t* _pAddend)
             {
-                return (uint32_t)Increment(const_cast<uint32_t*>(_pAddend));
+                return (uint32_t)Increment(reinterpret_cast<volatile int32_t*>(_pAddend));
             }
 
-            inline uint64_t __YYAPI Increment(uint64_t* _pAddend)
+            inline uint32_t __YYAPI Increment(uint32_t* _pAddend)
             {
-                return (uint64_t)Increment(reinterpret_cast<int64_t*>(_pAddend));
+                return Increment(const_cast<volatile uint32_t*>(_pAddend));
             }
 
             inline uint64_t __YYAPI Increment(volatile uint64_t* _pAddend)
             {
-                return (uint64_t)Increment(const_cast<uint64_t*>(_pAddend));
+                return (uint64_t)Increment(reinterpret_cast<volatile int64_t*>(_pAddend));
+            }
+
+            inline uint64_t __YYAPI Increment(uint64_t* _pAddend)
+            {
+                return Increment(const_cast<volatile uint64_t*>(_pAddend));
             }
 
             inline int32_t __YYAPI Decrement(volatile int32_t* _pAddend)
@@ -99,7 +99,7 @@ namespace YY
 #endif
             }
 
-            inline int32_t __YYAPI Decrement(int64_t* _pAddend)
+            inline int64_t __YYAPI Decrement(int64_t* _pAddend)
             {
                 return Decrement(const_cast<volatile int64_t*>(_pAddend));
             }
@@ -111,7 +111,7 @@ namespace YY
 
             inline uint32_t __YYAPI Decrement(uint32_t* _pAddend)
             {
-                return (uint32_t)Decrement(reinterpret_cast<int32_t*>(_pAddend));
+                return Decrement(reinterpret_cast<volatile uint32_t*>(_pAddend));
             }
 
             inline uint64_t __YYAPI Decrement(volatile uint64_t* _pAddend)
@@ -121,7 +121,7 @@ namespace YY
 
             inline uint64_t __YYAPI Decrement(uint64_t* _pAddend)
             {
-                return (uint64_t)Decrement(reinterpret_cast<int64_t*>(_pAddend));
+                return Decrement(reinterpret_cast<volatile uint64_t*>(_pAddend));
             }
 
             inline int32_t __YYAPI Add(volatile int32_t* _pAddend, int32_t _iAdd)
@@ -218,7 +218,7 @@ namespace YY
             /// <param name="_pBase"></param>
             /// <param name="_uOffset">指定bit</param>
             /// <returns>该 _uOffset bit位，原始值</returns>
-            inline bool __YYAPI BitSet(uint32_t* _pBase, uint32_t _uOffset)
+            inline bool __YYAPI BitSet(volatile uint32_t* _pBase, uint32_t _uOffset)
             {
 #ifdef _MSC_VER
                 return _interlockedbittestandset(reinterpret_cast<long volatile*>(_pBase), _uOffset);
@@ -229,7 +229,12 @@ namespace YY
 #endif
             }
 
-            inline bool __YYAPI BitSet(uint64_t* _pBase, uint32_t _uOffset)
+            inline bool __YYAPI BitSet(uint32_t* _pBase, uint32_t _uOffset)
+            {
+                return BitSet(const_cast<volatile uint32_t*>(_pBase), _uOffset);
+            }
+
+            inline bool __YYAPI BitSet(volatile uint64_t* _pBase, uint32_t _uOffset)
             {
 #ifdef _MSC_VER
 #if defined(_AMD64_) || defined(_ARM64_)
@@ -244,34 +249,29 @@ namespace YY
 #endif
             }
 
-            inline bool __YYAPI BitSet(int32_t* _pBase, uint32_t _uOffset)
+            inline bool __YYAPI BitSet(uint64_t* _pBase, uint32_t _uOffset)
             {
-                return BitSet((uint32_t*)_pBase, _uOffset);
-            }
-
-            inline bool __YYAPI BitSet(int64_t* _pBase, uint32_t _uOffset)
-            {
-                return BitSet((uint64_t*)_pBase, _uOffset);
-            }
-            
-            inline bool __YYAPI BitSet(volatile uint32_t* _pBase, uint32_t _uOffset)
-            {
-                return BitSet((uint32_t*)_pBase, _uOffset);
-            }
-
-            inline bool __YYAPI BitSet(volatile uint64_t* _pBase, uint32_t _uOffset)
-            {
-                return BitSet((uint64_t*)_pBase, _uOffset);
+                return BitSet(const_cast<volatile uint64_t*>(_pBase), _uOffset);
             }
 
             inline bool __YYAPI BitSet(volatile int32_t* _pBase, uint32_t _uOffset)
             {
-                return BitSet((int32_t*)_pBase, _uOffset);
+                return BitSet(reinterpret_cast<volatile uint32_t*>(_pBase), _uOffset);
+            }
+
+            inline bool __YYAPI BitSet(int32_t* _pBase, uint32_t _uOffset)
+            {
+                return BitSet(const_cast<volatile int32_t*>(_pBase), _uOffset);
             }
 
             inline bool __YYAPI BitSet(volatile int64_t* _pBase, uint32_t _uOffset)
             {
-                return BitSet((int64_t*)_pBase, _uOffset);
+                return BitSet(reinterpret_cast<volatile uint64_t*>(_pBase), _uOffset);
+            }
+
+            inline bool __YYAPI BitSet(int64_t* _pBase, uint32_t _uOffset)
+            {
+                return BitSet(const_cast<volatile int64_t*>(_pBase), _uOffset);
             }
 
             /// <summary>
@@ -280,7 +280,7 @@ namespace YY
             /// <param name="_pBase"></param>
             /// <param name="_uOffset">指定bit</param>
             /// <returns>该 _uOffset bit位，原始值</returns>
-            inline bool __YYAPI BitReset(uint32_t* _pBase, uint32_t _uOffset)
+            inline bool __YYAPI BitReset(volatile uint32_t* _pBase, uint32_t _uOffset)
             {
 #ifdef _MSC_VER
                 return _interlockedbittestandreset(reinterpret_cast<long volatile*>(_pBase), _uOffset);
@@ -291,7 +291,12 @@ namespace YY
 #endif
             }
 
-            inline bool __YYAPI BitReset(uint64_t* _pBase, uint32_t _uOffset)
+            inline bool __YYAPI BitReset(uint32_t* _pBase, uint32_t _uOffset)
+            {
+                return BitReset(const_cast<volatile uint32_t*>(_pBase), _uOffset);
+            }
+
+            inline bool __YYAPI BitReset(volatile uint64_t* _pBase, uint32_t _uOffset)
             {
 #ifdef _MSC_VER
 #if defined(_AMD64_) || defined(_ARM64_)
@@ -307,37 +312,32 @@ namespace YY
 #endif
             }
 
-            inline bool __YYAPI BitReset(int32_t* _pBase, uint32_t _uOffset)
+            inline bool __YYAPI BitReset(uint64_t* _pBase, uint32_t _uOffset)
             {
-                return BitReset((uint32_t*)_pBase, _uOffset);
-            }
-
-            inline bool __YYAPI BitReset(int64_t* _pBase, uint32_t _uOffset)
-            {
-                return BitReset((uint64_t*)_pBase, _uOffset);
-            }
-
-            inline bool __YYAPI BitReset(volatile uint32_t* _pBase, uint32_t _uOffset)
-            {
-                return BitReset((uint32_t*)_pBase, _uOffset);
-            }
-
-            inline bool __YYAPI BitReset(volatile uint64_t* _pBase, uint32_t _uOffset)
-            {
-                return BitReset((uint64_t*)_pBase, _uOffset);
+                return BitReset(const_cast<volatile uint64_t*>(_pBase), _uOffset);
             }
 
             inline bool __YYAPI BitReset(volatile int32_t* _pBase, uint32_t _uOffset)
             {
-                return BitReset((int32_t*)_pBase, _uOffset);
+                return BitReset(reinterpret_cast<volatile int32_t*>(_pBase), _uOffset);
+            }
+
+            inline bool __YYAPI BitReset(int32_t* _pBase, uint32_t _uOffset)
+            {
+                return BitReset(const_cast<int32_t*>(_pBase), _uOffset);
             }
 
             inline bool __YYAPI BitReset(volatile int64_t* _pBase, uint32_t _uOffset)
             {
-                return BitReset((int64_t*)_pBase, _uOffset);
+                return BitReset(reinterpret_cast<volatile uint64_t*>(_pBase), _uOffset);
             }
 
-            inline int32_t __YYAPI CompareExchange(int32_t* _pDestination, int32_t _iExchange, int32_t _iComparand)
+            inline bool __YYAPI BitReset(int64_t* _pBase, uint32_t _uOffset)
+            {
+                return BitReset(const_cast<volatile int64_t*>(_pBase), _uOffset);
+            }
+
+            inline int32_t __YYAPI CompareExchange(volatile int32_t* _pDestination, int32_t _iExchange, int32_t _iComparand)
             {
 #ifdef _MSC_VER
                 return (int32_t)_InterlockedCompareExchange(reinterpret_cast<long volatile*>(_pDestination), _iExchange, _iComparand);
@@ -346,22 +346,33 @@ namespace YY
 #endif
             }
 
-            inline uint32_t __YYAPI CompareExchange(uint32_t* _pDestination, uint32_t _iExchange, uint32_t _iComparand)
+            inline int32_t __YYAPI CompareExchange(int32_t* _pDestination, int32_t _iExchange, int32_t _iComparand)
             {
-                return (uint32_t)CompareExchange((int32_t*)_pDestination, (int32_t)_iExchange, (int32_t)_iComparand);
+                return CompareExchange(const_cast<volatile int32_t*>(_pDestination), _iExchange, _iComparand);
             }
 
             inline uint32_t __YYAPI CompareExchange(volatile uint32_t* _pDestination, uint32_t _iExchange, uint32_t _iComparand)
             {
-                return (uint32_t)CompareExchange((int32_t*)_pDestination, (int32_t)_iExchange, (int32_t)_iComparand);
+                return (uint32_t)CompareExchange(reinterpret_cast<volatile int32_t*>(_pDestination), (int32_t)_iExchange, (int32_t)_iComparand);
+            }
+
+            inline uint32_t __YYAPI CompareExchange(uint32_t* _pDestination, uint32_t _iExchange, uint32_t _iComparand)
+            {
+                return CompareExchange(const_cast<volatile uint32_t*>(_pDestination), _iExchange, _iComparand);
+            }
+
+            inline long __YYAPI CompareExchange(volatile long* _pDestination, long _iExchange, long _iComparand)
+            {
+                static_assert(sizeof(long) == sizeof(int32_t), "");
+                return (long)CompareExchange(reinterpret_cast<volatile int32_t*>(_pDestination), (int32_t)_iExchange, (int32_t)_iComparand);
             }
 
             inline long __YYAPI CompareExchange(long* _pDestination, long _iExchange, long _iComparand)
             {
-                return (long)CompareExchange((int32_t*)_pDestination, (int32_t)_iExchange, (int32_t)_iComparand);
+                return CompareExchange(const_cast<volatile long*>(_pDestination), _iExchange, _iComparand);
             }
 
-            inline int64_t __YYAPI CompareExchange(int64_t* _pDestination, int64_t _iExchange, int64_t _iComparand)
+            inline int64_t __YYAPI CompareExchange(volatile int64_t* _pDestination, int64_t _iExchange, int64_t _iComparand)
             {
 #ifdef _MSC_VER
                 return (int64_t)_InterlockedCompareExchange64(reinterpret_cast<long long volatile*>(_pDestination), _iExchange, _iComparand);
@@ -370,27 +381,31 @@ namespace YY
 #endif
             }
 
-            inline uint64_t __YYAPI CompareExchange(uint64_t* _pDestination, uint64_t _iExchange, uint64_t _iComparand)
+            inline int64_t __YYAPI CompareExchange(int64_t* _pDestination, int64_t _iExchange, int64_t _iComparand)
             {
-                return (uint64_t)CompareExchange((int64_t*)_pDestination, (uint64_t)_iExchange, (uint64_t)_iComparand);
+                return CompareExchange(const_cast<volatile int64_t*>(_pDestination), _iExchange, _iComparand);
             }
 
             inline uint64_t __YYAPI CompareExchange(volatile uint64_t* _pDestination, uint64_t _iExchange, uint64_t _iComparand)
             {
-                return (uint64_t)CompareExchange((int64_t*)_pDestination, (uint64_t)_iExchange, (uint64_t)_iComparand);
+                return (uint64_t)CompareExchange(reinterpret_cast<volatile int64_t*>(_pDestination), (int64_t)_iExchange, (int64_t)_iComparand);
             }
 
-            template<typename Type1, typename Type2, typename Type3>
-            inline Type1* __YYAPI CompareExchangePoint(Type1** _ppDestination, Type2 _pExchange, Type3 _pComparand)
+            inline uint64_t __YYAPI CompareExchange( uint64_t* _pDestination, uint64_t _iExchange, uint64_t _iComparand)
             {
-
-                return (Type1*)CompareExchange((intptr_t*)_ppDestination, reinterpret_cast<intptr_t>(static_cast<Type1*>(_pExchange)), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pComparand)));
+                return CompareExchange(const_cast<volatile uint64_t*>(_pDestination), _iExchange, _iComparand);
             }
 
             template<typename Type1, typename Type2, typename Type3>
             inline Type1* __YYAPI CompareExchangePoint(volatile Type1** _ppDestination, Type2 _pExchange, Type3 _pComparand)
             {
-                return (Type1*)CompareExchange((intptr_t*)_ppDestination, reinterpret_cast<intptr_t>(static_cast<Type1*>(_pExchange)), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pComparand)));
+                return (Type1*)CompareExchange(reinterpret_cast<volatile intptr_t*>(_ppDestination), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pExchange)), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pComparand)));
+            }
+
+            template<typename Type1, typename Type2, typename Type3>
+            inline Type1* __YYAPI CompareExchangePoint(Type1** _ppDestination, Type2 _pExchange, Type3 _pComparand)
+            {
+                return (Type1*)CompareExchange(reinterpret_cast<intptr_t*>(_ppDestination), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pExchange)), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pComparand)));
             }
 
             inline int32_t __YYAPI Exchange(volatile int32_t* _pDestination, int32_t _iExchange)
@@ -427,27 +442,27 @@ namespace YY
             }
 
             template<typename _Type>
-            inline _Type* __YYAPI ExchangePoint(_Type** _ppDestination, _Type* _pExchange)
-            {
-                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)_pExchange);
-            }
-
-            template<typename _Type>
-            inline _Type* __YYAPI ExchangePoint(_Type** _ppDestination, std::nullptr_t)
-            {
-                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)0);
-            }
-
-            template<typename _Type>
             inline _Type* __YYAPI ExchangePoint(volatile _Type** _ppDestination, _Type* _pExchange)
             {
-                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)_pExchange);
+                return (_Type*)Exchange(reinterpret_cast<volatile intptr_t*>(_ppDestination), (intptr_t)_pExchange);
+            }
+
+            template<typename _Type>
+            inline _Type* __YYAPI ExchangePoint(_Type** _ppDestination, _Type* _pExchange)
+            {
+                return (_Type*)Exchange(reinterpret_cast<intptr_t*>(_ppDestination), (intptr_t)_pExchange);
             }
 
             template<typename _Type>
             inline _Type* __YYAPI ExchangePoint(volatile _Type** _ppDestination, std::nullptr_t)
             {
-                return (_Type*)Exchange((intptr_t*)_ppDestination, (intptr_t)0);
+                return (_Type*)Exchange(reinterpret_cast<volatile intptr_t*>(_ppDestination), (intptr_t)0);
+            }
+
+            template<typename _Type>
+            inline _Type* __YYAPI ExchangePoint(_Type** _ppDestination, std::nullptr_t)
+            {
+                return (_Type*)Exchange(reinterpret_cast<intptr_t*>(_ppDestination), (intptr_t)0);
             }
 
             inline int32_t __YYAPI BitOr(_In_ int32_t* _pDestination, int32_t _iValue)

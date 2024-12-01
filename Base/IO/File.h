@@ -46,7 +46,7 @@ namespace YY::Base::IO
 
             HRESULT __YYAPI RunTask() override
             {
-                pfnResultCallback(lStatus, InternalHigh);
+                pfnResultCallback(lStatus, uint32_t(InternalHigh));
             }
         };
 
@@ -89,7 +89,7 @@ namespace YY::Base::IO
             uint32_t __YYAPI Resume() noexcept override
             {
                 SetLastError(lStatus);
-                return InternalHigh;
+                return uint32_t(InternalHigh);
             }
 
             static RefPtr<CoroutineReadWriteTask> __YYAPI GetOutofMemoryObject() noexcept

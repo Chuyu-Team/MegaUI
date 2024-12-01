@@ -268,7 +268,7 @@ namespace YY
             private:
                 void __YYAPI ExecuteIoCompletionPort() noexcept
                 {
-                    size_t _cTaskProcessed = 0;
+                    uint32_t _cTaskProcessed = 0;
                     OVERLAPPED_ENTRY _oCompletionPortEntries[16];
                     ULONG _uNumEntriesRemoved;
                     for(;;)
@@ -300,7 +300,7 @@ namespace YY
                                 continue;
 
                             // 错误代码如果已经设置，那么可能调用者线程已经事先处理了。
-                            if (_pDispatchTask->OnComplete(DosErrorFormNtStatus(_pDispatchTask->Internal)))
+                            if (_pDispatchTask->OnComplete(DosErrorFormNtStatus(long(_pDispatchTask->Internal))))
                             {
                                 DispatchTask(std::move(_pDispatchTask));
                             }
@@ -316,7 +316,7 @@ namespace YY
                     {
                         _cTaskProcessed += ProcessingPendingTaskQueue();
                         _cTaskProcessed += ProcessingTimerTasks();
-                        if (YY::Sync::Subtract(&nDispatchTaskRef, _cTaskProcessed) <= 0)
+                        if (YY::Sync::Subtract(&nDispatchTaskRef, int32_t(_cTaskProcessed)) <= 0)
                             return;
 
                         _cTaskProcessed = 0;
@@ -418,7 +418,7 @@ namespace YY
                     {
                         _cTaskProcessed += ProcessingPendingTaskQueue();
                         _cTaskProcessed += ProcessingTimerTasks();
-                        if (YY::Sync::Subtract(&nDispatchTaskRef, _cTaskProcessed) <= 0)
+                        if (YY::Sync::Subtract(&nDispatchTaskRef, int32_t(_cTaskProcessed)) <= 0)
                             return;
 
                         _cTaskProcessed = 0;
@@ -469,7 +469,7 @@ namespace YY
                                     continue;
 
                                 // 错误代码如果已经设置，那么可能调用者线程已经事先处理了。
-                                if (_pDispatchTask->OnComplete(DosErrorFormNtStatus(_pDispatchTask->Internal)))
+                                if (_pDispatchTask->OnComplete(DosErrorFormNtStatus(long(_pDispatchTask->Internal))))
                                 {
                                     DispatchTask(std::move(_pDispatchTask));
                                 }

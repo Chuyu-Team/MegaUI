@@ -15,7 +15,7 @@ namespace YY
             Version __YYAPI YY::Base::Utils::GetOperatingSystemVersion() noexcept
             {
                 const auto _pPeb = ((TEB*)NtCurrentTeb())->ProcessEnvironmentBlock;
-                Version _uOsVersion(_pPeb->OSMajorVersion, _pPeb->OSMinorVersion, _pPeb->OSBuildNumber);
+                Version _uOsVersion(uint16_t(_pPeb->OSMajorVersion), uint16_t(_pPeb->OSMinorVersion), uint16_t(_pPeb->OSBuildNumber));
                 
                 if (_uOsVersion == kWindowsNT5_1)
                 {

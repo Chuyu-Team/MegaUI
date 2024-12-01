@@ -241,7 +241,7 @@ namespace YY
 
 #ifdef _WIN32
             constexpr MouseEvent(Element* _pTarget, const PlatformEvent& _oPlatformEvent)
-                : BaseEvent{ _oPlatformEvent, _pTarget, EventId::MouseEvent, Win32EventModifierToEventModifier(_oPlatformEvent.wParam) }
+                : BaseEvent{ _oPlatformEvent, _pTarget, EventId::MouseEvent, Win32EventModifierToEventModifier(uint32_t(_oPlatformEvent.wParam)) }
                 , pt(MAKEPOINTS(_oPlatformEvent.lParam))
             {
             }
