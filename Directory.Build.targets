@@ -2,9 +2,28 @@
 
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)\LinuxTarget.targets" Condition="exists('$(MSBuildThisFileDirectory)\LinuxTarget.targets')"/>
+  <PropertyGroup>
+    <EnableASAN>true</EnableASAN>
+  </PropertyGroup>
   <!--从兼容性考虑，继续向上搜索 Directory.Build.targets-->
   <PropertyGroup>
     <DirectoryBuildTargetsPath>$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))</DirectoryBuildTargetsPath>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(EnableASAN)'=='true'">
+    <ClCompile Condition="'$(UseDebugLibraries)'=='true'">
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Condition="'$(UseDebugLibraries)'!='true'">
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(EnableASAN)'!='true'">
+    <ClCompile Condition="'$(UseDebugLibraries)'=='true'">
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Condition="'$(UseDebugLibraries)'!='true'">
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <Import Project="$(DirectoryBuildTargetsPath)" Condition="'$(DirectoryBuildTargetsPath)' != ''"/>
 </Project>
