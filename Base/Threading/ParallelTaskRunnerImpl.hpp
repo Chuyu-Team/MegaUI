@@ -161,10 +161,12 @@ namespace YY
                     UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
                 };
 
+                uString szThreadDescription;
 
-                ParallelTaskRunnerImpl(uint32_t _uParallelMaximum)
+                ParallelTaskRunnerImpl(uint32_t _uParallelMaximum, uString _szThreadDescription)
                     : ParallelTaskRunner(_uParallelMaximum)
                     , TaskRunnerFlags{ 0u }
+                    , szThreadDescription(std::move(_szThreadDescription))
                 {
                 }
 
@@ -267,7 +269,17 @@ namespace YY
 
                 void __YYAPI operator()()
                 {
+#if defined(_WIN32)
+                    if(szThreadDescription.GetSize())
+                        SetThreadDescription(GetCurrentThread(), szThreadDescription);
+#endif
+
                     ExecuteTaskRunner();
+
+#if defined(_WIN32)
+                    if (szThreadDescription.GetSize())
+                        SetThreadDescription(GetCurrentThread(), _S(""));
+#endif
                 }
 
                 void __YYAPI ExecuteTaskRunner()

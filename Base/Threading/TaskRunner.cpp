@@ -82,9 +82,9 @@ namespace YY
                 return RefPtr<SequencedTaskRunner>(std::move(_pTaskRunner));
             }
 
-            RefPtr<SequencedTaskRunner> __YYAPI SequencedTaskRunner::Create()
+            RefPtr<SequencedTaskRunner> __YYAPI SequencedTaskRunner::Create(uString _szThreadDescription)
             {
-                return RefPtr<SequencedTaskRunnerImpl>::Create();
+                return RefPtr<SequencedTaskRunnerImpl>::Create(std::move(_szThreadDescription));
             }
 
             HRESULT __YYAPI TaskRunner::SendTask(std::function<void(void)>&& pfnTaskCallback)
@@ -148,9 +148,9 @@ namespace YY
                 return S_OK;
             }
 
-            RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::Create(bool _bBackgroundLoop)
+            RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::Create(bool _bBackgroundLoop, uString _szThreadDescription)
             {
-                auto _pTaskRunner = RefPtr<ThreadTaskRunnerImpl>::Create(0u, _bBackgroundLoop);
+                auto _pTaskRunner = RefPtr<ThreadTaskRunnerImpl>::Create(0u, _bBackgroundLoop, std::move(_szThreadDescription));
                 if (_pTaskRunner)
                 {
                     auto _hr = ThreadPool::PostTaskInternal(_pTaskRunner.Get());
@@ -235,9 +235,9 @@ namespace YY
                 return RefPtr<ParallelTaskRunner>(std::move(_pTaskRunner));
             }
 
-            RefPtr<ParallelTaskRunner> __YYAPI ParallelTaskRunner::Create(uint32_t _uParallelMaximum) noexcept
+            RefPtr<ParallelTaskRunner> __YYAPI ParallelTaskRunner::Create(uint32_t _uParallelMaximum, uString _szThreadDescription) noexcept
             {
-                return RefPtr<ParallelTaskRunnerImpl>::Create(_uParallelMaximum);
+                return RefPtr<ParallelTaskRunnerImpl>::Create(_uParallelMaximum, std::move(_szThreadDescription));
             }
         }
     }

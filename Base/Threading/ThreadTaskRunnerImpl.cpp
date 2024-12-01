@@ -12,9 +12,10 @@ namespace YY
     {
         namespace Threading
         {
-            ThreadTaskRunnerImpl::ThreadTaskRunnerImpl(uint32_t _uThreadId, bool _bBackgroundLoop)
+            ThreadTaskRunnerImpl::ThreadTaskRunnerImpl(uint32_t _uThreadId, bool _bBackgroundLoop, uString _szThreadDescription)
                 : uWakeupCountAndPushLock(_bBackgroundLoop ? (WakeupOnceRaw | BackgroundLoopRaw) : WakeupOnceRaw)
                 , uThreadId(_uThreadId)
+                , szThreadDescription(std::move(_szThreadDescription))
             {
             }
 
@@ -309,6 +310,11 @@ namespace YY
                 Sync::WakeByAddressAll(const_cast<uint32_t*>(&uThreadId));
                 g_pTaskRunnerWeak = this;
 
+#if defined(_WIN32)
+                if(szThreadDescription.GetSize())
+                    SetThreadDescription(GetCurrentThread(), szThreadDescription);
+#endif
+
                 if (bBackgroundLoop)
                 {
                     RunBackgroundLoop();
@@ -320,6 +326,11 @@ namespace YY
 
                 uThreadId = UINT32_MAX;
                 g_pTaskRunnerWeak = nullptr;
+
+#if defined(_WIN32)
+                if (szThreadDescription.GetSize())
+                    SetThreadDescription(GetCurrentThread(), L"");
+#endif
             }
 
             void __YYAPI ThreadTaskRunnerImpl::CleanupTaskQueue() noexcept

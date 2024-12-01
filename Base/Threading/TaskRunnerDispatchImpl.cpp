@@ -218,7 +218,9 @@ namespace YY
                                 _In_   PVOID _pContext)
                             {
                                 auto _pTask = reinterpret_cast<TaskRunnerDispatchForWindowsXPOrLater*>(_pContext);
+                                SetThreadDescription(GetCurrentThread(), L"IOCP调度线程");
                                 _pTask->ExecuteIoCompletionPort();
+                                SetThreadDescription(GetCurrentThread(), L"");
                             },
                             this,
                             nullptr);
@@ -245,7 +247,9 @@ namespace YY
                                 _In_   PVOID _pContext)
                             {
                                 auto _pTask = reinterpret_cast<TaskRunnerDispatchForWindowsXPOrLater*>(_pContext);
+                                SetThreadDescription(GetCurrentThread(), L"Timer/Wait调度线程");
                                 _pTask->ExecuteTaskRunner();
+                                SetThreadDescription(GetCurrentThread(), L"");
                             },
                             this,
                             nullptr);
@@ -387,7 +391,9 @@ namespace YY
                                 _In_   PVOID _pContext)
                             {
                                 auto _pTask = reinterpret_cast<TaskRunnerDispatchForWindows10_0_10240OrLater*>(_pContext);
+                                SetThreadDescription(GetCurrentThread(), L"IOCP/Timer/Wait调度线程");
                                 _pTask->ExecuteTaskRunner();
+                                SetThreadDescription(GetCurrentThread(), L"");
                             },
                             this,
                             nullptr);

@@ -347,7 +347,7 @@ namespace YY
 
                     WaitHandleBlock()
                         : hTaskRunnerServerHandle(CreateEventW(nullptr, FALSE, FALSE, nullptr))
-                        , pWaitTaskRunner(SequencedTaskRunner::Create())
+                        , pWaitTaskRunner(SequencedTaskRunner::Create(_S("Wait扩展调度线程")))
                     {
                     }
 

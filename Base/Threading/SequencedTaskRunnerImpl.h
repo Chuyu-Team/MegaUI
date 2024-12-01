@@ -37,8 +37,10 @@ namespace YY
                     LockQueuePushLockAndWakeupOnceRaw = WakeupOnceRaw + (1u << LockedQueuePushBitIndex),
                 };
 
+                uString szThreadDescription;
+
             public:
-                SequencedTaskRunnerImpl();
+                SequencedTaskRunnerImpl(uString _szThreadDescription = uString());
 
                 ~SequencedTaskRunnerImpl() override;
 

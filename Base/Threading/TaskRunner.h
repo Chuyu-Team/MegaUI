@@ -12,6 +12,7 @@
 #include <Base/Time/TimeSpan.h>
 #include <Base/Threading/ThreadPool.h>
 #include <Base/Threading/Coroutine.h>
+#include <Base/Strings/String.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -562,8 +563,9 @@ namespace YY
                 /// <summary>
                 /// 从线程池创建一个TaskRunner，后续PostTask提交后将保持串行。注意：不保证保证是否同一个线程，仅保证任务串行！
                 /// </summary>
+                /// <param name="_szThreadDescription">线程描述。对于Windows平台，该信息设置后调试器可直接从线程查看此信息。</param>
                 /// <returns>返回TaskRunner指针，函数几乎不会失败，但是如果内存不足，那么将返回 nullptr。</returns>
-                static RefPtr<SequencedTaskRunner> __YYAPI Create();
+                static RefPtr<SequencedTaskRunner> __YYAPI Create(uString _szThreadDescription = uString());
 
             };
 
@@ -574,11 +576,12 @@ namespace YY
                 /// <summary>
                 /// 从线程池取一个线程并且与该TaskRunner绑定，始终保证后续任务在同一个线程中执行。
                 /// 如果ThreadTaskRunner生命周期解除，则将线程归还线程池。
-                /// 温馨提示：优先考虑使用 `SequencedTaskRunner::Create()`，ThreadTaskRunner的创建开销为高昂。
+                /// 温馨提示：优先考虑使用 `SequencedTaskRunner::Create()`，ThreadTaskRunner的创建开销更为高昂。
                 /// </summary>
                 /// <param name="_bBackgroundLoop"></param>
+                /// <param name="_szThreadDescription">线程描述。对于Windows平台，该信息设置后调试器可直接从线程查看此信息。</param>
                 /// <returns></returns>
-                static RefPtr<ThreadTaskRunner> __YYAPI Create(_In_ bool _bBackgroundLoop = true);
+                static RefPtr<ThreadTaskRunner> __YYAPI Create(_In_ bool _bBackgroundLoop = true, uString _szThreadDescription = uString());
 
                 /// <summary>
                 /// 获取当前线程绑定的TaskRunner。
@@ -629,7 +632,15 @@ namespace YY
             public:
                 static RefPtr<ParallelTaskRunner> __YYAPI GetCurrent() noexcept;
 
-                static RefPtr<ParallelTaskRunner> __YYAPI Create(uint32_t _uParallelMaximum = 0u) noexcept;
+                /// <summary>
+                /// 从线程池创建一个TaskRunner，后续PostTask提交发任务可能多个物理线程并行执行。最大的并行数量主要受系统资源以及 _uParallelMaximum 参数控制。
+                /// 
+                /// 注意：不保证保证任务始终在同一组物理线程执行，ParallelTaskRunner仅保证最大并行数不超过 _uParallelMaximum。
+                /// </summary>
+                /// <param name="_uParallelMaximum">最大允许的物理线程并发数，如果此参数为0，则按系统CPU逻辑线程数并行。</param>
+                /// <param name="_szThreadDescription">线程描述。对于Windows平台，该信息设置后调试器可直接从线程查看此信息。</param>
+                /// <returns></returns>
+                static RefPtr<ParallelTaskRunner> __YYAPI Create(uint32_t _uParallelMaximum = 0u, uString _szThreadDescription = uString()) noexcept;
 
                 uint32_t __YYAPI GetParallelMaximum() const noexcept
                 {

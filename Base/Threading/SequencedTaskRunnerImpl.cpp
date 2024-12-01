@@ -13,8 +13,9 @@ namespace YY
     {
         namespace Threading
         {
-            SequencedTaskRunnerImpl::SequencedTaskRunnerImpl()
+            SequencedTaskRunnerImpl::SequencedTaskRunnerImpl(uString _szThreadDescription)
                 : uWakeupCountAndPushLock(0u)
+                , szThreadDescription(std::move(_szThreadDescription))
             {
             }
 
@@ -73,7 +74,17 @@ namespace YY
 
             void __YYAPI SequencedTaskRunnerImpl::operator()()
             {
+#if defined(_WIN32)
+                if(szThreadDescription.GetSize())
+                    SetThreadDescription(GetCurrentThread(), szThreadDescription);
+#endif
+
                 ExecuteTaskRunner();
+
+#if defined(_WIN32)
+                if (szThreadDescription.GetSize())
+                    SetThreadDescription(GetCurrentThread(), _S(""));
+#endif
             }
 
             void __YYAPI SequencedTaskRunnerImpl::ExecuteTaskRunner()

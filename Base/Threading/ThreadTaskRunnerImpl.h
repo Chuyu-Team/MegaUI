@@ -51,9 +51,10 @@ namespace YY
                 };
 
                 volatile uint32_t uThreadId;
+                uString szThreadDescription;
 
             public:
-                ThreadTaskRunnerImpl(_In_ uint32_t _uThreadId = Threading::GetCurrentThreadId(), _In_ bool _bBackgroundLoop = false);
+                ThreadTaskRunnerImpl(_In_ uint32_t _uThreadId = Threading::GetCurrentThreadId(), _In_ bool _bBackgroundLoop = false, uString _szThreadDescription = uString());
 
                 /// <summary>
                 /// 从线程池借用一个线程，执行TaskRunner。
