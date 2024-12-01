@@ -3,6 +3,10 @@
 #include <Base/Time/Common.h>
 #include <Base/Time/TimeSpan.h>
 
+#if defined(_HAS_CXX20) && _HAS_CXX20
+#include <compare>
+#endif
+
 #pragma pack(push, __YY_PACKING)
 
 namespace YY
@@ -107,6 +111,11 @@ namespace YY
         
                 constexpr TickCount& operator=(const TickCount&) noexcept = default;
 
+                constexpr bool operator==(const TickCount& _oOther) const noexcept
+                {
+                    return uTickCountInternal == _oOther.uTickCountInternal;
+                }
+
 #if defined(_HAS_CXX20) && _HAS_CXX20
                 constexpr auto operator<=>(const TickCount& _oOther) const noexcept = default;
 #else
@@ -118,11 +127,6 @@ namespace YY
                 constexpr bool operator>=(const TickCount& _oOther) const noexcept
                 {
                     return uTickCountInternal >= _oOther.uTickCountInternal;
-                }
-
-                constexpr bool operator==(const TickCount& _oOther) const noexcept
-                {
-                    return uTickCountInternal == _oOther.uTickCountInternal;
                 }
 
                 constexpr bool operator<=(const TickCount& _oOther) const noexcept

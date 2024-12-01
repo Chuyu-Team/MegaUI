@@ -76,7 +76,7 @@ namespace YY
                 return (uint64_t)Increment(const_cast<uint64_t*>(_pAddend));
             }
 
-            inline int32_t __YYAPI Decrement(int32_t* _pAddend)
+            inline int32_t __YYAPI Decrement(volatile int32_t* _pAddend)
             {
 #ifdef _MSC_VER
                 return (int32_t)_InterlockedDecrement(reinterpret_cast<long volatile*>(_pAddend));
@@ -85,7 +85,12 @@ namespace YY
 #endif
             }
 
-            inline int64_t __YYAPI Decrement(int64_t* _pAddend)
+            inline int32_t __YYAPI Decrement(int32_t* _pAddend)
+            {
+                return Decrement(const_cast<volatile int32_t*>(_pAddend));
+            }
+
+            inline int64_t __YYAPI Decrement(volatile int64_t* _pAddend)
             {
 #ifdef _MSC_VER
                 return (int64_t)_interlockeddecrement64(reinterpret_cast<long long volatile*>(_pAddend));
@@ -94,9 +99,24 @@ namespace YY
 #endif
             }
 
+            inline int32_t __YYAPI Decrement(int64_t* _pAddend)
+            {
+                return Decrement(const_cast<volatile int64_t*>(_pAddend));
+            }
+
+            inline uint32_t __YYAPI Decrement(volatile uint32_t* _pAddend)
+            {
+                return (uint32_t)Decrement(reinterpret_cast<volatile int32_t*>(_pAddend));
+            }
+
             inline uint32_t __YYAPI Decrement(uint32_t* _pAddend)
             {
                 return (uint32_t)Decrement(reinterpret_cast<int32_t*>(_pAddend));
+            }
+
+            inline uint64_t __YYAPI Decrement(volatile uint64_t* _pAddend)
+            {
+                return (uint64_t)Decrement(reinterpret_cast<volatile int64_t*>(_pAddend));
             }
 
             inline uint64_t __YYAPI Decrement(uint64_t* _pAddend)
@@ -104,13 +124,7 @@ namespace YY
                 return (uint64_t)Decrement(reinterpret_cast<int64_t*>(_pAddend));
             }
 
-            template<typename Type>
-            inline Type __YYAPI Decrement(volatile Type* _pAddend)
-            {
-                return (Type)Decrement(const_cast<Type*>(_pAddend));
-            }
-
-            inline int32_t __YYAPI Add(int32_t* _pAddend, int32_t _iAdd)
+            inline int32_t __YYAPI Add(volatile int32_t* _pAddend, int32_t _iAdd)
             {
 #ifdef _MSC_VER
                 return InterlockedAdd((volatile LONG*)_pAddend, _iAdd);
@@ -119,7 +133,12 @@ namespace YY
 #endif
             }
 
-            inline int64_t __YYAPI Add(int64_t* _pAddend, int64_t _iAdd)
+            inline int32_t __YYAPI Add(int32_t* _pAddend, int32_t _iAdd)
+            {
+                return Add(const_cast<volatile int32_t*>(_pAddend), _iAdd);
+            }
+
+            inline int64_t __YYAPI Add(volatile int64_t* _pAddend, int64_t _iAdd)
             {
 #ifdef _MSC_VER
                 return InterlockedAdd64((volatile LONG64*)_pAddend, _iAdd);
@@ -128,32 +147,69 @@ namespace YY
 #endif
             }
 
-            inline uint32_t __YYAPI Add(uint32_t* _pAddend, uint32_t _uAdd)
+            inline int64_t __YYAPI Add(int64_t* _pAddend, int64_t _iAdd)
             {
-                return (uint32_t)Add((int32_t*)_pAddend, (int32_t)_uAdd);
+                return Add(const_cast<volatile int64_t*>(_pAddend), _iAdd);
+            }
+
+            inline uint32_t __YYAPI Add(volatile uint32_t* _pAddend, uint32_t _uAdd)
+            {
+                return (uint32_t)Add((volatile int32_t*)_pAddend, (int32_t)_uAdd);
+            }
+
+            inline uint32_t __YYAPI Add(uint32_t* _pAddend, uint32_t _iAdd)
+            {
+                return Add(const_cast<volatile uint32_t*>(_pAddend), _iAdd);
+            }
+
+            inline uint64_t __YYAPI Add(volatile uint64_t* _pAddend, uint64_t _iAdd)
+            {
+                return (uint64_t)Add((volatile int64_t*)_pAddend, (int64_t)_iAdd);
             }
 
             inline uint64_t __YYAPI Add(uint64_t* _pAddend, uint64_t _iAdd)
             {
-                return (uint64_t)Add((int64_t*)_pAddend, (int64_t)_iAdd);
+                return Add(const_cast<volatile uint64_t*>(_pAddend), _iAdd);
             }
 
-            template<typename Type1, typename Type2>
-            inline Type1 __YYAPI Add(volatile Type1* _pAddend, Type2 _iAdd)
+            inline int32_t __YYAPI Subtract(volatile int32_t* _pAddend, int32_t _uAdd)
             {
-                return (Type1)Add((Type1*)_pAddend, (Type1)_iAdd);
+                return Add(_pAddend, int32_t(~(uint32_t)_uAdd) + 1);
             }
 
-            template<typename Type1, typename Type2>
-            inline Type1 __YYAPI Subtract(Type1* _pAddend, Type2 _uAdd)
+            inline int32_t __YYAPI Subtract(int32_t* _pAddend, int32_t _uAdd)
             {
-                return (Type1)Add(_pAddend, (~(Type1)_uAdd) + 1);
+                return Add(_pAddend, int32_t(~(uint32_t)_uAdd) + 1);
             }
 
-            template<typename Type1, typename Type2>
-            inline Type1 __YYAPI Subtract(volatile Type1* _pAddend, Type2 _uAdd)
+            inline int64_t __YYAPI Subtract(volatile int64_t* _pAddend, int64_t _uAdd)
             {
-                return (Type1)Add((Type1*)_pAddend, (~(Type1)_uAdd) + 1);
+                return Add(_pAddend, int64_t(~(uint64_t)_uAdd) + 1);
+            }
+
+            inline int64_t __YYAPI Subtract(int64_t* _pAddend, int64_t _uAdd)
+            {
+                return Add(_pAddend, int64_t(~(uint64_t)_uAdd) + 1);
+            }
+
+            inline uint32_t __YYAPI Subtract(volatile uint32_t* _pAddend, uint32_t _uAdd)
+            {
+                return Add(_pAddend, uint32_t(~(uint32_t)_uAdd) + 1);
+            }
+
+            inline uint32_t __YYAPI Subtract(uint32_t* _pAddend, uint32_t _uAdd)
+            {
+                return Add(_pAddend, uint32_t(~(uint32_t)_uAdd) + 1);
+            }
+
+            inline uint64_t __YYAPI Subtract(volatile uint64_t* _pAddend, uint64_t _uAdd)
+            {
+                return Add(_pAddend, uint64_t(~(uint64_t)_uAdd) + 1);
+            }
+
+            inline uint64_t __YYAPI Subtract(uint64_t* _pAddend, uint64_t _uAdd)
+            {
+                return Add(_pAddend, uint64_t(~(uint64_t)_uAdd) + 1);
             }
 
             /// <summary>
@@ -337,7 +393,7 @@ namespace YY
                 return (Type1*)CompareExchange((intptr_t*)_ppDestination, reinterpret_cast<intptr_t>(static_cast<Type1*>(_pExchange)), reinterpret_cast<intptr_t>(static_cast<Type1*>(_pComparand)));
             }
 
-            inline int32_t __YYAPI Exchange(int32_t* _pDestination, int32_t _iExchange)
+            inline int32_t __YYAPI Exchange(volatile int32_t* _pDestination, int32_t _iExchange)
             {
 #ifdef _MSC_VER
                 return (int32_t)_InterlockedExchange(reinterpret_cast<long volatile*>(_pDestination), _iExchange);
@@ -346,18 +402,28 @@ namespace YY
 #endif
             }
 
+            inline int32_t __YYAPI Exchange(int32_t* _pDestination, int32_t _iExchange)
+            {
+                return Exchange(const_cast<volatile int32_t*>(_pDestination), _iExchange);
+            }
+
             inline uint32_t __YYAPI Exchange(uint32_t* _pDestination, uint32_t _iExchange)
             {
                 return (uint32_t)Exchange((int32_t*)_pDestination, (int32_t)_iExchange);
             }
 
-            inline int64_t __YYAPI Exchange(int64_t* _pDestination, int64_t _iExchange)
+            inline int64_t __YYAPI Exchange(volatile int64_t* _pDestination, int64_t _iExchange)
             {
 #ifdef _MSC_VER
                 return (int64_t)_interlockedexchange64(reinterpret_cast<long long volatile*>(_pDestination), _iExchange);
 #else
                 return __sync_lock_test_and_set(_pDestination, _iExchange);
 #endif
+            }
+
+            inline int64_t __YYAPI Exchange(int64_t* _pDestination, int64_t _iExchange)
+            {
+                return Exchange(const_cast<volatile int64_t*>(_pDestination), _iExchange);
             }
 
             template<typename _Type>

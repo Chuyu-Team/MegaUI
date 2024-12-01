@@ -175,6 +175,7 @@
     <ClInclude Include="..\Base\Memory\WeakPtr.h" />
     <ClInclude Include="..\Base\SafeCast.h" />
     <ClInclude Include="..\Base\SAL.h" />
+    <ClInclude Include="..\Base\Shared\Windows\km.h" />
     <ClInclude Include="..\Base\Strings\NString.h" />
     <ClInclude Include="..\Base\Strings\String.h" />
     <ClInclude Include="..\Base\Strings\StringTransform.h" />
@@ -204,6 +205,8 @@
     <ClInclude Include="..\Base\Time\TickCount.h" />
     <ClInclude Include="..\Base\Time\TimeSpan.h" />
     <ClInclude Include="..\Base\Utils\ComObjectImpl.h" />
+    <ClInclude Include="..\Base\Utils\SystemInfo.h" />
+    <ClInclude Include="..\Base\Utils\Version.h" />
     <ClInclude Include="..\Base\YY.h" />
     <ClInclude Include="..\Media\Brushes\Brush.h" />
     <ClInclude Include="..\Media\Color.h" />
@@ -267,6 +270,7 @@
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp" />
+    <ClCompile Include="..\Base\Utils\SystemInfo.cpp" />
     <ClCompile Include="..\Media\Font.cpp">
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
     </ClCompile>

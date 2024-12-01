@@ -97,6 +97,12 @@
     <Filter Include="Base\Utils\Windows">
       <UniqueIdentifier>{34f8d820-a98e-4f29-8be8-c600d83b23b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base\Shared">
+      <UniqueIdentifier>{fd0ce82a-5282-49fa-a78c-e4b9d2cc7039}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\Shared\Windows">
+      <UniqueIdentifier>{e68b4155-5106-42e9-83a9-60cbfe6e1ca0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -375,6 +381,15 @@
     <ClInclude Include="..\Base\Utils\ComObjectImpl.h">
       <Filter>Base\Utils\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Utils\SystemInfo.h">
+      <Filter>Base\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Utils\Version.h">
+      <Filter>Base\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base\Shared\Windows\km.h">
+      <Filter>Base\Shared\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -475,6 +490,9 @@
     </ClCompile>
     <ClCompile Include="..\Base\Sync\CriticalSection.cpp">
       <Filter>Base\Sync</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Utils\SystemInfo.cpp">
+      <Filter>Base\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

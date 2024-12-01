@@ -2,6 +2,10 @@
 #include <Base/YY.h>
 #include <Base/Time/Common.h>
 
+#if defined(_HAS_CXX20) && _HAS_CXX20
+#include <compare>
+#endif
+
 #pragma pack(push, __YY_PACKING)
 
 namespace YY
