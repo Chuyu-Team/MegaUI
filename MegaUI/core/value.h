@@ -226,7 +226,19 @@ namespace YY
             
             Value& __YYAPI operator=(std::nullptr_t);
 
+#if defined(_HAS_CXX20) && _HAS_CXX20
             bool __YYAPI operator==(_In_ const Value& _Other) const = default;
+#else
+            bool __YYAPI operator==(_In_ const Value& _Other) const
+            {
+                return pSharedData == _Other.pSharedData;
+            }
+
+            bool __YYAPI operator!=(_In_ const Value& _Other) const
+            {
+                return pSharedData != _Other.pSharedData;
+            }
+#endif
 
             bool __YYAPI operator==(std::nullptr_t) const;
             

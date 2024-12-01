@@ -138,23 +138,48 @@ namespace YY
                     return uElapsedInternal / (GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute * DaysPerHour);
                 }
 
-                TimeSpan& operator=(const TimeSpan&) noexcept = default;
+                TimeSpan& __YYAPI operator=(const TimeSpan&) noexcept = default;
 
-                constexpr bool operator==(const TimeSpan& _oOther) const noexcept
+                constexpr bool __YYAPI operator==(const TimeSpan& _oOther) const noexcept
                 {
                     return uElapsedInternal == _oOther.uElapsedInternal;
                 }
 
 #if defined(_HAS_CXX20) && _HAS_CXX20
-                constexpr auto operator<=>(const TimeSpan& _oOther) const noexcept = default;
+                constexpr auto __YYAPI operator<=>(const TimeSpan& _oOther) const noexcept = default;
+#else
+                constexpr bool __YYAPI operator<(const TimeSpan& _oOther) const noexcept
+                {
+                    return uElapsedInternal < _oOther.uElapsedInternal;
+                }
+
+                constexpr bool __YYAPI operator<=(const TimeSpan& _oOther) const noexcept
+                {
+                    return uElapsedInternal <= _oOther.uElapsedInternal;
+                }
+
+                constexpr bool __YYAPI operator>=(const TimeSpan& _oOther) const noexcept
+                {
+                    return uElapsedInternal >= _oOther.uElapsedInternal;
+                }
+
+                constexpr bool __YYAPI operator>(const TimeSpan& _oOther) const noexcept
+                {
+                    return uElapsedInternal >= _oOther.uElapsedInternal;
+                }
+
+                constexpr bool __YYAPI operator!=(const TimeSpan& _oOther) const noexcept
+                {
+                    return uElapsedInternal != _oOther.uElapsedInternal;
+                }
 #endif
-                constexpr TimeSpan& operator-=(const TimeSpan& _oOther) noexcept
+                constexpr TimeSpan& __YYAPI operator-=(const TimeSpan& _oOther) noexcept
                 {
                     uElapsedInternal -= _oOther.uElapsedInternal;
                     return *this;
                 }
 
-                constexpr TimeSpan& operator+=(const TimeSpan& _oOther) noexcept
+                constexpr TimeSpan& __YYAPI operator+=(const TimeSpan& _oOther) noexcept
                 {
                     uElapsedInternal += _oOther.uElapsedInternal;
                     return *this;

@@ -34,13 +34,6 @@ namespace YY
                 static const ResourceMetadata s_Metadata = {Resource::GetStaticResourceMetadata(), uStaticDeep};
                 return &s_Metadata;
             }
-            
-            bool operator==(const Brush&) const noexcept = default;
-
-            bool operator==(std::nullptr_t _null) const noexcept
-            {
-                return pSharedData.Get() == nullptr;
-            }
         };
 
         class SolidColorBrush : public Brush
@@ -86,7 +79,14 @@ namespace YY
             inline SolidColorBrush& operator=(const SolidColorBrush& _oOther) = default;
             inline SolidColorBrush& operator=(SolidColorBrush&& _oOther) = default;
 
-            bool operator==(const SolidColorBrush&) const = default;
+//#if defined(_HAS_CXX20) && _HAS_CXX20
+//            bool operator==(const SolidColorBrush&) const = default;
+//#else
+//            bool operator==(const SolidColorBrush& _oOther) const
+//            {
+//                return Brush::operator==(_oOther);
+//            }
+//#endif
 
             bool operator==(std::nullptr_t _null) const
             {

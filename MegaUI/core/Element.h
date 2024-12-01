@@ -22,48 +22,50 @@
 
 #pragma pack(push, __YY_PACKING)
 
-namespace YY::MegaUI
+namespace YY
 {
-    // ActiveProp
-    enum class ActiveStyle
+    namespace MegaUI
     {
-        None = 0x00000000,
-        Mouse = 0x00000001,
-        Keyboard = 0x00000002,
-        All = Mouse | Keyboard,
-    };
+        // ActiveProp
+        enum class ActiveStyle
+        {
+            None = 0x00000000,
+            Mouse = 0x00000001,
+            Keyboard = 0x00000002,
+            All = Mouse | Keyboard,
+        };
 
-    YY_APPLY_ENUM_CALSS_BIT_OPERATOR(ActiveStyle);
+        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(ActiveStyle);
 
-    // BorderStyleProp
-    enum class BorderStyle
-    {
-        // 实心边框
-        Solid,
-        // 凸起样式边框
-        Raised,
-        // 凹起样式边框
-        Sunken,
-        // 圆角样式边框
-        Rounded,
-    };
+        // BorderStyleProp
+        enum class BorderStyle
+        {
+            // 实心边框
+            Solid,
+            // 凸起样式边框
+            Raised,
+            // 凹起样式边框
+            Sunken,
+            // 圆角样式边框
+            Rounded,
+        };
 
-    // FlowDirectionProp
-    enum class FlowDirection
-    {
-        // 内容从右到左开始流动。
-        LeftToRight,
-        // 内容从左到右开始流动。
-        RightToLeft,
-    };
+        // FlowDirectionProp
+        enum class FlowDirection
+        {
+            // 内容从右到左开始流动。
+            LeftToRight,
+            // 内容从左到右开始流动。
+            RightToLeft,
+        };
 
-    // W3C Aria Role类别，用于无障碍用途
-    // 具体与 MSAA 以及 UI Automation映射关系来自下述链接
-    // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-ariaspecification
-    enum class AccessibleRole
-    {
-// clang-format off
-//         Name,             Aria              MSAA                      UI Automation
+        // W3C Aria Role类别，用于无障碍用途
+        // 具体与 MSAA 以及 UI Automation映射关系来自下述链接
+        // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-ariaspecification
+        enum class AccessibleRole
+        {
+            // clang-format off
+            //         Name,             Aria              MSAA                      UI Automation
 #define __ACCESSIBLE_ROLE_TABLE(_APPLY) \
     _APPLY(None,             none,             0,                        0) \
     _APPLY(Custom,           custom,           0,                        UIA_CustomControlTypeId) \
@@ -72,80 +74,80 @@ namespace YY::MegaUI
     _APPLY(Button,           button,           ROLE_SYSTEM_PUSHBUTTON,   UIA_ButtonControlTypeId)
 
 #if 0
-    _APPLY(None,             none,             0,                        0) \
-    _APPLY(Custom,           custom,           0,                        UIA_CustomControlTypeId) \
-    _APPLY(Alert,            alert,            ROLE_SYSTEM_ALERT,        UIA_TextControlTypeId) \
-    _APPLY(AlertDialog,      alertdialog,      ROLE_SYSTEM_DIALOG,       UIA_PaneControlTypeId) \
-    _APPLY(Application,      application,      ROLE_SYSTEM_PANE,         UIA_PaneControlTypeId) \
-    _APPLY(Article,          article,          ROLE_SYSTEM_DOCUMENT,     UIA_DocumentControlTypeId) \
-    _APPLY(Banner,           banner,           ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Button,           button,           ROLE_SYSTEM_PUSHBUTTON,   UIA_ButtonControlTypeId) \
-    _APPLY(CheckBox,         checkbox,         ROLE_SYSTEM_CHECKBUTTON,  UIA_CheckBoxControlTypeId) \
-    _APPLY(ColumnHeader,     columnheader,     ROLE_SYSTEM_COLUMNHEADER, UIA_DataItemControlTypeId) \
-    _APPLY(ComboBox,         combobox,         ROLE_SYSTEM_COMBOBOX,     UIA_ComboBoxControlTypeId) \
-    _APPLY(Complementary,    complementary,    ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(ContentInfo,      contentinfo,      ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Definition,       definition,       ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Description,      description,      ROLE_SYSTEM_TEXT,         UIA_TextControlTypeId) \
-    _APPLY(Dialog,           dialog,           ROLE_SYSTEM_DIALOG,       UIA_PaneControlTypeId) \
-    _APPLY(Directory,        directory,        ROLE_SYSTEM_LIST,         UIA_ListControlTypeId) \
-    _APPLY(Document,         document,         ROLE_SYSTEM_CLIENT,       UIA_DocumentControlTypeId) \
-    _APPLY(Form,             form,             ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Grid,             grid,             ROLE_SYSTEM_TABLE,        UIA_DataGridControlTypeId) \
-    _APPLY(GridCell,         gridcell,         ROLE_SYSTEM_CELL,         UIA_DataItemControlTypeId) \
-    _APPLY(Group,            group,            ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Heading,          heading,          ROLE_SYSTEM_TEXT,         UIA_TextControlTypeId) \
-    _APPLY(Img,              img,              ROLE_SYSTEM_GRAPHIC,      UIA_ImageControlTypeId) \
-    _APPLY(Link,             link,             ROLE_SYSTEM_LINK,         UIA_HyperlinkControlTypeId) \
-    _APPLY(List,             list,             ROLE_SYSTEM_LIST,         UIA_ListControlTypeId) \
-    _APPLY(ListBox,          listbox,          ROLE_SYSTEM_LIST,         UIA_ListControlTypeId) \
-    _APPLY(ListItem,         listitem,         ROLE_SYSTEM_LISTITEM,     UIA_ListItemControlTypeId) \
-    _APPLY(Log,              log,              ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Main,             main,             ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Marquee,          marquee,          ROLE_SYSTEM_ANIMATION,    UIA_TextControlTypeId) \
-    _APPLY(Menu,             menu,             ROLE_SYSTEM_MENUPOPUP,    UIA_MenuControlTypeId) \
-    _APPLY(MenuBar,          menubar,          ROLE_SYSTEM_MENUBAR,      UIA_MenuBarControlTypeId) \
-    _APPLY(MenuItem,         menuitem,         ROLE_SYSTEM_MENUITEM,     UIA_MenuItemControlTypeId) \
-    _APPLY(MenuItemCheckbox, menuitemcheckbox, ROLE_SYSTEM_CHECKBUTTON,  UIA_CheckBoxControlTypeId) \
-    _APPLY(MenuItemRadio,    menuitemradio,    ROLE_SYSTEM_RADIOBUTTON,  UIA_RadioButtonControlTypeId) \
-    _APPLY(Navigation,       navigation,       ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Note,             note,             ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Option,           option,           ROLE_SYSTEM_LISTITEM,     UIA_ListItemControlTypeId) \
-    _APPLY(Presentation,     presentation,     ROLE_SYSTEM_PANE,         UIA_PaneControlTypeId) \
-    _APPLY(ProgressBar,      progressbar,      ROLE_SYSTEM_PROGRESSBAR,  UIA_ProgressBarControlTypeId) \
-    _APPLY(Radio,            radio,            ROLE_SYSTEM_RADIOBUTTON,  UIA_RadioButtonControlTypeId) \
-    _APPLY(RadioGroup,       radiogroup,       ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Region,           region,           ROLE_SYSTEM_PANE,         UIA_PaneControlTypeId) \
-    _APPLY(Row,              row,              ROLE_SYSTEM_ROW,          UIA_DataItemControlTypeId) \
-    _APPLY(Rowheader,        rowheader,        ROLE_SYSTEM_ROWHEADER,    UIA_DataItemControlTypeId) \
-    _APPLY(Scrollbar,        scrollbar,        ROLE_SYSTEM_SCROLLBAR,    UIA_ScrollBarControlTypeId) \
-    _APPLY(Search,           search,           ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Section,          section,          ROLE_SYSTEM_GROUPING,     UIA_GroupControlTypeId) \
-    _APPLY(Separator,        separator,        ROLE_SYSTEM_SEPARATOR,    UIA_SeparatorControlTypeId) \
-    _APPLY(Slider,           slider,           ROLE_SYSTEM_SLIDER,       UIA_SliderControlTypeId) \
-    _APPLY(SpinButton,       spinbutton,       ROLE_SYSTEM_SPINBUTTON,   UIA_SpinnerControlTypeId) \
-    _APPLY(Status,           status,           ROLE_SYSTEM_STATUSBAR,    UIA_StatusBarControlTypeId) \
-    _APPLY(Tab,              tab,              ROLE_SYSTEM_PAGETAB,      UIA_TabItemControlTypeId) \
-    _APPLY(TabList,          tablist,          ROLE_SYSTEM_PAGETABLIST,  UIA_TabControlTypeId) \
-    _APPLY(TabPanel,         tabpanel,         ROLE_SYSTEM_PANE,         UIA_PaneControlTypeId) \
-    _APPLY(TextBox,          textbox,          ROLE_SYSTEM_TEXT,         UIA_DocumentControlTypeId) \
-    _APPLY(Timer,            timer,            ROLE_SYSTEM_CLOCK,        UIA_PaneControlTypeId) \
-    _APPLY(ToolBar,          toolbar,          ROLE_SYSTEM_TOOLBAR,      UIA_ToolBarControlTypeId) \
-    _APPLY(Tooltip,          tooltip,          ROLE_SYSTEM_TOOLTIP,      UIA_ToolTipControlTypeId) \
-    _APPLY(Tree,             tree,             ROLE_SYSTEM_OUTLINE,      UIA_TreeControlTypeId) \
-    _APPLY(TreeGrid,         treegrid,         ROLE_SYSTEM_TABLE,        UIA_DataGridControlTypeId) \
-    _APPLY(TreeItem,         treeitem,         ROLE_SYSTEM_OUTLINEITEM,  UIA_TreeItemControlTypeId)
+            _APPLY(None, none, 0, 0) \
+            _APPLY(Custom, custom, 0, UIA_CustomControlTypeId) \
+            _APPLY(Alert, alert, ROLE_SYSTEM_ALERT, UIA_TextControlTypeId) \
+            _APPLY(AlertDialog, alertdialog, ROLE_SYSTEM_DIALOG, UIA_PaneControlTypeId) \
+            _APPLY(Application, application, ROLE_SYSTEM_PANE, UIA_PaneControlTypeId) \
+            _APPLY(Article, article, ROLE_SYSTEM_DOCUMENT, UIA_DocumentControlTypeId) \
+            _APPLY(Banner, banner, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Button, button, ROLE_SYSTEM_PUSHBUTTON, UIA_ButtonControlTypeId) \
+            _APPLY(CheckBox, checkbox, ROLE_SYSTEM_CHECKBUTTON, UIA_CheckBoxControlTypeId) \
+            _APPLY(ColumnHeader, columnheader, ROLE_SYSTEM_COLUMNHEADER, UIA_DataItemControlTypeId) \
+            _APPLY(ComboBox, combobox, ROLE_SYSTEM_COMBOBOX, UIA_ComboBoxControlTypeId) \
+            _APPLY(Complementary, complementary, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(ContentInfo, contentinfo, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Definition, definition, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Description, description, ROLE_SYSTEM_TEXT, UIA_TextControlTypeId) \
+            _APPLY(Dialog, dialog, ROLE_SYSTEM_DIALOG, UIA_PaneControlTypeId) \
+            _APPLY(Directory, directory, ROLE_SYSTEM_LIST, UIA_ListControlTypeId) \
+            _APPLY(Document, document, ROLE_SYSTEM_CLIENT, UIA_DocumentControlTypeId) \
+            _APPLY(Form, form, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Grid, grid, ROLE_SYSTEM_TABLE, UIA_DataGridControlTypeId) \
+            _APPLY(GridCell, gridcell, ROLE_SYSTEM_CELL, UIA_DataItemControlTypeId) \
+            _APPLY(Group, group, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Heading, heading, ROLE_SYSTEM_TEXT, UIA_TextControlTypeId) \
+            _APPLY(Img, img, ROLE_SYSTEM_GRAPHIC, UIA_ImageControlTypeId) \
+            _APPLY(Link, link, ROLE_SYSTEM_LINK, UIA_HyperlinkControlTypeId) \
+            _APPLY(List, list, ROLE_SYSTEM_LIST, UIA_ListControlTypeId) \
+            _APPLY(ListBox, listbox, ROLE_SYSTEM_LIST, UIA_ListControlTypeId) \
+            _APPLY(ListItem, listitem, ROLE_SYSTEM_LISTITEM, UIA_ListItemControlTypeId) \
+            _APPLY(Log, log, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Main, main, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Marquee, marquee, ROLE_SYSTEM_ANIMATION, UIA_TextControlTypeId) \
+            _APPLY(Menu, menu, ROLE_SYSTEM_MENUPOPUP, UIA_MenuControlTypeId) \
+            _APPLY(MenuBar, menubar, ROLE_SYSTEM_MENUBAR, UIA_MenuBarControlTypeId) \
+            _APPLY(MenuItem, menuitem, ROLE_SYSTEM_MENUITEM, UIA_MenuItemControlTypeId) \
+            _APPLY(MenuItemCheckbox, menuitemcheckbox, ROLE_SYSTEM_CHECKBUTTON, UIA_CheckBoxControlTypeId) \
+            _APPLY(MenuItemRadio, menuitemradio, ROLE_SYSTEM_RADIOBUTTON, UIA_RadioButtonControlTypeId) \
+            _APPLY(Navigation, navigation, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Note, note, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Option, option, ROLE_SYSTEM_LISTITEM, UIA_ListItemControlTypeId) \
+            _APPLY(Presentation, presentation, ROLE_SYSTEM_PANE, UIA_PaneControlTypeId) \
+            _APPLY(ProgressBar, progressbar, ROLE_SYSTEM_PROGRESSBAR, UIA_ProgressBarControlTypeId) \
+            _APPLY(Radio, radio, ROLE_SYSTEM_RADIOBUTTON, UIA_RadioButtonControlTypeId) \
+            _APPLY(RadioGroup, radiogroup, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Region, region, ROLE_SYSTEM_PANE, UIA_PaneControlTypeId) \
+            _APPLY(Row, row, ROLE_SYSTEM_ROW, UIA_DataItemControlTypeId) \
+            _APPLY(Rowheader, rowheader, ROLE_SYSTEM_ROWHEADER, UIA_DataItemControlTypeId) \
+            _APPLY(Scrollbar, scrollbar, ROLE_SYSTEM_SCROLLBAR, UIA_ScrollBarControlTypeId) \
+            _APPLY(Search, search, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Section, section, ROLE_SYSTEM_GROUPING, UIA_GroupControlTypeId) \
+            _APPLY(Separator, separator, ROLE_SYSTEM_SEPARATOR, UIA_SeparatorControlTypeId) \
+            _APPLY(Slider, slider, ROLE_SYSTEM_SLIDER, UIA_SliderControlTypeId) \
+            _APPLY(SpinButton, spinbutton, ROLE_SYSTEM_SPINBUTTON, UIA_SpinnerControlTypeId) \
+            _APPLY(Status, status, ROLE_SYSTEM_STATUSBAR, UIA_StatusBarControlTypeId) \
+            _APPLY(Tab, tab, ROLE_SYSTEM_PAGETAB, UIA_TabItemControlTypeId) \
+            _APPLY(TabList, tablist, ROLE_SYSTEM_PAGETABLIST, UIA_TabControlTypeId) \
+            _APPLY(TabPanel, tabpanel, ROLE_SYSTEM_PANE, UIA_PaneControlTypeId) \
+            _APPLY(TextBox, textbox, ROLE_SYSTEM_TEXT, UIA_DocumentControlTypeId) \
+            _APPLY(Timer, timer, ROLE_SYSTEM_CLOCK, UIA_PaneControlTypeId) \
+            _APPLY(ToolBar, toolbar, ROLE_SYSTEM_TOOLBAR, UIA_ToolBarControlTypeId) \
+            _APPLY(Tooltip, tooltip, ROLE_SYSTEM_TOOLTIP, UIA_ToolTipControlTypeId) \
+            _APPLY(Tree, tree, ROLE_SYSTEM_OUTLINE, UIA_TreeControlTypeId) \
+            _APPLY(TreeGrid, treegrid, ROLE_SYSTEM_TABLE, UIA_DataGridControlTypeId) \
+            _APPLY(TreeItem, treeitem, ROLE_SYSTEM_OUTLINEITEM, UIA_TreeItemControlTypeId)
 #endif
-// clang-format on
+            // clang-format on
 
 #define _APPLY(_NAME, ...) _NAME,
-        __ACCESSIBLE_ROLE_TABLE(_APPLY)
+            __ACCESSIBLE_ROLE_TABLE(_APPLY)
 #undef _APPLY
 
-    };
+        };
 
-// clang-format off
-//     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                         CustomPropertyHandle                      pEnumMaps              BindCache                                                                    ValidValueType
+        // clang-format off
+        //     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                         CustomPropertyHandle                      pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
     _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::ParentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(YY_UFIELD_OFFSET(Element, pLocParent), 0, 0, 0),       ValueType::Element) \
     _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(YY_UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0),   ValueType::ElementList) \
@@ -204,87 +206,87 @@ namespace YY::MegaUI
 
 // clang-format on
 
-    class NativeWindowHost;
-    class Window;
-    class UIParser;
-    class ElementAccessibleProvider;
+        class NativeWindowHost;
+        class Window;
+        class UIParser;
+        class ElementAccessibleProvider;
 
-    struct NavReference
-    {
-        uint32_t cbSize;
-        Element* pElement;
-        Rect* pRect;
-
-        NavReference(Element* _pElement, Rect* _pRect = nullptr)
-            : cbSize(sizeof(NavReference))
-            , pElement(_pElement)
-            , pRect(_pRect)
+        struct NavReference
         {
-        }
-    };
+            uint32_t cbSize;
+            Element* pElement;
+            Rect* pRect;
 
-	class Element
-	{
-        _APPLY_MEGA_UI_STATIC_CONTROL_INFO_EXTERN(Element, void, ControlInfoImp<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
-        friend NativeWindowHost;
-        friend StyleSheet;
-        friend Window;
+            NavReference(Element* _pElement, Rect* _pRect = nullptr)
+                : cbSize(sizeof(NavReference))
+                , pElement(_pElement)
+                , pRect(_pRect)
+            {
+            }
+        };
 
-    protected:
-        ElementRenderNode RenderNode;
-        // _pvmLocal
-		// 所有 Local 值的
-		Array<Value> LocalPropValue;
-            
-        ElementList vecLocChildren;
-            
-        // 0x8 Index
-        int32_t iIndex = -1;
+        class Element
+        {
+            _APPLY_MEGA_UI_STATIC_CONTROL_INFO_EXTERN(Element, void, ControlInfoImp<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
+            friend NativeWindowHost;
+            friend StyleSheet;
+            friend Window;
 
-        // 正常优先级的组 0x10
-        int32_t _iGCSlot;
-        // 低优先级的组 0x14
-        int32_t _iGCLPSlot;
-        // v18
-        int32_t _iPCTail;
-            
-        // StartDefer 时保存的内容
-        RefPtr<DeferCycle> pDeferObject;
-            
-        // 顶层 Element，所有的Defer将发送到顶层 Element
-        Element* pTopLevel;
-			
-        // Local Parent
-		Element* pLocParent;
+        protected:
+            ElementRenderNode RenderNode;
+            // _pvmLocal
+            // 所有 Local 值的
+            Array<Value> LocalPropValue;
 
-        // 0x2C
-        // Position in layout local
-        Point LocPosInLayout;
-        // 0x34 LayoutSize
-        // Size in layout local
-        Size LocSizeInLayout;
-        // 0x3C _sizeLocLastDSConst
-        // Last desired size constraint local
-        Size LocLastDesiredSizeConstraint;
-        // 0x44 DesiredSize
-        // Desired size local
-        Size LocDesiredSize;
-            
-        // 0x4C LayoutPos
-        // Cached Layout Position
-        int32_t iSpecLayoutPos;
-            
-        // 0x50
-        RefPtr<StyleSheet> pSheet;
+            ElementList vecLocChildren;
 
-        // 0x58 ID
-        ATOM SpecID;
-            
-        ActiveStyle fSpecActive = ActiveStyle::None;
+            // 0x8 Index
+            int32_t iIndex = -1;
 
-        ElementAccessibleProvider* pAccessibleProvider = nullptr;
+            // 正常优先级的组 0x10
+            int32_t _iGCSlot;
+            // 低优先级的组 0x14
+            int32_t _iGCLPSlot;
+            // v18
+            int32_t _iPCTail;
 
-//bits
+            // StartDefer 时保存的内容
+            RefPtr<DeferCycle> pDeferObject;
+
+            // 顶层 Element，所有的Defer将发送到顶层 Element
+            Element* pTopLevel;
+
+            // Local Parent
+            Element* pLocParent;
+
+            // 0x2C
+            // Position in layout local
+            Point LocPosInLayout;
+            // 0x34 LayoutSize
+            // Size in layout local
+            Size LocSizeInLayout;
+            // 0x3C _sizeLocLastDSConst
+            // Last desired size constraint local
+            Size LocLastDesiredSizeConstraint;
+            // 0x44 DesiredSize
+            // Desired size local
+            Size LocDesiredSize;
+
+            // 0x4C LayoutPos
+            // Cached Layout Position
+            int32_t iSpecLayoutPos;
+
+            // 0x50
+            RefPtr<StyleSheet> pSheet;
+
+            // 0x58 ID
+            ATOM SpecID;
+
+            ActiveStyle fSpecActive = ActiveStyle::None;
+
+            ElementAccessibleProvider* pAccessibleProvider = nullptr;
+
+            //bits
 #define _MEGA_UI_ELEMENT_BITS_TABLE(_APPLY) \
     _APPLY(bSelfLayout, 1)                  \
     _APPLY(bNeedsDSUpdate, 1)               \
@@ -310,576 +312,577 @@ namespace YY::MegaUI
     _APPLY(bSpecAccessible, 1)
 
 
-        _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
-        //union
-        //{
-        //    struct
-        //    {
-        //        // 0
-        //        uint32_t bSelfLayout : 1;
-        //        // 1
-        //        uint32_t bNeedsDSUpdate : 1;
+            _APPLY_MEGA_UI_BITMAP_TABLE(ElementBits, _MEGA_UI_ELEMENT_BITS_TABLE);
+            //union
+            //{
+            //    struct
+            //    {
+            //        // 0
+            //        uint32_t bSelfLayout : 1;
+            //        // 1
+            //        uint32_t bNeedsDSUpdate : 1;
 
-        //        // UINT8 LayoutType : 2;
-        //        // 2
-        //        uint32_t fNeedsLayout : 2;
-        //        // 4
-        //        uint32_t bLocMouseWithin : 1;
-        //    };
+            //        // UINT8 LayoutType : 2;
+            //        // 2
+            //        uint32_t fNeedsLayout : 2;
+            //        // 4
+            //        uint32_t bLocMouseWithin : 1;
+            //    };
 
-        //    uint8_t BitsBuffer[1];
-        //};
-            
+            //    uint8_t BitsBuffer[1];
+            //};
 
-        // 边框宽度，四个方向，左上右下
-        Rect SpecBorderThickness;
-        // 内边距
-        Rect SpecPadding;
-        // 边框宽度，四个方向，左上右下
-        Rect SpecFocusThickness;
 
-        //Layout* pLayout = nullptr;
+            // 边框宽度，四个方向，左上右下
+            Rect SpecBorderThickness;
+            // 内边距
+            Rect SpecPadding;
+            // 边框宽度，四个方向，左上右下
+            Rect SpecFocusThickness;
 
-        // 最小限制
-        Size SpecMinSize = {};
-        FlowDirection iSpecFlowDirection = FlowDirection::LeftToRight;
-        ContentAlignStyle fSpecContentAlign = ContentAlignStyle::Top | ContentAlignStyle::Left;
-        // 当前DPI值
-        int32_t iLocDpi = 96;
-        // 承载控件的窗口
-        Window* pWindow = nullptr;
+            //Layout* pLayout = nullptr;
 
-        // 缓存的字体信息
-        Font SpecFont;
+            // 最小限制
+            Size SpecMinSize = {};
+            FlowDirection iSpecFlowDirection = FlowDirection::LeftToRight;
+            ContentAlignStyle fSpecContentAlign = ContentAlignStyle::Top | ContentAlignStyle::Left;
+            // 当前DPI值
+            int32_t iLocDpi = 96;
+            // 承载控件的窗口
+            Window* pWindow = nullptr;
 
-        RefPtr<IDWriteTextLayout> pTextLayout;
+            // 缓存的字体信息
+            Font SpecFont;
 
-	public:
-        Element();
+            RefPtr<IDWriteTextLayout> pTextLayout;
 
-		virtual ~Element();
-            
-        // 此函数来自 _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN
-        // static HRESULT __YYAPI Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
+        public:
+            Element();
 
-        HRESULT __YYAPI Initialize(_In_ int32_t _iDPI, _In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
+            virtual ~Element();
 
-		/// <summary>
-		/// 根据属性获取Value
-		/// </summary>
-		/// <param name="_Prop"></param>
-		/// <param name="_eIndicies"></param>
-		/// <param name="_bUpdateCache">如果为true，那么重新获取值并刷新缓存，如果为 false则直接从缓存返回数据。</param>
-		/// <returns>如果返回，则返回 Unavailable。
-		/// 如果未设置，则返回 Unset</returns>
-        Value __YYAPI GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies = PropertyIndicies::PI_Specified, _In_ bool _bUpdateCache = false);
-			
-        /// <summary>
-        /// 修改 Local Value
-        /// </summary>
-        /// <param name="_Prop">元数据</param>
-        /// <param name="_pValue">需要设置的新值</param>
-        /// <returns></returns>
-        HRESULT __YYAPI SetValue(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value);
+            // 此函数来自 _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN
+            // static HRESULT __YYAPI Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
-        HRESULT __YYAPI SetValueInternal(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value, _In_ bool _bCanCancel = false);
+            HRESULT __YYAPI Initialize(_In_ int32_t _iDPI, _In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
-		_Ret_maybenull_ Element* __YYAPI GetParent();
-            
-        int32_t __YYAPI GetLayoutPos();
-        HRESULT __YYAPI SetLayoutPos(int32_t _iLayoutPos);
+            /// <summary>
+            /// 根据属性获取Value
+            /// </summary>
+            /// <param name="_Prop"></param>
+            /// <param name="_eIndicies"></param>
+            /// <param name="_bUpdateCache">如果为true，那么重新获取值并刷新缓存，如果为 false则直接从缓存返回数据。</param>
+            /// <returns>如果返回，则返回 Unavailable。
+            /// 如果未设置，则返回 Unset</returns>
+            Value __YYAPI GetValue(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies = PropertyIndicies::PI_Specified, _In_ bool _bUpdateCache = false);
 
-        float __YYAPI GetWidth();
-        HRESULT __YYAPI SetWidth(float _iWidth);
+            /// <summary>
+            /// 修改 Local Value
+            /// </summary>
+            /// <param name="_Prop">元数据</param>
+            /// <param name="_pValue">需要设置的新值</param>
+            /// <returns></returns>
+            HRESULT __YYAPI SetValue(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value);
 
-        float __YYAPI GetHeight();
-        HRESULT __YYAPI SetHeight(float _iHeight);
+            HRESULT __YYAPI SetValueInternal(_In_ const PropertyInfo& _Prop, _In_ const Value& _Value, _In_ bool _bCanCancel = false);
 
-        float __YYAPI GetX();
-        HRESULT __YYAPI SetX(float _iX);
-            
-        float __YYAPI GetY();
-        HRESULT __YYAPI SetY(float _iY);
+            _Ret_maybenull_ Element* __YYAPI GetParent();
 
-        Point __YYAPI GetLocation();
+            int32_t __YYAPI GetLayoutPos();
+            HRESULT __YYAPI SetLayoutPos(int32_t _iLayoutPos);
 
-        Size __YYAPI GetExtent();
+            float __YYAPI GetWidth();
+            HRESULT __YYAPI SetWidth(float _iWidth);
 
-        ValueIs<ValueType::Layout> __YYAPI GetLayout();
+            float __YYAPI GetHeight();
+            HRESULT __YYAPI SetHeight(float _iHeight);
 
-        BorderStyle __YYAPI GetBorderStyle();
+            float __YYAPI GetX();
+            HRESULT __YYAPI SetX(float _iX);
 
-        HRESULT __YYAPI SetBorderStyle(BorderStyle _eBorderStyle);
-            
-        Color __YYAPI GetBorderColor();
+            float __YYAPI GetY();
+            HRESULT __YYAPI SetY(float _iY);
 
-        HRESULT __YYAPI SetBorderColor(Color _BorderColor);
-            
-        BorderStyle __YYAPI GetFocusBorderStyle();
+            Point __YYAPI GetLocation();
 
-        HRESULT __YYAPI SetFocusBorderStyle(BorderStyle _eBorderStyle);
-            
-        Color __YYAPI GetFocusBorderColor();
+            Size __YYAPI GetExtent();
 
-        HRESULT __YYAPI SetFocusBorderColor(Color _BorderColor);
+            ValueIs<ValueType::Layout> __YYAPI GetLayout();
 
-        /// <summary>
-        /// 获取内容流动方式，从左到右还是从右到左。
-        /// </summary>
-        /// <returns></returns>
-        FlowDirection __YYAPI GetFlowDirection();
-            
-        HRESULT __YYAPI SetFlowDirection(FlowDirection _eFlowDirection);
-            
-        Rect __YYAPI ApplyFlowDirection(const Rect& _Src);
+            BorderStyle __YYAPI GetBorderStyle();
 
-        bool __YYAPI IsMouseFocusWithin();
-            
-        /// <summary>
-        /// 返回控件绑定的 Class，它用于 Sheet 表达式匹配。
-        /// </summary>
-        /// <returns>Class</returns>
-        uString __YYAPI GetClass();
+            HRESULT __YYAPI SetBorderStyle(BorderStyle _eBorderStyle);
 
-        HRESULT __YYAPI SetClass(uString _szClass);
+            Color __YYAPI GetBorderColor();
 
-        /// <summary>
-        /// 控件是否被禁用。
-        /// </summary>
-        /// <returns></returns>
-        bool __YYAPI IsEnabled();
-            
-        HRESULT __YYAPI SetEnabled(bool _bEnabled);
+            HRESULT __YYAPI SetBorderColor(Color _BorderColor);
 
-        /// <summary>
-        /// 返回控件是否需要主动处理鼠标或者键盘的焦点状态。
-        /// </summary>
-        /// <returns>Active的位组合</returns>
-        ActiveStyle __YYAPI GetActive();
+            BorderStyle __YYAPI GetFocusBorderStyle();
 
-        /// <summary>
-        /// 设置控件需要主动处理是焦点状态。比如设置鼠标后可以主动处理鼠标焦点。
-        /// </summary>
-        /// <param name="_fActive">Active的位组合</param>
-        /// <returns>HRESULT</returns>
-        HRESULT __YYAPI SetActive(ActiveStyle _fActive);
+            HRESULT __YYAPI SetFocusBorderStyle(BorderStyle _eBorderStyle);
 
-        bool __YYAPI IsMouseFocused();
+            Color __YYAPI GetFocusBorderColor();
 
-        int32_t __YYAPI GetDpi();
+            HRESULT __YYAPI SetFocusBorderColor(Color _BorderColor);
 
-        uString __YYAPI GetFontFamily();
+            /// <summary>
+            /// 获取内容流动方式，从左到右还是从右到左。
+            /// </summary>
+            /// <returns></returns>
+            FlowDirection __YYAPI GetFlowDirection();
 
-        HRESULT __YYAPI SetFontFamily(uString _szFontFamily);
+            HRESULT __YYAPI SetFlowDirection(FlowDirection _eFlowDirection);
 
-        float __YYAPI GetFontSize();
+            Rect __YYAPI ApplyFlowDirection(const Rect& _Src);
 
-        HRESULT __YYAPI SetFontSize(float _iFontSize);
+            bool __YYAPI IsMouseFocusWithin();
 
-        uint32_t __YYAPI GetFontWeight();
+            /// <summary>
+            /// 返回控件绑定的 Class，它用于 Sheet 表达式匹配。
+            /// </summary>
+            /// <returns>Class</returns>
+            uString __YYAPI GetClass();
 
-        HRESULT __YYAPI SetFontWeight(uint32_t _iFontWeight);
+            HRESULT __YYAPI SetClass(uString _szClass);
 
-        FontStyle __YYAPI GetFontStyle();
+            /// <summary>
+            /// 控件是否被禁用。
+            /// </summary>
+            /// <returns></returns>
+            bool __YYAPI IsEnabled();
 
-        HRESULT __YYAPI SetFontStyle(FontStyle _fFontStyle);
+            HRESULT __YYAPI SetEnabled(bool _bEnabled);
 
-        ContentAlignStyle __YYAPI GetContentAlign();
+            /// <summary>
+            /// 返回控件是否需要主动处理鼠标或者键盘的焦点状态。
+            /// </summary>
+            /// <returns>Active的位组合</returns>
+            ActiveStyle __YYAPI GetActive();
 
-        /// <summary>
-        /// 当属性正在更改时调用，可以终止属性更改。
-        /// </summary>
-        /// <returns>如果返回 true，那么允许更改。如果返回false，更改将被撤销。</returns>
-        virtual bool __YYAPI OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+            /// <summary>
+            /// 设置控件需要主动处理是焦点状态。比如设置鼠标后可以主动处理鼠标焦点。
+            /// </summary>
+            /// <param name="_fActive">Active的位组合</param>
+            /// <returns>HRESULT</returns>
+            HRESULT __YYAPI SetActive(ActiveStyle _fActive);
 
-		virtual void __YYAPI OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+            bool __YYAPI IsMouseFocused();
 
-        /// <summary>
-        /// 用于通知 PropertyGroup 的状态
-        /// </summary>
-        /// <param name="_fGroups">PropertyGroup的组合</param>
-        void __YYAPI OnGroupChanged(uint32_t _fGroups);
+            int32_t __YYAPI GetDpi();
 
-        /// <summary>
-        /// 获取顶层 Element，便于 StartDefer，如果未设置 pTopLevel，则自身为顶层 Element
-        /// </summary>
-        /// <returns></returns>
-        _Ret_notnull_ Element* __YYAPI GetTopLevel();
-		_Ret_maybenull_ RefPtr<DeferCycle> __YYAPI GetDeferObject(_In_ bool _bAllowCreate = true);
-        void __YYAPI StartDefer(_Out_ intptr_t* _pCooike);
-        void __YYAPI EndDefer(_In_ intptr_t _Cookie);
-            
-        HRESULT __YYAPI SetVisible(bool bVisible);
+            uString __YYAPI GetFontFamily();
 
-        bool __YYAPI IsVisible();
+            HRESULT __YYAPI SetFontFamily(uString _szFontFamily);
 
-        ElementList __YYAPI GetChildren();
+            float __YYAPI GetFontSize();
 
-        virtual HRESULT __YYAPI Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren, _In_ uint_t _uInsert);
+            HRESULT __YYAPI SetFontSize(float _iFontSize);
 
-        __inline HRESULT __YYAPI Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren)
-        {
-            return Insert(_ppChildren, _cChildren, vecLocChildren.GetSize());
-        }
+            uint32_t __YYAPI GetFontWeight();
 
-        __inline HRESULT __YYAPI Add(_In_ Element* _ppChildren)
-        {
-            return Insert(&_ppChildren, 1, vecLocChildren.GetSize());
-        }
+            HRESULT __YYAPI SetFontWeight(uint32_t _iFontWeight);
 
-        virtual HRESULT __YYAPI Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren);
-            
-        __inline HRESULT __YYAPI Remove(_In_ Element* _pChild)
-        {
-            return Remove(&_pChild, 1);
-        }
+            FontStyle __YYAPI GetFontStyle();
 
-        __inline HRESULT __YYAPI RemoveAll()
-        {
-            return Remove(vecLocChildren.GetData(), vecLocChildren.GetSize());
-        }
+            HRESULT __YYAPI SetFontStyle(FontStyle _fFontStyle);
 
-        /// <summary>
-        /// 当销毁控制时被调用。
-        /// </summary>
-        /// <returns></returns>
-        virtual void __YYAPI OnDestroy();
+            ContentAlignStyle __YYAPI GetContentAlign();
 
-        /// <summary>
-        /// 释放控件相关资源，包含子控件。
-        /// </summary>
-        /// <param name="_fDelayed">是否延迟删除。</param>
-        /// <returns></returns>
-        HRESULT __YYAPI Destroy(_In_ bool _fDelayed = true);
+            /// <summary>
+            /// 当属性正在更改时调用，可以终止属性更改。
+            /// </summary>
+            /// <returns>如果返回 true，那么允许更改。如果返回false，更改将被撤销。</returns>
+            virtual bool __YYAPI OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
-        /// <summary>
-        /// 释放子控件的相关资源（不会释放控件自己）。
-        /// </summary>
-        /// <param name="_fDelayed">是否延迟删除。</param>
-        /// <returns></returns>
-        HRESULT __YYAPI DestroyAllChildren(_In_ bool _fDelayed = true);
+            virtual void __YYAPI OnPropertyChanged(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
 
-        virtual void __YYAPI Paint(_In_ DrawContext* _pDrawContext, _In_ const Rect& _Bounds);
+            /// <summary>
+            /// 用于通知 PropertyGroup 的状态
+            /// </summary>
+            /// <param name="_fGroups">PropertyGroup的组合</param>
+            void __YYAPI OnGroupChanged(uint32_t _fGroups);
 
-        void __YYAPI PaintBorder(_In_ DrawContext* _pDrawContext, _In_ BorderStyle _eBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
+            /// <summary>
+            /// 获取顶层 Element，便于 StartDefer，如果未设置 pTopLevel，则自身为顶层 Element
+            /// </summary>
+            /// <returns></returns>
+            _Ret_notnull_ Element* __YYAPI GetTopLevel();
+            _Ret_maybenull_ RefPtr<DeferCycle> __YYAPI GetDeferObject(_In_ bool _bAllowCreate = true);
+            void __YYAPI StartDefer(_Out_ intptr_t* _pCooike);
+            void __YYAPI EndDefer(_In_ intptr_t _Cookie);
 
-        void __YYAPI PaintBackground(_In_ DrawContext* _pDrawContext, const Value& _Background, _In_ const Rect& _Bounds);
-            
-        virtual void __YYAPI PaintContent(
-            _In_ DrawContext* _pDrawContext,
-            _In_ const Value& _Content,
-            _In_ const Font& _FontInfo,
-            _In_ Color _ForegroundColor,
-            _In_ const Rect& _Bounds,
-            _In_ ContentAlignStyle _fContentAlign
+            HRESULT __YYAPI SetVisible(bool bVisible);
+
+            bool __YYAPI IsVisible();
+
+            ElementList __YYAPI GetChildren();
+
+            virtual HRESULT __YYAPI Insert(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren, _In_ uint_t _uInsert);
+
+            __inline HRESULT __YYAPI Add(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren)
+            {
+                return Insert(_ppChildren, _cChildren, vecLocChildren.GetSize());
+            }
+
+            __inline HRESULT __YYAPI Add(_In_ Element* _ppChildren)
+            {
+                return Insert(&_ppChildren, 1, vecLocChildren.GetSize());
+            }
+
+            virtual HRESULT __YYAPI Remove(_In_reads_(_cChildren) Element* const* _ppChildren, _In_ uint_t _cChildren);
+
+            __inline HRESULT __YYAPI Remove(_In_ Element* _pChild)
+            {
+                return Remove(&_pChild, 1);
+            }
+
+            __inline HRESULT __YYAPI RemoveAll()
+            {
+                return Remove(vecLocChildren.GetData(), vecLocChildren.GetSize());
+            }
+
+            /// <summary>
+            /// 当销毁控制时被调用。
+            /// </summary>
+            /// <returns></returns>
+            virtual void __YYAPI OnDestroy();
+
+            /// <summary>
+            /// 释放控件相关资源，包含子控件。
+            /// </summary>
+            /// <param name="_fDelayed">是否延迟删除。</param>
+            /// <returns></returns>
+            HRESULT __YYAPI Destroy(_In_ bool _fDelayed = true);
+
+            /// <summary>
+            /// 释放子控件的相关资源（不会释放控件自己）。
+            /// </summary>
+            /// <param name="_fDelayed">是否延迟删除。</param>
+            /// <returns></returns>
+            HRESULT __YYAPI DestroyAllChildren(_In_ bool _fDelayed = true);
+
+            virtual void __YYAPI Paint(_In_ DrawContext* _pDrawContext, _In_ const Rect& _Bounds);
+
+            void __YYAPI PaintBorder(_In_ DrawContext* _pDrawContext, _In_ BorderStyle _eBorderStyle, _In_ const Rect& _BorderThickness, Color _BorderColor, _Inout_ Rect& _Bounds);
+
+            void __YYAPI PaintBackground(_In_ DrawContext* _pDrawContext, const Value& _Background, _In_ const Rect& _Bounds);
+
+            virtual void __YYAPI PaintContent(
+                _In_ DrawContext* _pDrawContext,
+                _In_ const Value& _Content,
+                _In_ const Font& _FontInfo,
+                _In_ Color _ForegroundColor,
+                _In_ const Rect& _Bounds,
+                _In_ ContentAlignStyle _fContentAlign
+                );
+
+            virtual Size __YYAPI GetContentSize(Size _ConstraintSize);
+            virtual Size __YYAPI SelfLayoutUpdateDesiredSize(Size _ConstraintSize);
+            virtual void __YYAPI SelfLayoutDoLayout(Size _ConstraintSize);
+
+            void __YYAPI Detach(DeferCycle* _pDeferCycle);
+
+            void __YYAPI Invalidate();
+
+
+            template<typename _Type>
+            _Type* __YYAPI TryCast()
+            {
+                auto _pControlInfo = GetControlInfo();
+                if (!_pControlInfo)
+                    return nullptr;
+
+                if (!_pControlInfo->IsSubclassOf(_Type::GetStaticControlInfo()))
+                    return nullptr;
+
+                return (_Type*)this;
+            }
+
+            /// <summary>
+            /// 只比较二个控件的SpecCache值是否相等。注意这个函数只是为了性能需要，并且经常失败……
+            /// </summary>
+            /// <param name="_pElement1"></param>
+            /// <param name="_pElement2"></param>
+            /// <param name="_Prop"></param>
+            /// <returns>返回1表示相等，返回0表示不相等，返回 -1 表示比较失败。</returns>
+            static int32_t __YYAPI SpecCacheIsEqual(
+                _In_ Element* _pElement1,
+                _In_ Element* _pElement2,
+                _In_ const PropertyInfo& _Prop
             );
 
-        virtual Size __YYAPI GetContentSize(Size _ConstraintSize);
-        virtual Size __YYAPI SelfLayoutUpdateDesiredSize(Size _ConstraintSize);
-        virtual void __YYAPI SelfLayoutDoLayout(Size _ConstraintSize);
+            /// <summary>
+            /// 从 _pFrom，获取父节点 = this 的子节点
+            /// </summary>
+            /// <param name="_pFrom"></param>
+            /// <returns>如果没有这样的节点则返回 nullptr。</returns>
+            _Ret_maybenull_ Element* __YYAPI GetImmediateChild(_In_opt_ Element* _pFrom);
 
-        void __YYAPI Detach(DeferCycle* _pDeferCycle);
+            bool __YYAPI IsKeyboardFocus();
 
-        void __YYAPI Invalidate();
+            /// <summary>
+            /// 设置键盘焦点。
+            /// 注意：控件需要Visible、未禁用，且拥有 ActiveStyle::Keyboard，否则将失败。
+            /// 注意：因为键盘焦点属于物理焦点，设置键盘焦点时同时也将改变逻辑焦点。
+            /// </summary>
+            /// <returns>如果设置成功，则返回 true。</returns>
+            bool __YYAPI SetKeyboardFocus();
 
+            /// <summary>
+            /// 设置逻辑焦点。
+            /// 注意：控件需要Visible、未禁用，且拥有 ActiveStyle::Keyboard 或者 ActiveStyle::Mouse，否则将失败。
+            /// 注意：如果逻辑焦点与键盘焦点不同，那么将清除逻辑焦点。
+            /// </summary>
+            /// <returns>如果设置成功，则返回 true。</returns>
+            bool __YYAPI SetFocus();
 
-        template<typename _Type>
-        _Type* __YYAPI TryCast()
-        {
-            auto _pControlInfo = GetControlInfo();
-            if (!_pControlInfo)
-                return nullptr;
+            /// <summary>
+            /// 内容是否被保护。如果被保护那么不应该直接暴露内容。
+            /// </summary>
+            bool __YYAPI IsContentProtected();
 
-            if (!_pControlInfo->IsSubclassOf(_Type::GetStaticControlInfo()))
-                return nullptr;
+            /// <summary>
+            /// 获取键盘快键（只可能是ASCII字符）。
+            /// </summary>
+            /// <returns></returns>
+            achar_t __YYAPI GetShortcutChar();
 
-            return (_Type*)this;
-        }
-            
-        /// <summary>
-        /// 只比较二个控件的SpecCache值是否相等。注意这个函数只是为了性能需要，并且经常失败……
-        /// </summary>
-        /// <param name="_pElement1"></param>
-        /// <param name="_pElement2"></param>
-        /// <param name="_Prop"></param>
-        /// <returns>返回1表示相等，返回0表示不相等，返回 -1 表示比较失败。</returns>
-        static int32_t __YYAPI SpecCacheIsEqual(
-            _In_ Element* _pElement1,
-            _In_ Element* _pElement2,
-            _In_ const PropertyInfo& _Prop
+            ATOM __YYAPI GetId();
+
+            Window* __YYAPI GetWindow();
+
+            /// <summary>
+            /// 是否允许无障碍接口将无法感知到其存在。
+            /// </summary>
+            /// <returns>如果为 true，那么允许无障碍设施访问。反之不允许。</returns>
+            bool __YYAPI IsAccessible();
+
+            AccessibleRole __YYAPI GetAccRole();
+
+            uString __YYAPI GetAccName();
+
+            uString __YYAPI GetAccNameAsDisplayed();
+
+            uString __YYAPI GetContentStringAsDisplayed();
+
+            uString __YYAPI GetAccHelp();
+
+            uString __YYAPI GetAccDescription();
+
+            uString __YYAPI GetAccItemType();
+
+            uString __YYAPI GetAccItemStatus();
+
+            virtual HRESULT __YYAPI GetAccessibleProvider(_Outptr_ ElementAccessibleProvider** _ppAccessibleProvider);
+
+            virtual HRESULT __YYAPI DefaultAction();
+
+            void __YYAPI ElementToWindow(_Inout_ Point* _poPoint);
+
+            void __YYAPI WindowToElement(_Inout_ Point* _poPoint);
+
+        protected:
+            RefPtr<IDWriteTextLayout> __YYAPI GetTextLayout(Size _ConstraintSize);
+
+            // Value Update
+            HRESULT __YYAPI PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
+            HRESULT __YYAPI PostSourceChange();
+            HRESULT __YYAPI GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _NewValue, DeferCycle* _pDeferCycle);
+
+            static HRESULT __YYAPI AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
+
+            HRESULT __YYAPI GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle);
+
+            static void __YYAPI VoidPCNotifyTree(int, DeferCycle*);
+
+            /// <summary>
+            /// 通用处理程序，可以处理属性的默认缓存行为。
+            /// </summary>
+            /// <param name="_eType"></param>
+            /// <param name="_pHandleData"></param>
+            /// <returns>如果被处理，则返回 true。</returns>
+            bool __YYAPI GeneralHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+
+            template<typename _HandleType>
+            bool __YYAPI GeneralHandle(_Inout_ _HandleType* _pHandleData)
+            {
+                return GeneralHandle(_HandleType::HandleType, _pHandleData);
+            }
+
+            Value __YYAPI GetGeneralCacheValue(
+                ValueType _eType,
+                uint16_t _uOffsetToCache,
+                uint8_t _uCacheBit,
+                uint16_t _uOffsetToHasCache,
+                uint8_t _uHasCacheBit
             );
 
-        /// <summary>
-        /// 从 _pFrom，获取父节点 = this 的子节点
-        /// </summary>
-        /// <param name="_pFrom"></param>
-        /// <returns>如果没有这样的节点则返回 nullptr。</returns>
-        _Ret_maybenull_ Element* __YYAPI GetImmediateChild(_In_opt_ Element* _pFrom);
-            
-        bool __YYAPI IsKeyboardFocus();
+            bool __YYAPI GetGeneralLocalValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        /// <summary>
-        /// 设置键盘焦点。
-        /// 注意：控件需要Visible、未禁用，且拥有 ActiveStyle::Keyboard，否则将失败。
-        /// 注意：因为键盘焦点属于物理焦点，设置键盘焦点时同时也将改变逻辑焦点。
-        /// </summary>
-        /// <returns>如果设置成功，则返回 true。</returns>
-        bool __YYAPI SetKeyboardFocus();
-
-        /// <summary>
-        /// 设置逻辑焦点。
-        /// 注意：控件需要Visible、未禁用，且拥有 ActiveStyle::Keyboard 或者 ActiveStyle::Mouse，否则将失败。
-        /// 注意：如果逻辑焦点与键盘焦点不同，那么将清除逻辑焦点。
-        /// </summary>
-        /// <returns>如果设置成功，则返回 true。</returns>
-        bool __YYAPI SetFocus();
+            bool __YYAPI GetGeneralSpecifiedValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        /// <summary>
-        /// 内容是否被保护。如果被保护那么不应该直接暴露内容。
-        /// </summary>
-        bool __YYAPI IsContentProtected();
+            bool __YYAPI SetGeneralCacheValue(
+                ValueType _eType,
+                uint16_t _uOffsetToCache,
+                uint8_t _uCacheBit,
+                uint16_t _uOffsetToHasCache,
+                uint8_t _uHasCacheBit,
+                Value _NewValue);
 
-        /// <summary>
-        /// 获取键盘快键（只可能是ASCII字符）。
-        /// </summary>
-        /// <returns></returns>
-        achar_t __YYAPI GetShortcutChar();
+            bool __YYAPI SetGeneralLocalValue(_Inout_ SetValueHandleData* _pHandleData);
 
-        ATOM __YYAPI GetId();
+            bool __YYAPI SetGeneralSpecifiedValue(_Inout_ SetValueHandleData* _pHandleData);
 
-        Window* __YYAPI GetWindow();
+            bool __YYAPI GetGeneralFastSpecValueCompare(_Inout_ FastSpecValueCompareHandleData* _pHandleData);
 
-        /// <summary>
-        /// 是否允许无障碍接口将无法感知到其存在。
-        /// </summary>
-        /// <returns>如果为 true，那么允许无障碍设施访问。反之不允许。</returns>
-        bool __YYAPI IsAccessible();
+            bool __YYAPI ParentPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        AccessibleRole __YYAPI GetAccRole();
+            virtual bool __YYAPI OnParentPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
-        uString __YYAPI GetAccName();
+            virtual bool __YYAPI GetParentPropDependencies(GetDependenciesHandleData* _pHandleData);
 
-        uString __YYAPI GetAccNameAsDisplayed();
+            bool __YYAPI VisiblePropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        uString __YYAPI GetContentStringAsDisplayed();
+            virtual bool __YYAPI OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
-        uString __YYAPI GetAccHelp();
+            virtual bool __YYAPI GetVisiblePropDependencies(_In_ GetDependenciesHandleData* _pHandleData);
 
-        uString __YYAPI GetAccDescription();
+            bool __YYAPI GetVisiblePropValue(_In_ GetValueHandleData* _pHandleData);
 
-        uString __YYAPI GetAccItemType();
+            bool __YYAPI SetVisiblePropValue(_In_ SetValueHandleData* _pHandleData);
 
-        uString __YYAPI GetAccItemStatus();
+            bool __YYAPI EnabledPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        virtual HRESULT __YYAPI GetAccessibleProvider(_Outptr_ ElementAccessibleProvider** _ppAccessibleProvider);
+            virtual bool __YYAPI OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
-        virtual HRESULT __YYAPI DefaultAction();
+            bool __YYAPI ActivePropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        void __YYAPI ElementToWindow(_Inout_ Point* _poPoint);
+            virtual bool __YYAPI OnActivePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
 
-        void __YYAPI WindowToElement(_Inout_ Point* _poPoint);
+            bool __YYAPI DpiPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-	protected:
-        RefPtr<IDWriteTextLayout> __YYAPI GetTextLayout(Size _ConstraintSize);
+            virtual bool __YYAPI OnDpiPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
-		// Value Update
-        HRESULT __YYAPI PreSourceChange(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue);
-		HRESULT __YYAPI PostSourceChange();
-        HRESULT __YYAPI GetDependencies(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, DepRecs* pdr, int iPCSrcRoot, const Value& _NewValue, DeferCycle* _pDeferCycle);
+            void __YYAPI FlushDesiredSize(DeferCycle* _pDeferCycle);
 
-        static HRESULT __YYAPI AddDependency(Element* _pElement, const PropertyInfo& _Prop, PropertyIndicies _eIndicies, DepRecs* pdr, DeferCycle* _pDeferCycle);
-            
-        HRESULT __YYAPI GetBuriedSheetDependencies(const PropertyInfo* _pProp, Element* _pElement, DepRecs* _pDR, DeferCycle* _pDeferCycle);
+            void __YYAPI FlushLayout(DeferCycle* _pDeferCycle);
 
-        static void __YYAPI VoidPCNotifyTree(int, DeferCycle*);
+            static bool __YYAPI SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle);
 
-		/// <summary>
-		/// 通用处理程序，可以处理属性的默认缓存行为。
-		/// </summary>
-		/// <param name="_eType"></param>
-		/// <param name="_pHandleData"></param>
-		/// <returns>如果被处理，则返回 true。</returns>
-        bool __YYAPI GeneralHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            static void __YYAPI TransferGroupFlags(Element* pElement, uint32_t _fGroups);
 
-        template<typename _HandleType>
-        bool __YYAPI GeneralHandle(_Inout_ _HandleType* _pHandleData)
-        {
-            return GeneralHandle(_HandleType::HandleType, _pHandleData);
-        }
-            
-        Value __YYAPI GetGeneralCacheValue(
-            ValueType _eType,
-            uint16_t _uOffsetToCache,
-            uint8_t _uCacheBit,
-            uint16_t _uOffsetToHasCache,
-            uint8_t _uHasCacheBit
-            );
+            static bool __YYAPI MarkElementForDesiredSize(Element* _pElement);
 
-        bool __YYAPI GetGeneralLocalValue(_Inout_ GetValueHandleData* _pHandleData);
+            static bool __YYAPI MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew);
 
-        bool __YYAPI GetGeneralSpecifiedValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI SetNeedsLayout(uint32_t _fNeedsLayoutNew);
 
-        bool __YYAPI SetGeneralCacheValue(
-            ValueType _eType,
-            uint16_t _uOffsetToCache,
-            uint8_t _uCacheBit,
-            uint16_t _uOffsetToHasCache,
-            uint8_t _uHasCacheBit,
-            Value _NewValue);
+            Size __YYAPI UpdateDesiredSize(Size _ConstraintSize);
 
-        bool __YYAPI SetGeneralLocalValue(_Inout_ SetValueHandleData* _pHandleData);
+            void __YYAPI UpdateLayoutPosition(Point _LayoutPosition);
 
-        bool __YYAPI SetGeneralSpecifiedValue(_Inout_ SetValueHandleData* _pHandleData);
+            void __YYAPI UpdateLayoutSize(Size _LayoutSize);
 
-        bool __YYAPI GetGeneralFastSpecValueCompare(_Inout_ FastSpecValueCompareHandleData* _pHandleData);
+            bool __YYAPI ExtentPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        bool __YYAPI ParentPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI GetExtentPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-		virtual bool __YYAPI OnParentPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
-            
-        virtual bool __YYAPI GetParentPropDependencies(GetDependenciesHandleData* _pHandleData);
+            bool __YYAPI LocationPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        bool __YYAPI VisiblePropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
-            
-        virtual bool __YYAPI OnVisiblePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
-            
-        virtual bool __YYAPI GetVisiblePropDependencies(_In_ GetDependenciesHandleData* _pHandleData);
+            bool __YYAPI GetLocationPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        bool __YYAPI GetVisiblePropValue(_In_ GetValueHandleData* _pHandleData);
-            
-        bool __YYAPI SetVisiblePropValue(_In_ SetValueHandleData* _pHandleData);
+            bool __YYAPI MouseFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-		bool __YYAPI EnabledPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
-            
-        virtual bool __YYAPI OnEnabledPropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
+            virtual bool __YYAPI OnMouseFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
-		bool __YYAPI ActivePropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI GetMouseFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        virtual bool __YYAPI OnActivePropChanged(_In_ OnPropertyChangedHandleData* _pHandle);
-			
-        bool __YYAPI DpiPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI MouseFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        virtual bool __YYAPI OnDpiPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+            bool __YYAPI GetMouseFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        void __YYAPI FlushDesiredSize(DeferCycle* _pDeferCycle);
+            bool __YYAPI KeyboardFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        void __YYAPI FlushLayout(DeferCycle* _pDeferCycle);
+            virtual bool __YYAPI OnKeyboardFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
-        static bool __YYAPI SetGroupChanges(Element* pElement, uint32_t _fGroups, DeferCycle* pDeferCycle);
+            bool __YYAPI GetKeyboardFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        static void __YYAPI TransferGroupFlags(Element* pElement, uint32_t _fGroups);
-            
-        static bool __YYAPI MarkElementForDesiredSize(Element* _pElement);
+            bool __YYAPI KeyboardFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        static bool __YYAPI MarkElementForLayout(Element* _pElement, uint32_t _fNeedsLayoutNew);
+            bool __YYAPI GetKeyboardFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        bool __YYAPI SetNeedsLayout(uint32_t _fNeedsLayoutNew);
+            bool __YYAPI FocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        Size __YYAPI UpdateDesiredSize(Size _ConstraintSize);
+            virtual bool __YYAPI OnFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
-        void __YYAPI UpdateLayoutPosition(Point _LayoutPosition);
-            
-        void __YYAPI UpdateLayoutSize(Size _LayoutSize);
+            bool __YYAPI GetFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        bool __YYAPI ExtentPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI FocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        bool __YYAPI GetExtentPropValue(_Inout_ GetValueHandleData* _pHandleData);
+            bool __YYAPI GetFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
-        bool __YYAPI LocationPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            bool __YYAPI SheetPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
-        bool __YYAPI GetLocationPropValue(_Inout_ GetValueHandleData* _pHandleData);
+            virtual bool __YYAPI GetSheetPropDependencies(_Inout_ GetDependenciesHandleData* _pHandleData);
 
-        bool __YYAPI MouseFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
-            
-        virtual bool __YYAPI OnMouseFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+            virtual HRESULT __YYAPI OnHosted(Window* _pNewWindow);
 
-        bool __YYAPI GetMouseFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
-            
-        bool __YYAPI MouseFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            virtual HRESULT __YYAPI OnUnHosted(Window* _pOldWindow);
 
-        bool __YYAPI GetMouseFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
+            /// <summary>
+            /// GetAdjacent 过程中，当前元素自身是否可以被选择。
+            /// </summary>
+            /// <param name="_eNavigate"></param>
+            /// <param name="_pnr"></param>
+            /// <param name="_bKeyableOnly"></param>
+            /// <returns>如果返回 S_OK，那么当前元素可以被选择。
+            /// 如果返回 大于 0，那么当前元素不能被选择，但是其子元素可能可以被选择。
+            /// 如果返回 小于 0，当前元素及其子元素均不可能被选择。</returns>
+            virtual HRESULT __YYAPI CanChooseSelf(_In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
 
-        bool __YYAPI KeyboardFocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
-            
-        virtual bool __YYAPI OnKeyboardFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+            /// <summary>
+            /// GetAdjacent 过程中，尝试从孩子中选取附近的元素。
+            /// </summary>
+            /// <param name="_pFrom"></param>
+            /// <param name="_eNavigate"></param>
+            /// <param name="_pnr"></param>
+            /// <param name="_bKeyableOnly"></param>
+            /// <returns>需要移动的新元素。</returns>
+            virtual Element* __YYAPI GetAdjacentChild(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
 
-        bool __YYAPI GetKeyboardFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
+            /// <summary>
+            /// 选取靠近_pFrom 附近的元素。此函数可能向上搜索。
+            /// </summary>
+            /// <param name="_pFrom"></param>
+            /// <param name="_eNavigate"></param>
+            /// <param name="_pnr"></param>
+            /// <param name="_bKeyableOnly"></param>
+            /// <returns></returns>
+            virtual Element* __YYAPI GetAdjacent(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
 
-        bool __YYAPI KeyboardFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
-            
-        bool __YYAPI GetKeyboardFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
+            virtual bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
 
-        bool __YYAPI FocusedPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            virtual bool __YYAPI OnKeyUp(const KeyboardEvent& _KeyEvent);
 
-        virtual bool __YYAPI OnFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+            virtual bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
 
-        bool __YYAPI GetFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
+            /// <summary>
+            /// 处理键盘导航事件。
+            /// </summary>
+            /// <param name="_Event">键盘导航事件。</param>
+            /// <returns>如果已经处理，则返回 true</returns>
+            virtual bool __YYAPI OnKeyboardNavigate(const KeyboardNavigateEvent& _Event);
 
-        bool __YYAPI FocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
-            
-        bool __YYAPI GetFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
+            virtual bool __YYAPI OnLeftButtonDown(const MouseEvent& _Event);
 
-        bool __YYAPI SheetPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+            virtual bool __YYAPI OnLeftButtonUp(const MouseEvent& _Event);
 
-        virtual bool __YYAPI GetSheetPropDependencies(_Inout_ GetDependenciesHandleData* _pHandleData);
-            
-        virtual HRESULT __YYAPI OnHosted(Window* _pNewWindow);
+            virtual bool __YYAPI OnClick(const ClickEvent& _Event);
 
-        virtual HRESULT __YYAPI OnUnHosted(Window* _pOldWindow);
-            
-        /// <summary>
-        /// GetAdjacent 过程中，当前元素自身是否可以被选择。
-        /// </summary>
-        /// <param name="_eNavigate"></param>
-        /// <param name="_pnr"></param>
-        /// <param name="_bKeyableOnly"></param>
-        /// <returns>如果返回 S_OK，那么当前元素可以被选择。
-        /// 如果返回 大于 0，那么当前元素不能被选择，但是其子元素可能可以被选择。
-        /// 如果返回 小于 0，当前元素及其子元素均不可能被选择。</returns>
-        virtual HRESULT __YYAPI CanChooseSelf(_In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
+            virtual bool __YYAPI OnMouseMove(const MouseEvent& _Event);
 
-        /// <summary>
-        /// GetAdjacent 过程中，尝试从孩子中选取附近的元素。
-        /// </summary>
-        /// <param name="_pFrom"></param>
-        /// <param name="_eNavigate"></param>
-        /// <param name="_pnr"></param>
-        /// <param name="_bKeyableOnly"></param>
-        /// <returns>需要移动的新元素。</returns>
-        virtual Element* __YYAPI GetAdjacentChild(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
-
-        /// <summary>
-        /// 选取靠近_pFrom 附近的元素。此函数可能向上搜索。
-        /// </summary>
-        /// <param name="_pFrom"></param>
-        /// <param name="_eNavigate"></param>
-        /// <param name="_pnr"></param>
-        /// <param name="_bKeyableOnly"></param>
-        /// <returns></returns>
-        virtual Element* __YYAPI GetAdjacent(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
-
-        virtual bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
-
-        virtual bool __YYAPI OnKeyUp(const KeyboardEvent& _KeyEvent);
-
-        virtual bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
-
-        /// <summary>
-        /// 处理键盘导航事件。
-        /// </summary>
-        /// <param name="_Event">键盘导航事件。</param>
-        /// <returns>如果已经处理，则返回 true</returns>
-        virtual bool __YYAPI OnKeyboardNavigate(const KeyboardNavigateEvent& _Event);
-
-        virtual bool __YYAPI OnLeftButtonDown(const MouseEvent& _Event);
-
-        virtual bool __YYAPI OnLeftButtonUp(const MouseEvent& _Event);
-
-        virtual bool __YYAPI OnClick(const ClickEvent& _Event);
-
-        virtual bool __YYAPI OnMouseMove(const MouseEvent& _Event);
-
-	};
+        };
+    }
 }
 
 #pragma pack(pop)

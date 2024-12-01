@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include <wchar.h>
 
 #include <Base/YY.h>
 
-// ÎªC++Ìá¹©²»Í¬×Ö·ûÀàĞÍµÄÖØÔØ
+// ä¸ºC++æä¾›ä¸åŒå­—ç¬¦ç±»å‹çš„é‡è½½
 
 namespace YY
 {
@@ -20,11 +20,13 @@ namespace YY
             typedef achar_t _CharT;
         };
 
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         template<>
-        struct CharConfing<u8char_t>
+        struct CharConfing<char8_t>
         {
-            typedef u8char_t _CharT;
+            typedef char8_t _CharT;
         };
+#endif
 
         template<>
         struct CharConfing<u16char_t>
@@ -56,11 +58,13 @@ namespace YY
             return _szSrc ? strlen((const char*)_szSrc) : 0;
         }
 
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         template<>
-        inline constexpr size_t __YYAPI GetStringLength(_In_opt_z_ const u8char_t* _szSrc)
+        inline constexpr size_t __YYAPI GetStringLength(_In_opt_z_ const char8_t* _szSrc)
         {
             return _szSrc ? strlen((const char*)_szSrc) : 0;
         }
+#endif
 
         template<>
         inline constexpr size_t __YYAPI GetStringLength(_In_opt_z_ const wchar_t* _szSrc)
@@ -75,7 +79,7 @@ namespace YY
         }
 
         /// <summary>
-        /// °´ ASCII ¹æÔò£¬½«ÊäÈëµÄ×Ö·û×ª»»Îª´óĞ´¡£
+        /// æŒ‰ ASCII è§„åˆ™ï¼Œå°†è¾“å…¥çš„å­—ç¬¦è½¬æ¢ä¸ºå¤§å†™ã€‚
         /// </summary>
         /// <param name="_ch"></param>
         /// <returns></returns>
@@ -100,8 +104,9 @@ namespace YY
 #endif
         }
 
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         inline int __YYAPI GetStringFormatLength(
-            _In_z_ _Printf_format_string_ u8char_t const* const _Format,
+            _In_z_ _Printf_format_string_ char8_t const* const _Format,
             va_list _ArgList)
         {
 #ifdef _MSC_VER
@@ -109,8 +114,8 @@ namespace YY
 #else
             return vsnprintf(nullptr, 0, (const char*)_Format, _ArgList);
 #endif
-
         }
+#endif
 
         inline int __YYAPI GetStringFormatLength(
             _In_z_ _Printf_format_string_ wchar_t const* const _Format,
@@ -136,10 +141,11 @@ namespace YY
 #endif
         }
 
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         _Success_(return >= 0) inline int __YYAPI FormatStringV(
-            _Out_writes_(_BufferCount) _Always_(_Post_z_) u8char_t* const _Buffer,
+            _Out_writes_(_BufferCount) _Always_(_Post_z_) char8_t* const _Buffer,
             _In_ size_t const _BufferCount,
-            _In_z_ _Printf_format_string_ u8char_t const* const _Format,
+            _In_z_ _Printf_format_string_ char8_t const* const _Format,
             va_list _ArgList)
         {
 #ifdef _MSC_VER
@@ -148,6 +154,7 @@ namespace YY
             return vsnprintf((char*)_Buffer, _BufferCount, (const char*)_Format, _ArgList);
 #endif
         }
+#endif
 
         _Success_(return >= 0) inline int __YYAPI FormatStringV(
             _Out_writes_(_BufferCount) _Always_(_Post_z_) wchar_t* const _Buffer,
@@ -210,8 +217,9 @@ namespace YY
             return strcmp((const char*)_szLeft, (const char*)_szRight);
         }
 
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         template<>
-        inline int __YYAPI StringCompare(_In_opt_z_ const u8char_t* _szLeft, _In_opt_z_ const u8char_t* _szRight)
+        inline int __YYAPI StringCompare(_In_opt_z_ const char8_t* _szLeft, _In_opt_z_ const char8_t* _szRight)
         {
             if (_szLeft == _szRight)
                 return 0;
@@ -228,6 +236,7 @@ namespace YY
 
             return strcmp((const char*)_szLeft, (const char*)_szRight);
         }
+#endif
 
         template<>
         inline int __YYAPI StringCompare(_In_opt_z_ const wchar_t* _szLeft, _In_opt_z_ const wchar_t* _szRight)
@@ -249,14 +258,14 @@ namespace YY
         }
 
         /// <summary>
-        /// ´ø³¤¶ÈµÄ×Ö·û´®±È½Ï¡£
+        /// å¸¦é•¿åº¦çš„å­—ç¬¦ä¸²æ¯”è¾ƒã€‚
         /// </summary>
         /// <param name="_szLeft"></param>
         /// <param name="_szRight"></param>
         /// <param name="_uCount"></param>
-        /// <returns>Èç¹û return == 0£¬ÄÇÃ´_szLeft ==_szRight
-        /// Èç¹û return ´óÓÚ 0£¬ÄÇÃ´ _szLeft ´óÓÚ _szRight
-        /// Èç¹û return Ğ¡ÓÚ 0£¬ÄÇÃ´ _szLeft Ğ¡ÓÚ_szRight</returns>
+        /// <returns>å¦‚æœ return == 0ï¼Œé‚£ä¹ˆ_szLeft ==_szRight
+        /// å¦‚æœ return å¤§äº 0ï¼Œé‚£ä¹ˆ _szLeft å¤§äº _szRight
+        /// å¦‚æœ return å°äº 0ï¼Œé‚£ä¹ˆ _szLeft å°äº_szRight</returns>
         template<typename _CharT, typename = typename CharConfing<_CharT>::_CharT>
         inline int __YYAPI StringCompare(
             _In_reads_(_uCount) const _CharT* _szLeft,
@@ -290,10 +299,11 @@ namespace YY
             return memcmp(_szLeft, _szRight, _uCount);
         }
 
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         template<>
         inline int __YYAPI StringCompare(
-            _In_reads_(_uCount) const u8char_t* _szLeft,
-            _In_reads_(_uCount) const u8char_t* _szRight,
+            _In_reads_(_uCount) const char8_t* _szLeft,
+            _In_reads_(_uCount) const char8_t* _szRight,
             _In_ size_t _uCount)
         {
             if (_uCount == 0)
@@ -304,6 +314,7 @@ namespace YY
 
             return memcmp(_szLeft, _szRight, _uCount);
         }
+#endif
 
         template<>
         inline int __YYAPI StringCompare(
@@ -321,14 +332,14 @@ namespace YY
         }
 
         /// <summary>
-        /// °´ASCII¹æÔòºöÂÔ´óĞ¡Ğ´±È½Ï¡£
+        /// æŒ‰ASCIIè§„åˆ™å¿½ç•¥å¤§å°å†™æ¯”è¾ƒã€‚
         /// </summary>
         /// <param name="_szLeft"></param>
         /// <param name="_szRight"></param>
         /// <param name="_uCount"></param>
-        /// <returns>Èç¹û return == 0£¬ÄÇÃ´_szLeft ==_szRight
-        /// Èç¹û return ´óÓÚ 0£¬ÄÇÃ´ _szLeft ´óÓÚ _szRight
-        /// Èç¹û return Ğ¡ÓÚ 0£¬ÄÇÃ´ _szLeft Ğ¡ÓÚ_szRight</returns>
+        /// <returns>å¦‚æœ return == 0ï¼Œé‚£ä¹ˆ_szLeft ==_szRight
+        /// å¦‚æœ return å¤§äº 0ï¼Œé‚£ä¹ˆ _szLeft å¤§äº _szRight
+        /// å¦‚æœ return å°äº 0ï¼Œé‚£ä¹ˆ _szLeft å°äº_szRight</returns>
         template<typename _CharT, typename = typename CharConfing<_CharT>::_CharT>
         inline int __YYAPI StringCompareIgnoreAsASCII(_In_opt_z_ const _CharT* _szLeft, _In_opt_z_ const _CharT* _szRight)
         {
@@ -355,14 +366,14 @@ namespace YY
         }
 
         /// <summary>
-        /// °´ASCII¹æÔòºöÂÔ´óĞ¡Ğ´±È½Ï¡£
+        /// æŒ‰ASCIIè§„åˆ™å¿½ç•¥å¤§å°å†™æ¯”è¾ƒã€‚
         /// </summary>
         /// <param name="_szLeft"></param>
         /// <param name="_szRight"></param>
         /// <param name="_uCount"></param>
-        /// <returns>Èç¹û return == 0£¬ÄÇÃ´_szLeft ==_szRight
-        /// Èç¹û return ´óÓÚ 0£¬ÄÇÃ´ _szLeft ´óÓÚ _szRight
-        /// Èç¹û return Ğ¡ÓÚ 0£¬ÄÇÃ´ _szLeft Ğ¡ÓÚ_szRight</returns>
+        /// <returns>å¦‚æœ return == 0ï¼Œé‚£ä¹ˆ_szLeft ==_szRight
+        /// å¦‚æœ return å¤§äº 0ï¼Œé‚£ä¹ˆ _szLeft å¤§äº _szRight
+        /// å¦‚æœ return å°äº 0ï¼Œé‚£ä¹ˆ _szLeft å°äº_szRight</returns>
         template<typename _CharT, typename = typename CharConfing<_CharT>::_CharT>
         inline int __YYAPI StringCompareIgnoreAsASCII(
             _In_reads_(_uCount) const _CharT* _szLeft,

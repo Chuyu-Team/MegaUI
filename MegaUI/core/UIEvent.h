@@ -97,10 +97,20 @@ namespace YY
         struct BaseEvent : public PlatformEvent
         {
             // 产生事件的Element
-            Element* pTarget;
+            Element* pTarget = nullptr;
             EventId eCode;
             // EventModifier 位组合
-            EventModifier fModifiers;
+            EventModifier fModifiers = EventModifier::None;
+
+#if !defined(_HAS_CXX17) || _HAS_CXX17 == 0
+            constexpr BaseEvent(const PlatformEvent& _oPlatformEvent, Element* _pTarget, EventId eCode, EventModifier _fModifiers = EventModifier::None)
+                : PlatformEvent(_oPlatformEvent)
+                , pTarget(_pTarget)
+                , eCode(eCode)
+                , fModifiers(_fModifiers)
+            {
+            }
+#endif
 
             static EventModifier __YYAPI GetEventModifier()
             {

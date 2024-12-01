@@ -70,13 +70,6 @@ namespace YY
 
                 return _pSharedData->iThickness;
             }
-
-            bool __YYAPI operator==(std::nullptr_t) const
-            {
-                return pSharedData.Get() == nullptr;
-            }
-
-            bool __YYAPI operator==(const Pen& _oOther) const = default;
         };
     }
 } // namespace YY

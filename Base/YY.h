@@ -134,7 +134,7 @@ namespace YY
         typedef char8_t u8char_t;
 #else
         // UTF8 字符
-        typedef unsigned char u8char_t;
+        typedef char u8char_t;
 #endif
 
         // UTF16字符，Windows平台 wchar_t，就是UTF16

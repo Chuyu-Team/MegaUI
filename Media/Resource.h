@@ -54,7 +54,7 @@ namespace YY
             }
 
             template<class Type>
-            Type TryCast() const noexcept
+            Type __YYAPI TryCast() const noexcept
             {
                 Type _Tmp;
                 if (auto _pCurrentMetadata = GetResourceMetadata())
@@ -79,21 +79,37 @@ namespace YY
                 return _Tmp;
             }
 
-            Resource& operator=(std::nullptr_t) noexcept
+            Resource& __YYAPI operator=(std::nullptr_t) noexcept
             {
                 pSharedData = nullptr;
                 return *this;
             }
 
-            Resource& operator=(const Resource& _oOther) noexcept = default;
+            Resource& __YYAPI operator=(const Resource& _oOther) noexcept = default;
 
-            Resource& operator=(Resource&& _oOther) noexcept = default;
+            Resource& __YYAPI operator=(Resource&& _oOther) noexcept = default;
 
-            bool operator==(const Resource& _oOther) const noexcept = default;
-            
-            bool operator==(const std::nullptr_t) const noexcept
+#if defined(_HAS_CXX20) && _HAS_CXX20
+            bool __YYAPI operator==(const Resource& _oOther) const noexcept = default;
+#else
+            bool __YYAPI operator==(const Resource& _oOther) const noexcept
+            {
+                return pSharedData == _oOther.pSharedData;
+            }
+
+            bool __YYAPI operator!=(const Resource& _oOther) const noexcept
+            {
+                return pSharedData != _oOther.pSharedData;
+            }
+#endif
+            bool __YYAPI operator==(const std::nullptr_t) const noexcept
             {
                 return pSharedData == nullptr;
+            }
+
+            bool __YYAPI operator!=(const std::nullptr_t) const noexcept
+            {
+                return pSharedData != nullptr;
             }
         };
 

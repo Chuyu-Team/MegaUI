@@ -448,7 +448,7 @@ namespace YY
                     auto _pWaitHandleHashList = GetWaitHandleHashList(_pTask->hHandle);
 
                     {
-                        AutoLock _oReadList(_pWaitHandleHashList->oLock);
+                        AutoLock<SRWLock> _oReadList(_pWaitHandleHashList->oLock);
                         auto _pWaitItem = _pWaitHandleHashList->FindWaitItem(_pTask->hHandle);
                         if (_pWaitItem)
                         {
@@ -474,13 +474,13 @@ namespace YY
                     _pWaitHandleEntry->oWaitTaskLists.PushBack(_pTask.Detach());
 
                     {
-                        AutoLock _oInsertList(_pWaitHandleHashList->oLock);
+                        AutoLock<SRWLock> _oInsertList(_pWaitHandleHashList->oLock);
                         _pWaitHandleHashList->Insert(_pWaitHandleEntry);
                     }
 
                     bool _bFirstWaitHandle = false;
                     {
-                        AutoLock _oAddWaitTaskLock(_pWaitHandleBlock->oLock);
+                        AutoLock<SRWLock> _oAddWaitTaskLock(_pWaitHandleBlock->oLock);
                         _bFirstWaitHandle = _pWaitHandleBlock->AddWaitHandleEntryNolock(_pWaitHandleEntry);
                     }
 
@@ -618,7 +618,7 @@ namespace YY
                     HANDLE _hWaitEvent = nullptr;
                     WaitHandleEntry* _pWaitHandleEntry = nullptr;
                     {
-                        AutoLock _oDispatchLock(oWaitBlockTaskRunner.oLock);
+                        AutoLock<SRWLock> _oDispatchLock(oWaitBlockTaskRunner.oLock);
                         if (oWaitBlockTaskRunner.cWaitHandle <= _uDispatchIndex)
                             return 0;
 
@@ -645,7 +645,7 @@ namespace YY
 
                     {
                         auto _pWaitHandleHashList = GetWaitHandleHashList(_hWaitEvent);
-                        AutoLock _oRemoveWaitHandleEntry(_pWaitHandleHashList->oLock);
+                        AutoLock<SRWLock> _oRemoveWaitHandleEntry(_pWaitHandleHashList->oLock);
                         _pWaitHandleHashList->Remove(_pWaitHandleEntry);
                     }
 

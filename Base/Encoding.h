@@ -42,11 +42,13 @@ namespace YY
             static constexpr Encoding eEncoding = Encoding::ANSI;
         };
 
+#if defined(__cpp_lib_char8_t) || defined(__cpp_char8_t)
         template<>
-        struct DetaultEncoding<u8char_t>
+        struct DetaultEncoding<char8_t>
         {
             static constexpr Encoding eEncoding = Encoding::UTF8;
         };
+#endif
         
         template<>
         struct DetaultEncoding<u16char_t>
