@@ -132,7 +132,8 @@ namespace YY
                         // uPushLock 占用1bit，所以 uWakeupCount += 1 等价于 uWakeupCountAndPushLock += 2
                         if (_uWakeupCount == 0)
                         {
-                            ProcessingTimerTasks();
+                            TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                            ProcessingTimerTasks(_oCurrent);
                             if (_uWakeupCountBackup && Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw * _uWakeupCountBackup) >= WakeupOnceRaw)
                             {
                                 // 队列已经插入新的Task，重新检查消息循环。
@@ -143,8 +144,9 @@ namespace YY
                             else
                             {
                                 // uWakeupCount 已经归零，准备进入睡眠状态
-                                const auto _uWaitTime = GetWaitTimeSpan(GetMinimumWakeupTickCount());
-                                const auto _uWaitResult = MsgWaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, _uWaitTime, QS_ALLINPUT, MWMO_ALERTABLE);
+                                const auto _uTimerWakeupTickCount = GetMinimumWakeupTickCount();
+                                const auto _uWaitWakeupTickCount = oDefaultWaitBlock.GetWakeupTickCountNolock(_oCurrent);
+                                const auto _uWaitResult = MsgWaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, GetWaitTimeSpan((std::min)(_uTimerWakeupTickCount, _uWaitWakeupTickCount)), QS_ALLINPUT, MWMO_ALERTABLE);
                                 // 消息循环本身因为处于激活状态，所以，重新 + 1
                                 Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
 
@@ -174,8 +176,14 @@ namespace YY
                                 }
                                 else
                                 {
-                                    // 因为是MsgWait，额外 cWaitHandle，代表消息循环
-                                    ProcessingWaitTasks(_uWaitResult, oDefaultWaitBlock.cWaitHandle + 1, oDefaultWaitBlock.cWaitHandle);
+                                    if (_uWaitResult == WAIT_TIMEOUT && _uTimerWakeupTickCount < _uWaitWakeupTickCount)
+                                    {        
+                                    }
+                                    else
+                                    {
+                                        // 因为是MsgWait，额外 cWaitHandle，代表消息循环
+                                        ProcessingWaitTasks(_uWaitResult, oDefaultWaitBlock.cWaitHandle + 1, oDefaultWaitBlock.cWaitHandle);
+                                    }
                                 }
                             }
                             break;

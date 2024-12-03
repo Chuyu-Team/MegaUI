@@ -18,10 +18,7 @@ namespace YY
             void __YYAPI TaskEntry::Wakeup(HRESULT _hrCode)
             {
                 hr = _hrCode;
-                if (HasFlags(fStyle, TaskEntryStyle::Sync))
-                {
-                    WakeByAddressAll(&hr);
-                }
+                WakeByAddressAll(&hr);
             }
 
             bool __YYAPI TaskEntry::Wait(uint32_t _uMilliseconds)

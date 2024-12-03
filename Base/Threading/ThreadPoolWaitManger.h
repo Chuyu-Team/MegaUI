@@ -8,6 +8,7 @@
 #include <Base/Memory/Alloc.h>
 #include <Base/Memory/UniquePtr.h>
 #include <Base/Sync/AutoLock.h>
+#include <Base/Threading/TaskRunnerImpl.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -97,6 +98,19 @@ namespace YY
                     return _pRet;
                 }
 
+                void __YYAPI Insert(_In_ ItemType* _pWhere, _In_ ItemType* _pEntry) noexcept
+                {
+                    _pEntry->pPrior = _pWhere->pPrior;
+                    _pEntry->pNext = _pWhere;
+
+                    _pWhere->pPrior = _pEntry;
+
+                    if (pFirst == _pWhere)
+                    {
+                        pFirst = _pEntry;
+                    }
+                }
+
                 void __YYAPI Insert(_In_ ItemType* _pEntry) noexcept
                 {
                     _pEntry->pPrior = nullptr;
@@ -112,9 +126,14 @@ namespace YY
                     }
                 }
 
-                _Ret_maybenull_ ItemType* __YYAPI GetFirst() noexcept
+                _Ret_maybenull_ ItemType* __YYAPI GetFirst() const noexcept
                 {
                     return pFirst;
+                }
+
+                _Ret_maybenull_ ItemType* __YYAPI GetLast() const noexcept
+                {
+                    return pLast;
                 }
 
                 void __YYAPI Remove(_In_ ItemType* _pEntry) noexcept
@@ -153,6 +172,58 @@ namespace YY
 
             struct WaitTaskList : public List<Wait>
             {
+                /// <summary>
+                /// 按超时时间，从近到远排序插入列表
+                /// </summary>
+                /// <param name="_pWait"></param>
+                /// <returns></returns>
+                void __YYAPI SortInsert(Wait* _pWait) noexcept
+                {
+                    if (!_pWait)
+                        return;
+
+                    auto _pLast = GetLast();
+                    if (_pLast == nullptr || _pLast->uTimeOut <= _pWait->uTimeOut)
+                    {
+                        PushBack(_pWait);
+                        return;
+                    }
+
+                    for (auto _pItem = GetFirst(); _pItem; _pItem= _pItem->pNext)
+                    {
+                        if (_pItem->uTimeOut > _pWait->uTimeOut)
+                        {
+                            Insert(_pItem, _pWait);
+                            return;
+                        }
+                    }
+                    
+                    // 列表应该是有序的，为什么会出现在这里呢？
+                    assert(false);
+                }
+
+                /// <summary>
+                /// 将所有超时的任务移动到 _pPendingTimeout。
+                /// </summary>
+                /// <param name="_uCurrentTickCount">当前的 TickCount 计数</param>
+                /// <param name="_pPendingTimeout">保存等待超时任务的链表。</param>
+                /// <returns>
+                /// 返回值代表Entry内是否任然存在元素。
+                /// 返回 true: Entry内任然存在元素。
+                /// 返回 false: Entry 已经为空，可以移除。
+                /// </returns>
+                bool __YYAPI ProcessingTimeoutNolock(_In_ TickCount<TimePrecise::Millisecond> _uCurrentTickCount, _Out_ WaitTaskList* _pPendingTimeout) noexcept
+                {
+                    while (auto _pWait = GetFirst())
+                    {
+                        if (_pWait->uTimeOut > _uCurrentTickCount)
+                            break;
+
+                        _pPendingTimeout->PushBack(PopFront());
+                    }
+
+                    return !IsEmpty();
+                }
             };
 
             /// <summary>
@@ -166,7 +237,29 @@ namespace YY
                     static constexpr auto kMaxWaitHandleCount = MAXIMUM_WAIT_OBJECTS - 1;
                     HANDLE hWaitHandles[MAXIMUM_WAIT_OBJECTS] = {};
                     WaitTaskList oWaitTaskLists[MAXIMUM_WAIT_OBJECTS] = {};
-                    volatile DWORD cWaitHandle = 0;
+                    volatile uint32_t cWaitHandle = 0;
+
+                    TickCount<TimePrecise::Millisecond> __YYAPI GetWakeupTickCountNolock(const TickCount<TimePrecise::Millisecond> _uTickCount) const noexcept
+                    {
+                        auto _uMinimumWakeupTickCount = TickCount<TimePrecise::Millisecond>::GetMax();
+                        for (size_t i = 0; i < cWaitHandle; ++i)
+                        {
+                            auto& _oWaitTaskList = oWaitTaskLists[i];
+        
+                            if (auto _pFirst = _oWaitTaskList.GetFirst())
+                            {
+                                if (_uMinimumWakeupTickCount > _pFirst->uTimeOut)
+                                {
+                                    if (_uTickCount >= _pFirst->uTimeOut)
+                                        return _uTickCount;
+
+                                    _uMinimumWakeupTickCount = _pFirst->uTimeOut;
+                                }
+                            }
+                        }
+
+                        return _uMinimumWakeupTickCount;
+                    }
                 };
 
             protected:
@@ -214,7 +307,7 @@ namespace YY
                             ++oDefaultWaitBlock.cWaitHandle;
                             oDefaultWaitBlock.hWaitHandles[i] = _pWaitTask->hHandle;
                         }
-                        oDefaultWaitBlock.oWaitTaskLists[i].PushBack(_pWaitTask.Detach());
+                        oDefaultWaitBlock.oWaitTaskLists[i].SortInsert(_pWaitTask.Detach());
                         return S_OK;
                     }
                 }
@@ -241,6 +334,34 @@ namespace YY
                     else if (WAIT_IO_COMPLETION == uWaitResult)
                     {
                         // APC被执行，不是存在信号
+                    }
+                    else if (WAIT_TIMEOUT == uWaitResult)
+                    {
+                        WaitTaskList _oDispatchPending;
+                        const auto _uCurrentTickCount = TickCount<TimePrecise::Millisecond>::GetCurrent();
+
+                        for (size_t i = oDefaultWaitBlock.cWaitHandle; i;)
+                        {
+                            --i;
+                            if (!oDefaultWaitBlock.oWaitTaskLists[i].ProcessingTimeoutNolock(_uCurrentTickCount, &_oDispatchPending))
+                            {
+                                --oDefaultWaitBlock.cWaitHandle;
+                                if (oDefaultWaitBlock.cWaitHandle != i)
+                                {
+                                    oDefaultWaitBlock.hWaitHandles[i] = oDefaultWaitBlock.hWaitHandles[oDefaultWaitBlock.cWaitHandle];
+                                    oDefaultWaitBlock.oWaitTaskLists[i] = oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle];
+                                }
+                                oDefaultWaitBlock.hWaitHandles[oDefaultWaitBlock.cWaitHandle] = nullptr;
+                                oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle].Flush();
+                            }                     
+                        }
+
+                        while (auto _pWaitTask = _oDispatchPending.PopFront())
+                        {
+                            _pWaitTask->uWaitResult = WAIT_TIMEOUT;
+                            DispatchWaitTask(RefPtr<Wait>::FromPtr(_pWaitTask));
+                            ++_cTaskProcessed;
+                        }
                     }
                     else/* if (WAIT_FAILED == uWaitResult)*/
                     {
@@ -315,7 +436,7 @@ namespace YY
                     WaitHandleEntry* pNext = nullptr;
                     HANDLE hWaitHandle = nullptr;
                     WaitHandleBlock* pOwnerWaitHandleBlock = nullptr;
-                    WaitTaskList oWaitTaskLists;
+                    WaitTaskList oWaitTaskList;
                 };
 
                 struct WaitHandleBlock
@@ -333,7 +454,7 @@ namespace YY
                     };
 
                     WaitHandleEntry* oWaitHandleEntries[MAXIMUM_WAIT_OBJECTS] = {};
-                    volatile DWORD cWaitHandle = 1;
+                    volatile uint32_t cWaitHandle = 1;
 
                     SRWLock oLock;
                     // 执行等待任务的异步线程
@@ -355,6 +476,30 @@ namespace YY
                     {
                         if (hTaskRunnerServerHandle)
                             CloseHandle(hTaskRunnerServerHandle);
+                    }
+
+                    TickCount<TimePrecise::Millisecond> __YYAPI GetWakeupTickCountNolock(const TickCount<TimePrecise::Millisecond> _uTickCount) const noexcept
+                    {
+                        auto _uMinimumWakeupTickCount = TickCount<TimePrecise::Millisecond>::GetMax();
+                        for (size_t i = 1; i < cWaitHandle; ++i)
+                        {
+                            auto _pWaitHandleEntry = oWaitHandleEntries[i];
+                            if (!_pWaitHandleEntry)
+                                continue;
+
+                            if (auto _pFirst = _pWaitHandleEntry->oWaitTaskList.GetFirst())
+                            {
+                                if (_uMinimumWakeupTickCount > _pFirst->uTimeOut)
+                                {
+                                    if (_uTickCount >= _pFirst->uTimeOut)
+                                        return _uTickCount;
+
+                                    _uMinimumWakeupTickCount = _pFirst->uTimeOut;
+                                }
+                            }
+                        }
+
+                        return _uMinimumWakeupTickCount;
                     }
 
                     /// <summary>
@@ -452,7 +597,7 @@ namespace YY
                         auto _pWaitItem = _pWaitHandleHashList->FindWaitItem(_pTask->hHandle);
                         if (_pWaitItem)
                         {
-                            _pWaitItem->oWaitTaskLists.PushBack(_pTask.Detach());
+                            _pWaitItem->oWaitTaskList.SortInsert(_pTask.Detach());
                             return S_OK;
                         }
                     }
@@ -471,7 +616,7 @@ namespace YY
 
                     _pWaitHandleEntry->hWaitHandle = _pTask->hHandle;
                     _pWaitHandleEntry->pOwnerWaitHandleBlock = _pWaitHandleBlock;
-                    _pWaitHandleEntry->oWaitTaskLists.PushBack(_pTask.Detach());
+                    _pWaitHandleEntry->oWaitTaskList.SortInsert(_pTask.Detach());
 
                     {
                         AutoLock<SRWLock> _oInsertList(_pWaitHandleHashList->oLock);
@@ -493,20 +638,25 @@ namespace YY
                             const auto _hr = _pWaitHandleBlock->pWaitTaskRunner->PostTask(
                                 [this, _pWaitHandleBlock]()
                                 {
+                                    uint32_t _cWaitHandle;
+                                    TickCount<TimePrecise::Millisecond> _uWaitWakeupTickCount;
+
                                     for (;;)
                                     {
-                                        _pWaitHandleBlock->oLock.LockShared();
-                                        auto _cWaitHandle = _pWaitHandleBlock->cWaitHandle;
-                                        auto _bTerminate = _pWaitHandleBlock->bTerminate;
-                                        _pWaitHandleBlock->oLock.UnlockShared();
+                                        {
+                                            AutoSharedLock _oRead(_pWaitHandleBlock->oLock);
+                                            _cWaitHandle = _pWaitHandleBlock->cWaitHandle;
+                                            if (_cWaitHandle <= 1)
+                                                break;
 
-                                        if (_bTerminate)
-                                            break;
+                                            auto _bTerminate = _pWaitHandleBlock->bTerminate;
+                                            if (_bTerminate)
+                                                break;
 
-                                        if (_cWaitHandle <= 1)
-                                            break;
+                                            _uWaitWakeupTickCount = _pWaitHandleBlock->GetWakeupTickCountNolock(TickCount<TimePrecise::Millisecond>::GetCurrent());
+                                        }
 
-                                        const auto _uResult = WaitForMultipleObjects(_cWaitHandle, _pWaitHandleBlock->hWaitHandles, FALSE, INFINITE);
+                                        const auto _uResult = WaitForMultipleObjects(_cWaitHandle, _pWaitHandleBlock->hWaitHandles, FALSE, GetWaitTimeSpan(_uWaitWakeupTickCount));
                                         ProcessingWaitTasks(*_pWaitHandleBlock, _uResult, _cWaitHandle);
                                     }
                                 });
@@ -525,30 +675,95 @@ namespace YY
                     return S_OK;
                 }
                 
-                size_t __YYAPI ProcessingWaitTasks(WaitHandleBlock& oWaitBlockTaskRunner, DWORD uWaitResult, DWORD _cWaitHandle) noexcept
+                size_t __YYAPI ProcessingWaitTasks(WaitHandleBlock& oWaitBlockTaskRunner, DWORD _uWaitResult, DWORD _cWaitHandle) noexcept
                 {
                     size_t _cTaskProcessed = 0;
 
-                    if (WAIT_OBJECT_0 <= uWaitResult && uWaitResult < WAIT_OBJECT_0 + _cWaitHandle)
+                    if (WAIT_OBJECT_0 <= _uWaitResult && _uWaitResult < WAIT_OBJECT_0 + _cWaitHandle)
                     {
-                        uWaitResult -= WAIT_OBJECT_0;
-                        if (uWaitResult != oWaitBlockTaskRunner.kTaskRunnerServerHandleIndex)
+                        _uWaitResult -= WAIT_OBJECT_0;
+                        if (_uWaitResult != oWaitBlockTaskRunner.kTaskRunnerServerHandleIndex)
                         {
-                            _cTaskProcessed += DispatchWaitList(oWaitBlockTaskRunner, uWaitResult, WAIT_OBJECT_0);
+                            _cTaskProcessed += DispatchWaitList(oWaitBlockTaskRunner, _uWaitResult, WAIT_OBJECT_0);
                         }
                     }
-                    else if (WAIT_ABANDONED_0 <= uWaitResult && uWaitResult < WAIT_ABANDONED_0 + _cWaitHandle)
+                    else if (WAIT_ABANDONED_0 <= _uWaitResult && _uWaitResult < WAIT_ABANDONED_0 + _cWaitHandle)
                     {
-                        uWaitResult -= WAIT_ABANDONED_0;
-                        if (uWaitResult != oWaitBlockTaskRunner.kTaskRunnerServerHandleIndex)
+                        _uWaitResult -= WAIT_ABANDONED_0;
+                        if (_uWaitResult != oWaitBlockTaskRunner.kTaskRunnerServerHandleIndex)
                         {
-                            _cTaskProcessed += DispatchWaitList(oWaitBlockTaskRunner, uWaitResult, WAIT_ABANDONED_0);
+                            _cTaskProcessed += DispatchWaitList(oWaitBlockTaskRunner, _uWaitResult, WAIT_ABANDONED_0);
                         }
                     }
-                    else if (WAIT_IO_COMPLETION == uWaitResult)
+                    else if (WAIT_IO_COMPLETION == _uWaitResult)
                     {
                     }
-                    else/* if (WAIT_FAILED == uWaitResult)*/
+                    else if (WAIT_TIMEOUT == _uWaitResult)
+                    {
+                        // 检查所有超时的任务
+                        WaitTaskList _oDispatchPending;
+                        HANDLE _hPendingReomveWaitHandles[MAXIMUM_WAIT_OBJECTS] = {};
+                        WaitHandleEntry* oPendingReomveWaitHandleEntries[MAXIMUM_WAIT_OBJECTS] = {};
+                        uint32_t _cPendingReomveWaitHandleCount = 0;
+
+                        {
+                            AutoLock _oDispatchLock(oWaitBlockTaskRunner.oLock);
+                            const auto _uCurrentTickCount = TickCount<TimePrecise::Millisecond>::GetCurrent();
+
+                            for (size_t i = _cWaitHandle; i; )
+                            {
+                                --i;
+                                if (i == oWaitBlockTaskRunner.kTaskRunnerServerHandleIndex)
+                                    continue;
+
+                                auto _pWaitHandleEntry = oWaitBlockTaskRunner.oWaitHandleEntries[i];
+                                if (!_pWaitHandleEntry)
+                                    continue;
+
+                                if (_pWaitHandleEntry->oWaitTaskList.ProcessingTimeoutNolock(_uCurrentTickCount, &_oDispatchPending))
+                                    continue;
+
+                                // _pWaitHandleEntry 以为空，所以需要移除
+                                // 快速删除，因为句柄不要求有序，直接与最后的元素进行交换就能做到删除。
+                                oPendingReomveWaitHandleEntries[_cPendingReomveWaitHandleCount] = _pWaitHandleEntry;
+                                _hPendingReomveWaitHandles[_cPendingReomveWaitHandleCount] = oWaitBlockTaskRunner.hWaitHandles[i];
+                                ++_cPendingReomveWaitHandleCount;
+
+                                const auto _uLastIndex = --oWaitBlockTaskRunner.cWaitHandle;
+                                if (oWaitBlockTaskRunner.cWaitHandle != i)
+                                {
+                                    oWaitBlockTaskRunner.hWaitHandles[i] = oWaitBlockTaskRunner.hWaitHandles[_uLastIndex];
+                                    oWaitBlockTaskRunner.oWaitHandleEntries[i] = oWaitBlockTaskRunner.oWaitHandleEntries[_uLastIndex];
+                                }
+                                else
+                                {
+                                    oWaitBlockTaskRunner.hWaitHandles[i] = nullptr;
+                                    oWaitBlockTaskRunner.oWaitHandleEntries[i] = nullptr;
+                                }
+                            }
+                        }
+
+                        while (auto _pWaitTask = _oDispatchPending.PopFront())
+                        {
+                            _pWaitTask->uWaitResult = WAIT_TIMEOUT;
+                            DispatchWaitTask(RefPtr<Wait>::FromPtr(_pWaitTask));
+                            ++_cTaskProcessed;
+                        }
+
+                        for(size_t i =0;i < _cPendingReomveWaitHandleCount;++i)
+                        {
+                            auto _pWaitHandleHashList = GetWaitHandleHashList(_hPendingReomveWaitHandles[i]);
+                            AutoLock _oRemoveWaitHandleEntry(_pWaitHandleHashList->oLock);
+                            auto _pWaitHandleEntry = oPendingReomveWaitHandleEntries[i];
+
+                            if (_pWaitHandleEntry->oWaitTaskList.IsEmpty())
+                            {
+                                _pWaitHandleHashList->Remove(_pWaitHandleEntry);
+                                Delete(_pWaitHandleEntry);
+                            }
+                        }
+                    }
+                    else/* if (WAIT_FAILED == _uWaitResult)*/
                     {
                         // 有句柄可能无效，检测一下无效句柄……然后报告
                         // 这里需要从后向前移动，避免 DispatchWaitList 后 cWaitHandle不停的减小
@@ -650,7 +865,7 @@ namespace YY
                     }
 
                     size_t _cTaskProcessed = 0;
-                    while (auto _pWaitTask = _pWaitHandleEntry->oWaitTaskLists.PopFront())
+                    while (auto _pWaitTask = _pWaitHandleEntry->oWaitTaskList.PopFront())
                     {
                         _pWaitTask->uWaitResult = _uWaitResult;
                         DispatchWaitTask(RefPtr<Wait>::FromPtr(_pWaitTask));

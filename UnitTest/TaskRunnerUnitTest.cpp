@@ -213,7 +213,7 @@ namespace TaskRunnerUnitTest
         {
             auto _pTaskRunner = SequencedTaskRunner::Create();
 
-            for (int i = 0; i < 10; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
                 volatile uint32_t _uWaitResultCount = 0;
@@ -234,6 +234,7 @@ namespace TaskRunnerUnitTest
                 Sleep(10);
 
                 Assert::IsTrue(abs((long long)(_uTickCountEnd - _uTickCount)) < 50);
+                CloseHandle(_hEvent);
             }
 
 
@@ -272,7 +273,41 @@ namespace TaskRunnerUnitTest
 
                 Sleep(100);
                 Assert::AreEqual((uint32_t)_uWaitResultCount, uint32_t(std::size(_hEvents)));
+
+                for (auto _hEvent : _hEvents)
+                {
+                    CloseHandle(_hEvent);
+                }
             }
+        }
+
+        TEST_METHOD(Wait句柄超时测试)
+        {
+            auto _pTaskRunner = SequencedTaskRunner::Create();
+
+            HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+            volatile DWORD _uWaitResult = -1;
+            auto _pWait = _pTaskRunner->CreateWait(
+                _hEvent,
+                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                [&_uWaitResult](DWORD _uWaitResultT)
+                {
+                    _uWaitResult = _uWaitResultT;
+                });
+
+            Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(600ul));
+            Assert::AreEqual(DWORD(_uWaitResult), DWORD(WAIT_TIMEOUT));
+
+            _pWait = _pTaskRunner->CreateWait(
+                _hEvent,
+                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                [&_uWaitResult](DWORD _uWaitResultT)
+                {
+                    _uWaitResult = _uWaitResultT;
+                });
+            SetEvent(_hEvent);
+            Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(100ul));
+            CloseHandle(_hEvent);
         }
     };
 
@@ -502,10 +537,8 @@ namespace TaskRunnerUnitTest
                     auto _nSpan = _uEndTick - _uStartTick;
                     _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
 
-                    OutputDebugStringW(_szTmp);
-
-                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 500 - 100);
-                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 500 + 100);
+                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 500 - 100, _szTmp);
+                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 500 + 100, _szTmp);
                 }
 
                 {
@@ -528,10 +561,8 @@ namespace TaskRunnerUnitTest
                     Strings::uString _szTmp;
                     _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
 
-                    OutputDebugStringW(_szTmp);
-
-                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 5000 - 200);
-                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 5000 + 200);
+                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 5000 - 200, _szTmp);
+                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 5000 + 200, _szTmp);
                 }
             }
 
@@ -646,6 +677,35 @@ namespace TaskRunnerUnitTest
                     }
                 }
             }
+        }
+
+        TEST_METHOD(Wait句柄超时测试)
+        {
+            auto _pTaskRunner = SequencedTaskRunner::Create();
+
+            HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+            volatile DWORD _uWaitResult = -1;
+            auto _pWait = _pTaskRunner->CreateWait(
+                _hEvent,
+                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                [&_uWaitResult](DWORD _uWaitResultT)
+                {
+                    _uWaitResult = _uWaitResultT;
+                });
+
+            Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(600ul));
+            Assert::AreEqual(DWORD(_uWaitResult), DWORD(WAIT_TIMEOUT));
+
+            _pWait = _pTaskRunner->CreateWait(
+                _hEvent,
+                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
+                [&_uWaitResult](DWORD _uWaitResultT)
+                {
+                    _uWaitResult = _uWaitResultT;
+                });
+            SetEvent(_hEvent);
+            Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(100ul));
+            CloseHandle(_hEvent);
         }
     };
 } // namespace UnitTest

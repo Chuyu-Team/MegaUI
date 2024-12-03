@@ -320,23 +320,30 @@ namespace YY
                     for (;;)
                     {
                         _cTaskProcessed += ProcessingPendingTaskQueue();
-                        _cTaskProcessed += ProcessingTimerTasks();
+                        TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                        _cTaskProcessed += ProcessingTimerTasks(_oCurrent);
                         if (YY::Sync::Subtract(&nDispatchTaskRef, int32_t(_cTaskProcessed)) <= 0)
                             return;
 
                         _cTaskProcessed = 0;
 
-                        const auto _uWakeupTickCount = GetMinimumWakeupTickCount();
+                        const auto _uTimerWakeupTickCount = GetMinimumWakeupTickCount();
+                        const auto _uWaitTaskWakeupTickCount = oDefaultWaitBlock.GetWakeupTickCountNolock(_oCurrent);
+                        auto _uWakeupTickCount = (std::min)(_uTimerWakeupTickCount, _uWaitTaskWakeupTickCount);
                         const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, GetWaitTimeSpan(_uWakeupTickCount), FALSE);
                         if (uWaitResult == WAIT_OBJECT_0)
                         {
                             continue;
                         }
-                        else
+                        else if (uWaitResult == WAIT_TIMEOUT)
                         {
-                            _cTaskProcessed += ProcessingWaitTasks(oDefaultWaitBlock, uWaitResult, oDefaultWaitBlock.cWaitHandle);
-                            continue;
+                            if (_uTimerWakeupTickCount < _uWaitTaskWakeupTickCount)
+                            {
+                                continue;
+                            }
                         }
+                        
+                        _cTaskProcessed += ProcessingWaitTasks(oDefaultWaitBlock, uWaitResult, oDefaultWaitBlock.cWaitHandle);
                     }
                 }
             };
@@ -424,30 +431,42 @@ namespace YY
                     for (;;)
                     {
                         _cTaskProcessed += ProcessingPendingTaskQueue();
-                        _cTaskProcessed += ProcessingTimerTasks();
+
+                        TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                        _cTaskProcessed += ProcessingTimerTasks(_oCurrent);
                         if (YY::Sync::Subtract(&nDispatchTaskRef, int32_t(_cTaskProcessed)) <= 0)
                             return;
 
                         _cTaskProcessed = 0;
-                        const auto _uMinimumWaitTime = GetWaitTimeSpan(GetMinimumWakeupTickCount());
+                        const auto _uTimerWakeupTickCount = GetMinimumWakeupTickCount();
 
                         BOOL _bRet;
                         if (oDefaultWaitBlock.cWaitHandle > 1)
                         {
-                            const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, _uMinimumWaitTime, FALSE);
+                            const auto _uWaitTaskWakeupTickCount = oDefaultWaitBlock.GetWakeupTickCountNolock(_oCurrent);
+                            auto _uWakeupTickCount = (std::min)(_uTimerWakeupTickCount, _uWaitTaskWakeupTickCount);
+                            const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, GetWaitTimeSpan(_uWakeupTickCount), FALSE);
                             if (uWaitResult == WAIT_OBJECT_0)
                             {
                                 _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, 0, FALSE);
                             }
                             else
                             {
+                                if (uWaitResult == WAIT_TIMEOUT)
+                                {
+                                    if (_uTimerWakeupTickCount < _uWaitTaskWakeupTickCount)
+                                    {
+                                        continue;
+                                    }
+                                }
+
                                 _cTaskProcessed += ProcessingWaitTasks(oDefaultWaitBlock, uWaitResult, oDefaultWaitBlock.cWaitHandle);
                                 continue;
                             }
                         }
                         else
                         {
-                            _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, _uMinimumWaitTime, FALSE);
+                            _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, GetWaitTimeSpan(_uTimerWakeupTickCount), FALSE);
                         }
 
                         for (;;)
