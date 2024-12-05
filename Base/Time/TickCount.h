@@ -138,6 +138,11 @@ namespace YY
                 {
                     return uTickCountInternal < _oOther.uTickCountInternal;
                 }
+                
+                constexpr bool operator!=(const TickCount& _oOther) const noexcept
+                {
+                    return uTickCountInternal != _oOther.uTickCountInternal;
+                }
 #endif
 
                 template<TimePrecise InputPrecise>
