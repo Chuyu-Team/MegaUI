@@ -87,7 +87,7 @@ namespace YY
                                 // uWakeupCount 已经归零，准备进入睡眠状态
 
                                 ProcessingTimerTasks();
-                                const auto _uWaitTime = GetMinimumWaitTime();
+                                const auto _uWaitTime = GetWaitTimeSpan(GetMinimumWakeupTickCount());
                                 auto _uWaitResult = MsgWaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, _uWaitTime, QS_ALLINPUT, MWMO_ALERTABLE);
                                 // 消息循环本身因为处于激活状态，所以，重新 + 1
                                 Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));
@@ -143,7 +143,7 @@ namespace YY
                             else
                             {
                                 // uWakeupCount 已经归零，准备进入睡眠状态
-                                const auto _uWaitTime = GetMinimumWaitTime();
+                                const auto _uWaitTime = GetWaitTimeSpan(GetMinimumWakeupTickCount());
                                 const auto _uWaitResult = MsgWaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, _uWaitTime, QS_ALLINPUT, MWMO_ALERTABLE);
                                 // 消息循环本身因为处于激活状态，所以，重新 + 1
                                 Sync::Add(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw));

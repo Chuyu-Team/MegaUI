@@ -19,6 +19,24 @@ namespace YY
                 static uint32_t s_TaskRunnerId = 0;
                 return Sync::Increment(&s_TaskRunnerId);
             }
+
+            uint32_t __YYAPI GetWaitTimeSpan(TickCount<TimePrecise::Millisecond> _uWakeupTickCount) noexcept
+            {
+                if (_uWakeupTickCount == TickCount<TimePrecise::Millisecond>::GetMax())
+                    return UINT32_MAX;
+
+                auto _nTimeSpan = _uWakeupTickCount - TickCount<TimePrecise::Millisecond>::GetCurrent();
+                if (_nTimeSpan.GetInternalValue() <= 0)
+                {
+                    return 0ul;
+                }
+                else if (_nTimeSpan.GetMilliseconds() >= UINT32_MAX)
+                {
+                    return UINT32_MAX;
+                }
+
+                return (uint32_t)_nTimeSpan.GetMilliseconds();
+            }
         }
     }
 } // namespace YY::Base::Threading

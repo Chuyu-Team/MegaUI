@@ -9,6 +9,7 @@
 #include <Base/Time/TimeSpan.h>
 #include <Base/Sync/Interlocked.h>
 #include <Base/Utils/SystemInfo.h>
+#include <Base/Threading/TaskRunnerImpl.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -325,8 +326,8 @@ namespace YY
 
                         _cTaskProcessed = 0;
 
-                        auto uMinimumWaitTime = GetMinimumWaitTime();
-                        const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, uMinimumWaitTime, FALSE);
+                        const auto _uWakeupTickCount = GetMinimumWakeupTickCount();
+                        const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, GetWaitTimeSpan(_uWakeupTickCount), FALSE);
                         if (uWaitResult == WAIT_OBJECT_0)
                         {
                             continue;
@@ -428,12 +429,12 @@ namespace YY
                             return;
 
                         _cTaskProcessed = 0;
-                        auto uMinimumWaitTime = GetMinimumWaitTime();
+                        const auto _uMinimumWaitTime = GetWaitTimeSpan(GetMinimumWakeupTickCount());
 
                         BOOL _bRet;
                         if (oDefaultWaitBlock.cWaitHandle > 1)
                         {
-                            const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, uMinimumWaitTime, FALSE);
+                            const auto uWaitResult = WaitForMultipleObjectsEx(oDefaultWaitBlock.cWaitHandle, oDefaultWaitBlock.hWaitHandles, FALSE, _uMinimumWaitTime, FALSE);
                             if (uWaitResult == WAIT_OBJECT_0)
                             {
                                 _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, 0, FALSE);
@@ -446,7 +447,7 @@ namespace YY
                         }
                         else
                         {
-                            _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, uMinimumWaitTime, FALSE);
+                            _bRet = GetQueuedCompletionStatusEx(oDefaultWaitBlock.hTaskRunnerServerHandle, _oCompletionPortEntries, std::size(_oCompletionPortEntries), &_uNumEntriesRemoved, _uMinimumWaitTime, FALSE);
                         }
 
                         for (;;)

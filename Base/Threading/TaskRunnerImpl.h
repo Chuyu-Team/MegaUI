@@ -13,6 +13,8 @@ namespace YY
             extern thread_local WeakPtr<TaskRunner> g_pTaskRunnerWeak;
 
             uint32_t __YYAPI GenerateNewTaskRunnerId();
+            
+            uint32_t __YYAPI GetWaitTimeSpan(_In_ TickCount<TimePrecise::Millisecond> _uWakeupTickCount) noexcept;
         }
     }
 } // namespace YY::Base::Threading
