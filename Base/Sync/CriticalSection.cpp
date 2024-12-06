@@ -1,5 +1,4 @@
-﻿#include "pch.h"
-#include "CriticalSection.h"
+﻿#include "CriticalSection.h"
 
 namespace YY
 {

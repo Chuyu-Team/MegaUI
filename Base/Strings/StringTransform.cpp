@@ -1,6 +1,4 @@
-﻿#include "pch.h"
-
-#include <Base/Strings/StringTransform.h>
+﻿#include <Base/Strings/StringTransform.h>
 
 #ifdef _WIN32
 #include <Windows.h>

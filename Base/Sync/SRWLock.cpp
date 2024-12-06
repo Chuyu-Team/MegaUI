@@ -1,5 +1,4 @@
-﻿#include "pch.h"
-#include "SRWLock.h"
+﻿#include "SRWLock.h"
 
 namespace YY
 {
