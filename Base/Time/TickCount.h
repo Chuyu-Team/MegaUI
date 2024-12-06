@@ -138,7 +138,7 @@ namespace YY
                 {
                     return uTickCountInternal < _oOther.uTickCountInternal;
                 }
-                
+
                 constexpr bool operator!=(const TickCount& _oOther) const noexcept
                 {
                     return uTickCountInternal != _oOther.uTickCountInternal;
@@ -177,7 +177,7 @@ namespace YY
 
                 constexpr TimeSpan<ePrecise> operator-(const TickCount& _oOther) const noexcept
                 {
-                    return TimeSpan<ePrecise>::FromInternalValue((uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / GetSecondsPerInternal());
+                    return TimeSpan<ePrecise>::FromInternalValue(int64_t(uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / GetSecondsPerInternal());
                 }
             };
         }
