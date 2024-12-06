@@ -205,6 +205,7 @@
     <ClInclude Include="..\Base\Time\TickCount.h" />
     <ClInclude Include="..\Base\Time\TimeSpan.h" />
     <ClInclude Include="..\Base\Utils\ComObjectImpl.h" />
+    <ClInclude Include="..\Base\Utils\FileInfo.h" />
     <ClInclude Include="..\Base\Utils\SystemInfo.h" />
     <ClInclude Include="..\Base\Utils\Version.h" />
     <ClInclude Include="..\Base\YY.h" />
@@ -270,6 +271,7 @@
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp" />
+    <ClCompile Include="..\Base\Utils\FileInfo.cpp" />
     <ClCompile Include="..\Base\Utils\SystemInfo.cpp" />
     <ClCompile Include="..\Media\Font.cpp">
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>

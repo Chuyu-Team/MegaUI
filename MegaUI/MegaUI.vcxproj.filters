@@ -390,6 +390,9 @@
     <ClInclude Include="..\Base\Shared\Windows\km.h">
       <Filter>Base\Shared\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Utils\FileInfo.h">
+      <Filter>Base\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -492,6 +495,9 @@
       <Filter>Base\Sync</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Utils\SystemInfo.cpp">
+      <Filter>Base\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base\Utils\FileInfo.cpp">
       <Filter>Base\Utils</Filter>
     </ClCompile>
   </ItemGroup>

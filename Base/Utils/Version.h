@@ -15,16 +15,21 @@ namespace YY
         {
             union Version
             {
-            private:
+            public:
                 uint64_t uInternalValue = 0ull;
 
-            public:
                 struct
                 {
                     uint16_t uRevision;
                     uint16_t uBuild;
                     uint16_t uMinor;
                     uint16_t uMajor;
+                };
+
+                struct
+                {
+                    uint32_t uLowPart;
+                    uint32_t uHightPart;
                 };
 
                 constexpr Version() = default;
@@ -64,7 +69,6 @@ namespace YY
                     return uInternalValue <= _oOther.uInternalValue;
                 }
 
-
                 constexpr bool __YYAPI operator>=(const Version& _oOther) const noexcept
                 {
                     return uInternalValue >= _oOther.uInternalValue;
@@ -81,6 +85,8 @@ namespace YY
                 }
 #endif
             };
+
+            static_assert(sizeof(Version) == sizeof(uint64_t), "");
         }
     }
 
