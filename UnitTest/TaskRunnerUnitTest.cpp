@@ -109,59 +109,115 @@ namespace TaskRunnerUnitTest
         TEST_METHOD(时间间隔检测)
         {
             auto _pTaskRunner = SequencedTaskRunner::Create();
-            HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
 
+            for(int i = 0;i!=500;++i)
             {
-                auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                constexpr auto kDelay = 10ul;
+                constexpr auto kDeviation = 35ul;
 
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
 
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
-                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
-                    [_uStartTick, &_pTimer, _hEvent]()
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(10),
+                    [&_uEnd, &_pTimer]()
                     {
-                        auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
-
-                        Strings::uString _szTmp;
-                        _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
-
-                        OutputDebugStringW(_szTmp);
-
-                        Assert::IsTrue(_nSpan.GetMilliseconds() >= 500 - 100);
-                        Assert::IsTrue(_nSpan.GetMilliseconds() <= 500 + 100);
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
 
                         _pTimer->Cancel();
-                        SetEvent(_hEvent);
                     });
 
-                Assert::AreEqual(WaitForSingleObject(_hEvent, 5000), (DWORD)WAIT_OBJECT_0);
+                Assert::IsTrue(_pTimer->Wait(kDelay * 5));
+
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
+
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
             }
 
-            {
-                auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
 
+            for (int i = 0; i != 250; ++i)
+            {
+                constexpr auto kDelay = 100ul;
+                constexpr auto kDeviation = 35ul;
+
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
 
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
-                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
-                    [_uStartTick, &_pTimer, _hEvent]()
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
+                    [&_uEnd, &_pTimer]()
                     {
-                        auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
-
-                        Strings::uString _szTmp;
-                        _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
-
-                        OutputDebugStringW(_szTmp);
-
-                        Assert::IsTrue(_nSpan.GetMilliseconds() >= 5000 - 200);
-                        Assert::IsTrue(_nSpan.GetMilliseconds() <= 5000 + 200);
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
 
                         _pTimer->Cancel();
-                        SetEvent(_hEvent);
                     });
 
+                Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
 
-                Assert::AreEqual(WaitForSingleObject(_hEvent, 10000), (DWORD)WAIT_OBJECT_0);
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
+
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
+            }
+
+            for (int i = 0; i != 250; ++i)
+            {
+                constexpr auto kDelay = 1000ul;
+                constexpr auto kDeviation = 35ul;
+
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
+
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
+                    [&_uEnd, &_pTimer]()
+                    {
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
+
+                        _pTimer->Cancel();
+                    });
+
+                Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation )* 2));
+
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
+
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
+            }
+
+
+            for (int i = 0; i != 100; ++i)
+            {
+                constexpr auto kDelay = 1300ul;
+                constexpr auto kDeviation = 35ul;
+
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
+
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
+                    [&_uEnd, &_pTimer]()
+                    {
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
+
+                        _pTimer->Cancel();
+                    });
+
+                Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
+
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
+
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
             }
         }
 
@@ -514,59 +570,117 @@ namespace TaskRunnerUnitTest
 
         TEST_METHOD(时间间隔检测)
         {
-            HANDLE _hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-            RefPtr<ThreadTaskRunner> _pTaskRunners[] = { ThreadTaskRunner::Create(false), ThreadTaskRunner::Create(true) };
-            for (auto& _pTaskRunner : _pTaskRunners)
+            auto _pTaskRunner = SequencedTaskRunner::Create();
+
+            for (int i = 0; i != 500; ++i)
             {
-                {
-                    auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
-                    TickCount<TimePrecise::Millisecond> _uEndTick;
+                constexpr auto kDelay = 10ul;
+                constexpr auto kDeviation = 35ul;
 
-                    RefPtr<Timer> _pTimer;
-                    _pTimer = _pTaskRunner->CreateTimer(
-                        TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
-                        [&_uEndTick, &_pTimer, _hEvent]()
-                        {
-                            _uEndTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
-                            _pTimer->Cancel();
-                            SetEvent(_hEvent);
-                        });
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
 
-                    Assert::AreEqual(WaitForSingleObject(_hEvent, 5000), (DWORD)WAIT_OBJECT_0);
-                    Strings::uString _szTmp;
-                    auto _nSpan = _uEndTick - _uStartTick;
-                    _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(10),
+                    [&_uEnd, &_pTimer]()
+                    {
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
 
-                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 500 - 100, _szTmp);
-                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 500 + 100, _szTmp);
-                }
+                        _pTimer->Cancel();
+                    });
 
-                {
-                    auto _uStartTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
-                    TickCount<TimePrecise::Millisecond> _uEndTick;
+                Assert::IsTrue(_pTimer->Wait(kDelay * 5));
 
-                    RefPtr<Timer> _pTimer;
-                    _pTimer = _pTaskRunner->CreateTimer(
-                        TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
-                        [&_uEndTick, &_pTimer, _hEvent]()
-                        {
-                            _uEndTick = TickCount<TimePrecise::Millisecond>::GetCurrent();
-                            _pTimer->Cancel();
-                            SetEvent(_hEvent);
-                        });
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
 
-                    Assert::AreEqual(WaitForSingleObject(_hEvent, 10000), (DWORD)WAIT_OBJECT_0);
-                    auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
-
-                    Strings::uString _szTmp;
-                    _szTmp.Format(L"Run 延迟 %I64d\n", _nSpan.GetMilliseconds());
-
-                    Assert::IsTrue(_nSpan.GetMilliseconds() >= 5000 - 200, _szTmp);
-                    Assert::IsTrue(_nSpan.GetMilliseconds() <= 5000 + 200, _szTmp);
-                }
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
             }
 
-            CloseHandle(_hEvent);
+
+            for (int i = 0; i != 250; ++i)
+            {
+                constexpr auto kDelay = 100ul;
+                constexpr auto kDeviation = 35ul;
+
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
+
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
+                    [&_uEnd, &_pTimer]()
+                    {
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
+
+                        _pTimer->Cancel();
+                    });
+
+                Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
+
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
+
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
+            }
+
+            for (int i = 0; i != 250; ++i)
+            {
+                constexpr auto kDelay = 1000ul;
+                constexpr auto kDeviation = 35ul;
+
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
+
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
+                    [&_uEnd, &_pTimer]()
+                    {
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
+
+                        _pTimer->Cancel();
+                    });
+
+                Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
+
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
+
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
+            }
+
+
+            for (int i = 0; i != 100; ++i)
+            {
+                constexpr auto kDelay = 1300ul;
+                constexpr auto kDeviation = 35ul;
+
+                auto _uStartTick = TickCount<TimePrecise::Microsecond>::GetCurrent();
+                TickCount<TimePrecise::Microsecond> _uEnd;
+
+                RefPtr<Timer> _pTimer;
+                _pTimer = _pTaskRunner->CreateTimer(
+                    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
+                    [&_uEnd, &_pTimer]()
+                    {
+                        _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
+
+                        _pTimer->Cancel();
+                    });
+
+                Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
+
+                auto nMilliseconds = (_uEnd - _uStartTick).GetMilliseconds();
+                Strings::uString _szTmp;
+                _szTmp.Format(L"第 %d次，预期延迟 %u ，实际延迟 %I64d，\n", i, kDelay, nMilliseconds);
+
+                Assert::IsTrue(nMilliseconds <= (kDelay + kDeviation) && nMilliseconds >= (kDelay - 5), _szTmp);
+            }
         }
 
         TEST_METHOD(周期性唤醒检查)

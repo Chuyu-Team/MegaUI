@@ -14,7 +14,7 @@ namespace YY
 
             uint32_t __YYAPI GenerateNewTaskRunnerId();
             
-            uint32_t __YYAPI GetWaitTimeSpan(_In_ TickCount<TimePrecise::Millisecond> _uWakeupTickCount) noexcept;
+            uint32_t __YYAPI GetWaitTimeSpan(_In_ TickCount<TimePrecise::Microsecond> _uWakeupTickCount) noexcept;
         }
     }
 } // namespace YY::Base::Threading

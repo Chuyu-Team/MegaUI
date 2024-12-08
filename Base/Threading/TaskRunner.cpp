@@ -35,7 +35,7 @@ namespace YY
                 }
                 else
                 {
-                    auto _uExpire = TickCount<TimePrecise::Millisecond>::GetCurrent() + uInterval;
+                    auto _uExpire = TickCount<TimePrecise::Microsecond>::GetCurrent() + uInterval;
                     auto _hr = TaskEntry::RunTask();
                     if (FAILED(_hr))
                         return _hr;
@@ -119,7 +119,7 @@ namespace YY
                     return PostTaskInternal(std::move(_pTask));
 
                 // 现在的时间已经比过期时间大，那么立即触发任务，降低延迟
-                auto _uCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                auto _uCurrent = TickCount<TimePrecise::Microsecond>::GetCurrent();
                 if (_pTask->uExpire <= _uCurrent)
                 {
                     _pTask->uExpire = _uCurrent;

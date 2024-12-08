@@ -212,7 +212,7 @@ namespace YY
                 /// 返回 true: Entry内任然存在元素。
                 /// 返回 false: Entry 已经为空，可以移除。
                 /// </returns>
-                bool __YYAPI ProcessingTimeoutNolock(_In_ TickCount<TimePrecise::Millisecond> _uCurrentTickCount, _Out_ WaitTaskList* _pPendingTimeout) noexcept
+                bool __YYAPI ProcessingTimeoutNolock(_In_ TickCount<TimePrecise::Microsecond> _uCurrentTickCount, _Out_ WaitTaskList* _pPendingTimeout) noexcept
                 {
                     while (auto _pWait = GetFirst())
                     {
@@ -239,9 +239,9 @@ namespace YY
                     WaitTaskList oWaitTaskLists[MAXIMUM_WAIT_OBJECTS] = {};
                     volatile uint32_t cWaitHandle = 0;
 
-                    TickCount<TimePrecise::Millisecond> __YYAPI GetWakeupTickCountNolock(const TickCount<TimePrecise::Millisecond> _uTickCount) const noexcept
+                    TickCount<TimePrecise::Microsecond> __YYAPI GetWakeupTickCountNolock(const TickCount<TimePrecise::Microsecond> _uTickCount) const noexcept
                     {
-                        auto _uMinimumWakeupTickCount = TickCount<TimePrecise::Millisecond>::GetMax();
+                        auto _uMinimumWakeupTickCount = TickCount<TimePrecise::Microsecond>::GetMax();
                         for (size_t i = 0; i < cWaitHandle; ++i)
                         {
                             auto& _oWaitTaskList = oWaitTaskLists[i];
@@ -338,7 +338,7 @@ namespace YY
                     else if (WAIT_TIMEOUT == uWaitResult)
                     {
                         WaitTaskList _oDispatchPending;
-                        const auto _uCurrentTickCount = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                        const auto _uCurrentTickCount = TickCount<TimePrecise::Microsecond>::GetCurrent();
 
                         for (size_t i = oDefaultWaitBlock.cWaitHandle; i;)
                         {
@@ -478,9 +478,9 @@ namespace YY
                             CloseHandle(hTaskRunnerServerHandle);
                     }
 
-                    TickCount<TimePrecise::Millisecond> __YYAPI GetWakeupTickCountNolock(const TickCount<TimePrecise::Millisecond> _uTickCount) const noexcept
+                    TickCount<TimePrecise::Microsecond> __YYAPI GetWakeupTickCountNolock(const TickCount<TimePrecise::Microsecond> _uTickCount) const noexcept
                     {
-                        auto _uMinimumWakeupTickCount = TickCount<TimePrecise::Millisecond>::GetMax();
+                        auto _uMinimumWakeupTickCount = TickCount<TimePrecise::Microsecond>::GetMax();
                         for (size_t i = 1; i < cWaitHandle; ++i)
                         {
                             auto _pWaitHandleEntry = oWaitHandleEntries[i];
@@ -639,12 +639,12 @@ namespace YY
                                 [this, _pWaitHandleBlock]()
                                 {
                                     uint32_t _cWaitHandle;
-                                    TickCount<TimePrecise::Millisecond> _uWaitWakeupTickCount;
+                                    TickCount<TimePrecise::Microsecond> _uWaitWakeupTickCount;
 
                                     for (;;)
                                     {
                                         {
-                                            AutoSharedLock _oRead(_pWaitHandleBlock->oLock);
+                                            AutoSharedLock<SRWLock> _oRead(_pWaitHandleBlock->oLock);
                                             _cWaitHandle = _pWaitHandleBlock->cWaitHandle;
                                             if (_cWaitHandle <= 1)
                                                 break;
@@ -653,7 +653,7 @@ namespace YY
                                             if (_bTerminate)
                                                 break;
 
-                                            _uWaitWakeupTickCount = _pWaitHandleBlock->GetWakeupTickCountNolock(TickCount<TimePrecise::Millisecond>::GetCurrent());
+                                            _uWaitWakeupTickCount = _pWaitHandleBlock->GetWakeupTickCountNolock(TickCount<TimePrecise::Microsecond>::GetCurrent());
                                         }
 
                                         const auto _uResult = WaitForMultipleObjects(_cWaitHandle, _pWaitHandleBlock->hWaitHandles, FALSE, GetWaitTimeSpan(_uWaitWakeupTickCount));
@@ -707,8 +707,8 @@ namespace YY
                         uint32_t _cPendingReomveWaitHandleCount = 0;
 
                         {
-                            AutoLock _oDispatchLock(oWaitBlockTaskRunner.oLock);
-                            const auto _uCurrentTickCount = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                            AutoLock<SRWLock> _oDispatchLock(oWaitBlockTaskRunner.oLock);
+                            const auto _uCurrentTickCount = TickCount<TimePrecise::Microsecond>::GetCurrent();
 
                             for (size_t i = _cWaitHandle; i; )
                             {
@@ -753,7 +753,7 @@ namespace YY
                         for(size_t i =0;i < _cPendingReomveWaitHandleCount;++i)
                         {
                             auto _pWaitHandleHashList = GetWaitHandleHashList(_hPendingReomveWaitHandles[i]);
-                            AutoLock _oRemoveWaitHandleEntry(_pWaitHandleHashList->oLock);
+                            AutoLock<SRWLock> _oRemoveWaitHandleEntry(_pWaitHandleHashList->oLock);
                             auto _pWaitHandleEntry = oPendingReomveWaitHandleEntries[i];
 
                             if (_pWaitHandleEntry->oWaitTaskList.IsEmpty())

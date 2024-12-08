@@ -25,6 +25,11 @@ namespace YY
 #if _WIN32
                 static uint64_t __YYAPI GetCurrentInternalValue() noexcept
                 {
+#if defined(_DEBUG)
+                    static uint64_t s_uTestValue = 0;
+                    if(s_uTestValue)
+                        return s_uTestValue * GetSecondsPerInternal() / SecondsPerMillisecond;
+#endif
                     LARGE_INTEGER _PerformanceCounter = {};
                     QueryPerformanceCounter(&_PerformanceCounter);
                     return _PerformanceCounter.QuadPart;
@@ -99,14 +104,78 @@ namespace YY
                     return TickCount(_uTickCountInternal);
                 }
 
+                /// <summary>
+                /// </summary>
+                /// <param name="_uTickCountMicroseconds">开机以来的微秒数</param>
+                /// <returns></returns>
+                constexpr static TickCount __YYAPI FromMicroseconds(int64_t _uTickCountMicroseconds) noexcept
+                {
+                    return TickCount(_uTickCountMicroseconds * GetSecondsPerInternal() / (SecondsPerMillisecond * MillisecondsPerMicrosecond));
+                }
+
+                constexpr static TickCount __YYAPI FromMilliseconds(int64_t _uTickCountMilliseconds) noexcept
+                {
+                    return TickCount(_uTickCountMilliseconds * GetSecondsPerInternal() / SecondsPerMillisecond);
+                }
+
+                constexpr static TickCount __YYAPI FromSeconds(int64_t _uTickCountSeconds) noexcept
+                {
+                    return TickCount(_uTickCountSeconds * GetSecondsPerInternal());
+                }
+
+                constexpr static TickCount __YYAPI FromMinutes(int64_t _uTickCountMinutes) noexcept
+                {
+                    return TickCount(_uTickCountMinutes * GetSecondsPerInternal() * MinutesPerSecond);
+                }
+
+                constexpr static TickCount __YYAPI FromHours(int64_t _uTickCountHours) noexcept
+                {
+                    return TickCount(_uTickCountHours * GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute);
+                }
+
+                constexpr static TickCount __YYAPI FromDays(int64_t _uTickCountDays) noexcept
+                {
+                    return TickCount(_uTickCountDays * GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute * DaysPerHour);
+                }
+
                 constexpr uint64_t __YYAPI GetInternalValue() const noexcept
                 {
                     return uTickCountInternal;
                 }
 
-                constexpr static int64_t __YYAPI GetSecondsPerInternal() noexcept
+                constexpr static uint64_t __YYAPI GetSecondsPerInternal() noexcept
                 {
                     return TickCountCommon_t::GetSecondsPerInternal();
+                }
+
+                constexpr uint64_t __YYAPI GetMicroseconds() const noexcept
+                {
+                    return uTickCountInternal * SecondsPerMillisecond * MillisecondsPerMicrosecond / GetSecondsPerInternal();
+                }
+
+                constexpr uint64_t __YYAPI GetMilliseconds() const noexcept
+                {
+                    return uTickCountInternal * SecondsPerMillisecond / GetSecondsPerInternal();
+                }
+
+                constexpr uint64_t __YYAPI GetSeconds() const noexcept
+                {
+                    return uTickCountInternal / GetSecondsPerInternal();
+                }
+
+                constexpr uint64_t __YYAPI GetMinutes() const noexcept
+                {
+                    return uTickCountInternal / (GetSecondsPerInternal() * MinutesPerSecond);
+                }
+
+                constexpr uint64_t __YYAPI GetHours() const noexcept
+                {
+                    return uTickCountInternal / (GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute);
+                }
+
+                constexpr uint64_t __YYAPI GetDays() const noexcept
+                {
+                    return uTickCountInternal / (GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute * DaysPerHour);
                 }
         
                 constexpr TickCount& operator=(const TickCount&) noexcept = default;
@@ -177,7 +246,7 @@ namespace YY
 
                 constexpr TimeSpan<ePrecise> operator-(const TickCount& _oOther) const noexcept
                 {
-                    return TimeSpan<ePrecise>::FromInternalValue(int64_t(uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / GetSecondsPerInternal());
+                    return TimeSpan<ePrecise>::FromInternalValue(int64_t(uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / int64_t(GetSecondsPerInternal()));
                 }
             };
         }

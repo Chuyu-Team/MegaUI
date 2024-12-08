@@ -319,9 +319,9 @@ namespace YY
                     size_t _cTaskProcessed = 0;
                     for (;;)
                     {
-                        _cTaskProcessed += ProcessingPendingTaskQueue();
-                        TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                        auto _oCurrent = TickCount<TimePrecise::Microsecond>::GetCurrent();
                         _cTaskProcessed += ProcessingTimerTasks(_oCurrent);
+                        _cTaskProcessed += ProcessingPendingTaskQueue();
                         if (YY::Sync::Subtract(&nDispatchTaskRef, int32_t(_cTaskProcessed)) <= 0)
                             return;
 
@@ -430,10 +430,9 @@ namespace YY
 
                     for (;;)
                     {
-                        _cTaskProcessed += ProcessingPendingTaskQueue();
-
-                        TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                        auto _oCurrent = TickCount<TimePrecise::Microsecond>::GetCurrent();
                         _cTaskProcessed += ProcessingTimerTasks(_oCurrent);
+                        _cTaskProcessed += ProcessingPendingTaskQueue();
                         if (YY::Sync::Subtract(&nDispatchTaskRef, int32_t(_cTaskProcessed)) <= 0)
                             return;
 

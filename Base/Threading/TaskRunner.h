@@ -106,7 +106,7 @@ namespace YY
             struct Timer : public TaskEntry
             {
                 // 任务到期时间
-                TickCount<TimePrecise::Millisecond> uExpire;
+                TickCount<TimePrecise::Microsecond> uExpire;
 
                 // 任务重复间隔，如果为0，那么任务不会重复
                 TimeSpan<TimePrecise::Millisecond> uInterval;
@@ -119,7 +119,7 @@ namespace YY
             struct Wait : public TaskEntry
             {
                 HANDLE hHandle = nullptr;
-                TickCount<TimePrecise::Millisecond> uTimeOut;
+                TickCount<TimePrecise::Microsecond> uTimeOut;
                 DWORD uWaitResult = WAIT_FAILED;
 
                 std::function<void(DWORD _uWaitResult)> pfnWaitTaskCallback;
@@ -332,7 +332,7 @@ namespace YY
                     _In_ TimeSpan<TimePrecise::Millisecond> _uAfter,
                     _In_ std::function<void(void)>&& _pfnTaskCallback)
                 {
-                    auto _uExpire = TickCount<TimePrecise::Millisecond>::GetCurrent() + _uAfter;
+                    auto _uExpire = TickCount<TimePrecise::Microsecond>::GetCurrent() + _uAfter;
                     auto _pTimer = RefPtr<Timer>::Create();
                     if (!_pTimer)
                         return E_OUTOFMEMORY;
@@ -431,7 +431,7 @@ namespace YY
                     HRESULT _hr;
                     if (_uAfter.GetInternalValue() > 0)
                     {
-                        _pAsyncTaskEntry->uExpire = TickCount<TimePrecise::Millisecond>::GetCurrent() + _uAfter;
+                        _pAsyncTaskEntry->uExpire = TickCount<TimePrecise::Microsecond>::GetCurrent() + _uAfter;
                         _hr = SetTimerInternal(_pAsyncTaskEntry);
                     }
                     else
@@ -466,7 +466,7 @@ namespace YY
                     if (_uInterval.GetMilliseconds() <= 0)
                         return nullptr;
 
-                    auto _uCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                    auto _uCurrent = TickCount<TimePrecise::Microsecond>::GetCurrent();
                     auto _pTimer = RefPtr<Timer>::Create();
                     if (!_pTimer)
                         return nullptr;
@@ -518,11 +518,11 @@ namespace YY
                     // >= UINT32_MAX 时认为是无限等待。
                     if (_nWaitTimeOut >= TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(UINT32_MAX))
                     {
-                        _pWait->uTimeOut = TickCount<TimePrecise::Millisecond>::GetMax();
+                        _pWait->uTimeOut = TickCount<TimePrecise::Microsecond>::GetMax();
                     }
                     else
                     {
-                        _pWait->uTimeOut = TickCount<TimePrecise::Millisecond>::GetCurrent() + _nWaitTimeOut;
+                        _pWait->uTimeOut = TickCount<TimePrecise::Microsecond>::GetCurrent() + _nWaitTimeOut;
                     }
 
                     _pWait->pfnWaitTaskCallback = std::move(_pfnTaskCallback);

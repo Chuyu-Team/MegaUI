@@ -132,7 +132,7 @@ namespace YY
                         // uPushLock 占用1bit，所以 uWakeupCount += 1 等价于 uWakeupCountAndPushLock += 2
                         if (_uWakeupCount == 0)
                         {
-                            TickCount<TimePrecise::Millisecond> _oCurrent = TickCount<TimePrecise::Millisecond>::GetCurrent();
+                            auto _oCurrent = TickCount<TimePrecise::Microsecond>::GetCurrent();
                             ProcessingTimerTasks(_oCurrent);
                             if (_uWakeupCountBackup && Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw * _uWakeupCountBackup) >= WakeupOnceRaw)
                             {

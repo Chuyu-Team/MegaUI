@@ -108,32 +108,32 @@ namespace YY
                     return TimeSpan(_uElapsedDays * GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute * DaysPerHour);
                 }
         
-                constexpr int64_t __YYAPI GetMicroseconds() noexcept
+                constexpr int64_t __YYAPI GetMicroseconds() const noexcept
                 {
                     return uElapsedInternal * SecondsPerMillisecond * MillisecondsPerMicrosecond / GetSecondsPerInternal();
                 }
 
-                constexpr int64_t __YYAPI GetMilliseconds() noexcept
+                constexpr int64_t __YYAPI GetMilliseconds() const noexcept
                 {
                     return uElapsedInternal * SecondsPerMillisecond / GetSecondsPerInternal();
                 }
 
-                constexpr int64_t __YYAPI GetSeconds() noexcept
+                constexpr int64_t __YYAPI GetSeconds() const noexcept
                 {
                     return uElapsedInternal / GetSecondsPerInternal();
                 }
 
-                constexpr int64_t __YYAPI GetMinutes() noexcept
+                constexpr int64_t __YYAPI GetMinutes() const noexcept
                 {
                     return uElapsedInternal / (GetSecondsPerInternal() * MinutesPerSecond);
                 }
 
-                constexpr int64_t __YYAPI GetHours() noexcept
+                constexpr int64_t __YYAPI GetHours() const noexcept
                 {
                     return uElapsedInternal / (GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute);
                 }
 
-                constexpr int64_t __YYAPI GetDays() noexcept
+                constexpr int64_t __YYAPI GetDays() const noexcept
                 {
                     return uElapsedInternal / (GetSecondsPerInternal() * MinutesPerSecond * HoursPerMinute * DaysPerHour);
                 }
