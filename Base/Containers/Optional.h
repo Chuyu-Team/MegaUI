@@ -176,6 +176,34 @@ namespace YY
 
                     return *this;
                 }
+                
+                bool operator==(const Optional& _oOther) const
+                {
+                    if (HasValue() != _oOther.HasValue())
+                        return false;
+
+                    if (!HasValue())
+                    {
+                        return true;
+                    }
+
+                    return GetValue() == _oOther.GetValue();
+                }
+
+#if !defined(_HAS_CXX20) || _HAS_CXX20 == 0
+                bool operator!=(const Optional& _oOther) const
+                {
+                    if (HasValue() != _oOther.HasValue())
+                        return true;
+
+                    if (!HasValue())
+                    {
+                        return false;
+                    }
+
+                    return GetValue() != _oOther.GetValue();
+                }
+#endif
             };
         }
     } // namespace Base
