@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "ControlInfo.h"
+#include <MegaUI/Core/ControlInfo.h>
 
 #include <map>
 

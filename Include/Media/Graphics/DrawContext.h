@@ -151,6 +151,14 @@ namespace YY
             {
             public:
                 static _Ret_notnull_ DrawContextFactory* __YYAPI GetDefaultDrawContextFactory();
+                
+#ifdef _WIN32
+                static _Ret_notnull_ DrawContextFactory* __YYAPI GetGdiPlusDrawContextFactory();
+
+                static _Ret_notnull_ DrawContextFactory* __YYAPI GetD2D1_0DrawContextFactory();
+
+                static _Ret_notnull_ DrawContextFactory* __YYAPI GetD2D1_1DrawContextFactory();
+#endif
 
 #ifdef _WIN32
                 /// <summary>

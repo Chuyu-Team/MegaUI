@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
-#include "TextBox.h"
+#include <MegaUI/Control/TextBox.h>
 
-#include <Window/Window.h>
+#include <MegaUI/Window/Window.h>
 #include <MegaUI/Core/ControlInfoImp.h>
 
 namespace YY

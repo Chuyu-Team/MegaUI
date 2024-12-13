@@ -21,14 +21,6 @@
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Threading/ProcessThreads.h>
 
-#include <Media/Graphics/GDIPlus/GDIPlusHelper.h>
-
-#ifdef _WIN32
-#include <Media/Graphics/D2D/D2D1_0DrawContext.h>
-#include <Media/Graphics/D2D/D2D1_1DrawContext.h>
-#include <Media/Graphics/GDIPlus/GDIPlusDrawContext.h>
-#endif
-
 #include <Base/IO/File.h>
 
 #include <functional>
@@ -512,7 +504,7 @@ int wmain()
 
         _pTestWindow->SetHost(pWindowElement);
 
-        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, D2D1_1DrawContext::GetDrawContextFactory());
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, DrawContextFactory::GetD2D1_1DrawContextFactory());
         pWindowElement->EndDefer(Cooike);
         SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.1");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
@@ -526,7 +518,7 @@ int wmain()
 
         _pTestWindow->SetHost(pWindowElement);
 
-        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, D2D1_0DrawContext::GetDrawContextFactory());
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, DrawContextFactory::GetD2D1_0DrawContextFactory());
         pWindowElement->EndDefer(Cooike);
         SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.0");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
@@ -541,7 +533,7 @@ int wmain()
 
         _pTestWindow->SetHost(pWindowElement);
 
-        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, GDIPlusDrawContext::GetDrawContextFactory());
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, DrawContextFactory::GetGdiPlusDrawContextFactory());
         pWindowElement->EndDefer(Cooike);
         SetWindowTextW(_pTestWindow->GetWnd(), L"GDIPlus");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);

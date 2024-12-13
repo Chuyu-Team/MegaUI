@@ -73,20 +73,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IntDir)Gen;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)Include;$(ProjectDir);$(IntDir)Gen;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)Include;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IntDir)Gen;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)Include;$(ProjectDir);$(IntDir)Gen;$(IncludePath)</IncludePath>
     <RemoteDeployDir>$(RemoteRootDir)/MegaUI</RemoteDeployDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)Include;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -159,41 +159,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Base\Containers\ArrayView.h" />
-    <ClInclude Include="..\Base\Containers\BitMap.h" />
-    <ClInclude Include="..\Base\Containers\ConstructorPolicy.h" />
-    <ClInclude Include="..\Base\Containers\Array.h" />
-    <ClInclude Include="..\Base\Containers\HashSet.h" />
-    <ClInclude Include="..\Base\Containers\Optional.h" />
-    <ClInclude Include="..\Base\Encoding.h" />
-    <ClInclude Include="..\Base\ErrorCode.h" />
-    <ClInclude Include="..\Base\Exception.h" />
-    <ClInclude Include="..\Base\IO\File.h" />
-    <ClInclude Include="..\Base\Memory\Alloc.h" />
-    <ClInclude Include="..\Base\Memory\RefPtr.h" />
-    <ClInclude Include="..\Base\Memory\UniquePtr.h" />
-    <ClInclude Include="..\Base\Memory\WeakPtr.h" />
-    <ClInclude Include="..\Base\SafeCast.h" />
-    <ClInclude Include="..\Base\SAL.h" />
-    <ClInclude Include="..\Base\Shared\Windows\km.h" />
-    <ClInclude Include="..\Base\Strings\NString.h" />
-    <ClInclude Include="..\Base\Strings\String.h" />
-    <ClInclude Include="..\Base\Strings\StringTransform.h" />
-    <ClInclude Include="..\Base\Strings\StringView.h" />
-    <ClInclude Include="..\Base\Sync\AutoLock.h" />
-    <ClInclude Include="..\Base\Sync\Interlocked.h" />
-    <ClInclude Include="..\Base\Sync\InterlockedQueue.h" />
-    <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h" />
-    <ClInclude Include="..\Base\Sync\CriticalSection.h" />
-    <ClInclude Include="..\Base\Sync\SRWLock.h" />
-    <ClInclude Include="..\Base\Sync\Sync.h" />
-    <ClInclude Include="..\Base\tchar.h" />
-    <ClInclude Include="..\Base\Threading\Coroutine.h" />
     <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp" />
     <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.h" />
-    <ClInclude Include="..\Base\Threading\ProcessThreads.h" />
     <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />
-    <ClInclude Include="..\Base\Threading\TaskRunner.h" />
     <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\ThreadPool.h" />
     <ClInclude Include="..\Base\Threading\ThreadPoolForLinux.h" />
@@ -201,30 +169,79 @@
     <ClInclude Include="..\Base\Threading\ThreadPoolWaitManger.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\ThreadPoolTimerManger.h" />
-    <ClInclude Include="..\Base\Time\Common.h" />
-    <ClInclude Include="..\Base\Time\TickCount.h" />
-    <ClInclude Include="..\Base\Time\TimeSpan.h" />
-    <ClInclude Include="..\Base\Utils\ComObjectImpl.h" />
-    <ClInclude Include="..\Base\Utils\FileInfo.h" />
-    <ClInclude Include="..\Base\Utils\SystemInfo.h" />
-    <ClInclude Include="..\Base\Utils\Version.h" />
-    <ClInclude Include="..\Base\YY.h" />
-    <ClInclude Include="..\Media\Brushes\Brush.h" />
-    <ClInclude Include="..\Media\Color.h" />
-    <ClInclude Include="..\Media\Font.h" />
+    <ClInclude Include="..\Include\Base\Containers\Array.h" />
+    <ClInclude Include="..\Include\Base\Containers\ArrayView.h" />
+    <ClInclude Include="..\Include\Base\Containers\BitMap.h" />
+    <ClInclude Include="..\Include\Base\Containers\ConstructorPolicy.h" />
+    <ClInclude Include="..\Include\Base\Containers\HashSet.h" />
+    <ClInclude Include="..\Include\Base\Containers\Optional.h" />
+    <ClInclude Include="..\Include\Base\Encoding.h" />
+    <ClInclude Include="..\Include\Base\ErrorCode.h" />
+    <ClInclude Include="..\Include\Base\Exception.h" />
+    <ClInclude Include="..\Include\Base\IO\File.h" />
+    <ClInclude Include="..\Include\Base\Memory\Alloc.h" />
+    <ClInclude Include="..\Include\Base\Memory\RefPtr.h" />
+    <ClInclude Include="..\Include\Base\Memory\UniquePtr.h" />
+    <ClInclude Include="..\Include\Base\Memory\WeakPtr.h" />
+    <ClInclude Include="..\Include\Base\SafeCast.h" />
+    <ClInclude Include="..\Include\Base\SAL.h" />
+    <ClInclude Include="..\Include\Base\Shared\Windows\km.h" />
+    <ClInclude Include="..\Include\Base\Strings\NString.h" />
+    <ClInclude Include="..\Include\Base\Strings\String.h" />
+    <ClInclude Include="..\Include\Base\Strings\StringTransform.h" />
+    <ClInclude Include="..\Include\Base\Strings\StringView.h" />
+    <ClInclude Include="..\Include\Base\Sync\AutoLock.h" />
+    <ClInclude Include="..\Include\Base\Sync\CriticalSection.h" />
+    <ClInclude Include="..\Include\Base\Sync\Interlocked.h" />
+    <ClInclude Include="..\Include\Base\Sync\InterlockedQueue.h" />
+    <ClInclude Include="..\Include\Base\Sync\InterlockedSingleLinkedList.h" />
+    <ClInclude Include="..\Include\Base\Sync\SRWLock.h" />
+    <ClInclude Include="..\Include\Base\Sync\Sync.h" />
+    <ClInclude Include="..\Include\Base\tchar.h" />
+    <ClInclude Include="..\Include\Base\Threading\Coroutine.h" />
+    <ClInclude Include="..\Include\Base\Threading\ProcessThreads.h" />
+    <ClInclude Include="..\Include\Base\Threading\TaskRunner.h" />
+    <ClInclude Include="..\Include\Base\Time\Common.h" />
+    <ClInclude Include="..\Include\Base\Time\TickCount.h" />
+    <ClInclude Include="..\Include\Base\Time\TimeSpan.h" />
+    <ClInclude Include="..\Include\Base\Utils\ComObjectImpl.h" />
+    <ClInclude Include="..\Include\Base\Utils\FileInfo.h" />
+    <ClInclude Include="..\Include\Base\Utils\SystemInfo.h" />
+    <ClInclude Include="..\Include\Base\Utils\Version.h" />
+    <ClInclude Include="..\Include\Base\YY.h" />
+    <ClInclude Include="..\Include\Media\Brushes\Brush.h" />
+    <ClInclude Include="..\Include\Media\Color.h" />
+    <ClInclude Include="..\Include\Media\Font.h" />
+    <ClInclude Include="..\Include\Media\Graphics\DrawContext.h" />
+    <ClInclude Include="..\Include\Media\Pens\Pen.h" />
+    <ClInclude Include="..\Include\Media\Point.h" />
+    <ClInclude Include="..\Include\Media\Rect.h" />
+    <ClInclude Include="..\Include\Media\Resource.h" />
+    <ClInclude Include="..\Include\Media\Size.h" />
+    <ClInclude Include="..\Include\MegaUI\Base\MegaUITypeInt.h" />
+    <ClInclude Include="..\Include\MegaUI\Control\Button.h" />
+    <ClInclude Include="..\Include\MegaUI\Control\TextBox.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\ControlInfo.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\ControlInfoImp.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\DeferCycle.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\Element.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\Layout.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\Property.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\StyleSheet.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\UIEvent.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\Value.h" />
+    <ClInclude Include="..\Include\MegaUI\Parser\UIParser.h" />
+    <ClInclude Include="..\Include\MegaUI\Render\FontEnumMap.h" />
+    <ClInclude Include="..\Include\MegaUI\Render\Render.h" />
+    <ClInclude Include="..\Include\MegaUI\Window\Window.h" />
+    <ClInclude Include="..\Include\MegaUI\Window\WindowElement.h" />
     <ClInclude Include="..\Media\Graphics\D2D\D2D1_0DrawContext.h" />
     <ClInclude Include="..\Media\Graphics\D2D\D2D1_1DrawContext.h" />
     <ClInclude Include="..\Media\Graphics\D2D\DWriteHelper.h" />
     <ClInclude Include="..\Media\Graphics\DrawAsyncCommandContext.h" />
-    <ClInclude Include="..\Media\Graphics\DrawContext.h" />
     <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusHelper.h" />
     <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.h" />
     <ClInclude Include="..\Media\Graphics\GDIPlus\GdiPlusTextLayout.hpp" />
-    <ClInclude Include="..\Media\Pens\Pen.h" />
-    <ClInclude Include="..\Media\Point.h" />
-    <ClInclude Include="..\Media\Rect.h" />
-    <ClInclude Include="..\Media\Resource.h" />
-    <ClInclude Include="..\Media\Size.h" />
     <ClInclude Include="..\ThirdParty\rapidxml\rapidxml.hpp" />
     <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_iterators.hpp" />
     <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_print.hpp" />
@@ -235,26 +252,11 @@
     <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h" />
-    <ClInclude Include="Base\MegaUITypeInt.h" />
-    <ClInclude Include="Control\Button.h" />
-    <ClInclude Include="Control\TextBox.h" />
-    <ClInclude Include="Core\ControlInfo.h" />
-    <ClInclude Include="Core\ControlInfoImp.h" />
-    <ClInclude Include="Core\DeferCycle.h" />
-    <ClInclude Include="Core\Element.h" />
-    <ClInclude Include="Core\Layout.h" />
-    <ClInclude Include="Core\Property.h" />
-    <ClInclude Include="Core\StyleSheet.h" />
     <ClInclude Include="Core\UIEvent.h" />
-    <ClInclude Include="Core\Value.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Parser\UIParser.h" />
     <ClInclude Include="Parser\ValueParser.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Render\FontEnumMap.h" />
-    <ClInclude Include="Render\Render.h" />
-    <ClInclude Include="Window\Window.h" />
-    <ClInclude Include="Window\WindowElement.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Base\Strings\StringTransform.cpp" />

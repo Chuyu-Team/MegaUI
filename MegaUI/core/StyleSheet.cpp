@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "StyleSheet.h"
+#include <MegaUI/Core/StyleSheet.h>
 
 #include <MegaUI/Core/Element.h>
 #include <Base/Sync/Interlocked.h>

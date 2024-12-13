@@ -13,95 +13,134 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="UI">
-      <UniqueIdentifier>{560480c3-0962-4ba6-9d98-8b7b4dd162b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Render">
-      <UniqueIdentifier>{ef62d851-a980-4f9c-ae41-8fe95c244e1c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Window">
-      <UniqueIdentifier>{8f1999d2-8ce0-493c-a0e4-969c84f2d144}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Core">
-      <UniqueIdentifier>{734b6eb7-a287-44e7-ab54-e6871d045812}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Base">
-      <UniqueIdentifier>{9cad59f1-53c0-49d1-a714-f2e6e6e552bd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Parser">
-      <UniqueIdentifier>{7587d627-2fbc-43c0-b592-b31c1c1eadd1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Base">
+    <Filter Include="源文件\Base">
       <UniqueIdentifier>{b2d76587-f02c-4e66-a9b6-103ca4da3552}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Containers">
-      <UniqueIdentifier>{89a3bf71-18a5-4c34-9e8c-07dba97668f7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Base\Threading">
+    <Filter Include="源文件\Base\Threading">
       <UniqueIdentifier>{70ce5618-1412-4047-91ac-176a84a368fd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="UI\Accessibility">
-      <UniqueIdentifier>{4ef86392-f933-4b2b-958d-b1814e191e02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Accessibility\UIAutomation">
-      <UniqueIdentifier>{b98e6b48-18ae-4ea5-99c9-2187cb16e8ce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Base\Strings">
-      <UniqueIdentifier>{a29a58ba-73ae-4a48-8891-56488d2ca06a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="UI\Control">
-      <UniqueIdentifier>{33cbca5b-e9af-4a6f-925d-ff8643527b56}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Base\Memory">
-      <UniqueIdentifier>{dbc00a38-0fe8-4789-bcdb-931c58800068}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Media">
-      <UniqueIdentifier>{754a841a-e77f-4024-a903-0a33350948ac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Media\Graphics">
-      <UniqueIdentifier>{bb8776d7-d622-4056-8b39-48bdc225a23d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Media\Graphics\D2D">
-      <UniqueIdentifier>{bc9668cf-3d13-49a1-b026-391a5d76a74d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Media\Brushes">
-      <UniqueIdentifier>{a8543da6-6cc0-40b8-b076-0b5b92c2c114}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Media\Pens">
-      <UniqueIdentifier>{fe1299b8-efec-441f-995f-5d8e4e52aa7a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Media\Graphics\GDIPlus">
-      <UniqueIdentifier>{1c62b765-e956-4202-aa72-a94f3fd0ee3f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Base\IO">
-      <UniqueIdentifier>{81a59bca-d12b-4c0a-b464-1060f6463207}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Base\Threading\TaskRunner">
+    <Filter Include="源文件\Base\Threading\TaskRunner">
       <UniqueIdentifier>{681ed380-96c6-447f-a87b-2d6b7d841c64}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Time">
-      <UniqueIdentifier>{acad2a55-e5aa-4701-b55a-c0d7db0f1332}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Base\Threading\TaskRunner\Windows">
+    <Filter Include="源文件\Base\Threading\TaskRunner\Windows">
       <UniqueIdentifier>{81d23f6c-2fdc-45b6-b240-e41605dfe965}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Threading\TaskRunner\Linux">
+    <Filter Include="源文件\Base\Threading\TaskRunner\Linux">
       <UniqueIdentifier>{c80dc393-4130-4dd6-a910-4c2c57d23eb9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Sync">
+    <Filter Include="源文件\Base\Strings">
+      <UniqueIdentifier>{a29a58ba-73ae-4a48-8891-56488d2ca06a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Base\Sync">
       <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Utils">
+    <Filter Include="源文件\Base\Utils">
       <UniqueIdentifier>{5fdb3ef6-6993-4ef6-bf1e-57de7c90cc1f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Utils\Windows">
-      <UniqueIdentifier>{34f8d820-a98e-4f29-8be8-c600d83b23b4}</UniqueIdentifier>
+    <Filter Include="头文件\Include">
+      <UniqueIdentifier>{64fd5b21-1825-49cf-8923-81cf6eac6c6c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Shared">
-      <UniqueIdentifier>{fd0ce82a-5282-49fa-a78c-e4b9d2cc7039}</UniqueIdentifier>
+    <Filter Include="头文件\Include\Base">
+      <UniqueIdentifier>{e30bd8e3-a8a7-44aa-abbf-ba920351d532}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Base\Shared\Windows">
-      <UniqueIdentifier>{e68b4155-5106-42e9-83a9-60cbfe6e1ca0}</UniqueIdentifier>
+    <Filter Include="头文件\Include\Base\Containers">
+      <UniqueIdentifier>{696fcdf5-ced7-4242-aa7e-da88a476da7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\IO">
+      <UniqueIdentifier>{d22b809b-c2fb-41e0-a337-1bbbfc3918d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Memory">
+      <UniqueIdentifier>{320545f1-bd27-4af4-8da0-35cc70b0ea97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Shared">
+      <UniqueIdentifier>{0d182ba7-71ba-4589-b619-d1c43aa00303}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Shared\Windows">
+      <UniqueIdentifier>{9689aaa3-f9c5-4905-8bd5-67067aa40e1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Strings">
+      <UniqueIdentifier>{fd319d94-0a21-40b2-86ce-6e49ac658c6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Sync">
+      <UniqueIdentifier>{a23f385b-9577-41f7-8db5-45bd589b9ba4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Threading">
+      <UniqueIdentifier>{8add4361-75d9-4446-8112-7857ad81cb38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Time">
+      <UniqueIdentifier>{96160f80-961d-426f-9391-03526d4d1e2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Base\Utils">
+      <UniqueIdentifier>{78ad2869-9f57-4785-a879-d13d3510a8d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Media">
+      <UniqueIdentifier>{09ebb5ac-3bf9-4723-8b14-7fdf0a968aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Media\Brushes">
+      <UniqueIdentifier>{d5b24a46-565d-47fb-9869-5edd9be83873}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Media\Graphics">
+      <UniqueIdentifier>{3d89ed8d-1d49-44be-bc88-c16ee0059259}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\Media\Pens">
+      <UniqueIdentifier>{db0115a6-bb7a-4250-b694-268f4338a72b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\MegaUI">
+      <UniqueIdentifier>{2c2f67ae-9bb0-4b31-8968-93a5fc5ce55a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\MegaUI\Base">
+      <UniqueIdentifier>{90281990-ed2e-4dec-91d9-bdd398744d8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\MegaUI\Control">
+      <UniqueIdentifier>{90138b64-c18e-461a-99e0-f59edbb3763a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\MegaUI\Core">
+      <UniqueIdentifier>{5fc61f1e-41f8-4d06-94a8-d3b205f01cef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\MegaUI\Parser">
+      <UniqueIdentifier>{243cd0af-12bf-4a98-8360-1c579b813c43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\MegaUI\Render">
+      <UniqueIdentifier>{1ce2726f-bf17-484f-a43b-e087ef3a846a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Include\MegaUI\Window">
+      <UniqueIdentifier>{6b63887f-aee0-412f-934f-6d405a30c9be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Media">
+      <UniqueIdentifier>{754a841a-e77f-4024-a903-0a33350948ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Media\Graphics">
+      <UniqueIdentifier>{bb8776d7-d622-4056-8b39-48bdc225a23d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Media\Graphics\D2D">
+      <UniqueIdentifier>{bc9668cf-3d13-49a1-b026-391a5d76a74d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Media\Graphics\GDIPlus">
+      <UniqueIdentifier>{1c62b765-e956-4202-aa72-a94f3fd0ee3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI">
+      <UniqueIdentifier>{560480c3-0962-4ba6-9d98-8b7b4dd162b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI\Render">
+      <UniqueIdentifier>{ef62d851-a980-4f9c-ae41-8fe95c244e1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI\Window">
+      <UniqueIdentifier>{8f1999d2-8ce0-493c-a0e4-969c84f2d144}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI\Core">
+      <UniqueIdentifier>{734b6eb7-a287-44e7-ab54-e6871d045812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI\Parser">
+      <UniqueIdentifier>{7587d627-2fbc-43c0-b592-b31c1c1eadd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI\Accessibility">
+      <UniqueIdentifier>{4ef86392-f933-4b2b-958d-b1814e191e02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI\Accessibility\UIAutomation">
+      <UniqueIdentifier>{b98e6b48-18ae-4ea5-99c9-2187cb16e8ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\UI\Control">
+      <UniqueIdentifier>{33cbca5b-e9af-4a6f-925d-ff8643527b56}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -111,242 +150,74 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Value.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Element.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Property.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\ControlInfo.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="base\MegaUITypeInt.h">
-      <Filter>UI\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\DeferCycle.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Layout.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\Render.h">
-      <Filter>UI\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="Window\Window.h">
-      <Filter>UI\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\StyleSheet.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\ControlInfoImp.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
     <ClInclude Include="Parser\UIParser.h">
-      <Filter>UI\Parser</Filter>
+      <Filter>源文件\UI\Parser</Filter>
     </ClInclude>
     <ClInclude Include="Parser\ValueParser.h">
-      <Filter>UI\Parser</Filter>
-    </ClInclude>
-    <ClInclude Include="Window\WindowElement.h">
-      <Filter>UI\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\FontEnumMap.h">
-      <Filter>UI\Render</Filter>
+      <Filter>源文件\UI\Parser</Filter>
     </ClInclude>
     <ClInclude Include="Core\UIEvent.h">
-      <Filter>UI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Encoding.h">
-      <Filter>Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\tchar.h">
-      <Filter>Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\YY.h">
-      <Filter>Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\ArrayView.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\Array.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Exception.h">
-      <Filter>Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\ConstructorPolicy.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\HashSet.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Sync\Interlocked.h">
-      <Filter>Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Color.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Point.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Rect.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Size.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Font.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\SAL.h">
-      <Filter>Base</Filter>
+      <Filter>源文件\UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.h">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Strings\NString.h">
-      <Filter>Base\Strings</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Strings\String.h">
-      <Filter>Base\Strings</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Strings\StringTransform.h">
-      <Filter>Base\Strings</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Strings\StringView.h">
-      <Filter>Base\Strings</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\PatternProviderImpl.h">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\ElementPatternProviderImpl.h">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
-    </ClInclude>
-    <ClInclude Include="Control\Button.h">
-      <Filter>UI\Control</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Memory\RefPtr.h">
-      <Filter>Base\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Resource.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Sync\InterlockedSingleLinkedList.h">
-      <Filter>Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Graphics\DrawContext.h">
-      <Filter>Media\Graphics</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\DrawAsyncCommandContext.h">
-      <Filter>Media\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Pens\Pen.h">
-      <Filter>Media\Pens</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Media\Brushes\Brush.h">
-      <Filter>Media\Brushes</Filter>
+      <Filter>源文件\Media\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\D2D\D2D1_0DrawContext.h">
-      <Filter>Media\Graphics\D2D</Filter>
+      <Filter>源文件\Media\Graphics\D2D</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\D2D\DWriteHelper.h">
-      <Filter>Media\Graphics\D2D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Memory\UniquePtr.h">
-      <Filter>Base\Memory</Filter>
+      <Filter>源文件\Media\Graphics\D2D</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\D2D\D2D1_1DrawContext.h">
-      <Filter>Media\Graphics\D2D</Filter>
+      <Filter>源文件\Media\Graphics\D2D</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.h">
-      <Filter>Media\Graphics\GDIPlus</Filter>
+      <Filter>源文件\Media\Graphics\GDIPlus</Filter>
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusHelper.h">
-      <Filter>Media\Graphics\GDIPlus</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\Optional.h">
-      <Filter>Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Sync\InterlockedQueue.h">
-      <Filter>Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Sync\Sync.h">
-      <Filter>Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ProcessThreads.h">
-      <Filter>Base\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Memory\Alloc.h">
-      <Filter>Base\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\SafeCast.h">
-      <Filter>Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\IO\File.h">
-      <Filter>Base\IO</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Memory\WeakPtr.h">
-      <Filter>Base\Memory</Filter>
+      <Filter>源文件\Media\Graphics\GDIPlus</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunner.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp">
-      <Filter>Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Time\TickCount.h">
-      <Filter>Base\Time</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Time\TimeSpan.h">
-      <Filter>Base\Time</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Time\Common.h">
-      <Filter>Base\Time</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Containers\BitMap.h">
-      <Filter>Base\Containers</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadPool.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadPoolForWindows.h">
-      <Filter>Base\Threading\TaskRunner\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\ErrorCode.h">
-      <Filter>Base</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadPoolForLinux.h">
-      <Filter>Base\Threading\TaskRunner\Linux</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Sync\CriticalSection.h">
-      <Filter>Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Sync\SRWLock.h">
-      <Filter>Base\Sync</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner\Linux</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdParty\rapidxml\rapidxml.hpp">
       <Filter>头文件</Filter>
@@ -360,38 +231,212 @@
     <ClInclude Include="..\ThirdParty\rapidxml\rapidxml_utils.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Control\TextBox.h">
-      <Filter>UI\Control</Filter>
-    </ClInclude>
     <ClInclude Include="..\Media\Graphics\GDIPlus\GdiPlusTextLayout.hpp">
-      <Filter>Media\Graphics\GDIPlus</Filter>
+      <Filter>源文件\Media\Graphics\GDIPlus</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadPoolTimerManger.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
     <ClInclude Include="..\Base\Threading\ThreadPoolWaitManger.h">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Sync\AutoLock.h">
-      <Filter>Base\Sync</Filter>
+    <ClInclude Include="..\Include\Base\Encoding.h">
+      <Filter>头文件\Include\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\Coroutine.h">
-      <Filter>Base\Threading</Filter>
+    <ClInclude Include="..\Include\Base\ErrorCode.h">
+      <Filter>头文件\Include\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Utils\ComObjectImpl.h">
-      <Filter>Base\Utils\Windows</Filter>
+    <ClInclude Include="..\Include\Base\Exception.h">
+      <Filter>头文件\Include\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Utils\SystemInfo.h">
-      <Filter>Base\Utils</Filter>
+    <ClInclude Include="..\Include\Base\SafeCast.h">
+      <Filter>头文件\Include\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Utils\Version.h">
-      <Filter>Base\Utils</Filter>
+    <ClInclude Include="..\Include\Base\SAL.h">
+      <Filter>头文件\Include\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Shared\Windows\km.h">
-      <Filter>Base\Shared\Windows</Filter>
+    <ClInclude Include="..\Include\Base\tchar.h">
+      <Filter>头文件\Include\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Utils\FileInfo.h">
-      <Filter>Base\Utils</Filter>
+    <ClInclude Include="..\Include\Base\YY.h">
+      <Filter>头文件\Include\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\Array.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\ArrayView.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\BitMap.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\ConstructorPolicy.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\HashSet.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\Optional.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\IO\File.h">
+      <Filter>头文件\Include\Base\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Memory\Alloc.h">
+      <Filter>头文件\Include\Base\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Memory\RefPtr.h">
+      <Filter>头文件\Include\Base\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Memory\UniquePtr.h">
+      <Filter>头文件\Include\Base\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Memory\WeakPtr.h">
+      <Filter>头文件\Include\Base\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Strings\NString.h">
+      <Filter>头文件\Include\Base\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Strings\String.h">
+      <Filter>头文件\Include\Base\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Strings\StringTransform.h">
+      <Filter>头文件\Include\Base\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Strings\StringView.h">
+      <Filter>头文件\Include\Base\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Sync\AutoLock.h">
+      <Filter>头文件\Include\Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Sync\CriticalSection.h">
+      <Filter>头文件\Include\Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Sync\Interlocked.h">
+      <Filter>头文件\Include\Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Sync\InterlockedQueue.h">
+      <Filter>头文件\Include\Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Sync\InterlockedSingleLinkedList.h">
+      <Filter>头文件\Include\Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Sync\SRWLock.h">
+      <Filter>头文件\Include\Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Sync\Sync.h">
+      <Filter>头文件\Include\Base\Sync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Threading\Coroutine.h">
+      <Filter>头文件\Include\Base\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Threading\ProcessThreads.h">
+      <Filter>头文件\Include\Base\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Threading\TaskRunner.h">
+      <Filter>头文件\Include\Base\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Time\Common.h">
+      <Filter>头文件\Include\Base\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Time\TickCount.h">
+      <Filter>头文件\Include\Base\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Time\TimeSpan.h">
+      <Filter>头文件\Include\Base\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Utils\ComObjectImpl.h">
+      <Filter>头文件\Include\Base\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Utils\FileInfo.h">
+      <Filter>头文件\Include\Base\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Utils\SystemInfo.h">
+      <Filter>头文件\Include\Base\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Utils\Version.h">
+      <Filter>头文件\Include\Base\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Shared\Windows\km.h">
+      <Filter>头文件\Include\Base\Shared\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Color.h">
+      <Filter>头文件\Include\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Font.h">
+      <Filter>头文件\Include\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Point.h">
+      <Filter>头文件\Include\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Rect.h">
+      <Filter>头文件\Include\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Resource.h">
+      <Filter>头文件\Include\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Size.h">
+      <Filter>头文件\Include\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Brushes\Brush.h">
+      <Filter>头文件\Include\Media\Brushes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Graphics\DrawContext.h">
+      <Filter>头文件\Include\Media\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Media\Pens\Pen.h">
+      <Filter>头文件\Include\Media\Pens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Base\MegaUITypeInt.h">
+      <Filter>头文件\Include\MegaUI\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Control\Button.h">
+      <Filter>头文件\Include\MegaUI\Control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Control\TextBox.h">
+      <Filter>头文件\Include\MegaUI\Control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\ControlInfo.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\ControlInfoImp.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\DeferCycle.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\Element.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\Layout.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\Property.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\StyleSheet.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\UIEvent.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\Value.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Parser\UIParser.h">
+      <Filter>头文件\Include\MegaUI\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Render\FontEnumMap.h">
+      <Filter>头文件\Include\MegaUI\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Render\Render.h">
+      <Filter>头文件\Include\MegaUI\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Window\Window.h">
+      <Filter>头文件\Include\MegaUI\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Window\WindowElement.h">
+      <Filter>头文件\Include\MegaUI\Window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -402,103 +447,103 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Core\Element.cpp">
-      <Filter>UI\Core</Filter>
+      <Filter>源文件\UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\Value.cpp">
-      <Filter>UI\Core</Filter>
+      <Filter>源文件\UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\ControlInfo.cpp">
-      <Filter>UI\Core</Filter>
+      <Filter>源文件\UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="Render\Render.cpp">
-      <Filter>UI\Render</Filter>
+      <Filter>源文件\UI\Render</Filter>
     </ClCompile>
     <ClCompile Include="Window\Window.cpp">
-      <Filter>UI\Window</Filter>
+      <Filter>源文件\UI\Window</Filter>
     </ClCompile>
     <ClCompile Include="Core\StyleSheet.cpp">
-      <Filter>UI\Core</Filter>
+      <Filter>源文件\UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="Parser\UIParser.cpp">
-      <Filter>UI\Parser</Filter>
+      <Filter>源文件\UI\Parser</Filter>
     </ClCompile>
     <ClCompile Include="Window\WindowElement.cpp">
-      <Filter>UI\Window</Filter>
+      <Filter>源文件\UI\Window</Filter>
     </ClCompile>
     <ClCompile Include="Render\FontEnumMap.cpp">
-      <Filter>UI\Render</Filter>
+      <Filter>源文件\UI\Render</Filter>
     </ClCompile>
     <ClCompile Include="..\Media\Font.cpp">
-      <Filter>Media</Filter>
+      <Filter>源文件\Media</Filter>
     </ClCompile>
     <ClCompile Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.cpp">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClCompile>
     <ClCompile Include="Accessibility\UIAutomation\AccessibleEventManager.cpp">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClCompile>
     <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp">
-      <Filter>UI\Accessibility\UIAutomation</Filter>
+      <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Strings\StringTransform.cpp">
-      <Filter>Base\Strings</Filter>
+      <Filter>源文件\Base\Strings</Filter>
     </ClCompile>
     <ClCompile Include="Control\Button.cpp">
-      <Filter>UI\Control</Filter>
+      <Filter>源文件\UI\Control</Filter>
     </ClCompile>
     <ClCompile Include="..\Media\Graphics\DrawAsyncCommandContext.cpp">
-      <Filter>Media\Graphics</Filter>
+      <Filter>源文件\Media\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\Media\Graphics\D2D\D2D1_0DrawContext.cpp">
-      <Filter>Media\Graphics\D2D</Filter>
+      <Filter>源文件\Media\Graphics\D2D</Filter>
     </ClCompile>
     <ClCompile Include="..\Media\Graphics\D2D\DWriteHelper.cpp">
-      <Filter>Media\Graphics\D2D</Filter>
+      <Filter>源文件\Media\Graphics\D2D</Filter>
     </ClCompile>
     <ClCompile Include="..\Media\Graphics\D2D\D2D1_1DrawContext.cpp">
-      <Filter>Media\Graphics\D2D</Filter>
+      <Filter>源文件\Media\Graphics\D2D</Filter>
     </ClCompile>
     <ClCompile Include="..\Media\Graphics\GDIPlus\GDIPlusDrawContext.cpp">
-      <Filter>Media\Graphics\GDIPlus</Filter>
+      <Filter>源文件\Media\Graphics\GDIPlus</Filter>
     </ClCompile>
     <ClCompile Include="..\Media\Graphics\DrawContext.cpp">
-      <Filter>Media\Graphics</Filter>
+      <Filter>源文件\Media\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp">
-      <Filter>Base\Threading\TaskRunner</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp">
-      <Filter>Base\Threading\TaskRunner\Windows</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Threading\ThreadPoolForLinux.cpp">
-      <Filter>Base\Threading\TaskRunner\Linux</Filter>
+      <Filter>源文件\Base\Threading\TaskRunner\Linux</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Sync\SRWLock.cpp">
-      <Filter>Base\Sync</Filter>
+      <Filter>源文件\Base\Sync</Filter>
     </ClCompile>
     <ClCompile Include="Control\TextBox.cpp">
-      <Filter>UI\Control</Filter>
+      <Filter>源文件\UI\Control</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Sync\CriticalSection.cpp">
-      <Filter>Base\Sync</Filter>
+      <Filter>源文件\Base\Sync</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Utils\SystemInfo.cpp">
-      <Filter>Base\Utils</Filter>
+      <Filter>源文件\Base\Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\Base\Utils\FileInfo.cpp">
-      <Filter>Base\Utils</Filter>
+      <Filter>源文件\Base\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

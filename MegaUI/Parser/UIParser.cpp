@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "UIParser.h"
+#include <MegaUI/Parser/UIParser.h>
 
 #include <Base/Memory/Alloc.h>
 #include <Base/Strings/StringTransform.h>

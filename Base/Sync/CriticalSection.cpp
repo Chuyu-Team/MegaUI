@@ -1,4 +1,4 @@
-﻿#include "CriticalSection.h"
+﻿#include <Base/Sync/CriticalSection.h>
 
 namespace YY
 {

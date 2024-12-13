@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "DrawContext.h"
+#include <Media/Graphics/DrawContext.h>
 
 #ifdef _WIN32
 #include <Media/Graphics/D2D/D2D1_1DrawContext.h>
@@ -29,6 +29,23 @@ namespace YY
 #endif
                 return nullptr;
             }
+
+#ifdef _WIN32
+            DrawContextFactory* __YYAPI DrawContextFactory::GetGdiPlusDrawContextFactory()
+            {
+                return GDIPlusDrawContext::GetDrawContextFactory();
+            }
+
+            DrawContextFactory* __YYAPI DrawContextFactory::GetD2D1_0DrawContextFactory()
+            {
+                return D2D1_0DrawContext::GetDrawContextFactory();
+            }
+
+            DrawContextFactory* __YYAPI DrawContextFactory::GetD2D1_1DrawContextFactory()
+            {
+                return D2D1_1DrawContext::GetDrawContextFactory();
+            }
+#endif
         } // namespace Graphics
     } // namespace Media
 } // namespace YY

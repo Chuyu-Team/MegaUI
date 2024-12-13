@@ -10,7 +10,6 @@
 #include <Base/Memory/WeakPtr.h>
 #include <Base/Time/TickCount.h>
 #include <Base/Time/TimeSpan.h>
-#include <Base/Threading/ThreadPool.h>
 #include <Base/Threading/Coroutine.h>
 #include <Base/Strings/String.h>
 

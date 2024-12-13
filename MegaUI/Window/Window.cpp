@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include "Window.h"
+#include <MegaUI/Window/Window.h>
 
 #include <MegaUI/Core/ControlInfoImp.h>
 #include <Base/Memory/RefPtr.h>

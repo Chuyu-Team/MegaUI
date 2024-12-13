@@ -1,4 +1,4 @@
-#include "FileInfo.h"
+﻿#include <Base/Utils/FileInfo.h>
 
 #include <memory>
 #include <Base/ErrorCode.h>
@@ -49,7 +49,7 @@ namespace YY
 						return HRESULT_From_LSTATUS(GetLastError());
 					}
 #else
-					// XPϵͳ������ֱ�ӵ��ã���Ȼ�ᴥ���ڴ�Ƿ����ʡ������ȸ��Ƶ�һ���ڴ����
+					// XP系统不允许直接调用，不然会触发内存非法访问。所以先复制到一个内存块上
 					const DWORD _cbFileInfoBuffer = SizeofResource(_hMoudle, _hRsrcVersion);
 					void* _pFileInfoBuffer = alloca(_cbFileInfoBuffer);
 
@@ -65,7 +65,7 @@ namespace YY
 					_pVersion->uHightPart = _pFileInfo->dwFileVersionMS;
 					return S_OK;
 				}
-				//ץȡEXCEPTION_IN_PAGE_ERROR�쳣����ֹIO���⵼�³��������
+				//抓取EXCEPTION_IN_PAGE_ERROR异常，防止IO问题导致程序崩溃。
 				__except ((GetExceptionCode() == EXCEPTION_IN_PAGE_ERROR || GetExceptionCode() == 0xC000009C) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
 				{
 					return HRESULT_From_LSTATUS(ERROR_DISK_OPERATION_FAILED);

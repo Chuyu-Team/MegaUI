@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "Button.h"
+#include <MegaUI/Control/Button.h>
 
 #include <MegaUI/Core/ControlInfoImp.h>
 #include <MegaUI/Window/Window.h>

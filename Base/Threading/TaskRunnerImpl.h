@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Base/Threading/TaskRunner.h>
 #include <Base/Memory/WeakPtr.h>
+#include <Base/Threading/ThreadPool.h>
 
 #pragma pack(push, __YY_PACKING)
 
