@@ -358,8 +358,10 @@ int wmain()
                 [](DWORD)
                 {
                     std::cout << "TID : " << ::GetCurrentThreadId() << "TickVVVVVVVVVV " << GetTickCount() << " 投递的任务需要等 RunUIMessageLoop 开始。\n";
-
+                    return false;
                 });
+
+            return false;
         });
 
     /*_pMainThreadRunner->PostDelayTask(
@@ -456,6 +458,8 @@ int wmain()
         []()
         {
             std::cout << "TID : " << ::GetCurrentThreadId() << " Tick " << GetTickCount() << " 5秒后定时任务XXXXX。\n";
+
+            return true;
         });
 
     _pAsynTaskRunner->PostTask(

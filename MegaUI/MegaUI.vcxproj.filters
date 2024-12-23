@@ -438,6 +438,9 @@
     <ClInclude Include="..\Include\MegaUI\Window\WindowElement.h">
       <Filter>头文件\Include\MegaUI\Window</Filter>
     </ClInclude>
+    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerProxyImpl.h">
+      <Filter>源文件\Base\Threading\TaskRunner</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

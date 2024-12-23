@@ -6,6 +6,7 @@
 #include <Base/Threading/ParallelTaskRunnerImpl.hpp>
 #include <Base/Sync/Sync.h>
 #include <Base/Threading/TaskRunnerDispatchImpl.h>
+#include <Base/Threading/ThreadTaskRunnerProxyImpl.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
@@ -29,24 +30,28 @@ namespace YY
 
             HRESULT __YYAPI Timer::RunTask()
             {
+                if (IsCanceled())
+                    return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
+
                 if (uInterval.GetMilliseconds() <= 0)
                 {
-                    return TaskEntry::RunTask();
+                    pfnTaskCallback();
+                    return S_OK;
                 }
                 else
                 {
                     auto _uExpire = TickCount<TimePrecise::Microsecond>::GetCurrent() + uInterval;
-                    auto _hr = TaskEntry::RunTask();
-                    if (FAILED(_hr))
-                        return _hr;
+                    if (pfnTimerCallback())
+                    {
+                        auto _pOwnerTaskRunner = pOwnerTaskRunnerWeak.Get();
+                        // 任务被取消？
+                        if (!_pOwnerTaskRunner)
+                            return S_OK;
 
-                    auto _pOwnerTaskRunner = pOwnerTaskRunnerWeak.Get();
-                    // 任务被取消？
-                    if (!_pOwnerTaskRunner)
-                        return S_OK;
-
-                    uExpire = _uExpire;
-                    return _pOwnerTaskRunner->SetTimerInternal(this);
+                        uExpire = _uExpire;
+                        return _pOwnerTaskRunner->SetTimerInternal(this);
+                    }
+                    return S_OK;
                 }
             }
 
@@ -172,36 +177,36 @@ namespace YY
 
             RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::BindCurrentThread()
             {
-                RefPtr<ThreadTaskRunnerImpl> _pThreadTaskRunnerImpl;
+                if (g_pTaskRunnerWeak.Get())
+                    return nullptr;
 
-                if (auto _pTaskRunner = g_pTaskRunnerWeak.Get())
-                {
-                    if (!HasFlags(_pTaskRunner->GetStyle(), TaskRunnerStyle::FixedThread))
-                    {
-                        // 非物理线程不能进行UI消息循环！！！
-                        // 暂时设计如此，未来再说。
-                        return nullptr;
-                    }
+                auto _pThreadTaskRunnerImpl = RefPtr<ThreadTaskRunnerImpl>::Create();
+                if (!_pThreadTaskRunnerImpl)
+                    return nullptr;
 
-                    _pThreadTaskRunnerImpl = std::move(_pTaskRunner);
-                }
-                else
-                {
-                    // 这是主线程？？？
-                    _pThreadTaskRunnerImpl = RefPtr<ThreadTaskRunnerImpl>::Create();
-                    if (!_pThreadTaskRunnerImpl)
-                    {
-                        return nullptr;
-                    }
-                    g_pTaskRunnerWeak = _pThreadTaskRunnerImpl;
-                }
+                g_pTaskRunnerWeak = _pThreadTaskRunnerImpl;
+                return _pThreadTaskRunnerImpl;
+            }
 
+            RefPtr<ThreadTaskRunner> __YYAPI ThreadTaskRunner::BindCurrentThreadForProxyMode()
+            {
+                if (g_pTaskRunnerWeak.Get())
+                    return nullptr;
+
+                auto _pThreadTaskRunnerImpl = RefPtr<ThreadTaskRunnerProxyImpl>::Create();
+                if (!_pThreadTaskRunnerImpl)
+                    return nullptr;
+
+                if (!_pThreadTaskRunnerImpl->Init())
+                    return nullptr;
+
+                g_pTaskRunnerWeak = _pThreadTaskRunnerImpl;
                 return _pThreadTaskRunnerImpl;
             }
 
             uintptr_t __YYAPI ThreadTaskRunner::RunUIMessageLoop()
             {
-                RefPtr<ThreadTaskRunnerImpl> _pThreadTaskRunnerImpl;
+                RefPtr<ThreadTaskRunnerBaseImpl> _pThreadTaskRunnerImpl;
 
                 if (auto _pTaskRunner = g_pTaskRunnerWeak.Get())
                 {
@@ -219,7 +224,7 @@ namespace YY
                     throw Exception(L"尚未调用 BindCurrentThread。", E_INVALIDARG);
                 }
 
-                auto _uResult = _pThreadTaskRunnerImpl->RunUIMessageLoop();
+                auto _uResult = _pThreadTaskRunnerImpl->RunTaskRunnerLoop();
                 return _uResult;
             }
 
@@ -236,6 +241,21 @@ namespace YY
             {
                 return RefPtr<ParallelTaskRunnerImpl>::Create(_uParallelMaximum, std::move(_szThreadDescription));
             }
-        }
+
+            HRESULT __YYAPI Wait::RunTask()
+            {
+                if (IsCanceled())
+                    return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
+
+                if (pfnWaitTaskCallback(uWaitResult))
+                {
+                    if (auto _pOwnerTaskRunner = pOwnerTaskRunnerWeak.Get())
+                    {
+                        _pOwnerTaskRunner->SetWaitInternal(this);
+                    }
+                }
+                return S_OK;
+            }
+        } // namespace Threading
     }
 } // namespace YY

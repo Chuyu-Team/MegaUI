@@ -323,14 +323,7 @@ namespace YY
                     SetThreadDescription(GetCurrentThread(), szThreadDescription);
 #endif
 
-                if (bBackgroundLoop)
-                {
-                    RunBackgroundLoop();
-                }
-                else
-                {
-                    RunUIMessageLoop();
-                }
+                RunTaskRunnerLoop();
 
                 uThreadId = UINT32_MAX;
                 g_pTaskRunnerWeak = nullptr;
@@ -339,6 +332,18 @@ namespace YY
                 if (szThreadDescription.GetSize())
                     SetThreadDescription(GetCurrentThread(), L"");
 #endif
+            }
+
+            uintptr_t __YYAPI ThreadTaskRunnerImpl::RunTaskRunnerLoop()
+            {
+                if (bBackgroundLoop)
+                {
+                    return RunBackgroundLoop();
+                }
+                else
+                {
+                    return RunUIMessageLoop();
+                }
             }
 
             void __YYAPI ThreadTaskRunnerImpl::CleanupTaskQueue() noexcept

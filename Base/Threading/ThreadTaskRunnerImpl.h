@@ -18,8 +18,15 @@ namespace YY
     {
         namespace Threading
         {
-            class ThreadTaskRunnerImpl
+            class ThreadTaskRunnerBaseImpl
                 : public ThreadTaskRunner
+            {
+            public:
+                virtual uintptr_t __YYAPI RunTaskRunnerLoop() = 0;
+            };
+
+            class ThreadTaskRunnerImpl
+                : public ThreadTaskRunnerBaseImpl
                 , public ThreadPoolTimerManger
                 , public ThreadPoolWaitMangerForSingleThreading
             {
@@ -80,17 +87,11 @@ namespace YY
                 //
                 ////////////////////////////////////////////////////
 
-                uintptr_t __YYAPI RunUIMessageLoop();
-
-                /// <summary>
-                /// 运行后台循环，改模式UI相关处理极为滞后！
-                /// </summary>
-                /// <returns></returns>
-                uintptr_t __YYAPI RunBackgroundLoop();
-
                 void __YYAPI EnableWakeup(_In_ bool _bEnable);
 
                 void __YYAPI operator()();
+                
+                uintptr_t __YYAPI RunTaskRunnerLoop() override;
 
             private:
                 HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) override;
@@ -106,6 +107,14 @@ namespace YY
                 void __YYAPI CleanupTaskQueue() noexcept;
 
                 HRESULT __YYAPI Wakeup() noexcept;
+                
+                uintptr_t __YYAPI RunUIMessageLoop();
+                
+                /// <summary>
+                /// 运行后台循环，改模式UI相关处理极为滞后！
+                /// </summary>
+                /// <returns></returns>
+                uintptr_t __YYAPI RunBackgroundLoop();
             };
         }
     }

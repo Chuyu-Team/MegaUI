@@ -104,6 +104,8 @@ namespace YY
 
             struct Timer : public TaskEntry
             {
+                std::function<bool(void)> pfnTimerCallback;
+
                 // 任务到期时间
                 TickCount<TimePrecise::Microsecond> uExpire;
 
@@ -121,18 +123,11 @@ namespace YY
                 TickCount<TimePrecise::Microsecond> uTimeOut;
                 DWORD uWaitResult = WAIT_FAILED;
 
-                std::function<void(DWORD _uWaitResult)> pfnWaitTaskCallback;
+                std::function<bool(DWORD _uWaitResult)> pfnWaitTaskCallback;
                 Wait* pPrior = nullptr;
                 Wait* pNext = nullptr;
 
-                HRESULT __YYAPI RunTask() override
-                {
-                    if (IsCanceled())
-                        return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
-
-                    pfnWaitTaskCallback(uWaitResult);
-                    return S_OK;
-                }
+                HRESULT __YYAPI RunTask() override;
             };
 
 #if defined(_WIN32)
@@ -279,6 +274,7 @@ namespace YY
             {
                 friend TaskRunnerDispatch;
                 friend Timer;
+                friend Wait;
 
             protected:
                 uint32_t uTaskRunnerId;
@@ -460,7 +456,19 @@ namespace YY
                 /// <returns></returns>
                 HRESULT __YYAPI SendTask(_In_ std::function<void(void)>&& pfnTaskCallback);
 
-                RefPtr<Timer> __YYAPI CreateTimer(_In_ TimeSpan<TimePrecise::Millisecond> _uInterval, _In_ std::function<void(void)>&& _pfnTaskCallback)
+                /// <summary>
+                /// 在TaskRunner中创建一个定时器。当时间到达时会在相关TaskRunner中执行 _pfnTaskCallback。
+                /// 
+                /// * 注意：受Windows系统影响，一般情况下定时器精度为16毫秒左右。
+                /// </summary>
+                /// <param name="_uInterval">需要定时触发任务的间隔。</param>
+                /// <param name="_pfnTaskCallback">时间达到时将调用函数。
+                /// 
+                /// * 如果需要定时器继续排队，请返回 true。
+                /// * 如果后续不在需要执行定时器，请返回 false。
+                /// </param>
+                /// <returns></returns>
+                RefPtr<Timer> __YYAPI CreateTimer(_In_ TimeSpan<TimePrecise::Millisecond> _uInterval, _In_ std::function<bool(void)>&& _pfnTaskCallback)
                 {
                     if (_uInterval.GetMilliseconds() <= 0)
                         return nullptr;
@@ -470,7 +478,7 @@ namespace YY
                     if (!_pTimer)
                         return nullptr;
 
-                    _pTimer->pfnTaskCallback = std::move(_pfnTaskCallback);
+                    _pTimer->pfnTimerCallback = std::move(_pfnTaskCallback);
                     _pTimer->uInterval = _uInterval;
                     _pTimer->uExpire = _uCurrent + _uInterval;
                     auto _hr = SetTimerInternal(_pTimer);
@@ -493,6 +501,9 @@ namespace YY
                 /// <param name="_nWaitTimeOut">最大超时等待的时间。</param>
                 /// <param name="_pfnTaskCallback">有信号时、等待失败，或者超时时将触发的回调函数。
                 /// _uWaitResult 可以是WAIT_ABANDONED、WAIT_OBJECT_0、WAIT_TIMEOUT、WAIT_FAILED。
+                /// 
+                /// * 如果需要继续等待句柄信号，请返回 true。
+                /// * 如果句柄只等待一次，请返回 false。
                 /// </param>
                 /// <returns>
                 /// 返回 Wait对象，Wait对象可以取消任务。
@@ -501,7 +512,7 @@ namespace YY
                 RefPtr<Wait> __YYAPI CreateWait(
                     _In_ HANDLE _hHandle,
                     _In_ TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut,
-                    _In_ std::function<void(DWORD _uWaitResult)>&& _pfnTaskCallback)
+                    _In_ std::function<bool(DWORD _uWaitResult)>&& _pfnTaskCallback)
                 {
                     if (_hHandle == nullptr || _hHandle == INVALID_HANDLE_VALUE)
                         return nullptr;
@@ -534,7 +545,7 @@ namespace YY
 
                 RefPtr<Wait> __YYAPI CreateWait(
                     _In_ HANDLE _hHandle,
-                    _In_ std::function<void(DWORD _uWaitResult)>&& _pfnTaskCallback)
+                    _In_ std::function<bool(DWORD _uWaitResult)>&& _pfnTaskCallback)
                 {
                     return CreateWait(_hHandle, TimeSpan<TimePrecise::Millisecond>::GetMax(), std::move(_pfnTaskCallback));
                 }
@@ -603,6 +614,18 @@ namespace YY
                 /// </summary>
                 /// <returns>如果调用者线程不是主线程，该函数可能返回nullptr。</returns>
                 static RefPtr<ThreadTaskRunner> __YYAPI BindCurrentThread();
+
+                /// <summary>
+                /// 使用代理模式，将ThreadTaskRunner与当前物理线程绑定。便于其他线程向该线程投递任务，以及保证 ThreadTaskRunner::GetCurrent正常使用。
+                ///
+                /// 温馨提示：
+                ///   * 此函数一般由主线程使用的。如果函数返回成功，那么必须持续持有该TaskRunner！因为一旦释放并且引用计数归0，将解除绑定关系！
+                ///   * 非主线程想创建新建的ThreadTaskRunner，首选考虑 ThreadTaskRunner::Create
+                ///   * 代理模式需要额外创建一个窗口用于调度任务，这存在额外资源开销，请考虑优先使用BindCurrentThread，已获得更佳性能。
+                ///   * 代理模式无法调用 `ThreadTaskRunner::RunUIMessageLoop`，因此当前线程必须自己拥有消息循环！
+                /// </summary>
+                /// <returns>如果调用者线程已经绑定或者存在对应的TaskRUnner，该函数将返回nullptr。</returns>
+                static RefPtr<ThreadTaskRunner> __YYAPI BindCurrentThreadForProxyMode();
 
                 /// <summary>
                 /// 运行UI线程专属消息循环。

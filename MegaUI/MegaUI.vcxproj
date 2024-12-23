@@ -169,6 +169,7 @@
     <ClInclude Include="..\Base\Threading\ThreadPoolWaitManger.h" />
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
     <ClInclude Include="..\Base\Threading\ThreadPoolTimerManger.h" />
+    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerProxyImpl.h" />
     <ClInclude Include="..\Include\Base\Containers\Array.h" />
     <ClInclude Include="..\Include\Base\Containers\ArrayView.h" />
     <ClInclude Include="..\Include\Base\Containers\BitMap.h" />
