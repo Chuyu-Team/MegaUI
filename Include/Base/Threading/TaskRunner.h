@@ -325,32 +325,14 @@ namespace YY
                 /// <returns></returns>
                 HRESULT __YYAPI PostDelayTask(
                     _In_ TimeSpan<TimePrecise::Millisecond> _uAfter,
-                    _In_ std::function<void(void)>&& _pfnTaskCallback)
-                {
-                    auto _uExpire = TickCount<TimePrecise::Microsecond>::GetCurrent() + _uAfter;
-                    auto _pTimer = RefPtr<Timer>::Create();
-                    if (!_pTimer)
-                        return E_OUTOFMEMORY;
-
-                    _pTimer->pfnTaskCallback = std::move(_pfnTaskCallback);
-                    _pTimer->uExpire = _uExpire;
-                    return SetTimerInternal(std::move(_pTimer));
-                }
+                    _In_ std::function<void(void)>&& _pfnTaskCallback);
 
                 /// <summary>
                 /// 将任务异步执行。
                 /// </summary>
                 /// <param name="_pfnTaskCallback">需要异步执行回调。</param>
                 /// <returns></returns>
-                HRESULT __YYAPI PostTask(_In_ std::function<void(void)>&& _pfnTaskCallback)
-                {
-                    auto _pTask = RefPtr<TaskEntry>::Create();
-                    if (!_pTask)
-                        return E_OUTOFMEMORY;
-
-                    _pTask->pfnTaskCallback = std::move(_pfnTaskCallback);
-                    return PostTaskInternal(_pTask);
-                }
+                HRESULT __YYAPI PostTask(_In_ std::function<void(void)>&& _pfnTaskCallback);
 
 #if defined(_HAS_CXX20) && _HAS_CXX20
                 /// <summary>
@@ -361,84 +343,7 @@ namespace YY
                 /// <returns>TaskAwaiter<void></returns>
                 TaskAwaiter<void> __YYAPI AsyncDelayTask(
                     _In_ TimeSpan<TimePrecise::Millisecond> _uAfter,
-                    _In_ std::function<void(void)>&& _pfnTaskCallback)
-                {
-                    struct AsyncTaskEntry
-                        : public Timer
-                        , public TaskAwaiter<void>::RefData
-                    {
-                        uint32_t __YYAPI AddRef() noexcept override
-                        {
-                            return Timer::AddRef();
-                        }
-
-                        uint32_t __YYAPI Release() noexcept override
-                        {
-                            return Timer::Release();
-                        }
-
-                        HRESULT __YYAPI RunTask() override
-                        {
-                            auto _hr = Timer::RunTask();
-                            if (FAILED(_hr))
-                                return _hr;
-
-                            auto _hHandle = (void*)YY::Base::Sync::Exchange(&hCoroutineHandle, /*hReadyHandle*/ (intptr_t)-1);
-                            if (!_hHandle)
-                                return S_OK;
-
-                            // 如果 pResumeTaskRunner == nullptr，目标不属于任何一个 SequencedTaskRunner，这很可能任务不关下是否需要串行
-                            // 如果 pResumeTaskRunner == SequencedTaskRunner::GetCurrent()，这没有道理进行 PostTask，徒增开销。
-                            auto _pResumeTaskRunner = pResumeTaskRunnerWeak.Get();
-                            if (pResumeTaskRunnerWeak == nullptr || _pResumeTaskRunner == YY::Base::Threading::TaskRunner::GetCurrent())
-                            {
-                                std::coroutine_handle<>::from_address(_hHandle).resume();
-                                return S_OK;
-                            }
-                            else if (_pResumeTaskRunner)
-                            {
-                                // TODO: 如果 _pResumeTaskRunner 没有执行 resume，则将发生内存泄漏。
-                                _pResumeTaskRunner->PostTask(
-                                    [_hHandle]()
-                                    {
-                                        std::coroutine_handle<>::from_address(_hHandle).resume();
-                                    });
-
-                                return S_OK;
-                            }
-                            else
-                            {
-                                // 任务被取消
-                                std::coroutine_handle<>::from_address(_hHandle).destroy();
-                                return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
-                            }
-                        }
-                    };
-
-                    auto _pCurrent = YY::Base::Threading::TaskRunner::GetCurrent();
-                    auto _pAsyncTaskEntry = RefPtr<AsyncTaskEntry>::Create();
-                    if (!_pAsyncTaskEntry)
-                        throw Exception();
-
-                    _pAsyncTaskEntry->pfnTaskCallback = std::move(_pfnTaskCallback);
-                    _pAsyncTaskEntry->pResumeTaskRunnerWeak = _pCurrent;
-
-                    HRESULT _hr;
-                    if (_uAfter.GetInternalValue() > 0)
-                    {
-                        _pAsyncTaskEntry->uExpire = TickCount<TimePrecise::Microsecond>::GetCurrent() + _uAfter;
-                        _hr = SetTimerInternal(_pAsyncTaskEntry);
-                    }
-                    else
-                    {
-                        _hr = PostTaskInternal(_pAsyncTaskEntry);
-                    }
-
-                    if (FAILED(_hr))
-                        throw Exception();
-
-                    return TaskAwaiter<void>(std::move(_pAsyncTaskEntry));
-                }
+                    _In_ std::function<void(void)>&& _pfnTaskCallback);
 #endif
 
 #if defined(_HAS_CXX20) && _HAS_CXX20
@@ -468,25 +373,7 @@ namespace YY
                 /// * 如果后续不在需要执行定时器，请返回 false。
                 /// </param>
                 /// <returns></returns>
-                RefPtr<Timer> __YYAPI CreateTimer(_In_ TimeSpan<TimePrecise::Millisecond> _uInterval, _In_ std::function<bool(void)>&& _pfnTaskCallback)
-                {
-                    if (_uInterval.GetMilliseconds() <= 0)
-                        return nullptr;
-
-                    auto _uCurrent = TickCount<TimePrecise::Microsecond>::GetCurrent();
-                    auto _pTimer = RefPtr<Timer>::Create();
-                    if (!_pTimer)
-                        return nullptr;
-
-                    _pTimer->pfnTimerCallback = std::move(_pfnTaskCallback);
-                    _pTimer->uInterval = _uInterval;
-                    _pTimer->uExpire = _uCurrent + _uInterval;
-                    auto _hr = SetTimerInternal(_pTimer);
-                    if (FAILED(_hr))
-                        return nullptr;
-
-                    return _pTimer;
-                }
+                RefPtr<Timer> __YYAPI CreateTimer(_In_ TimeSpan<TimePrecise::Millisecond> _uInterval, _In_ std::function<bool(void)>&& _pfnTaskCallback);
 
                 /// <summary>
                 /// 监听指定句柄状态。如果句柄处于有信号状态则调用 _pfnTaskCallback。如果同一个句柄多次调用CreateWait，对应的_pfnTaskCallback也将多次调用。
@@ -512,36 +399,7 @@ namespace YY
                 RefPtr<Wait> __YYAPI CreateWait(
                     _In_ HANDLE _hHandle,
                     _In_ TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut,
-                    _In_ std::function<bool(DWORD _uWaitResult)>&& _pfnTaskCallback)
-                {
-                    if (_hHandle == nullptr || _hHandle == INVALID_HANDLE_VALUE)
-                        return nullptr;
-
-                    if (!_pfnTaskCallback)
-                        return nullptr;
-
-                    auto _pWait = RefPtr<Wait>::Create();
-                    if (!_pWait)
-                        return nullptr;
-
-                    _pWait->hHandle = _hHandle;
-                    // >= UINT32_MAX 时认为是无限等待。
-                    if (_nWaitTimeOut >= TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(UINT32_MAX))
-                    {
-                        _pWait->uTimeOut = TickCount<TimePrecise::Microsecond>::GetMax();
-                    }
-                    else
-                    {
-                        _pWait->uTimeOut = TickCount<TimePrecise::Microsecond>::GetCurrent() + _nWaitTimeOut;
-                    }
-
-                    _pWait->pfnWaitTaskCallback = std::move(_pfnTaskCallback);
-                    auto _hr = SetWaitInternal(_pWait);
-                    if (FAILED(_hr))
-                        return nullptr;
-
-                    return _pWait;
-                }
+                    _In_ std::function<bool(DWORD _uWaitResult)>&& _pfnTaskCallback);
 
                 RefPtr<Wait> __YYAPI CreateWait(
                     _In_ HANDLE _hHandle,
