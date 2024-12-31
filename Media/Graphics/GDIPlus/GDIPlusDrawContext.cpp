@@ -602,7 +602,7 @@ namespace YY
                 } while (false);
                 
 
-                if (_oTmp->GetLastStatus() != Gdiplus::Ok)
+                if (_oTmp && _oTmp->GetLastStatus() != Gdiplus::Ok)
                     _oTmp = nullptr;
                 return _oTmp;
             }

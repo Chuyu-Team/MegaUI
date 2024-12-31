@@ -18,17 +18,14 @@ namespace YY
             private:
                 union
                 {
+                    char oValueBuffer[sizeof(_Type)] = {};
                     _Type oValue;
-                    char oValueBuffer[sizeof(_Type)];
                 };
 
                 bool bHasValue = false;
 
             public:
-                constexpr Optional()
-                {
-                    __YY_IGNORE_UNINITIALIZED_VARIABLE(oBuffer);
-                }
+                constexpr Optional() = default;
 
                 constexpr Optional(const _Type& _oValue)
                     : oValue(_oValue)

@@ -336,7 +336,7 @@ namespace YY
             
             static Value __YYAPI CreateColor(_In_ Color _Color);
             
-            static Value __YYAPI CreateStyleSheet(_In_ StyleSheet* _pStyleSheet);
+            static Value __YYAPI CreateStyleSheet(_In_opt_ StyleSheet* _pStyleSheet);
 
             int32_t __YYAPI GetInt32() const;
 

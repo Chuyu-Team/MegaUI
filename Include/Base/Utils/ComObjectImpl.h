@@ -163,6 +163,7 @@ namespace YY
                     /* [in] */ REFIID _riid,
                     /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR* __RPC_FAR* _ppObject)
                 {
+                    *_ppObject = nullptr;
                     auto _pObject = ComObjectQuery<BaseInterfaces...>::Cast(_riid);
                     if (!_pObject)
                     {

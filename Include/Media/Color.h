@@ -51,8 +51,6 @@ namespace YY
                 , Blue(_Blue)
                 , Alpha(_Alpha)
             {
-                __YY_IGNORE_UNINITIALIZED_VARIABLE(ColorRGBA);
-                __YY_IGNORE_UNINITIALIZED_VARIABLE(ColorRGB);
             }
 
             constexpr Color(_In_ uint32_t _ColorRGBA = 0u)

@@ -507,7 +507,7 @@ namespace YY
             /// </summary>
             /// <returns></returns>
             _Ret_notnull_ Element* __YYAPI GetTopLevel();
-            _Ret_maybenull_ RefPtr<DeferCycle> __YYAPI GetDeferObject(_In_ bool _bAllowCreate = true);
+            /*_Ret_maybenull_*/ RefPtr<DeferCycle> __YYAPI GetDeferObject(_In_ bool _bAllowCreate = true);
             void __YYAPI StartDefer(_Out_ intptr_t* _pCooike);
             void __YYAPI EndDefer(_In_ intptr_t _Cookie);
 

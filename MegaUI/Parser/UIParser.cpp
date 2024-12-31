@@ -959,7 +959,6 @@ namespace YY
             {
             case ValueSuffixType::FontPoint:
                 _pValue->FloatNumber = PointToPixel(_pValue->FloatNumber, 96);
-            case ValueSuffixType::DevicePixel:
                 break;
             }
 
