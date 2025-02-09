@@ -17,24 +17,31 @@ namespace YY
                 Timer* pFirst = nullptr;
                 Timer* pLast = nullptr;
 
-                TimingWheelSimpleList() = default;
+                constexpr TimingWheelSimpleList() = default;
 
-                ~TimingWheelSimpleList()
+                ~TimingWheelSimpleList() noexcept
                 {
-                    while (auto _pTask = Pop())
-                    {
-                        _pTask->Cancel();
-                        _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-                        _pTask->Release();
-                    }
+                    Clear();
                 }
 
                 TimingWheelSimpleList(const TimingWheelSimpleList&) = delete;
                 TimingWheelSimpleList& operator=(const TimingWheelSimpleList&) = delete;
-                TimingWheelSimpleList& operator=(TimingWheelSimpleList&&) = default;
 
+                TimingWheelSimpleList& __YYAPI operator=(TimingWheelSimpleList&& _OtherList) noexcept
+                {
+                    if (this != &_OtherList)
+                    {
+                        Clear();
+                        pFirst = _OtherList.pFirst;
+                        pLast = _OtherList.pLast;
+                        _OtherList.pFirst = nullptr;
+                        _OtherList.pLast = nullptr;
+                    }
 
-                _Ret_maybenull_ Timer* Pop() noexcept
+                    return *this;
+                }
+
+                _Ret_maybenull_ Timer* __YYAPI Pop() noexcept
                 {
                     if (pFirst == nullptr)
                         return nullptr;
@@ -50,7 +57,7 @@ namespace YY
                     return _pOldFirst;
                 }
 
-                void Push(_In_ Timer* _pEntry) noexcept
+                void __YYAPI Push(_In_ Timer* _pEntry) noexcept
                 {
                     _pEntry->pNext = nullptr;
 
@@ -66,7 +73,7 @@ namespace YY
                     pLast = _pEntry;
                 }
 
-                void Push(TimingWheelSimpleList&& _oList) noexcept
+                void __YYAPI Push(TimingWheelSimpleList&& _oList) noexcept
                 {
                     if (this == &_oList)
                         return;
@@ -88,9 +95,19 @@ namespace YY
                     _oList.pLast = nullptr;
                 }
 
-                bool IsEmpty() const noexcept
+                bool __YYAPI IsEmpty() const noexcept
                 {
                     return pFirst == nullptr;
+                }
+
+                void __YYAPI Clear() noexcept
+                {
+                    while (auto _pTask = Pop())
+                    {
+                        _pTask->Cancel();
+                        _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                        _pTask->Release();
+                    }
                 }
             };
 
