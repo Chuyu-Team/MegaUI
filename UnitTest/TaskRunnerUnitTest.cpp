@@ -121,11 +121,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(10),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait(kDelay * 5));
@@ -149,11 +148,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
@@ -176,11 +174,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation )* 2));
@@ -204,11 +201,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
@@ -234,7 +230,7 @@ namespace TaskRunnerUnitTest
             RefPtr<Timer> _pTimer;
             _pTimer = _pTaskRunner->CreateTimer(
                 TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
-                [&nCount, _uStartTick, &_pTimer, _hEvent]()
+                [&nCount, _uStartTick, _hEvent]()
                 {
                     ++nCount;
                     auto _nSpan = TickCount<TimePrecise::Millisecond>::GetCurrent() - _uStartTick;
@@ -250,9 +246,12 @@ namespace TaskRunnerUnitTest
 
                     if (nCount == 5)
                     {
-                        _pTimer->Cancel();
-
                         SetEvent(_hEvent);
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
                     }
                 });
 
@@ -282,6 +281,8 @@ namespace TaskRunnerUnitTest
                             YY::Increment(&_uWaitResultCount);
                             _uTickCount = GetTickCount64();
                         }
+
+                        return true;
                     });
 
                 Sleep(600);
@@ -308,6 +309,8 @@ namespace TaskRunnerUnitTest
                             {
                                 YY::Increment(&_uWaitResultCount);
                             }
+                            
+                            return true;
                         });
                 }
 
@@ -349,6 +352,7 @@ namespace TaskRunnerUnitTest
                 [&_uWaitResult](DWORD _uWaitResultT)
                 {
                     _uWaitResult = _uWaitResultT;
+                    return true;
                 });
 
             Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(600ul));
@@ -360,6 +364,7 @@ namespace TaskRunnerUnitTest
                 [&_uWaitResult](DWORD _uWaitResultT)
                 {
                     _uWaitResult = _uWaitResultT;
+                    return true;
                 });
             SetEvent(_hEvent);
             Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(100ul));
@@ -583,11 +588,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(10),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait(kDelay * 5));
@@ -611,11 +615,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
@@ -638,11 +641,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
@@ -666,11 +668,10 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(kDelay),
-                    [&_uEnd, &_pTimer]()
+                    [&_uEnd]()
                     {
                         _uEnd = TickCount<TimePrecise::Microsecond>::GetCurrent();
-
-                        _pTimer->Cancel();
+                        return false;
                     });
 
                 Assert::IsTrue(_pTimer->Wait((kDelay + kDeviation) * 2));
@@ -696,14 +697,17 @@ namespace TaskRunnerUnitTest
                 RefPtr<Timer> _pTimer;
                 _pTimer = _pTaskRunner->CreateTimer(
                     TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(500),
-                    [&nCount, _uStartTick, &_pTimer, _hEvent]()
+                    [&nCount, _uStartTick, _hEvent]()
                     {
                         ++nCount;
                         if (nCount == 5)
                         {
-                            _pTimer->Cancel();
-
                             SetEvent(_hEvent);
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
                         }
                     });
 
@@ -737,6 +741,7 @@ namespace TaskRunnerUnitTest
                                 YY::Increment(&_uWaitResultCount);
                                 _uTickCount = GetTickCount64();
                             }
+                            return true;
                         });
 
                     Sleep(600);
@@ -763,6 +768,7 @@ namespace TaskRunnerUnitTest
                                 {
                                     YY::Increment(&_uWaitResultCount);
                                 }
+                                return true;
                             });
                     }
 
@@ -805,6 +811,7 @@ namespace TaskRunnerUnitTest
                 [&_uWaitResult](DWORD _uWaitResultT)
                 {
                     _uWaitResult = _uWaitResultT;
+                    return true;
                 });
 
             Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(600ul));
@@ -816,6 +823,7 @@ namespace TaskRunnerUnitTest
                 [&_uWaitResult](DWORD _uWaitResultT)
                 {
                     _uWaitResult = _uWaitResultT;
+                    return true;
                 });
             SetEvent(_hEvent);
             Assert::IsTrue(((TaskEntry*)_pWait.Get())->Wait(100ul));
