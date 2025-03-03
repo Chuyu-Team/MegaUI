@@ -31,13 +31,13 @@ namespace YY
                 constexpr static Encoding eEncoding = _eEncoding;
 
             public:
-                explicit StringView()
+                explicit constexpr StringView() noexcept
                     : sString(nullptr)
                     , cchString(0)
                 {
                 }
 
-                explicit StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
+                explicit constexpr StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc) noexcept
                     : sString(_szSrc)
                     , cchString(_szSrc ? _cchSrc : 0)
                 {
@@ -50,10 +50,9 @@ namespace YY
                 }
 
                 template<size_t _uArrayCount>
-                StringView(const char_t (&_szSrc)[_uArrayCount])
-                    : sString(_szSrc)
-                    , cchString(_uArrayCount - 1)
+                static constexpr StringView __YYAPI FromStaticString(const char_t(&_szSrc)[_uArrayCount]) noexcept
                 {
+                    return StringView(_szSrc, _uArrayCount - 1);
                 }
 
                 HRESULT __YYAPI SetString(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc)
@@ -267,14 +266,14 @@ namespace YY
                 Encoding eEncoding;
 
             public:
-                explicit StringView()
+                explicit constexpr StringView() noexcept
                     : sString(nullptr)
                     , cchString(0)
                     , eEncoding(Encoding::ANSI)
                 {
                 }
 
-                explicit StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc, _In_ Encoding _eEncoding = Encoding::ANSI)
+                explicit constexpr StringView(_In_reads_opt_(_cchSrc) const char_t* _szSrc, _In_ size_t _cchSrc, _In_ Encoding _eEncoding = Encoding::ANSI) noexcept
                     : sString(_szSrc)
                     , cchString(_cchSrc)
                     , eEncoding(_eEncoding)
@@ -289,11 +288,9 @@ namespace YY
                 }
 
                 template<size_t _uArrayCount>
-                StringView(const char_t (&_szSrc)[_uArrayCount], _In_ Encoding _eEncoding = Encoding::ANSI)
-                    : sString(_szSrc)
-                    , cchString(_uArrayCount - 1)
-                    , eEncoding(_eEncoding)
+                static constexpr StringView __YYAPI FromStaticString(const char_t (&_szSrc)[_uArrayCount], _In_ Encoding _eEncoding = Encoding::ANSI) noexcept
                 {
+                    return StringView(_szSrc, _uArrayCount - 1, _eEncoding);
                 }
 
                 inline Encoding __YYAPI GetEncoding() const
