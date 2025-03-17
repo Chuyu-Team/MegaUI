@@ -125,7 +125,7 @@ namespace YY
 
                     // Create the DX11 API device object, and get a corresponding context.
     #ifdef _DEBUG
-                    constexpr DWORD _fD3D11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
+                    constexpr const DWORD kD3D10FlagsArray[] = {D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG, D3D11_CREATE_DEVICE_BGRA_SUPPORT};
     #else
                     constexpr DWORD _fD3D11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
     #endif
@@ -140,20 +140,25 @@ namespace YY
 
                     for (auto _eDriverType : _arrDriverTypes)
                     {
-                        _hr = D3D11CreateDevice(
-                            nullptr, // specify null to use the default adapter
-                            _eDriverType,
-                            0,
-                            _fD3D11Flags,
-                            _FeatureLevels,           // list of feature levels this app can support
-                            _countof(_FeatureLevels), // number of possible feature levels
-                            D3D11_SDK_VERSION,
-                            _pTmpCache->pD3DDevice.ReleaseAndGetAddressOf(),        // returns the Direct3D device created
-                            &_pTmpCache->FeatureLevel,                            // returns feature level of device created
-                            _pTmpCache->pD3DDeviceContext.ReleaseAndGetAddressOf() // returns the device immediate context
-                        );
-                        if (SUCCEEDED(_hr))
-                            break;
+#ifdef _DEBUG
+                        for (const auto _fD3D11Flags : kD3D10FlagsArray)
+#endif
+                        {
+                            _hr = D3D11CreateDevice(
+                                nullptr, // specify null to use the default adapter
+                                _eDriverType,
+                                0,
+                                _fD3D11Flags,
+                                _FeatureLevels,           // list of feature levels this app can support
+                                _countof(_FeatureLevels), // number of possible feature levels
+                                D3D11_SDK_VERSION,
+                                _pTmpCache->pD3DDevice.ReleaseAndGetAddressOf(),       // returns the Direct3D device created
+                                &_pTmpCache->FeatureLevel,                             // returns feature level of device created
+                                _pTmpCache->pD3DDeviceContext.ReleaseAndGetAddressOf() // returns the device immediate context
+                            );
+                            if (SUCCEEDED(_hr))
+                                break;
+                        }
                     }
 
                     if (FAILED(_hr))

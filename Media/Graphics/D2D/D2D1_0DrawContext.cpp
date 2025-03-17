@@ -98,8 +98,8 @@ namespace YY
                         break;
                     s_oD3D10Device1Cache.bInit = true;
 
-     #ifdef _DEBUG
-                    constexpr DWORD _fD3D10Flags = D3D10_CREATE_DEVICE_BGRA_SUPPORT | D3D10_CREATE_DEVICE_DEBUG;
+    #ifdef _DEBUG
+                    constexpr const DWORD kD3D10FlagsArray[] = {D3D10_CREATE_DEVICE_BGRA_SUPPORT | D3D10_CREATE_DEVICE_DEBUG, D3D10_CREATE_DEVICE_BGRA_SUPPORT};
     #else
                     constexpr DWORD _fD3D10Flags = D3D10_CREATE_DEVICE_BGRA_SUPPORT;
     #endif
@@ -122,17 +122,22 @@ namespace YY
                     {
                         for (auto _eFeatureLevel : _arrFeatureLevels)
                         {
-                            _hr = D3D10CreateDevice1(
-                                nullptr,
-                                _eDriverType,
-                                NULL,
-                                _fD3D10Flags,
-                                _eFeatureLevel,
-                                D3D10_1_SDK_VERSION,
-                                &s_oD3D10Device1Cache.pDevice);
+#ifdef _DEBUG
+                            for (const auto _fD3D10Flags : kD3D10FlagsArray)
+#endif
+                            {
+                                _hr = D3D10CreateDevice1(
+                                    nullptr,
+                                    _eDriverType,
+                                    NULL,
+                                    _fD3D10Flags,
+                                    _eFeatureLevel,
+                                    D3D10_1_SDK_VERSION,
+                                    &s_oD3D10Device1Cache.pDevice);
 
-                            if (SUCCEEDED(_hr))
-                                goto CREATE_SUCCESS__;
+                                if (SUCCEEDED(_hr))
+                                    goto CREATE_SUCCESS__;
+                            }
                         }
                     }
 

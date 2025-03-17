@@ -500,6 +500,7 @@ int wmain()
 
     UIParserPlayContext _Context;
     _Context.iDPI = 96;
+    if (auto _pD2D1_1Factory = DrawContextFactory::GetD2D1_1DrawContextFactory())
     {
         Window* _pTestWindow = New<Window>();
         YY::MegaUI::WindowElement* pWindowElement;
@@ -508,12 +509,13 @@ int wmain()
 
         _pTestWindow->SetHost(pWindowElement);
 
-        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, DrawContextFactory::GetD2D1_1DrawContextFactory());
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, _pD2D1_1Factory);
         pWindowElement->EndDefer(Cooike);
         SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.1");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
     }
 
+    if (auto _pD2D1_0Factory = DrawContextFactory::GetD2D1_0DrawContextFactory())
     {
         Window* _pTestWindow = New<Window>();
         YY::MegaUI::WindowElement* pWindowElement;
@@ -522,13 +524,13 @@ int wmain()
 
         _pTestWindow->SetHost(pWindowElement);
 
-        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, DrawContextFactory::GetD2D1_0DrawContextFactory());
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, _pD2D1_0Factory);
         pWindowElement->EndDefer(Cooike);
         SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.0");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
     }
 
-    if (1)
+    if (auto _pGdiPlusFactory = DrawContextFactory::GetGdiPlusDrawContextFactory())
     {
         Window* _pTestWindow = New<Window>();
         YY::MegaUI::WindowElement* pWindowElement;
@@ -537,7 +539,7 @@ int wmain()
 
         _pTestWindow->SetHost(pWindowElement);
 
-        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, DrawContextFactory::GetGdiPlusDrawContextFactory());
+        _pTestWindow->Initialize(NULL, NULL, CW_USEDEFAULT, CW_USEDEFAULT, WS_EX_WINDOWEDGE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, _pGdiPlusFactory);
         pWindowElement->EndDefer(Cooike);
         SetWindowTextW(_pTestWindow->GetWnd(), L"GDIPlus");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
