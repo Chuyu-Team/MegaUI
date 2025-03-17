@@ -541,4 +541,4 @@ namespace YY
     using namespace YY::Base::Threading;
 }
 
-#pragma pack(push, pop)
+#pragma pack(pop)

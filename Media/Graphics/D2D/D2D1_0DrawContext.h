@@ -130,3 +130,5 @@ namespace YY
         } // namespace Graphics
     }     // namespace Media
 } // namespace YY
+
+#pragma pack(pop)
