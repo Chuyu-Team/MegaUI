@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <Type Name="YY::Base::String::StringView&lt;*&gt;" Priority="MediumLow">
         <Intrinsic Name="GetSize" Expression="cchString" />
@@ -130,12 +130,12 @@
         <DisplayString Condition="GetValueType() == ValueType::Unset">Unset</DisplayString>
         <DisplayString Condition="GetValueType() == ValueType::Null">Null</DisplayString>
         <DisplayString Condition="GetValueType() == ValueType::int32_t">int32Value = {pSharedData->int32Value}</DisplayString>
-        <DisplayString Condition="GetValueType() == ValueType::float_t">floatValue = {pSharedData->floatValue}</DisplayString>
+        <DisplayString Condition="GetValueType() == ValueType::Unit">UnitValue = {pSharedData->UnitValue}</DisplayString>
         <DisplayString Condition="GetValueType() == ValueType::boolean">boolValue = {pSharedData->boolValue}</DisplayString>
-        <DisplayString Condition="GetValueType() == ValueType::uString">szValue = {pSharedData->szValue}</DisplayString>
+        <DisplayString Condition="GetValueType() == ValueType::String">szValue = {pSharedData->szValue}</DisplayString>
         <DisplayString Condition="GetValueType() == ValueType::Point">ptVal = {pSharedData->ptVal}</DisplayString>
-        <DisplayString Condition="GetValueType() == ValueType::Size">sizeVal = {pSharedData->sizeVal}</DisplayString>
-        <DisplayString Condition="GetValueType() == ValueType::Rect">rectVal = {pSharedData->rectVal}</DisplayString>
+        <DisplayString Condition="GetValueType() == ValueType::UnitSize">sizeVal = {pSharedData->sizeVal}</DisplayString>
+        <DisplayString Condition="GetValueType() == ValueType::UnitRect">rectVal = {pSharedData->rectVal}</DisplayString>
         <DisplayString Condition="GetValueType() == ValueType::Element">pEleValue = {pSharedData->pEleValue}</DisplayString>
         <DisplayString Condition="GetValueType() == ValueType::ElementList">ListVal = {pSharedData->ListVal}</DisplayString>
         <DisplayString Condition="GetValueType() == ValueType::ATOM">uAtomVal = {pSharedData->uAtomVal}</DisplayString>
@@ -149,12 +149,12 @@
             <Item Name="[Ref]" Condition="GetValueType() != ValueType::Null" ExcludeView="simple">GetRef()</Item>
 
             <Item Name="[int32Value]" Condition="GetValueType() == ValueType::int32_t">pSharedData->int32Value</Item>
-            <Item Name="[floatValue]" Condition="GetValueType() == ValueType::float_t">pSharedData->floatValue</Item>
+            <Item Name="[UnitValue]" Condition="GetValueType() == ValueType::Unit">pSharedData->UnitValue</Item>
             <Item Name="[boolValue]" Condition="GetValueType() == ValueType::boolean">pSharedData->boolValue</Item>
-            <Item Name="[szValue]" Condition="GetValueType() == ValueType::uString">pSharedData->szValue</Item>
+            <Item Name="[szValue]" Condition="GetValueType() == ValueType::String">pSharedData->szValue</Item>
             <Item Name="[ptVal]" Condition="GetValueType() == ValueType::Point">pSharedData->ptVal</Item>
-            <Item Name="[sizeVal]" Condition="GetValueType() == ValueType::Size">pSharedData->sizeVal</Item>
-            <Item Name="[rectVal]" Condition="GetValueType() == ValueType::Rect">pSharedData->rectVal</Item>
+            <Item Name="[sizeVal]" Condition="GetValueType() == ValueType::UnitSize">pSharedData->sizeVal</Item>
+            <Item Name="[rectVal]" Condition="GetValueType() == ValueType::UnitRect">pSharedData->rectVal</Item>
             <Item Name="[pEleValue]" Condition="GetValueType() == ValueType::Element">pSharedData->pEleValue</Item>
             <Item Name="[ListVal]" Condition="GetValueType() == ValueType::ElementList">pSharedData->ListVal</Item>
             <Item Name="[uAtomVal]" Condition="GetValueType() == ValueType::ATOM">pSharedData->uAtomVal</Item>

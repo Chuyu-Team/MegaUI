@@ -254,16 +254,14 @@ namespace YY
                     uint32_t LocalValueBit : 3;
                     // 指向 Local 值缓冲区偏移
                     uint32_t OffsetToLocalValue : 11;
-                    // 指向一个bool值缓冲区，如果已经缓存了Local的结果，那么为 true
-                    uint32_t OffsetToHasLocalCache : 11;
-                    uint32_t HasLocalValueCacheBit : 3;
-                    // 当 _eType 类型为 bool 时使用
-                    uint32_t SpecifiedValueBit : 3;
                     // 指向 Specified 值缓冲区偏移
                     uint32_t OffsetToSpecifiedValue : 11;
-                    uint32_t HasSpecifiedValueCacheBit : 3;
-                    // 指向一个bool值缓冲区，如果已经缓存了Specified的结果，那么为 true
-                    uint32_t OffsetToHasSpecifiedValueCache : 11;
+                    // 当 _eType 类型为 bool 时使用，bit中有效的标记位数
+                    uint32_t SpecifiedValueBit : 3;
+                    // 指向 Computed 值缓冲区偏移
+                    uint32_t OffsetToComputedValue : 11;
+                    // 当 _eType 类型为 bool 时使用，bit中有效的标记位数
+                    uint32_t ComputedValueBit : 3;
                     // 如果为 0，那么值表示函数指针 _pFunPropertyCustomCache
                     // 如果为 1，那么表示 这个 struct 生效
                     uint32_t bValueMapOrCustomPropFun : 1;
@@ -314,40 +312,40 @@ namespace YY
             return 0;
         }
 
-#define _MEGA_UI_PROP_BIND_VALUE(_VALUE_TYPE, _LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED_BIT, _HAS_SPECIFIED_BIT) \
+#define _MEGA_UI_PROP_BIND_VALUE(_VALUE_TYPE, _LOCAL_BIT, _SPECIFIED_BIT, _COMPUTED_BIT) \
         { (uint64_t(_VALUE_TYPE) << 0) | (uint64_t(_LOCAL_BIT % 8) << 7) | (uint64_t(_LOCAL_BIT / 8) << 10)               \
-		  | (uint64_t(_HAS_LOCAL_BIT / 8) << 21) | (uint64_t(_HAS_LOCAL_BIT % 8) << 32) | (uint64_t(_SPECIFIED_BIT % 8) << 35) \
-          | (uint64_t(_SPECIFIED_BIT / 8) << 38) | (uint64_t(_HAS_SPECIFIED_BIT % 8) << 49) | (uint64_t(_HAS_SPECIFIED_BIT / 8) << 52) | (uint64_t(1) << 63) }
+		  | (uint64_t(_SPECIFIED_BIT / 8) << 21) | (uint64_t(_SPECIFIED_BIT % 8) << 32) | (uint64_t(_COMPUTED_BIT / 8) << 35) \
+          | (uint64_t(_COMPUTED_BIT % 8) << 46) | (uint64_t(1) << 49)}
 
-#define _MEGA_UI_PROP_BIND_INT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_INT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_FLOAT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::float_t, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_UNIT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::Unit, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_STRING(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::uString, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_STRING(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::String, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_ELEMENT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_ELEMENT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_POINT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Point, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_POINT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::Point, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_SIZE(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Size, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_SIZE(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::UnitSize, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_RECT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Rect, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_RECT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::UnitRect, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_BOOL(_LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED_BIT, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::boolean, _LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED_BIT, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_BOOL(_LOCAL_BIT, _SPECIFIED_BIT, _COMPUTED_BIT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::boolean, _LOCAL_BIT, _SPECIFIED_BIT, _COMPUTED_BIT)
 
-#define _MEGA_UI_PROP_BIND_ATOM(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::ATOM, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_ATOM(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::ATOM, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_SHEET(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::StyleSheet, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_SHEET(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::StyleSheet, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
 #define _MEGA_UI_PROP_BIND_NONE() {}
 

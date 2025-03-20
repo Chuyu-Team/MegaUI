@@ -230,6 +230,7 @@
     <ClInclude Include="..\Include\MegaUI\Core\Property.h" />
     <ClInclude Include="..\Include\MegaUI\Core\StyleSheet.h" />
     <ClInclude Include="..\Include\MegaUI\Core\UIEvent.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\Unit.h" />
     <ClInclude Include="..\Include\MegaUI\Core\Value.h" />
     <ClInclude Include="..\Include\MegaUI\Parser\UIParser.h" />
     <ClInclude Include="..\Include\MegaUI\Render\FontEnumMap.h" />
@@ -307,6 +308,7 @@
     <ClCompile Include="Core\ControlInfo.cpp" />
     <ClCompile Include="Core\Element.cpp" />
     <ClCompile Include="Core\StyleSheet.cpp" />
+    <ClCompile Include="Core\Unit.cpp" />
     <ClCompile Include="Core\Value.cpp" />
     <ClCompile Include="MegaUI.cpp" />
     <ClCompile Include="Parser\UIParser.cpp" />

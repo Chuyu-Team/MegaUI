@@ -107,7 +107,7 @@ namespace YY
         {
             None,
             int32_t,
-            float_t,
+            Unit,
             uString,
             Color,
             Rect,
@@ -120,10 +120,10 @@ namespace YY
             {
                 struct
                 {
-                    ValueSuffixType Type1 : 4;
-                    ValueSuffixType Type2 : 4;
-                    ValueSuffixType Type3 : 4;
-                    ValueSuffixType Type4 : 4;
+                    UnitType Type1 : 4;
+                    UnitType Type2 : 4;
+                    UnitType Type3 : 4;
+                    UnitType Type4 : 4;
 
                     ParsedArgType eArgType;
                 };
@@ -138,9 +138,6 @@ namespace YY
                 // I
                 int32_t iNumber;
 
-                // F
-                float FloatNumber;
-
                 // S
                 uString szString;
                 // C
@@ -151,10 +148,10 @@ namespace YY
 
             ParsedArg(ParsedArgType _eArgType, const EnumMap* _pEnumMaps = nullptr)
                 : pEnumMaps(_pEnumMaps)
-                , Type1 {ValueSuffixType::None}
-                , Type2 {ValueSuffixType::None}
-                , Type3 {ValueSuffixType::None}
-                , Type4 {ValueSuffixType::None}
+                , Type1 {UnitType::None}
+                , Type2 {UnitType::None}
+                , Type3 {UnitType::None}
+                , Type4 {UnitType::None}
                 , eArgType(_eArgType)
             {
                 switch (_eArgType)
@@ -162,8 +159,8 @@ namespace YY
                 case ParsedArgType::int32_t:
                     iNumber = 0;
                     break;
-                case ParsedArgType::float_t:
-                    FloatNumber = 0;
+                case ParsedArgType::Unit:
+                    iNumber = 0;
                     break;
                 case ParsedArgType::uString:
                     new (&szString) uString();
@@ -185,14 +182,6 @@ namespace YY
                 {
                     szString.~uString();
                 }
-            }
-
-            ValueSuffix __YYAPI GetSuffix() const
-            {
-                ValueSuffix _Suffix;
-                _Suffix.RawView = uRawView;
-                _Suffix.Dpi = uRawView ? 96 : 0;
-                return _Suffix;
             }
         };
 
@@ -647,22 +636,22 @@ namespace YY
                 case ValueType::int32_t:
                     _hr = ParserInt32Value(_pProp->pEnumMaps, &_ExprNode, &_Value);
                     break;
-                case ValueType::float_t:
-                    _hr = ParserFloatValue(_pProp->pEnumMaps, &_ExprNode, &_Value);
+                case ValueType::Unit:
+                    _hr = ParserUnitValue(&_ExprNode, &_Value);
                     break;
                 case ValueType::boolean:
                     _hr = ParserBoolValue(&_ExprNode, &_Value);
                     break;
-                case ValueType::uString:
+                case ValueType::String:
                     _hr = ParserStringValue(&_ExprNode, &_Value);
                     break;
                 case ValueType::Point:
                     _hr = ParserPointValue(&_ExprNode, &_Value);
                     break;
-                case ValueType::Size:
+                case ValueType::UnitSize:
                     _hr = ParserSizeValue(&_ExprNode, &_Value);
                     break;
-                case ValueType::Rect:
+                case ValueType::UnitRect:
                     _hr = ParserRectValue(&_ExprNode, &_Value);
                     break;
                 case ValueType::Color:
@@ -698,17 +687,17 @@ namespace YY
                 if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'X')
                 {
                     _cchValue -= 2;
-                    _pValue->Type1 = ValueSuffixType::Pixel;
+                    _pValue->Type1 = UnitType::Pixel;
                 }
                 else if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'D' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'P')
                 {
                     _cchValue -= 2;
-                    _pValue->Type1 = ValueSuffixType::DevicePixel;
+                    _pValue->Type1 = UnitType::DevicePixel;
                 }
                 else if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'T')
                 {
                     _cchValue -= 2;
-                    _pValue->Type1 = ValueSuffixType::FontPoint;
+                    _pValue->Type1 = UnitType::FontPoint;
                 }
             }
 
@@ -942,36 +931,28 @@ namespace YY
             return S_OK;
         }
 
-        HRESULT __YYAPI UIParser::ParserFloatValue(ExprNode* _pExprNode, ParsedArg* _pValue)
+        HRESULT __YYAPI UIParser::ParserUnitValue(ExprNode* _pExprNode, ParsedArg* _pValue)
         {
             _pValue->uRawView = 0;
 
-            // 只接受整形输入，使用浮点只是为了减少运算精度损失
-            ParsedArg _iValue(ParsedArgType::int32_t, _pValue->pEnumMaps);
+            ParsedArg _iValue(ParsedArgType::Unit);
             auto _hr = ParserInt32Value(_pExprNode, &_iValue);
             if (FAILED(_hr))
                 return _hr;
 
-            _pValue->FloatNumber = (float)_iValue.iNumber;
+            _pValue->iNumber = _iValue.iNumber;
             _pValue->Type1 = _iValue.Type1;
-
-            switch (_iValue.Type1)
-            {
-            case ValueSuffixType::FontPoint:
-                _pValue->FloatNumber = PointToPixel(_pValue->FloatNumber, 96);
-                break;
-            }
-
             return S_OK;
         }
 
-        HRESULT __YYAPI UIParser::ParserFloatValue(const EnumMap* _pEnumMaps, ExprNode* _pExprNode, Value* _pValue)
+        HRESULT __YYAPI UIParser::ParserUnitValue(ExprNode* _pExprNode, Value* _pValue)
         {
-            ParsedArg _fValue(ParsedArgType::float_t, _pEnumMaps);
-            auto _hr = ParserFloatValue(_pExprNode, &_fValue);
+            ParsedArg _iValue(ParsedArgType::Unit);
+            auto _hr = ParserInt32Value(_pExprNode, &_iValue);
             if (FAILED(_hr))
                 return _hr;
-            auto _Value = Value::CreateFloat(_fValue.FloatNumber, _fValue.GetSuffix());
+
+            auto _Value = Value::CreateUnit(Unit{float(_iValue.iNumber), _iValue.Type1});
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -1046,8 +1027,8 @@ namespace YY
                     if (_pArgs->uRawView)
                         _hr = HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
                     break;
-                case ParsedArgType::float_t:
-                    _hr = ParserFloatValue(&ExprNode, _pArgs);
+                case ParsedArgType::Unit:
+                    _hr = ParserUnitValue(&ExprNode, _pArgs);
                     break;
                 case ParsedArgType::uString:
                     _hr = ParserStringValue(&ExprNode, &_pArgs->szString);
@@ -1106,16 +1087,18 @@ namespace YY
                 _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
-            ParsedArg _Args[] = {ParsedArgType::float_t, ParsedArgType::float_t};
+            ParsedArg _Args[] = {ParsedArgType::Unit, ParsedArgType::Unit};
 
             auto _hr = ParserFunction(u8"Size", _pExprNode, _Args);
             if (FAILED(_hr))
                 return _hr;
 
-            ValueSuffix _Suffix = {_Args[0].Type1, _Args[1].Type1, ValueSuffixType::None, ValueSuffixType::None, 0};
-            _Suffix.Dpi = _Suffix.RawView ? 96 : 0;
+            UnitSize _Size;
+            _Size.Value = Size(_Args[0].iNumber, _Args[1].iNumber);
+            _Size.eWidthType = _Args[0].Type1;
+            _Size.eHeightType = _Args[1].Type1;
 
-            auto _Value = Value::CreateSize(_Args[0].FloatNumber, _Args[1].FloatNumber, _Suffix);
+            auto _Value = Value::CreateSize(_Size);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
             *_pValue = std::move(_Value);
@@ -1137,20 +1120,20 @@ namespace YY
 
             ParsedArg _Args[] =
             {
-                ParsedArgType::float_t,
-                ParsedArgType::float_t,
-                ParsedArgType::float_t,
-                ParsedArgType::float_t,
+                ParsedArgType::Unit,
+                ParsedArgType::Unit,
+                ParsedArgType::Unit,
+                ParsedArgType::Unit,
             };
 
             auto _hr = ParserFunction(u8"Rect", _pExprNode, _Args);
             if (FAILED(_hr))
                 return _hr;
 
-            _pValue->rcRect.Left = _Args[0].FloatNumber;
-            _pValue->rcRect.Top = _Args[1].FloatNumber;
-            _pValue->rcRect.Right = _Args[2].FloatNumber;
-            _pValue->rcRect.Bottom = _Args[3].FloatNumber;
+            _pValue->rcRect.Left = _Args[0].iNumber;
+            _pValue->rcRect.Top = _Args[1].iNumber;
+            _pValue->rcRect.Right = _Args[2].iNumber;
+            _pValue->rcRect.Bottom = _Args[3].iNumber;
             
             _pValue->Type1 = _Args[0].Type1;
             _pValue->Type2 = _Args[1].Type1;
@@ -1167,11 +1150,18 @@ namespace YY
             if (FAILED(_hr))
                 return _hr;
 
-            auto _Value = Value::CreateRect(_rcValue.rcRect, _rcValue.GetSuffix());
+            UnitRect _Rect;
+            _Rect.Value = _rcValue.rcRect;
+            _Rect.eLeftType = _rcValue.Type1;
+            _Rect.eTopType = _rcValue.Type2;
+            _Rect.eRightType = _rcValue.Type3;
+            _Rect.eBottomType = _rcValue.Type4;
+
+            auto _Value = Value::CreateRect(_Rect);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
-            *_pValue = std::move(_Value);
 
+            *_pValue = std::move(_Value);
             return S_OK;
         }
 
@@ -1393,7 +1383,7 @@ namespace YY
                     }
 
                     // 忽略错误
-                    _pCurrentElement->SetValue(*_pSetProperty->pProp, _ppValue->UpdateDpi(_pCurrentElement->GetDpi()));
+                    _pCurrentElement->SetValue(*_pSetProperty->pProp, *_ppValue);
                 }
                 else
                 {
