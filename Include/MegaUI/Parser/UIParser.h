@@ -106,9 +106,9 @@ namespace YY
 
             static HRESULT __YYAPI ParserInt32Value(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
             
-            static HRESULT __YYAPI ParserFloatValue(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
+            static HRESULT __YYAPI ParserUnitValue(_In_ ExprNode* _pExprNode, _Out_ ParsedArg* _pValue);
 
-            static HRESULT __YYAPI ParserFloatValue(_In_opt_ const EnumMap* pEnumMaps, _In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
+            static HRESULT __YYAPI ParserUnitValue(_In_ ExprNode* _pExprNode, _Out_ Value* _pValue);
 
             static HRESULT __YYAPI ParserBoolValue(ExprNode* _pExprNode, Value* _pValue);
 

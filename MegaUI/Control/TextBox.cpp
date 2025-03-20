@@ -46,8 +46,8 @@ namespace YY
                 return;
 
             Rect _Bounds(Point(0, 0), GetExtent());
-            _Bounds.DeflateRect(ApplyFlowDirection(SpecBorderThickness));
-            _Bounds.DeflateRect(ApplyFlowDirection(SpecPadding));
+            _Bounds.DeflateRect(ApplyFlowDirection(CmpBorderThickness));
+            _Bounds.DeflateRect(ApplyFlowDirection(CmpPadding));
 
             BOOL _bTrailingHit;
             BOOL _bInside;

@@ -441,6 +441,9 @@
     <ClInclude Include="..\Base\Threading\ThreadTaskRunnerProxyImpl.h">
       <Filter>源文件\Base\Threading\TaskRunner</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\Unit.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

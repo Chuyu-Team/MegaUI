@@ -15,7 +15,7 @@ namespace YY
     namespace MegaUI
     {
 #define _MEGA_UI_WINDOW_ELEMENT_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Title, PF_Normal, 0, &Value::CreateEmptyString, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::uString)
+    _APPLY(Title, PF_Normal, 0, &Value::CreateEmptyString, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::String)
 
         class WindowElement : public Element
         {

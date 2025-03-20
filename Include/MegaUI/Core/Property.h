@@ -6,69 +6,69 @@
 
 namespace YY
 {
-	namespace MegaUI
-	{
-		enum class ValueType;
-		class IControlInfo;
-		class Value;
-		class Element;
+    namespace MegaUI
+    {
+        enum class ValueType;
+        class IControlInfo;
+        class Value;
+        class Element;
         struct PropertyInfo;
         struct DepRecs;
         class DeferCycle;
 
-		struct EnumMap
-		{
+        struct EnumMap
+        {
             raw_const_u8string_t pszEnum;
-			int32_t nEnum;
-		};
+            int32_t nEnum;
+        };
 
-		enum class PropertyIndicies
-		{
-			// 本地值，当前 Element 直接拥有的值，也就是来自于 _LocalPropValue
-			PI_Local = 0,
-			// 特定值，优先尝试返回 _LocalPropValue 的值。如果未设置，那么按以下优先级返回：
-			// 1. 如果属性标记 PF_Cascade，那么尝试返回来自于属性表的值。
-			// 2. 如果属性标记 PF_Inherit，那么尝试返回来自与父Element的值。
-			// 3. 如果还有没有，那么返回 Property 中的 pvDefault
-			PI_Specified,
-			// 实际计算后的值，大多与场合，它等价于 PI_Specified，因为大多数属性都没有 PF_TriLevel 标记
-			// 如果属性标记 PF_TriLevel，那么它将返回一个递归计算后的值。
-			// 比如说，Visible属性，如果父Element它是false，即使子为true，它也无济于事。
-			// Visible是一个典型的需要递归评估的属性。
-			PI_Computed,
-			PI_MAX,
-		};
+        enum class PropertyIndicies
+        {
+            // 本地值，当前 Element 直接拥有的值，也就是来自于 _LocalPropValue
+            PI_Local = 0,
+            // 特定值，优先尝试返回 _LocalPropValue 的值。如果未设置，那么按以下优先级返回：
+            // 1. 如果属性标记 PF_Cascade，那么尝试返回来自于属性表的值。
+            // 2. 如果属性标记 PF_Inherit，那么尝试返回来自与父Element的值。
+            // 3. 如果还有没有，那么返回 Property 中的 pvDefault
+            PI_Specified,
+            // 实际计算后的值，大多与场合，它等价于 PI_Specified，因为大多数属性都没有 PF_TriLevel 标记
+            // 如果属性标记 PF_TriLevel，那么它将返回一个递归计算后的值。
+            // 比如说，Visible属性，如果父Element它是false，即使子为true，它也无济于事。
+            // Visible是一个典型的需要递归评估的属性。
+            PI_Computed,
+            PI_MAX,
+        };
 
-		enum PropertyFlag
-		{
+        enum PropertyFlag
+        {
             PF_HasLocal     = 0x00,
             PF_HasSpecified = 0x01,
             PF_HasComputed  = 0x02,
 
-			// 仅支持 PI_Local
+            // 仅支持 PI_Local
             PF_LocalOnly = PF_HasLocal,
-			// 支持 PI_Local 以及 PI_Specified
-			PF_Normal    = PF_HasLocal | PF_HasSpecified,
-			// 支持 PI_Local、PI_Specified 以及 PI_Computed
-			PF_TriLevel  = PF_HasLocal | PF_HasSpecified | PF_HasComputed,
-			// 他是掩位，
-			PF_TypeBits  = 0x03,
+            // 支持 PI_Local 以及 PI_Specified
+            PF_Normal    = PF_HasLocal | PF_HasSpecified,
+            // 支持 PI_Local、PI_Specified 以及 PI_Computed
+            PF_TriLevel  = PF_HasLocal | PF_HasSpecified | PF_HasComputed,
+            // 他是掩位，
+            PF_TypeBits  = 0x03,
 
-			// 如果值为Unset，那么尝试属性表（Property Sheet）种获取
-			PF_Cascade   = 0x04,
-			// 如果值为Unset，那么尝试从父节点种获取
-			PF_Inherit   = 0x08,
-			// 属性是只读的，不可更改。
-			PF_ReadOnly  = 0x10,
+            // 如果值为Unset，那么尝试属性表（Property Sheet）种获取
+            PF_Cascade   = 0x04,
+            // 如果值为Unset，那么尝试从父节点种获取
+            PF_Inherit   = 0x08,
+            // 属性是只读的，不可更改。
+            PF_ReadOnly  = 0x10,
             PF_20 = 0x20,
             PF_40 = 0x40,
             // 当DPI更新时，同步更新此属性
             PF_UpdateDpi = 0x80,
             // pFunDefaultValueEx 生效
             PF_GetDefaultValueEx = 0x100,
-		};
+        };
 
-		inline PropertyFlag __YYAPI PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
+        inline PropertyFlag __YYAPI PropertyIndiciesMapToPropertyFlag(PropertyIndicies _eIndicies)
         {
             switch (_eIndicies)
             {
@@ -250,20 +250,27 @@ namespace YY
                 {
                     // 当前缓存区的类型，等价于 ValueType
                     uint32_t eType : 7;
-                    // 当 _eType 类型为 bool 时使用，bit中有效的标记位数
+                    // 当 _eType 类型为 bool 时，表示bit中有效的标记位数
+                    // 当 _eType 类型为 ValueType::Unit 时，0代表缓冲区类型为Unit，任何非0值都代表float类型
+                    // 当 _eType 类型为 ValueType::UnitSize 时，0代表缓冲区类型为UnitSize，任何非0值都代表Size类型
+                    // 当 _eType 类型为 ValueType::UnitRect 时，0代表缓冲区类型为UnitRect，任何非0值都代表Rect类型
                     uint32_t LocalValueBit : 3;
                     // 指向 Local 值缓冲区偏移
                     uint32_t OffsetToLocalValue : 11;
-                    // 指向一个bool值缓冲区，如果已经缓存了Local的结果，那么为 true
-                    uint32_t OffsetToHasLocalCache : 11;
-                    uint32_t HasLocalValueCacheBit : 3;
-                    // 当 _eType 类型为 bool 时使用
-                    uint32_t SpecifiedValueBit : 3;
                     // 指向 Specified 值缓冲区偏移
                     uint32_t OffsetToSpecifiedValue : 11;
-                    uint32_t HasSpecifiedValueCacheBit : 3;
-                    // 指向一个bool值缓冲区，如果已经缓存了Specified的结果，那么为 true
-                    uint32_t OffsetToHasSpecifiedValueCache : 11;
+                    // 当 _eType 类型为 bool 时，表示bit中有效的标记位数
+                    // 当 _eType 类型为 ValueType::Unit 时，0代表缓冲区类型为Unit，任何非0值都代表float类型
+                    // 当 _eType 类型为 ValueType::UnitSize 时，0代表缓冲区类型为UnitSize，任何非0值都代表Size类型
+                    // 当 _eType 类型为 ValueType::UnitRect 时，0代表缓冲区类型为UnitRect，任何非0值都代表Rect类型
+                    uint32_t SpecifiedValueBit : 3;
+                    // 指向 Computed 值缓冲区偏移
+                    uint32_t OffsetToComputedValue : 11;
+                    // 当 _eType 类型为 bool 时，表示bit中有效的标记位数
+                    // 当 _eType 类型为 ValueType::Unit 时，0代表缓冲区类型为Unit，任何非0值都代表float类型
+                    // 当 _eType 类型为 ValueType::UnitSize 时，0代表缓冲区类型为UnitSize，任何非0值都代表Size类型
+                    // 当 _eType 类型为 ValueType::UnitRect 时，0代表缓冲区类型为UnitRect，任何非0值都代表Rect类型
+                    uint32_t ComputedValueBit : 3;
                     // 如果为 0，那么值表示函数指针 _pFunPropertyCustomCache
                     // 如果为 1，那么表示 这个 struct 生效
                     uint32_t bValueMapOrCustomPropFun : 1;
@@ -314,40 +321,52 @@ namespace YY
             return 0;
         }
 
-#define _MEGA_UI_PROP_BIND_VALUE(_VALUE_TYPE, _LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED_BIT, _HAS_SPECIFIED_BIT) \
-        { (uint64_t(_VALUE_TYPE) << 0) | (uint64_t(_LOCAL_BIT % 8) << 7) | (uint64_t(_LOCAL_BIT / 8) << 10)               \
-		  | (uint64_t(_HAS_LOCAL_BIT / 8) << 21) | (uint64_t(_HAS_LOCAL_BIT % 8) << 32) | (uint64_t(_SPECIFIED_BIT % 8) << 35) \
-          | (uint64_t(_SPECIFIED_BIT / 8) << 38) | (uint64_t(_HAS_SPECIFIED_BIT % 8) << 49) | (uint64_t(_HAS_SPECIFIED_BIT / 8) << 52) | (uint64_t(1) << 63) }
+#define _MEGA_UI_PROP_BIND_VALUE(_VALUE_TYPE, _LOCAL_BIT, _SPECIFIED_BIT, _COMPUTED_BIT) \
+        { (uint64_t(_VALUE_TYPE) << 0) | (uint64_t((_LOCAL_BIT) % 8) << 7) | (uint64_t((_LOCAL_BIT) / 8) << 10)               \
+          | (uint64_t((_SPECIFIED_BIT) / 8) << 21) | (uint64_t((_SPECIFIED_BIT) % 8) << 32) | (uint64_t((_COMPUTED_BIT) / 8) << 35) \
+          | (uint64_t((_COMPUTED_BIT) % 8) << 46) | (uint64_t(1) << 49)}
 
-#define _MEGA_UI_PROP_BIND_INT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_INT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::int32_t, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_FLOAT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::float_t, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_UNIT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::Unit, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_STRING(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::uString, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+        // 如果XXX_IS_FLOAT 为0，那么表示是Unit类型，否则是float类型
+#define _MEGA_UI_PROP_BIND_UNIT_EX(_LOCAL, _LOCAL_IS_FLOAT, _SPECIFIED, _SPECIFIED_IS_FLOAT, _COMPUTED, _COMPUTED_IS_FLOAT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::Unit, _LOCAL * 8 | _LOCAL_IS_FLOAT, _SPECIFIED * 8 | _SPECIFIED_IS_FLOAT, _COMPUTED * 8 | _COMPUTED_IS_FLOAT)
 
-#define _MEGA_UI_PROP_BIND_ELEMENT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_STRING(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::String, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_POINT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Point, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_ELEMENT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::Element, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_SIZE(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Size, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_POINT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::Point, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_RECT(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::Rect, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_SIZE(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::UnitSize, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_BOOL(_LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED_BIT, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::boolean, _LOCAL_BIT, _HAS_LOCAL_BIT, _SPECIFIED_BIT, _HAS_SPECIFIED_BIT)
+        // 如果XXX_IS_SIZE 为0，那么表示是UnitSize类型，否则是Size类型
+#define _MEGA_UI_PROP_BIND_SIZE_EX(_LOCAL, _LOCAL_IS_SIZE, _SPECIFIED, _SPECIFIED_IS_SIZE, _COMPUTED, _COMPUTED_IS_SIZE) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::UnitSize, _LOCAL * 8 | _LOCAL_IS_SIZE, _SPECIFIED * 8 | _SPECIFIED_IS_SIZE, _COMPUTED * 8 | _COMPUTED_IS_SIZE)
 
-#define _MEGA_UI_PROP_BIND_ATOM(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::ATOM, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+#define _MEGA_UI_PROP_BIND_RECT(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::UnitRect, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
-#define _MEGA_UI_PROP_BIND_SHEET(_LOCAL, _HAS_LOCAL_BIT, _SPECIFIED, _HAS_SPECIFIED_BIT) \
-    _MEGA_UI_PROP_BIND_VALUE(ValueType::StyleSheet, _LOCAL * 8, _HAS_LOCAL_BIT, _SPECIFIED * 8, _HAS_SPECIFIED_BIT)
+        // 如果XXX_IS_RECT 为0，那么表示是UnitRect类型，否则是Rect类型
+#define _MEGA_UI_PROP_BIND_RECT_EX(_LOCAL, _LOCAL_IS_RECT, _SPECIFIED, _SPECIFIED_IS_RECT, _COMPUTED, _COMPUTED_IS_RECT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::UnitRect, _LOCAL * 8 | _LOCAL_IS_RECT, _SPECIFIED * 8 | _SPECIFIED_IS_RECT, _COMPUTED * 8 | _COMPUTED_IS_RECT)
+
+#define _MEGA_UI_PROP_BIND_BOOL(_LOCAL_BIT, _SPECIFIED_BIT, _COMPUTED_BIT) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::boolean, _LOCAL_BIT, _SPECIFIED_BIT, _COMPUTED_BIT)
+
+#define _MEGA_UI_PROP_BIND_ATOM(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::ATOM, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
+
+#define _MEGA_UI_PROP_BIND_SHEET(_LOCAL, _SPECIFIED, _COMPUTED) \
+    _MEGA_UI_PROP_BIND_VALUE(ValueType::StyleSheet, _LOCAL * 8, _SPECIFIED * 8, _COMPUTED * 8)
 
 #define _MEGA_UI_PROP_BIND_NONE() {}
 
@@ -357,23 +376,23 @@ namespace YY
 //#define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _ENUM, ...) static PropertyInfo _YY_CONCATENATE(_PRO_NAME, Prop);
 #define _APPLY_MEGA_UI_PROPERTY_EXTERN(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) const PropertyInfo _YY_CONCATENATE(_PRO_NAME, Prop);
 #define _APPLY_MEGA_UI_PROPERTY_COUNT(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) + 1
-		//		PropertyInfo _CLASS::_YY_CONCATENATE(_PRO_NAME, Prop) =                                                
+        //		PropertyInfo _CLASS::_YY_CONCATENATE(_PRO_NAME, Prop) =                                                
 
 #define _APPLY_MEGA_UI_PROPERTY_VALUE_TYPE_LIST(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) \
-		static constexpr const ValueType _YY_CONCATENATE(vv, _PRO_NAME)[] = {__VA_ARGS__, ValueType::Null};
+        static constexpr const ValueType _YY_CONCATENATE(vv, _PRO_NAME)[] = {__VA_ARGS__, ValueType::Null};
 
 #define _APPLY_MEGA_UI_PROPERTY(_PRO_NAME, _FLAGS, _GROUPS, _DEF_VALUE_FUN, _CUSTOM_PRO_HANDLE, _PROP_DEPENDENCIES_DATA, _ENUM, _BIND_INT, ...) \
-		{                                                                                                         \
-			u8## #_PRO_NAME,                                                                                          \
-			_FLAGS | __GetMegaUIDefaultValueFlag(_DEF_VALUE_FUN),                                                 \
-			_GROUPS,                                                                                              \
-			_YY_CONCATENATE(vv, _PRO_NAME),                                                                       \
-			_ENUM,                                                                                                \
-			{ __GetMegaUICallback<uintptr_t>(_DEF_VALUE_FUN) },                                                   \
-			__GetMegaUICallback<FunTypeCustomPropertyHandle>(_CUSTOM_PRO_HANDLE),                                 \
+        {                                                                                                         \
+            u8## #_PRO_NAME,                                                                                          \
+            _FLAGS | __GetMegaUIDefaultValueFlag(_DEF_VALUE_FUN),                                                 \
+            _GROUPS,                                                                                              \
+            _YY_CONCATENATE(vv, _PRO_NAME),                                                                       \
+            _ENUM,                                                                                                \
+            { __GetMegaUICallback<uintptr_t>(_DEF_VALUE_FUN) },                                                   \
+            __GetMegaUICallback<FunTypeCustomPropertyHandle>(_CUSTOM_PRO_HANDLE),                                 \
             _PROP_DEPENDENCIES_DATA,                                                                              \
-			_BIND_INT,                                                                                            \
-		},
+            _BIND_INT,                                                                                            \
+        },
 
 #define _APPLY_MEGA_UI_BITMAP_INFO(_BIT_NAME, _BIT_COUNT) uint8_t _BIT_NAME[_BIT_COUNT];
 #define _APPLY_MEGA_UI_BITMAP_NAME(_BIT_NAME, _BIT_COUNT) uint32_t _BIT_NAME : _BIT_COUNT;
@@ -393,7 +412,7 @@ namespace YY
         };
 
         #define UFIELD_BITMAP_OFFSET(_TYPE, _FIELD, _BIT_NAME) (YY_UFIELD_OFFSET(_TYPE, _FIELD) * 8 + YY_UFIELD_OFFSET(_TYPE::_YY_CONCATENATE(_FIELD, BitInfo), _BIT_NAME))
-	} //namespace MegaUI
+    } //namespace MegaUI
 }//namespace YY
 
 #pragma pack(pop)

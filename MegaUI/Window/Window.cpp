@@ -90,11 +90,11 @@ namespace YY
 
             if (pHost)
             {
-                _iWidth = (int32_t)pHost->GetWidth();
+                _iWidth = (int32_t)pHost->GetWidth().ApplyDimension(pHost->LocUnitMetrics);
                 if (_iWidth < 0)
                     _iWidth = CW_USEDEFAULT;
 
-                _iHeight = (int32_t)pHost->GetHeight();
+                _iHeight = (int32_t)pHost->GetHeight().ApplyDimension(pHost->LocUnitMetrics);
                 if (_iHeight < 0)
                     _iHeight = CW_USEDEFAULT;
 
@@ -912,8 +912,8 @@ namespace YY
                 intptr_t _Cooike;
                 pHost->StartDefer(&_Cooike);
 
-                pHost->SetWidth(_uWidth);
-                pHost->SetHeight(_uHeight);
+                pHost->SetWidth(Unit(_uWidth));
+                pHost->SetHeight(Unit(_uHeight));
 
                 pHost->EndDefer(_Cooike);
                 // D2D1.0 调用这个会发生抖动
@@ -970,10 +970,10 @@ namespace YY
             auto _OldValue = Value::CreateInt32(pHost->GetDpi());
             auto _NewValue = Value::CreateInt32(_iNewDPI);
 
-            if (pHost->iLocDpi != _iNewDPI)
+            if (pHost->LocUnitMetrics.uDpi != _iNewDPI)
             {
                 pHost->PreSourceChange(Element::g_ControlInfoData.DpiProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
-                pHost->iLocDpi = _iNewDPI;
+                pHost->LocUnitMetrics.uDpi = _iNewDPI;
                 pHost->PostSourceChange();
             }
 
@@ -996,7 +996,7 @@ namespace YY
                             return E_OUTOFMEMORY;
                     }
                     pChild->PreSourceChange(Element::g_ControlInfoData.DpiProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
-                    pChild->iLocDpi = _iNewDPI;
+                    pChild->LocUnitMetrics.uDpi = _iNewDPI;
                     pChild->PostSourceChange();
                 }
 

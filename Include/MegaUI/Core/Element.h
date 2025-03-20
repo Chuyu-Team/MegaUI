@@ -149,60 +149,60 @@ namespace YY
         // clang-format off
         //     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                         CustomPropertyHandle                      pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_ELEMENT_PROPERTY_TABLE(_APPLY) \
-    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::ParentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(YY_UFIELD_OFFSET(Element, pLocParent), 0, 0, 0),       ValueType::Element) \
-    _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(YY_UFIELD_OFFSET(Element, vecLocChildren), 0, 0, 0),   ValueType::ElementList) \
-    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::VisiblePropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecVisible), 0), ValueType::boolean ) \
-    _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::EnabledPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean ) \
-    _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::ActivePropHandle,          nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, YY_UFIELD_OFFSET(Element, fSpecActive), 0),    ValueType::int32_t ) \
-    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>,         nullptr,                             nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, YY_UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
-    _APPLY(Width,          PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(Height,         PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize,                          &Value::CreateFloat<-1>,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(X,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(Y,              PF_Normal | PF_UpdateDpi,              0,                                              &Value::CreateFloat<0>,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::float_t) \
-    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::CreatePointZero,              &Element::LocationPropHandle,        nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Point  ) \
-    _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::CreateSizeZero,               &Element::ExtentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Size   ) \
-    _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreatePointZero,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(YY_UFIELD_OFFSET(Element, LocPosInLayout), 0, 0, 0),     ValueType::Point  ) \
-    _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(YY_UFIELD_OFFSET(Element, LocSizeInLayout), 0, 0, 0),     ValueType::Size   ) \
-    _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(YY_UFIELD_OFFSET(Element, LocDesiredSize), 0, 0, 0),      ValueType::Size   ) \
-    _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(YY_UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 0, 0, 0), ValueType::Size ) \
-    _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateLayoutNull,             nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Layout ) \
-    _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color  ) \
-    _APPLY(Foreground,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color  ) \
-    _APPLY(MinSize,        PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay,  &Value::CreateSizeZero, nullptr,        nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE(0, 0, YY_UFIELD_OFFSET(Element, SpecMinSize), 0),         ValueType::Size   ) \
-    _APPLY(BorderThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,       &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, YY_UFIELD_OFFSET(Element, SpecBorderThickness), 0), ValueType::Rect   ) \
+    _APPLY(Parent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateElementNull,            &Element::ParentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(YY_UFIELD_OFFSET(Element, pLocParent), 0, 0),       ValueType::Element) \
+    _APPLY(Children,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsDesiredSize | PG_AffectsLayout,       nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ELEMENT(YY_UFIELD_OFFSET(Element, vecLocChildren), 0, 0),   ValueType::ElementList) \
+    _APPLY(Visible,        PF_TriLevel | PF_Cascade | PF_Inherit, 0,                                              &Value::CreateBoolFalse,              &Element::VisiblePropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecVisible), UFIELD_BITMAP_OFFSET(Element, ElementBits, bCmpVisible)), ValueType::boolean) \
+    _APPLY(Enabled,        PF_Normal | PF_Cascade | PF_Inherit,   0,                                              &Value::CreateBoolTrue,               &Element::EnabledPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecEnabled), 0), ValueType::boolean) \
+    _APPLY(Active,         PF_Normal,                             0,                                              &Value::CreateInt32Zero,              &Element::ActivePropHandle,          nullptr, ActiveEnumMap, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, fSpecActive), 0),    ValueType::int32_t) \
+    _APPLY(LayoutPos,      PF_Normal | PF_Cascade,                PG_AffectsDesiredSize | PG_AffectsParentLayout, &Value::CreateInt32<LP_Auto>,         nullptr,                             nullptr, LayoutPosEnumMap, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, iSpecLayoutPos), 0), ValueType::int32_t) \
+    _APPLY(Width,          PF_TriLevel | PF_Cascade,              PG_AffectsDesiredSize,                          &Value::CreateUnit<-1>,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_UNIT_EX(0, 0, 0, 0, YY_UFIELD_OFFSET(Element, CmpWidth), 1), ValueType::Unit) \
+    _APPLY(Height,         PF_TriLevel | PF_Cascade,              PG_AffectsDesiredSize,                          &Value::CreateUnit<-1>,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_UNIT_EX(0, 0, 0, 0, YY_UFIELD_OFFSET(Element, CmpHeight), 1), ValueType::Unit) \
+    _APPLY(X,              PF_TriLevel,                           0,                                              &Value::CreateUnit<0>,                nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_UNIT_EX(0, 0, 0, 0, YY_UFIELD_OFFSET(Element, CmpX), 1),    ValueType::Unit) \
+    _APPLY(Y,              PF_TriLevel,                           0,                                              &Value::CreateUnit<0>,                nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_UNIT_EX(0, 0, 0, 0, YY_UFIELD_OFFSET(Element, CmpY), 1),    ValueType::Unit) \
+    _APPLY(Location,       PF_LocalOnly | PF_ReadOnly,            PG_AffectsBounds,                               &Value::CreatePointZero,              &Element::LocationPropHandle,        nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Point) \
+    _APPLY(Extent,         PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsBounds,            &Value::CreateSizeZero,               &Element::ExtentPropHandle,          nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::UnitSize) \
+    _APPLY(PosInLayout,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreatePointZero,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_POINT(YY_UFIELD_OFFSET(Element, LocPosInLayout), 0, 0),     ValueType::Point) \
+    _APPLY(SizeInLayout,   PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE_EX(YY_UFIELD_OFFSET(Element, LocSizeInLayout), 1, 0, 0, 0, 0), ValueType::UnitSize) \
+    _APPLY(DesiredSize,    PF_LocalOnly | PF_ReadOnly,            PG_AffectsLayout | PG_AffectsParentLayout,      &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE_EX(YY_UFIELD_OFFSET(Element, LocDesiredSize), 1, 0, 0, 0, 0), ValueType::UnitSize) \
+    _APPLY(LastDesiredSizeConstraint, PF_LocalOnly | PF_ReadOnly, 0,                                              &Value::CreateSizeZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE_EX(YY_UFIELD_OFFSET(Element, LocLastDesiredSizeConstraint), 1, 0, 0, 0, 0), ValueType::UnitSize) \
+    _APPLY(Layout,         PF_Normal,                             PG_AffectsDesiredSize | PG_AffectsLayout,       &Value::CreateLayoutNull,             nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Layout) \
+    _APPLY(Background,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color) \
+    _APPLY(Foreground,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color) \
+    _APPLY(MinSize,        PF_TriLevel | PF_Cascade,              PG_AffectsLayout | PG_AffectsParentLayout | PG_AffectsBounds | PG_AffectsDisplay, &Value::CreateSizeZero, nullptr,         nullptr, nullptr, _MEGA_UI_PROP_BIND_SIZE_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecMinSize), 0, YY_UFIELD_OFFSET(Element, CmpMinSize), 1), ValueType::UnitSize) \
+    _APPLY(BorderThickness, PF_TriLevel | PF_Cascade,             PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecBorderThickness), 0, YY_UFIELD_OFFSET(Element, CmpBorderThickness), 1), ValueType::UnitRect) \
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                             nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                          ValueType::int32_t ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color  ) \
-    _APPLY(Padding,        PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDisplay | PG_AffectsDesiredSize,      &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, YY_UFIELD_OFFSET(Element, SpecPadding), 0),         ValueType::Rect   ) \
-    _APPLY(FocusVisible,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecFocusVisible), 0), ValueType::boolean ) \
-    _APPLY(FocusThickness, PF_Normal | PF_Cascade | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT(0, 0, YY_UFIELD_OFFSET(Element, SpecFocusThickness), 0),  ValueType::Rect   ) \
-    _APPLY(FocusStyle,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                             nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                          ValueType::int32_t ) \
-    _APPLY(FocusColor,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color  ) \
-    _APPLY(FlowDirection,  PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                             nullptr, FlowDirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, YY_UFIELD_OFFSET(Element, iSpecFlowDirection), 0), ValueType::int32_t ) \
-    _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusedPropHandle,    nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bHasLocMouseFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecMouseFocused), 0), ValueType::boolean ) \
+    _APPLY(Padding,        PF_TriLevel | PF_Cascade,              PG_AffectsDisplay | PG_AffectsDesiredSize,      &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecPadding), 0, YY_UFIELD_OFFSET(Element, CmpPadding), 1), ValueType::UnitRect) \
+    _APPLY(FocusVisible,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecFocusVisible), 0), ValueType::boolean ) \
+    _APPLY(FocusThickness, PF_TriLevel | PF_Cascade,              PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecFocusThickness), 0, YY_UFIELD_OFFSET(Element, CmpFocusThickness), 1), ValueType::UnitRect) \
+    _APPLY(FocusStyle,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                             nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                          ValueType::int32_t) \
+    _APPLY(FocusColor,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color) \
+    _APPLY(FlowDirection,  PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsLayout | PG_AffectsDisplay,           nullptr,                              nullptr,                             nullptr, FlowDirectionEnumMap, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, iSpecFlowDirection), 0), ValueType::int32_t) \
+    _APPLY(MouseFocused,   PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusedPropHandle,    nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocMouseFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecMouseFocused), 0), ValueType::boolean) \
     _APPLY(MouseFocusWithin, PF_LocalOnly | PF_ReadOnly,          0,                                              &Value::CreateBoolFalse,              &Element::MouseFocusWithinPropHandle,nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) \
-    _APPLY(KeyboardFocused,PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusedPropHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocKeyboardFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bHasLocKeyboardFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecKeyboardFocused), 0), ValueType::boolean   ) \
+    _APPLY(KeyboardFocused,PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusedPropHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocKeyboardFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecKeyboardFocused), 0), ValueType::boolean) \
     _APPLY(KeyboardFocusWithin, PF_LocalOnly | PF_ReadOnly,       0,                                              &Value::CreateBoolFalse,              &Element::KeyboardFocusWithinPropHandle, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                 ValueType::boolean ) \
-    _APPLY(Focused,        PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::FocusedPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bHasLocFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecFocused), 0), ValueType::boolean   ) \
-    _APPLY(FocusWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              &Element::FocusWithinPropHandle,     nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) \
-    _APPLY(Id,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, 0, YY_UFIELD_OFFSET(Element, SpecID), 0),              ValueType::ATOM    ) \
-    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              &Element::SheetPropHandle,           nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, 0, YY_UFIELD_OFFSET(Element, pSheet), 0),             ValueType::StyleSheet ) \
-    _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(Content,        PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(ContentAlign,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32Zero,              nullptr,                             nullptr, ContentAlignEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, YY_UFIELD_OFFSET(Element, fSpecContentAlign), 0), ValueType::int32_t ) \
-    _APPLY(FontFamily,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFontFamily,      nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_STRING(0, 0, YY_UFIELD_OFFSET(Element, SpecFont.szFace), 0),   ValueType::uString ) \
-    _APPLY(FontSize,       PF_Normal | PF_Cascade | PF_Inherit | PF_UpdateDpi, PG_AffectsDesiredSize|PG_AffectsDisplay, &Value::CreateFloat<20>,        nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_FLOAT(0, 0, YY_UFIELD_OFFSET(Element, SpecFont.iSize), 0),     ValueType::float_t ) \
-    _APPLY(FontWeight,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32<FontWeight::Normal>, nullptr,                          nullptr, FontWeightEnumMaps, _MEGA_UI_PROP_BIND_INT(0, 0, YY_UFIELD_OFFSET(Element, SpecFont.uWeight), 0), ValueType::int32_t ) \
-    _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<(int32_t)FontStyle::None>, nullptr,                    nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, 0, YY_UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t ) \
-    _APPLY(Dpi,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateInt32<96>,              &Element::DpiPropHandle,             nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(YY_UFIELD_OFFSET(Element, iLocDpi), 0, 0, 0),              ValueType::int32_t ) \
-    _APPLY(Accessible,     PF_Normal | PF_Cascade,                0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, 0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecAccessible), 0), ValueType::boolean ) \
-    _APPLY(AccRole,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateInt32Zero,              nullptr,                             nullptr, AccRoleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                              ValueType::int32_t ) \
-    _APPLY(AccName,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(AccHelp,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(AccDescription, PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(AccItemType,    PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(AccItemStatus,  PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::uString ) \
-    _APPLY(Pressed,        PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) \
-    _APPLY(Cursor,         PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean ) 
+    _APPLY(Focused,        PF_Normal | PF_ReadOnly | PF_Inherit,  0,                                              &Value::CreateBoolFalse,              &Element::FocusedPropHandle,         nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(UFIELD_BITMAP_OFFSET(Element, ElementBits, bLocFocused), UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecFocused), 0), ValueType::boolean) \
+    _APPLY(FocusWithin,    PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateBoolFalse,              &Element::FocusWithinPropHandle,     nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean) \
+    _APPLY(Id,             PF_Normal,                             0,                                              &Value::CreateAtomZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_ATOM(0, YY_UFIELD_OFFSET(Element, SpecID), 0),              ValueType::ATOM) \
+    _APPLY(Sheet,          PF_Normal|PF_Inherit,                  0,                                              &Value::CreateSheetNull,              &Element::SheetPropHandle,           nullptr, nullptr, _MEGA_UI_PROP_BIND_SHEET(0, YY_UFIELD_OFFSET(Element, pSheet), 0),             ValueType::StyleSheet) \
+    _APPLY(Class,          PF_Normal,                             0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
+    _APPLY(Content,        PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        nullptr,                              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
+    _APPLY(ContentAlign,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32Zero,              nullptr,                             nullptr, ContentAlignEnumMap, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, fSpecContentAlign), 0), ValueType::int32_t ) \
+    _APPLY(FontFamily,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateDefaultFontFamily,      nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_STRING(0, YY_UFIELD_OFFSET(Element, SpecFont.szFace), 0),   ValueType::String) \
+    _APPLY(FontSize,       PF_TriLevel | PF_Cascade | PF_Inherit, PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateUnit<20>,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_UNIT_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecFontSize), 0, YY_UFIELD_OFFSET(Element, SpecFont.iSize), 1), ValueType::Unit) \
+    _APPLY(FontWeight,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32<FontWeight::Normal>, nullptr,                          nullptr, FontWeightEnumMaps, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, SpecFont.uWeight), 0), ValueType::int32_t) \
+    _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<(int32_t)FontStyle::None>, nullptr,                    nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t) \
+    _APPLY(Dpi,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateDefaultSystemDpi,       &Element::DpiPropHandle,             nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(YY_UFIELD_OFFSET(Element, LocUnitMetrics.uDpi), 0, 0),  ValueType::int32_t) \
+    _APPLY(Accessible,     PF_Normal | PF_Cascade,                0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecAccessible), 0), ValueType::boolean) \
+    _APPLY(AccRole,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateInt32Zero,              nullptr,                             nullptr, AccRoleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                              ValueType::int32_t) \
+    _APPLY(AccName,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
+    _APPLY(AccHelp,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
+    _APPLY(AccDescription, PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
+    _APPLY(AccItemType,    PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
+    _APPLY(AccItemStatus,  PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
+    _APPLY(Pressed,        PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean) \
+    _APPLY(Cursor,         PF_Normal,                             0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::boolean) 
 
 // clang-format on
 
@@ -332,27 +332,37 @@ namespace YY
             //    uint8_t BitsBuffer[1];
             //};
 
+            float CmpWidth = -1;
+            float CmpHeight = -1;
+            float CmpX = 0;
+            float CmpY = 0;
 
             // 边框宽度，四个方向，左上右下
-            Rect SpecBorderThickness;
+            UnitRect SpecBorderThickness;
+            Rect CmpBorderThickness;
             // 内边距
-            Rect SpecPadding;
+            UnitRect SpecPadding;
+            Rect CmpPadding;
             // 边框宽度，四个方向，左上右下
-            Rect SpecFocusThickness;
+            UnitRect SpecFocusThickness;
+            Rect CmpFocusThickness;
 
             //Layout* pLayout = nullptr;
 
             // 最小限制
-            Size SpecMinSize = {};
+            UnitSize SpecMinSize;
+            Size CmpMinSize;
             FlowDirection iSpecFlowDirection = FlowDirection::LeftToRight;
             ContentAlignStyle fSpecContentAlign = ContentAlignStyle::Top | ContentAlignStyle::Left;
             // 当前DPI值
-            int32_t iLocDpi = 96;
+            UnitMetrics LocUnitMetrics;
+
             // 承载控件的窗口
             Window* pWindow = nullptr;
 
             // 缓存的字体信息
             Font SpecFont;
+            Unit SpecFontSize;
 
             RefPtr<IDWriteTextLayout> pTextLayout;
 
@@ -391,17 +401,17 @@ namespace YY
             int32_t __YYAPI GetLayoutPos();
             HRESULT __YYAPI SetLayoutPos(int32_t _iLayoutPos);
 
-            float __YYAPI GetWidth();
-            HRESULT __YYAPI SetWidth(float _iWidth);
+            Unit __YYAPI GetWidth();
+            HRESULT __YYAPI SetWidth(const Unit& _iWidth);
 
-            float __YYAPI GetHeight();
-            HRESULT __YYAPI SetHeight(float _iHeight);
+            Unit __YYAPI GetHeight();
+            HRESULT __YYAPI SetHeight(const Unit& _iHeight);
 
-            float __YYAPI GetX();
-            HRESULT __YYAPI SetX(float _iX);
+            Unit __YYAPI GetX();
+            HRESULT __YYAPI SetX(const Unit& _iX);
 
-            float __YYAPI GetY();
-            HRESULT __YYAPI SetY(float _iY);
+            Unit __YYAPI GetY();
+            HRESULT __YYAPI SetY(const Unit& _iY);
 
             Point __YYAPI GetLocation();
 
@@ -474,9 +484,9 @@ namespace YY
 
             HRESULT __YYAPI SetFontFamily(uString _szFontFamily);
 
-            float __YYAPI GetFontSize();
+            Unit __YYAPI GetFontSize();
 
-            HRESULT __YYAPI SetFontSize(float _iFontSize);
+            HRESULT __YYAPI SetFontSize(const Unit& _iFontSize);
 
             uint32_t __YYAPI GetFontWeight();
 
@@ -709,29 +719,25 @@ namespace YY
                 return GeneralHandle(_HandleType::HandleType, _pHandleData);
             }
 
-            Value __YYAPI GetGeneralCacheValue(
-                ValueType _eType,
-                uint16_t _uOffsetToCache,
-                uint8_t _uCacheBit,
-                uint16_t _uOffsetToHasCache,
-                uint8_t _uHasCacheBit
-            );
+            Value __YYAPI GetGeneralCacheValue(ValueType _eType, uint16_t _uOffsetToCache, uint8_t _uCacheBit);
 
             bool __YYAPI GetGeneralLocalValue(_Inout_ GetValueHandleData* _pHandleData);
 
             bool __YYAPI GetGeneralSpecifiedValue(_Inout_ GetValueHandleData* _pHandleData);
 
+            bool __YYAPI GetGeneralComputedValue(_Inout_ GetValueHandleData* _pHandleData);
+
             bool __YYAPI SetGeneralCacheValue(
                 ValueType _eType,
                 uint16_t _uOffsetToCache,
                 uint8_t _uCacheBit,
-                uint16_t _uOffsetToHasCache,
-                uint8_t _uHasCacheBit,
                 Value _NewValue);
 
             bool __YYAPI SetGeneralLocalValue(_Inout_ SetValueHandleData* _pHandleData);
 
             bool __YYAPI SetGeneralSpecifiedValue(_Inout_ SetValueHandleData* _pHandleData);
+
+            bool __YYAPI SetGeneralComputedValue(_Inout_ SetValueHandleData* _pHandleData);
 
             bool __YYAPI GetGeneralFastSpecValueCompare(_Inout_ FastSpecValueCompareHandleData* _pHandleData);
 
@@ -762,6 +768,8 @@ namespace YY
             bool __YYAPI DpiPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
             virtual bool __YYAPI OnDpiPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
+
+            bool __YYAPI GetDpiPropDependencies(_In_ GetDependenciesHandleData* _pHandleData);
 
             void __YYAPI FlushDesiredSize(DeferCycle* _pDeferCycle);
 
@@ -797,6 +805,8 @@ namespace YY
 
             bool __YYAPI GetMouseFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
+            bool __YYAPI SetMouseFocusedPropValue(_Inout_ SetValueHandleData* _pHandleData);
+
             bool __YYAPI MouseFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
             bool __YYAPI GetMouseFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
@@ -807,6 +817,8 @@ namespace YY
 
             bool __YYAPI GetKeyboardFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
 
+            bool __YYAPI SetKeyboardFocusedPropValue(_Inout_ SetValueHandleData* _pHandleData);
+
             bool __YYAPI KeyboardFocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
             bool __YYAPI GetKeyboardFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);
@@ -816,7 +828,9 @@ namespace YY
             virtual bool __YYAPI OnFocusedPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
             bool __YYAPI GetFocusedPropValue(_Inout_ GetValueHandleData* _pHandleData);
-
+            
+            bool __YYAPI SetFocusedPropValue(_Inout_ SetValueHandleData* _pHandleData);
+            
             bool __YYAPI FocusWithinPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
             bool __YYAPI GetFocusWithinPropValue(_Inout_ GetValueHandleData* _pHandleData);

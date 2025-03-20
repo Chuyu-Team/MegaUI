@@ -15,6 +15,7 @@
 #include <Media/Size.h>
 #include <Media/Point.h>
 #include <Base/Memory/RefPtr.h>
+#include <MegaUI/Core/Unit.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -33,15 +34,15 @@ namespace YY
         typedef uint16_t ATOM;
         typedef void* HCURSOR;
 #endif
-
+        
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
         _APPLY(int32_t,     int32_t,             int32Value) \
-        _APPLY(float_t,     float,               floatValue) \
+        _APPLY(Unit,        Unit,                UnitValue)  \
         _APPLY(boolean,     bool,                boolValue)  \
-        _APPLY(uString,     uString,             szValue  )  \
+        _APPLY(String,      uString,             szValue  )  \
         _APPLY(Point,       Point,               ptVal    )  \
-        _APPLY(Size,        Size,                sizeVal  )  \
-        _APPLY(Rect,        Rect,                rectVal  )  \
+        _APPLY(UnitSize,    UnitSize,            sizeVal  )  \
+        _APPLY(UnitRect,    UnitRect,            rectVal  )  \
         _APPLY(Element,     Element*,            pEleValue)  \
         _APPLY(ElementList, ElementList,         ListVal  )  \
         _APPLY(ATOM,        ATOM,                uAtomVal )  \
@@ -50,7 +51,7 @@ namespace YY
         _APPLY(Color,       Color,               ColorValue) \
         _APPLY(StyleSheet,  StyleSheet*,         pStyleSheet)
 
-		enum class ValueType
+        enum class ValueType
         {
             // 此值不可用
             Unavailable = -2,
@@ -64,35 +65,6 @@ namespace YY
 #undef _APPLY
         };
         
-        enum class ValueSuffixType : uint16_t
-        {
-            None,
-            // 设备无关像素（缩写px），等价于 None
-            Pixel = None,
-            // 设备相关像素（缩写 dp）, px = dp * dpi / 96
-            DevicePixel,
-            // 字体的点数，也称呼为磅（缩写 pt），px = pt * dpi / 72
-            FontPoint,
-        };
-
-        // 一共4组位置信息，这是为了适应 Rect 这样的拥有4个成员的情况
-        union ValueSuffix
-        {
-            struct
-            {
-                ValueSuffixType Type1 : 4;
-                ValueSuffixType Type2 : 4;
-                ValueSuffixType Type3 : 4;
-                ValueSuffixType Type4 : 4;
-                // 当前数值的Dpi
-                uint16_t Dpi;
-            };
-            
-            uint32_t RawView;
-        };
-        
-        static_assert(sizeof(ValueSuffix) == sizeof(uint32_t), "");
-
         enum class ValueCmpOperation
         {
             Invalid = 0,
@@ -152,7 +124,7 @@ namespace YY
         _DEFINE_CONST_VALUE(Ret, _eTYPE, __VA_ARGS__); \
         return Value((Value::SharedData*)(&Ret));
 
-		class Value
+        class Value
         {
             friend UIParser;
 
@@ -184,8 +156,6 @@ namespace YY
 #undef _APPLY
                 };
 
-                ValueSuffix SuffixType;
-
                 SharedData() = delete;
                 SharedData(const SharedData&) = delete;
                 ~SharedData() = delete;
@@ -196,15 +166,13 @@ namespace YY
                 void __YYAPI AddRef();
                 void __YYAPI Release();
 
-                bool __YYAPI IsReadOnly();
+                bool __YYAPI IsReadOnly() const;
 
                 /// <summary>
                 /// 判断内容是否是相对大小，而需要计算
                 /// </summary>
                 /// <returns></returns>
-                bool __YYAPI NeedCalculate();
-
-                int32_t __YYAPI GetDpi();
+                bool __YYAPI IsRelativeUnit() const;
             };
 
         private:
@@ -249,9 +217,9 @@ namespace YY
             }
             
             template<int32_t iValue>
-            static Value __YYAPI CreateFloat()
+            static Value __YYAPI CreateUnit()
             {
-                _RETUNR_CONST_VALUE(ValueType::float_t, (float)iValue);
+                _RETUNR_CONST_VALUE(ValueType::Unit, {iValue});
             }
 
             static Value __YYAPI CreateAtomZero();
@@ -283,7 +251,8 @@ namespace YY
             /// <returns></returns>
             static Value __YYAPI CreateColorTransparant();
             static Value __YYAPI CreateSheetNull();
-
+            
+            static Value __YYAPI CreateDefaultSystemDpi();
 
             ValueType __YYAPI GetType() const;
 
@@ -295,7 +264,7 @@ namespace YY
 
             static Value __YYAPI CreateInt32(_In_ int32_t _iValue);
             
-            static Value __YYAPI CreateFloat(_In_ float _iValue, _In_ ValueSuffix _Suffix = {});
+            static Value __YYAPI CreateUnit(_In_ const Unit& _iValue);
          
             static Value __YYAPI CreateBool(_In_ bool _bValue);
             static Value __YYAPI CreateElementRef(_In_opt_ Element* _pValue);
@@ -309,24 +278,9 @@ namespace YY
                 return CreatePoint(_Point.X, _Point.Y);
             }
 
-            static Value __YYAPI CreateSize(_In_ float _iCX, _In_ float _iCY, _In_ ValueSuffix _Suffix = {});
+            static Value __YYAPI CreateSize(_In_ const UnitSize& _Size);
 
-            __inline static Value __YYAPI CreateSize(_In_ Size _Size, _In_ ValueSuffix _Suffix = {})
-            {
-                return CreateSize(_Size.Width, _Size.Height, _Suffix);
-            }
-
-            static Value __YYAPI CreateRect(
-                _In_ float _iLeft,
-                _In_ float _iTop,
-                _In_ float _iRight,
-                _In_ float _iBottom,
-                _In_ ValueSuffix _Suffix = {});
-            
-            __inline static Value __YYAPI CreateRect(_In_ const Rect& _Rect, _In_ ValueSuffix _Suffix = {})
-            {
-                return CreateRect(_Rect.Left, _Rect.Top, _Rect.Right, _Rect.Bottom, _Suffix);
-            }
+            static Value __YYAPI CreateRect(_In_ const UnitRect& _Rect);
             
             //static _Ret_maybenull_ Value* __YYAPI CreateDFCFill(_In_ uint32_t _uType, _In_ uint32_t _uState);
             static Value __YYAPI CreateAtom(_In_z_ raw_const_ustring_t _szValue);
@@ -340,10 +294,10 @@ namespace YY
 
             int32_t __YYAPI GetInt32() const;
 
-            float __YYAPI GetFloat() const;
+            Unit& __YYAPI GetUnit() const;
 
             bool __YYAPI GetBool() const;
-            Size __YYAPI GetSize() const;
+            UnitSize __YYAPI GetSize() const;
             Point __YYAPI GetPoint() const;
             uint8_t* __YYAPI GetRawBuffer();
             Color __YYAPI GetColor() const;
@@ -355,22 +309,16 @@ namespace YY
 
             StyleSheet* __YYAPI GetStyleSheet() const;
 
-            Rect& __YYAPI GetRect() const;
+            UnitRect& __YYAPI GetRect() const;
 
             bool __YYAPI CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi = true) const;
-
-            Value __YYAPI UpdateDpi(_In_ int32_t _iNewDpi) const;
 
             /// <summary>
             /// 判断二个Value是否是同一个变量。
             /// </summary>
             bool __YYAPI IsSame(const Value& _Other) const;
         };
-
-        float __YYAPI UpdateDpi(_In_ float _iValue, _In_ int32_t _iOldDpi, _In_ int32_t _iNewDpi, _In_ ValueSuffixType _Type);
         
-        Rect __YYAPI UpdateDpi(_In_ Rect _Rect, _In_ int32_t _iNewDpi, _In_ ValueSuffix _Suffix);
-
         template<ValueType _eType>
         class ValueIs : public Value
         {

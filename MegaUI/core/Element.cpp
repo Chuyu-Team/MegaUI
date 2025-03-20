@@ -114,7 +114,7 @@ namespace YY
         __APPLY_ENUM_MAP(AccRoleEnumMap);
     #undef _ENUM_TYPE
 
-	    _APPLY_MEGA_UI_STATIC_CONTROL_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
+        _APPLY_MEGA_UI_STATIC_CONTROL_INFO(Element, _MEGA_UI_ELEMENT_PROPERTY_TABLE);
 
         Element::Element()
             : RenderNode{}
@@ -153,8 +153,10 @@ namespace YY
             , bSpecFocused(false)
             , bSpecAccessible(false)
         {
+            LocUnitMetrics.uDpi = Element::g_ControlInfoData.DpiProp.pFunDefaultValue().GetInt32();
             SpecFont.szFace = Element::g_ControlInfoData.FontFamilyProp.pFunDefaultValue().GetString();
-            SpecFont.iSize = Element::g_ControlInfoData.FontSizeProp.pFunDefaultValue().GetFloat();
+            SpecFontSize = Element::g_ControlInfoData.FontSizeProp.pFunDefaultValue().GetUnit();
+            SpecFont.iSize = SpecFontSize.ApplyDimension(LocUnitMetrics);
             SpecFont.uWeight = Element::g_ControlInfoData.FontWeightProp.pFunDefaultValue().GetInt32();
             SpecFont.fStyle = (FontStyle)Element::g_ControlInfoData.FontStyleProp.pFunDefaultValue().GetInt32();
         }
@@ -166,7 +168,7 @@ namespace YY
         HRESULT Element::Initialize(int32_t _iDPI, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
         {
             pTopLevel = _pTopLevel;
-            iLocDpi = _iDPI;
+            LocUnitMetrics.uDpi = _iDPI;
 
             if (_pCooike)
                 StartDefer(_pCooike);
@@ -174,7 +176,7 @@ namespace YY
             return S_OK;
         }
 
-	    Value Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
+        Value Element::GetValue(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, bool _bUpdateCache)
         {
             if (_eIndicies >= PropertyIndicies::PI_MAX)
                 return Value::CreateUnavailable();
@@ -274,82 +276,82 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.LayoutPosProp, _pValue);
         }
 
-        float Element::GetWidth()
+        Unit Element::GetWidth()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.WidthProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
-                return -1;
+                return Unit(-1);
             }
-            return _pValue.GetFloat();
+            return _pValue.GetUnit();
         }
 
-        HRESULT Element::SetWidth(float _iWidth)
+        HRESULT Element::SetWidth(const Unit& _iWidth)
         {
-            auto _pValue = Value::CreateFloat(_iWidth);
+            auto _pValue = Value::CreateUnit(_iWidth);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.WidthProp, _pValue);
         }
 
-        float Element::GetHeight()
+        Unit Element::GetHeight()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.HeightProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
-                return -1;
+                return Unit(-1);
             }
-            return _pValue.GetFloat();
+            return _pValue.GetUnit();
         }
 
-        HRESULT Element::SetHeight(float _iHeight)
+        HRESULT Element::SetHeight(const Unit& _iHeight)
         {
-            auto _pValue = Value::CreateFloat(_iHeight);
+            auto _pValue = Value::CreateUnit(_iHeight);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.HeightProp, _pValue);
         }
 
-        float Element::GetX()
+        Unit Element::GetX()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.XProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
-                return -1;
+                return Unit(-1);
             }
 
-            return _pValue.GetFloat();
+            return _pValue.GetUnit();
         }
 
-        HRESULT Element::SetX(float _iX)
+        HRESULT Element::SetX(const Unit& _iX)
         {
-            auto _pValue = Value::CreateFloat(_iX);
+            auto _pValue = Value::CreateUnit(_iX);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
             return SetValue(Element::g_ControlInfoData.XProp, _pValue);
         }
 
-        float Element::GetY()
+        Unit Element::GetY()
         {
             auto _pValue = GetValue(Element::g_ControlInfoData.YProp, PropertyIndicies::PI_Specified, false);
             if (_pValue == nullptr)
             {
                 throw Exception();
-                return -1;
+                return Unit(-1);
             }
 
-            return _pValue.GetFloat();
+            return _pValue.GetUnit();
         }
 
-        HRESULT Element::SetY(float _iY)
+        HRESULT Element::SetY(const Unit& _iY)
         {
-            auto _pValue = Value::CreateFloat(_iY);
+            auto _pValue = Value::CreateUnit(_iY);
             if (_pValue == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -376,7 +378,7 @@ namespace YY
             auto _pValue = GetValue(Element::g_ControlInfoData.ExtentProp, PropertyIndicies::PI_Local, false);
             if (_pValue != nullptr)
             {
-                _Extent = _pValue.GetSize();
+                _Extent = _pValue.GetSize().Value;
             }
             return _Extent;
         }
@@ -491,7 +493,7 @@ namespace YY
         uString Element::GetClass()
         {
             auto _Value = GetValue(Element::g_ControlInfoData.ClassProp, PropertyIndicies::PI_Specified, false);
-            if (_Value.GetType() == ValueType::uString)
+            if (_Value.GetType() == ValueType::String)
             {
                 return _Value.GetString();
             }
@@ -535,7 +537,7 @@ namespace YY
 
         int32_t Element::GetDpi()
         {
-            return iLocDpi;
+            return LocUnitMetrics.uDpi;
         }
 
         bool Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
@@ -543,9 +545,9 @@ namespace YY
             return true;
         }
 
-	    void Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
-	    {
-            if (_eIndicies == PropertyIndicies::PI_Specified)
+        void Element::OnPropertyChanged(const PropertyInfo& _Prop, PropertyIndicies _eIndicies, const Value& _OldValue, const Value& _NewValue)
+        {
+            if (_eIndicies == PropertyIndicies::PI_Specified || _eIndicies == PropertyIndicies::PI_Computed)
             {
                 if (Element::g_ControlInfoData.ContentProp == _Prop
                     || Element::g_ControlInfoData.ContentAlignProp == _Prop
@@ -782,17 +784,17 @@ namespace YY
         }
 
         void Element::StartDefer(intptr_t* _pCooike)
-	    {
+        {
             *_pCooike = 0;
             
-		    if (auto _pDeferCycle = GetDeferObject())
-		    {
+            if (auto _pDeferCycle = GetDeferObject())
+            {
                 // 随便写一个值，看起来比较特殊就可以了
                 *_pCooike = 0x12345;
 
                 _pDeferCycle->AddRef();
                 ++_pDeferCycle->uEnter;
-		    }
+            }
         }
 
         uString Element::GetFontFamily()
@@ -809,14 +811,14 @@ namespace YY
             return SetValue(Element::g_ControlInfoData.FontFamilyProp, _FontFamilyValue);
         }
 
-        float Element::GetFontSize()
+        Unit Element::GetFontSize()
         {
-            return SpecFont.iSize;
+            return SpecFontSize;
         }
 
-        HRESULT Element::SetFontSize(float _iFontSize)
+        HRESULT Element::SetFontSize(const Unit& _iFontSize)
         {
-            auto _FontSizeValue = Value::CreateFloat(_iFontSize);
+            auto _FontSizeValue = Value::CreateUnit(_iFontSize);
             if (_FontSizeValue == nullptr)
                 return E_OUTOFMEMORY;
 
@@ -856,17 +858,17 @@ namespace YY
             return fSpecContentAlign;
         }
 
-	    void Element::EndDefer(intptr_t _Cookie)
-	    {
+        void Element::EndDefer(intptr_t _Cookie)
+        {
             auto _pDeferCycle = GetDeferObject(false);
             if (!_pDeferCycle)
                 return;
 
             if (_Cookie != 0x12345)
-		    {
+            {
                 throw Exception(_S("Cookie Error"));
-			    return;
-		    }
+                return;
+            }
 
             if (_pDeferCycle->uEnter == 1)
             {
@@ -1010,12 +1012,12 @@ namespace YY
             RenderNode.Bounds = _Bounds;
 
             Rect _PaintBounds = _Bounds;
-            if (SpecBorderThickness.Left != 0 || SpecBorderThickness.Top != 0 || SpecBorderThickness.Right != 0 || SpecBorderThickness.Bottom != 0)
+            if (CmpBorderThickness.Left != 0 || CmpBorderThickness.Top != 0 || CmpBorderThickness.Right != 0 || CmpBorderThickness.Bottom != 0)
             {
                 PaintBorder(
                     _pDrawContext,
                     GetBorderStyle(),
-                    ApplyFlowDirection(SpecBorderThickness),
+                    ApplyFlowDirection(CmpBorderThickness),
                     GetBorderColor(),
                     _PaintBounds);
             }
@@ -1026,16 +1028,16 @@ namespace YY
                 _PaintBounds);
 
             // 应用内边距
-            _PaintBounds.DeflateRect(ApplyFlowDirection(SpecPadding));
+            _PaintBounds.DeflateRect(ApplyFlowDirection(CmpPadding));
 
             // 绘制焦点框
             if (bSpecFocusVisible 
-                && (SpecFocusThickness.Left != 0 || SpecFocusThickness.Top != 0 || SpecFocusThickness.Right != 0 || SpecFocusThickness.Bottom != 0))
+                && (CmpFocusThickness.Left != 0 || CmpFocusThickness.Top != 0 || CmpFocusThickness.Right != 0 || CmpFocusThickness.Bottom != 0))
             {
                 PaintBorder(
                     _pDrawContext,
                     GetFocusBorderStyle(),
-                    ApplyFlowDirection(SpecFocusThickness),
+                    ApplyFlowDirection(CmpFocusThickness),
                     GetFocusBorderColor(),
                     _PaintBounds);
             }
@@ -1561,7 +1563,7 @@ namespace YY
         uString Element::GetContentStringAsDisplayed()
         {
             auto _ContentValue = GetValue(Element::g_ControlInfoData.ContentProp);
-            if (_ContentValue.GetType() != ValueType::uString)
+            if (_ContentValue.GetType() != ValueType::String)
             {
                 return uString();
             }
@@ -1674,7 +1676,7 @@ namespace YY
                     break;
 
                 auto _ContentValue = GetValue(Element::g_ControlInfoData.ContentProp);
-                if (_ContentValue.GetType() != ValueType::uString)
+                if (_ContentValue.GetType() != ValueType::String)
                     break;
 
                 pTextLayout = _pDrawContext->CreateTextLayout(_ContentValue.GetString(), SpecFont, _ConstraintSize, fSpecContentAlign);
@@ -2079,7 +2081,7 @@ namespace YY
             return _hrLast;
         }
 
-	    void Element::VoidPCNotifyTree(int p1, DeferCycle* p2)
+        void Element::VoidPCNotifyTree(int p1, DeferCycle* p2)
         {
             auto pr = p2->vecPropertyChanged.GetItemPtr(p1);
             if (!pr)
@@ -2253,7 +2255,7 @@ namespace YY
         }
 
         bool Element::GeneralHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
-	    {
+        {
             auto _pProp = _pHandleData->pProp;
             if (_pProp->pfnCustomPropertyHandle)
             {
@@ -2274,6 +2276,8 @@ namespace YY
                     return GetGeneralLocalValue((GetValueHandleData*)_pHandleData);
                 case PropertyIndicies::PI_Specified:
                     return GetGeneralSpecifiedValue((GetValueHandleData*)_pHandleData);
+                case PropertyIndicies::PI_Computed:
+                    return GetGeneralComputedValue((GetValueHandleData*)_pHandleData);
                 default:
                     abort();
                     return false;
@@ -2285,6 +2289,8 @@ namespace YY
                     return SetGeneralLocalValue((SetValueHandleData*)_pHandleData);
                 case PropertyIndicies::PI_Specified:
                     return SetGeneralSpecifiedValue((SetValueHandleData*)_pHandleData);
+                case PropertyIndicies::PI_Computed:
+                    return SetGeneralComputedValue((SetValueHandleData*)_pHandleData);
                 default:
                     abort();
                     return false;
@@ -2295,53 +2301,64 @@ namespace YY
                 break;
             }
 
-		    return false;
-	    }
+            return false;
+        }
 
-        Value Element::GetGeneralCacheValue(ValueType _eType, uint16_t _uOffsetToCache, uint8_t _uCacheBit, uint16_t _uOffsetToHasCache, uint8_t _uHasCacheBit)
+        Value Element::GetGeneralCacheValue(ValueType _eType, uint16_t _uOffsetToCache, uint8_t _uCacheBit)
         {
-            // 检测实际是否存在缓存，如果检测到没有缓存，那么直接返回
-            if (_uOffsetToHasCache)
-            {
-                const auto _uHasValue = *((byte_t*)this + _uOffsetToHasCache);
-                if ((_uHasValue & (1 << _uHasCacheBit)) == 0)
-                {
-                    return Value::CreateUnset();
-                }
-            }
-
             auto _pCache = (byte_t*)this + _uOffsetToCache;
 
             switch (_eType)
             {
             case ValueType::int32_t:
                 return Value::CreateInt32(*(int32_t*)_pCache);
-            case ValueType::float_t:
-                return Value::CreateFloat(*(float*)_pCache);
+            case ValueType::Unit:
+                if (_uCacheBit)
+                {
+                    return Value::CreateUnit(Unit(*(float*)_pCache));
+                }
+                else
+                {
+                    return Value::CreateUnit(*(Unit*)_pCache);
+                }
             case ValueType::boolean:
                 return Value::CreateBool((*(uint8_t*)_pCache) & (1 << _uCacheBit));
             case ValueType::Color:
                 return Value::CreateColor(*(Color*)_pCache);
             case ValueType::Point:
                 return Value::CreatePoint(*(Point*)_pCache);
-            case ValueType::Size:
-                return Value::CreateSize(*(Size*)_pCache);
-            case ValueType::Rect:
-                return Value::CreateRect(*(Rect*)_pCache);
+            case ValueType::UnitSize:
+                if (_uCacheBit)
+                {
+                    return Value::CreateSize(UnitSize(*(Size*)_pCache));
+                }
+                else
+                {
+                    return Value::CreateSize(*(UnitSize*)_pCache);
+                }
+            case ValueType::UnitRect:
+                if (_uCacheBit)
+                {
+                    return Value::CreateRect(UnitRect(*(Rect*)_pCache));
+                }
+                else
+                {
+                    return Value::CreateRect(*(UnitRect*)_pCache);
+                }
             case ValueType::Element:
                 return Value::CreateElementRef(*(Element**)_pCache);
             case ValueType::ElementList:
                 return Value::CreateElementList(*(ElementList*)_pCache);
             case ValueType::StyleSheet:
                 return Value::CreateStyleSheet(*(RefPtr<StyleSheet>*)_pCache);
-            case ValueType::uString:
+            case ValueType::String:
                 return Value::CreateString(*(uString*)_pCache);
             default:
                 assert(0);
                 return Value::CreateUnavailable();
             }
         }
-		
+        
         bool Element::GetGeneralLocalValue(GetValueHandleData* _pHandleData)
         {
             // Local 值不会刷新缓存，所以，如果配置了 Local Cache，那么不走通用 LocalPropValue
@@ -2351,9 +2368,7 @@ namespace YY
                 _pHandleData->Output.RetValue = GetGeneralCacheValue(
                     ValueType(_pProp->BindCacheInfo.eType),
                     _uOffsetToCache,
-                    _pProp->BindCacheInfo.LocalValueBit,
-                    _pProp->BindCacheInfo.OffsetToHasLocalCache,
-                    _pProp->BindCacheInfo.HasLocalValueCacheBit);
+                    _pProp->BindCacheInfo.LocalValueBit);
                 return true;
             }
 
@@ -2381,9 +2396,7 @@ namespace YY
                     _pHandleData->Output.RetValue = GetGeneralCacheValue(
                         ValueType(_pProp->BindCacheInfo.eType),
                         _uOffsetToCache,
-                        _pProp->BindCacheInfo.SpecifiedValueBit,
-                        _pProp->BindCacheInfo.OffsetToHasSpecifiedValueCache,
-                        _pProp->BindCacheInfo.HasSpecifiedValueCacheBit);
+                        _pProp->BindCacheInfo.SpecifiedValueBit);
                     return true;
                 }
             }
@@ -2443,7 +2456,44 @@ namespace YY
             return true;
         }
 
-        bool Element::SetGeneralCacheValue(ValueType _eType, uint16_t _uOffsetToCache, uint8_t _uCacheBit, uint16_t _uOffsetToHasCache, uint8_t _uHasCacheBit, Value _NewValue)
+        bool __YYAPI Element::GetGeneralComputedValue(GetValueHandleData* _pHandleData)
+        {
+            auto _pProp = _pHandleData->pProp;
+
+            if (_pHandleData->bUsingCache)
+            {
+                if (uint16_t _uOffsetToCache = _pProp->BindCacheInfo.OffsetToComputedValue)
+                {
+                    _pHandleData->Output.RetValue = GetGeneralCacheValue(
+                        ValueType(_pProp->BindCacheInfo.eType),
+                        _uOffsetToCache,
+                        _pProp->BindCacheInfo.ComputedValueBit);
+
+                    return true;
+                }
+            }
+            
+            auto _pNewValue = GetValue(*_pProp, PropertyIndicies::PI_Specified, false);
+            switch (_pNewValue.GetType())
+            {
+            case ValueType::Unit:
+                _pNewValue = Value::CreateUnit(Unit(_pNewValue.GetUnit().ApplyDimension(LocUnitMetrics)));
+                break;
+            case ValueType::UnitSize:
+                _pNewValue = Value::CreateSize(UnitSize(_pNewValue.GetSize().ApplyDimension(LocUnitMetrics)));
+                break;
+            case ValueType::UnitRect:
+                _pNewValue = Value::CreateRect(UnitRect(_pNewValue.GetRect().ApplyDimension(LocUnitMetrics)));
+                break;
+            default:
+                break;
+            }
+
+            _pHandleData->Output.RetValue = std::move(_pNewValue);
+            return true;
+        }
+
+        bool Element::SetGeneralCacheValue(ValueType _eType, uint16_t _uOffsetToCache, uint8_t _uCacheBit, Value _NewValue)
         {
             if (_uOffsetToCache == 0 || _NewValue == nullptr)
                 return false;
@@ -2451,53 +2501,13 @@ namespace YY
             auto _pCache = (byte_t*)this + _uOffsetToCache;
             if (_NewValue.GetType() == ValueType::Unset)
             {
-                if (_uOffsetToHasCache == 0)
-                {
-                    // 不应该设置 Unset
-                    abort();
-                    return true;
-                }
-
-                auto& _uHasCache = *((byte_t*)this + _uOffsetToHasCache);
-
-                _uHasCache &= ~(1 << _uHasCacheBit);
-
-                // 某些资源我们需要进行释放
-                switch (_eType)
-                {
-                case ValueType::Element:
-                    *(Element**)_pCache = nullptr;
-                    break;
-                case ValueType::ElementList:
-                    ((ElementList*)_pCache)->Clear();
-                    break;
-                case ValueType::StyleSheet:
-                {
-                    auto& _pOldStyleSheet = *(RefPtr<StyleSheet>*)_pCache;
-                    if (_pOldStyleSheet)
-                    {
-                        _pOldStyleSheet = nullptr;
-                    }
-                    break;
-                }
-                case ValueType::uString:
-                {
-                    auto& _szOldString = *(uString*)_pCache;
-                    _szOldString.Clear();
-                    break;
-                }
-                }
+                // 不应该设置 Unset
+                abort();
                 return true;
             }
             else if (_NewValue.GetType() == _eType)
             {
                 // 标记缓存已经被设置
-                if (_uOffsetToHasCache)
-                {
-                    auto& _uHasCache = *((byte_t*)this + _uOffsetToHasCache);
-                    _uHasCache |= (1 << _uHasCacheBit);
-                }
-
                 auto _pDataBuffer = _NewValue.GetRawBuffer();
 
                 switch (_eType)
@@ -2505,8 +2515,15 @@ namespace YY
                 case ValueType::int32_t:
                     *(int32_t*)_pCache = *(int32_t*)_pDataBuffer;
                     break;
-                case ValueType::float_t:
-                    *(float*)_pCache = *(float*)_pDataBuffer;
+                case ValueType::Unit:
+                    if (_uCacheBit)
+                    {
+                        *(float*)_pCache = (*(Unit*)_pDataBuffer).ApplyDimension(LocUnitMetrics);
+                    }
+                    else
+                    {
+                        *(Unit*)_pCache = *(Unit*)_pDataBuffer;
+                    }
                     break;
                 case ValueType::boolean:
                     if (*(bool*)_pDataBuffer)
@@ -2524,11 +2541,25 @@ namespace YY
                 case ValueType::Point:
                     *(Point*)_pCache = *(Point*)_pDataBuffer;
                     break;
-                case ValueType::Size:
-                    *(Size*)_pCache = *(Size*)_pDataBuffer;
+                case ValueType::UnitSize:
+                    if (_uCacheBit)
+                    {
+                        *(Size*)_pCache = (*(UnitSize*)_pDataBuffer).ApplyDimension(LocUnitMetrics);
+                    }
+                    else
+                    {
+                        *(UnitSize*)_pCache = *(UnitSize*)_pDataBuffer;
+                    }
                     break;
-                case ValueType::Rect:
-                    *(Rect*)_pCache = *(Rect*)_pDataBuffer;
+                case ValueType::UnitRect:
+                    if (_uCacheBit)
+                    {
+                        *(Rect*)_pCache = (*(UnitRect*)_pDataBuffer).ApplyDimension(LocUnitMetrics);
+                    }
+                    else
+                    {
+                        *(UnitRect*)_pCache = *(UnitRect*)_pDataBuffer;
+                    }
                     break;
                 case ValueType::Element:
                     *(Element**)_pCache = *(Element**)_pDataBuffer;
@@ -2547,7 +2578,7 @@ namespace YY
                     }
                     break;
                 }
-                case ValueType::uString:
+                case ValueType::String:
                 {
                     auto& _szOldString = *(uString*)_pCache;
                     auto& _szNewString = *(uString*)_pDataBuffer;
@@ -2575,8 +2606,6 @@ namespace YY
                     ValueType(_pProp->BindCacheInfo.eType),
                     _uOffsetToCache,
                     _pProp->BindCacheInfo.LocalValueBit,
-                    _pProp->BindCacheInfo.OffsetToHasLocalCache,
-                    _pProp->BindCacheInfo.HasLocalValueCacheBit,
                     _pHandleData->InputNewValue);
                 return true;
             }
@@ -2624,8 +2653,22 @@ namespace YY
                     ValueType(_pProp->BindCacheInfo.eType),
                     _uOffsetToCache,
                     _pProp->BindCacheInfo.SpecifiedValueBit,
-                    _pProp->BindCacheInfo.OffsetToHasSpecifiedValueCache,
-                    _pProp->BindCacheInfo.HasSpecifiedValueCacheBit,
+                    _pHandleData->InputNewValue);
+                return true;
+            }
+
+            return false;
+        }
+
+        bool __YYAPI Element::SetGeneralComputedValue(SetValueHandleData* _pHandleData)
+        {
+            auto _pProp = _pHandleData->pProp;
+            if (uint16_t _uOffsetToCache = _pProp->BindCacheInfo.OffsetToComputedValue)
+            {
+                SetGeneralCacheValue(
+                    ValueType(_pProp->BindCacheInfo.eType),
+                    _uOffsetToCache,
+                    _pProp->BindCacheInfo.ComputedValueBit,
                     _pHandleData->InputNewValue);
                 return true;
             }
@@ -2641,20 +2684,6 @@ namespace YY
                 return false;
 
             auto _pInfo = (FastSpecValueCompareHandleData*)_pHandleData;
-
-            if (auto _uOffsetToHasCache = _pProp->BindCacheInfo.OffsetToHasSpecifiedValueCache)
-            {
-                auto _uHasCacheBit = _pProp->BindCacheInfo.HasSpecifiedValueCacheBit;
-
-                const auto _bHasValue1 = ((*((byte_t*)this + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
-                if (!_bHasValue1)
-                    return false;
-
-                const auto _bHasValue2 = ((*((byte_t*)_pInfo->pOther + _uOffsetToHasCache)) & (1 << _uHasCacheBit)) != 0;
-                if (!_bHasValue2)
-                    return false;
-            }
-
             auto _pRawBuffer1 = (byte_t*)this + _uOffsetToCache;
             auto _pRawBuffer2 = (byte_t*)_pInfo->pOther + _uOffsetToCache;
 
@@ -2663,8 +2692,8 @@ namespace YY
             case ValueType::int32_t:
                 _pInfo->Output.iResult = *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
                 break;
-            case ValueType::float_t:
-                _pInfo->Output.iResult = *(float*)_pRawBuffer1 == *(float*)_pRawBuffer2;
+            case ValueType::Unit:
+                _pInfo->Output.iResult = *(Unit*)_pRawBuffer1 == *(Unit*)_pRawBuffer2;
                 break;
             case ValueType::boolean:
             {
@@ -2680,11 +2709,11 @@ namespace YY
             case ValueType::Point:
                 _pInfo->Output.iResult = (*(Point*)_pRawBuffer1) == (*(Point*)_pRawBuffer2);
                 break;
-            case ValueType::Size:
-                _pInfo->Output.iResult = (*(Size*)_pRawBuffer1) == (*(Size*)_pRawBuffer2);
+            case ValueType::UnitSize:
+                _pInfo->Output.iResult = (*(UnitSize*)_pRawBuffer1) == (*(UnitSize*)_pRawBuffer2);
                 break;
-            case ValueType::Rect:
-                _pInfo->Output.iResult = *(Rect*)_pRawBuffer1 == *(Rect*)_pRawBuffer2;
+            case ValueType::UnitRect:
+                _pInfo->Output.iResult = *(UnitRect*)_pRawBuffer1 == *(UnitRect*)_pRawBuffer2;
                 break;
             default:
                 return false;
@@ -2693,8 +2722,8 @@ namespace YY
             return true;
         }
 
-	    bool Element::OnParentPropChanged(OnPropertyChangedHandleData* _pHandleData)
-	    {
+        bool Element::OnParentPropChanged(OnPropertyChangedHandleData* _pHandleData)
+        {
             if (_pHandleData->eIndicies != PropertyIndicies::PI_Local)
                 return false;
 
@@ -2879,9 +2908,8 @@ namespace YY
         {
             switch (_eType)
             {
-            case CustomPropertyHandleType::OnPropertyChanged:
-                return OnDpiPropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetDependencies:
+                return GetDpiPropDependencies((GetDependenciesHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
             case CustomPropertyHandleType::SetValue:
                 break;
@@ -2893,29 +2921,25 @@ namespace YY
 
         bool Element::OnDpiPropChanged(OnPropertyChangedHandleData* _pHandleData)
         {
+            // todo
+            return false;
+        }
+
+        bool __YYAPI Element::GetDpiPropDependencies(GetDependenciesHandleData* _pHandleData)
+        {
             auto _pControlInfo = GetControlInfo();
 
             const PropertyInfo* _pProp;
             for (uint32_t _uIndex = 0u; _pProp = _pControlInfo->EnumPropertyInfo(_uIndex); ++_uIndex)
             {
-                if ((_pProp->fFlags & PF_UpdateDpi) == 0)
+                if ((_pProp->fFlags & PF_HasComputed) == 0)
                     continue;
 
-                if (pWindow && GetParent() == nullptr)
+                const auto _eType = _pProp->ppValidValues[0];
+                if (_eType == ValueType::Unit || _eType == ValueType::UnitSize || _eType == ValueType::UnitRect)
                 {
-                    if (_pProp == &Element::g_ControlInfoData.WidthProp || _pProp == &Element::g_ControlInfoData.HeightProp)
-                        continue;
+                    AddDependency(this, *_pProp, PropertyIndicies::PI_Computed, _pHandleData->pdr, _pHandleData->pDeferCycle);
                 }
-
-                auto _Value = GetValue(*_pProp, PropertyIndicies::PI_Local);
-                if (!_Value.HasValue())
-                    continue;
-
-                auto _NewValue = _Value.UpdateDpi(GetDpi());
-                if (_NewValue == nullptr || _NewValue.IsSame(_Value))
-                    continue;
-
-                SetValue(*_pProp, _NewValue);
             }
 
             return true;
@@ -2925,7 +2949,7 @@ namespace YY
         {
             if ((pLocParent == nullptr || iSpecLayoutPos == LP_Absolute))
             {
-                Size _ConstraintSize = { GetWidth(), GetHeight() };
+                Size _ConstraintSize = {CmpWidth, CmpHeight};
 
                 if (_ConstraintSize.Width == -1)
                     _ConstraintSize.Width = (std::numeric_limits<int16_t>::max)();
@@ -2969,11 +2993,11 @@ namespace YY
                 {
                     auto Extent = GetExtent();
 
-                    Extent.Width -= SpecBorderThickness.Left + SpecBorderThickness.Right;
-                    Extent.Height -= SpecBorderThickness.Top + SpecBorderThickness.Bottom;
+                    Extent.Width -= CmpBorderThickness.Left + CmpBorderThickness.Right;
+                    Extent.Height -= CmpBorderThickness.Top + CmpBorderThickness.Bottom;
 
-                    Extent.Width -= SpecPadding.Left + SpecPadding.Right;
-                    Extent.Height -= SpecPadding.Top + SpecPadding.Bottom;
+                    Extent.Width -= CmpPadding.Left + CmpPadding.Right;
+                    Extent.Height -= CmpPadding.Top + CmpPadding.Bottom;
 
                     if (Extent.Width < 0)
                         Extent.Width = 0;
@@ -3021,7 +3045,7 @@ namespace YY
                 if (_bChangedConst)
                 {
                     auto pSizeOld = Value::CreateSize(LocLastDesiredSizeConstraint);
-                    auto pSizeNew = Value::CreateSize(_ConstraintSize);
+                    auto pSizeNew = Value::CreateSize(UnitSize(_ConstraintSize));
 
                     if (pSizeNew != nullptr)
                     {
@@ -3033,28 +3057,28 @@ namespace YY
                     }
                 }
 
-                auto nWidth = GetWidth();
+                auto nWidth = CmpWidth;
 
                 if (nWidth > _ConstraintSize.Width)
                     nWidth = _ConstraintSize.Width;
 
-                auto nHeight = GetHeight();
+                auto nHeight = CmpHeight;
                 if (nHeight > _ConstraintSize.Height)
                     nHeight = _ConstraintSize.Height;
 
                 sizeDesired.Width = nWidth == -1 ? _ConstraintSize.Width : nWidth;
                 sizeDesired.Height = nHeight == -1 ? _ConstraintSize.Height : nHeight;
 
-                auto BorderX = SpecBorderThickness.Left + SpecBorderThickness.Right;
-                auto BorderY = SpecBorderThickness.Top + SpecBorderThickness.Bottom;
+                auto BorderX = CmpBorderThickness.Left + CmpBorderThickness.Right;
+                auto BorderY = CmpBorderThickness.Top + CmpBorderThickness.Bottom;
 
-                BorderX += SpecPadding.Left + SpecPadding.Right;
-                BorderY += SpecPadding.Top + SpecPadding.Bottom;
+                BorderX += CmpPadding.Left + CmpPadding.Right;
+                BorderY += CmpPadding.Top + CmpPadding.Bottom;
 
                 if (bSpecFocusVisible)
                 {
-                    BorderX += SpecFocusThickness.Left + SpecFocusThickness.Right;
-                    BorderY += SpecFocusThickness.Top + SpecFocusThickness.Bottom;
+                    BorderX += CmpFocusThickness.Left + CmpFocusThickness.Right;
+                    BorderY += CmpFocusThickness.Top + CmpFocusThickness.Bottom;
                 }
 
                 Size _ConstraintContentSize;
@@ -3122,14 +3146,14 @@ namespace YY
                         sizeDesired.Height = _ContentSize.Height + BorderY;
                 }
 
-                if (sizeDesired.Height < SpecMinSize.Width)
+                if (sizeDesired.Height < CmpMinSize.Width)
                 {
-                    sizeDesired.Width = (std::min)(_ConstraintSize.Width, SpecMinSize.Width);
+                    sizeDesired.Width = (std::min)(_ConstraintSize.Width, CmpMinSize.Width);
                 }
 
-                if (sizeDesired.Height < SpecMinSize.Height)
+                if (sizeDesired.Height < CmpMinSize.Height)
                 {
-                    sizeDesired.Height = (std::min)(_ConstraintSize.Height, SpecMinSize.Height);
+                    sizeDesired.Height = (std::min)(_ConstraintSize.Height, CmpMinSize.Height);
                 }
 
                 auto pSizeOld = Value::CreateSize(LocDesiredSize);
@@ -3213,7 +3237,7 @@ namespace YY
             }
             else
             {
-                _Location = Value::CreatePoint(GetX(), GetY());
+                _Location = Value::CreatePoint(CmpX, CmpY);
             }
 
             return true;
@@ -3227,6 +3251,8 @@ namespace YY
                 return OnMouseFocusedPropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
                 return GetMouseFocusedPropValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::SetValue:
+                return SetMouseFocusedPropValue((SetValueHandleData*)_pHandleData);
             }
             return false;
         }
@@ -3292,8 +3318,15 @@ namespace YY
 
             if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                // 使用默认逻辑即可
-                return false;
+                if (!bHasLocMouseFocused)
+                {
+                    _RetValue = Value::CreateUnset();
+                }
+                else
+                {
+                    _RetValue = Value::CreateBool(bLocMouseFocused);
+                }
+                return true;
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
@@ -3304,6 +3337,26 @@ namespace YY
                 return false;
             }
 
+            return false;
+        }
+
+        bool __YYAPI Element::SetMouseFocusedPropValue(SetValueHandleData* _pHandleData)
+        {
+            auto& _RetValue = _pHandleData->InputNewValue;
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                if (_RetValue.GetType() == ValueType::boolean)
+                {
+                    bHasLocMouseFocused = true;
+                    bLocMouseFocused = _RetValue.GetBool();
+                }
+                else
+                {
+                    bHasLocMouseFocused = false;
+                    bLocMouseFocused = false;
+                }
+                return true;
+            }
             return false;
         }
 
@@ -3341,6 +3394,8 @@ namespace YY
                 return OnKeyboardFocusedPropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
                 return GetKeyboardFocusedPropValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::SetValue:
+                return SetKeyboardFocusedPropValue((SetValueHandleData*)_pHandleData);
             }
             return false;
         }
@@ -3407,7 +3462,15 @@ namespace YY
 
             if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                return false;
+                if (!bHasLocKeyboardFocused)
+                {
+                    _RetValue = Value::CreateUnset();
+                }
+                else
+                {
+                    _RetValue = Value::CreateBool(bLocKeyboardFocused);
+                }
+                return true;
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
@@ -3418,6 +3481,26 @@ namespace YY
                 return false;
             }
 
+            return false;
+        }
+
+        bool __YYAPI Element::SetKeyboardFocusedPropValue(SetValueHandleData* _pHandleData)
+        {
+            auto& _RetValue = _pHandleData->InputNewValue;
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                if (_RetValue.GetType() == ValueType::boolean)
+                {
+                    bHasLocKeyboardFocused = true;
+                    bLocKeyboardFocused = _RetValue.GetBool();
+                }
+                else
+                {
+                    bHasLocKeyboardFocused = false;
+                    bLocKeyboardFocused = false;
+                }
+                return true;
+            }
             return false;
         }
 
@@ -3451,6 +3534,8 @@ namespace YY
                 return OnFocusedPropChanged((OnPropertyChangedHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
                 return GetFocusedPropValue((GetValueHandleData*)_pHandleData);
+            case CustomPropertyHandleType::SetValue:
+                return SetFocusedPropValue((SetValueHandleData*)_pHandleData);
             }
             return false;
         }
@@ -3515,8 +3600,15 @@ namespace YY
 
             if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
             {
-                // 使用默认逻辑即可
-                return false;
+                if (!bHasLocFocused)
+                {
+                    _RetValue = Value::CreateUnset();
+                }
+                else
+                {
+                    _RetValue = Value::CreateBool(bLocFocused);
+                }
+                return true;
             }
             else if (_pHandleData->eIndicies == PropertyIndicies::PI_Specified)
             {
@@ -3527,6 +3619,26 @@ namespace YY
                 return false;
             }
 
+            return false;
+        }
+
+        bool __YYAPI Element::SetFocusedPropValue(SetValueHandleData* _pHandleData)
+        {
+            auto& _RetValue = _pHandleData->InputNewValue;
+            if (_pHandleData->eIndicies == PropertyIndicies::PI_Local)
+            {
+                if (_RetValue.GetType() == ValueType::boolean)
+                {
+                    bHasLocFocused = true;
+                    bLocFocused = _RetValue.GetBool();
+                }
+                else
+                {
+                    bHasLocFocused = false;
+                    bLocFocused = false;
+                }
+                return true;
+            }
             return false;
         }
 
@@ -3754,16 +3866,16 @@ namespace YY
 
             intptr_t _Cooike = 0;
             pWindow = _pNewWindow;
-            if (_pNewWindow->IsInitialized() && iLocDpi != _pNewWindow->GetDpi())
+            if (_pNewWindow->IsInitialized() && LocUnitMetrics.uDpi != _pNewWindow->GetDpi())
             {
                 StartDefer(&_Cooike);
                 PreSourceChange(
                     Element::g_ControlInfoData.DpiProp,
                     PropertyIndicies::PI_Local,
-                    Value::CreateInt32(iLocDpi),
+                    Value::CreateInt32(LocUnitMetrics.uDpi),
                     Value::CreateInt32(_pNewWindow->GetDpi()));
 
-                iLocDpi = _pNewWindow->GetDpi();
+                LocUnitMetrics.uDpi = _pNewWindow->GetDpi();
 
                 PostSourceChange();
             }
