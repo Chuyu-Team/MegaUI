@@ -37,6 +37,7 @@ namespace YY
         
 #define _MEGA_UI_VALUE_TPYE_MAP(_APPLY)                      \
         _APPLY(int32_t,     int32_t,             int32Value) \
+        _APPLY(float_t,     float,               floatValue) \
         _APPLY(Unit,        Unit,                UnitValue)  \
         _APPLY(boolean,     bool,                boolValue)  \
         _APPLY(String,      uString,             szValue  )  \
@@ -217,6 +218,12 @@ namespace YY
             }
             
             template<int32_t iValue>
+            static Value __YYAPI CreateFloat()
+            {
+                _RETUNR_CONST_VALUE(ValueType::float_t, (float)iValue);
+            }
+
+            template<int32_t iValue>
             static Value __YYAPI CreateUnit()
             {
                 _RETUNR_CONST_VALUE(ValueType::Unit, {iValue});
@@ -264,6 +271,8 @@ namespace YY
 
             static Value __YYAPI CreateInt32(_In_ int32_t _iValue);
             
+            static Value __YYAPI CreateFloat(_In_ float _iValue);
+
             static Value __YYAPI CreateUnit(_In_ const Unit& _iValue);
          
             static Value __YYAPI CreateBool(_In_ bool _bValue);
@@ -293,6 +302,8 @@ namespace YY
             static Value __YYAPI CreateStyleSheet(_In_opt_ StyleSheet* _pStyleSheet);
 
             int32_t __YYAPI GetInt32() const;
+            
+            float __YYAPI GetFloat() const;
 
             Unit& __YYAPI GetUnit() const;
 

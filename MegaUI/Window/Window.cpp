@@ -5,6 +5,7 @@
 #include <MegaUI/Core/ControlInfoImp.h>
 #include <Base/Memory/RefPtr.h>
 #include <Media/Graphics/DrawAsyncCommandContext.h>
+#include <MegaUI/Core/TextScaleManger.h>
 
 #ifdef _WIN32
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
@@ -20,7 +21,7 @@ namespace YY
 
         Element* Window::g_pLastKeyboardFocusedElement = nullptr;
 
-        Window::Window(int32_t _DefaultDpi)
+        Window::Window()
             : 
 #ifdef _WIN32
             hWnd(nullptr)
@@ -33,7 +34,6 @@ namespace YY
             , bCapture(false)
             , pLastMouseFocusedElement(nullptr)
             , pLastPressedElement(nullptr)
-            , iDpi(_DefaultDpi ? _DefaultDpi : 96)
         {
         }
 
@@ -84,17 +84,17 @@ namespace YY
                     return E_UNEXPECTED;
             }
 
-            int32_t _iWidth = CW_USEDEFAULT;
-            int32_t _iHeight = CW_USEDEFAULT;
+            int32_t _iWidth = 0;
+            int32_t _iHeight = 0;
             uString _szTitle;
 
             if (pHost)
             {
-                _iWidth = (int32_t)pHost->GetWidth().ApplyDimension(pHost->LocUnitMetrics);
+                _iWidth = (int32_t)pHost->GetWidth().Value;
                 if (_iWidth < 0)
                     _iWidth = CW_USEDEFAULT;
 
-                _iHeight = (int32_t)pHost->GetHeight().ApplyDimension(pHost->LocUnitMetrics);
+                _iHeight = (int32_t)pHost->GetHeight().Value;
                 if (_iHeight < 0)
                     _iHeight = CW_USEDEFAULT;
 
@@ -121,7 +121,7 @@ namespace YY
                 L"MegaUI",
                 _szTitle,
                 _fStyle | WS_CLIPCHILDREN,
-                _dX, _dY, _iWidth, _iHeight,
+                _dX, _dY, _iWidth < 0 ? _iWidth : 0, _iHeight < 0 ? _iHeight : 0,
                 _hWndParent,
                 0,
                 (HINSTANCE)&__ImageBase,
@@ -130,6 +130,58 @@ namespace YY
             if (!hWnd)
                 return E_UNEXPECTED;
             
+            pTextScaleFactorChangedCookie = AddTextScaleFactorChanged(std::bind(&Window::OnTextScaleFactorChanged, this, std::placeholders::_1));
+            if (pHost)
+            {
+                intptr_t _Cooike;
+                pHost->StartDefer(&_Cooike);
+
+                OnDpiChanged(GetDpiForWindow(hWnd), nullptr);
+                OnTextScaleFactorChanged(GetSystemTextScale());
+
+                RECT _oClientRect = {};
+                GetClientRect(hWnd, &_oClientRect);
+                SIZE _oOldClientSize = {_oClientRect.right - _oClientRect.left, _oClientRect.bottom - _oClientRect.top};
+
+                if (_iWidth >= 0 || _iHeight >= 0)
+                {
+                    RECT _oWindowRect = {};
+                    GetWindowRect(hWnd, &_oWindowRect);
+                    if (_iWidth >= 0)
+                    {
+                        _iWidth = pHost->GetWidth().ApplyDimension(oUnitMetrics);
+                        _iWidth += _oWindowRect.right - _oWindowRect.left - _oOldClientSize.cx;
+                    }
+                    else
+                    {
+                        _iWidth = _oOldClientSize.cx;
+                    }
+
+                    if (_iHeight >= 0)
+                    {
+                        _iHeight = pHost->GetHeight().ApplyDimension(oUnitMetrics);
+                        _iHeight += (_oWindowRect.bottom - _oWindowRect.top) - _oOldClientSize.cy;
+                    }
+                    else
+                    {
+                        _iHeight = _oOldClientSize.cy;
+                    }
+
+                    if (_oOldClientSize.cx != _iWidth || _oOldClientSize.cy != _iHeight)
+                    {
+                        SetWindowPos(hWnd, nullptr, 0, 0, _iWidth, _iHeight, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+                    }
+                    else
+                    {
+                        OnSize(_oOldClientSize.cx, _oOldClientSize.cy);
+                    }
+                }
+                else
+                {
+                    OnSize(_oOldClientSize.cx, _oOldClientSize.cy);
+                }
+                pHost->EndDefer(_Cooike);
+            }
             //SetWindowLongPtrW(hWnd, GWLP_USERDATA, (LONG_PTR)this);
             //SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)Window::WndProc);
 
@@ -153,16 +205,28 @@ namespace YY
                 pHost->OnUnHosted(this);
                 pHost = nullptr;
             }
+            
+            if (IsInitialized() == false)
+            {
+                oUnitMetrics = _pHost->LocUnitMetrics;
+            }
 
             pHost = _pHost;
-            pHost->OnHosted(this);
-            /*intptr_t _Cooike;
+
+            intptr_t _Cooike;
             pHost->StartDefer(&_Cooike);
+            pHost->OnHosted(this);
+            if (IsInitialized())
+            {
+                auto _oWidth = pHost->GetWidth();
+                auto _oHeight = pHost->GetHeight();
+                if (_oWidth.Value >= 0 && _oHeight.Value >= 0)
+                {
+                    SetWindowPos(hWnd, nullptr, 0, 0, (int32_t)_oWidth.ApplyDimension(oUnitMetrics), (int32_t)_oHeight.ApplyDimension(oUnitMetrics), SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+                }
+            }
 
-            pHost->SetWidth(LastRenderSize.width);
-            pHost->SetHeight(LastRenderSize.height);
-
-            pHost->EndDefer(_Cooike);*/
+            pHost->EndDefer(_Cooike);
 
             return S_OK;
         }
@@ -188,6 +252,12 @@ namespace YY
 #ifdef _WIN32
         void Window::DestroyWindow()
         {
+            if (pTextScaleFactorChangedCookie)
+            {
+                RemoveTextScaleFactorChanged(pTextScaleFactorChangedCookie);
+                pTextScaleFactorChangedCookie = nullptr;
+            }
+
             if (hWnd)
                 ::PostMessageW(hWnd, AsyncDestroyMsg(), 0, 0);
         }
@@ -398,7 +468,12 @@ namespace YY
 
         int32_t Window::GetDpi() const
         {
-            return iDpi;
+            return oUnitMetrics.uDpi;
+        }
+
+        float __YYAPI Window::GetTextScale() const noexcept
+        {
+            return oUnitMetrics.nTextScale;
         }
 
 #ifdef _WIN32
@@ -597,6 +672,7 @@ namespace YY
             Window* _pNativeWindow = nullptr;
             if (_uMsg == WM_NCCREATE)
             {
+                EnableNonClientDpiScaling(_hWnd);
                 auto _pInfo = (CREATESTRUCTW*)_lParam;
                 if (_pInfo && _pInfo->lpCreateParams)
                 {
@@ -604,7 +680,6 @@ namespace YY
                     _pNativeWindow->hWnd = _hWnd;
                     SetWindowLongPtrW(_hWnd, GWLP_USERDATA, (LONG_PTR)_pNativeWindow);
                 }
-                EnableNonClientDpiScaling(_hWnd);
             }
             else
             {
@@ -746,39 +821,7 @@ namespace YY
 #ifdef _WIN32
         bool Window::OnCreate()
         {
-            //Rect Client2;
-            //::GetWindowRect(_hWnd, &Client2);
             fUIState = LOWORD(SendMessageW(hWnd, WM_QUERYUISTATE, 0, 0));
-
-            RECT Client;
-            ::GetClientRect(hWnd, &Client);
-            //intptr_t _Cooike;
-            //_pNativeWindow->StartDefer(&_Cooike);
-            //_pNativeWindow->SetX(_pInfo->x);
-            //_pNativeWindow->SetY(_pInfo->y);
-            intptr_t _Cooike = 0;
-            if (pHost)
-                pHost->StartDefer(&_Cooike);
-
-            OnSize(Client.right - Client.left, Client.bottom - Client.top);
-
-            const auto _iNewDpi = GetDpiForWindow(hWnd);
-            const auto _iOldDpi = GetDpi();
-            if (_iNewDpi != _iOldDpi)
-            {
-                RECT Client2;
-                ::GetWindowRect(hWnd, &Client2);
-                //Client2.Left = UpdatePixel(Client2.Left, _iOldDpi, _iNewDpi);
-                //Client2.Top = UpdatePixel(Client2.Top, _iOldDpi, _iNewDpi);
-                Client2.right = Client2.left + (int32_t)UpdatePixel(float(Client2.right - Client2.left), _iOldDpi, _iNewDpi);
-                Client2.bottom = Client2.top + (int32_t)UpdatePixel(float(Client2.bottom - Client2.top), _iOldDpi, _iNewDpi);
-                MoveWindow(hWnd, Client2.left, Client2.top, Client2.right, Client2.bottom, TRUE);
-                OnDpiChanged(_iNewDpi, nullptr);
-            }
-
-            if (_Cooike && pHost)
-                pHost->EndDefer(_Cooike);
-
             return true;
         }
 #endif
@@ -945,40 +988,15 @@ namespace YY
 
         void Window::OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect)
         {
-            if (_iNewDPI == 0 || _iNewDPI == iDpi)
+            if (_iNewDPI == 0 || _iNewDPI == oUnitMetrics.uDpi)
                 return;
-            iDpi = _iNewDPI;
 
             //if ((pHost == nullptr || pHost->GetHighDpi()) && _pNewRect)
             //{
             //    MoveWindow(hWnd, _pNewRect->Left, _pNewRect->Top, _pNewRect->Right, _pNewRect->Bottom, TRUE);
             //}
 
-            if (!pHost)
-            {
-                return;
-            }
-
-            intptr_t _Cooike = 0;
-            pHost->StartDefer(&_Cooike);
-            
-            /*if (_pNewRect)
-            {
-                OnSize(_pNewRect->GetWidth(), _pNewRect->GetHeight());
-            }*/
-
-            auto _OldValue = Value::CreateInt32(pHost->GetDpi());
-            auto _NewValue = Value::CreateInt32(_iNewDPI);
-
-            if (pHost->LocUnitMetrics.uDpi != _iNewDPI)
-            {
-                pHost->PreSourceChange(Element::g_ControlInfoData.DpiProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
-                pHost->LocUnitMetrics.uDpi = _iNewDPI;
-                pHost->PostSourceChange();
-            }
-
-            UpdateDpi(pHost, _OldValue, _NewValue);
-            pHost->EndDefer(_Cooike);
+            UpdateDpi(pHost, _iNewDPI);
         }
         
         HRESULT Window::UpdateDpi(Element* _pElement, Value _OldValue, const Value& _NewValue)
@@ -1005,6 +1023,91 @@ namespace YY
                     return _hr;
             }
 
+            return S_OK;
+        }
+
+        HRESULT __YYAPI Window::UpdateDpi(Element* _pElement, int32_t _iNewDPI)
+        {
+            oUnitMetrics.uDpi = _iNewDPI;
+
+            if (!pHost)
+            {
+                return S_OK;
+            }
+
+            intptr_t _Cooike = 0;
+            pHost->StartDefer(&_Cooike);
+
+            auto _OldValue = Value::CreateInt32(pHost->GetDpi());
+            auto _NewValue = Value::CreateInt32(_iNewDPI);
+
+            if (pHost->LocUnitMetrics.uDpi != _iNewDPI)
+            {
+                pHost->PreSourceChange(Element::g_ControlInfoData.DpiProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
+                pHost->LocUnitMetrics.uDpi = _iNewDPI;
+                pHost->PostSourceChange();
+            }
+
+            UpdateDpi(pHost, _OldValue, _NewValue);
+            pHost->EndDefer(_Cooike);
+            return S_OK;
+        }
+
+        void __YYAPI Window::OnTextScaleFactorChanged(float _nTextScale)
+        {
+            if (oUnitMetrics.nTextScale == _nTextScale || _nTextScale == 0)
+                return;
+
+            UpdateTextScaleFactor(pHost, _nTextScale);
+        }
+
+        HRESULT __YYAPI Window::UpdateTextScaleFactor(Element* _pElement, Value _OldValue, const Value& _NewValue)
+        {
+            const auto _nNewTextScale = _NewValue.GetFloat();
+            for (auto pChild : _pElement->GetChildren())
+            {
+                const auto _nOldTextScale = pChild->GetTextScale();
+                if (_nNewTextScale != _nOldTextScale)
+                {
+                    if (_nOldTextScale != _OldValue.GetFloat())
+                    {
+                        _OldValue = Value::CreateFloat(_nOldTextScale);
+                        if (_OldValue == nullptr)
+                            return E_OUTOFMEMORY;
+                    }
+                    pChild->PreSourceChange(Element::g_ControlInfoData.TextScaleProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
+                    pChild->LocUnitMetrics.nTextScale = _nNewTextScale;
+                    pChild->PostSourceChange();
+                }
+
+                auto _hr = UpdateTextScaleFactor(pChild, _OldValue, _NewValue);
+                if (FAILED(_hr))
+                    return _hr;
+            }
+
+            return S_OK;
+        }
+
+        HRESULT __YYAPI Window::UpdateTextScaleFactor(Element* _pElement, float _nTextScale)
+        {
+            oUnitMetrics.nTextScale = _nTextScale;
+            if (!pHost)
+                return S_OK;
+
+            intptr_t _Cooike = 0;
+            pHost->StartDefer(&_Cooike);
+            auto _OldValue = Value::CreateFloat(pHost->GetTextScale());
+            auto _NewValue = Value::CreateFloat(_nTextScale);
+
+            if (pHost->LocUnitMetrics.nTextScale != _nTextScale)
+            {
+                pHost->PreSourceChange(Element::g_ControlInfoData.TextScaleProp, PropertyIndicies::PI_Local, _OldValue, _NewValue);
+                pHost->LocUnitMetrics.nTextScale = _nTextScale;
+                pHost->PostSourceChange();
+            }
+
+            UpdateTextScaleFactor(pHost, _OldValue, _NewValue);
+            pHost->EndDefer(_Cooike);
             return S_OK;
         }
         

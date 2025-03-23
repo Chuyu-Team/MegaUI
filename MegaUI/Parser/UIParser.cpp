@@ -694,10 +694,25 @@ namespace YY
                     _cchValue -= 2;
                     _pValue->Type1 = UnitType::DevicePixel;
                 }
+                else if (CharUpperAsASCII(_szValue[_cchValue - 3]) == 'D' && CharUpperAsASCII(_szValue[_cchValue - 2]) == 'I' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'P')
+                {
+                    _cchValue -= 3;
+                    _pValue->Type1 = UnitType::DevicePixel;
+                }
+                else if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'S' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'P')
+                {
+                    _cchValue -= 2;
+                    _pValue->Type1 = UnitType::ScalePixel;
+                }
                 else if (CharUpperAsASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'T')
                 {
                     _cchValue -= 2;
                     _pValue->Type1 = UnitType::FontPoint;
+                }
+                else if (CharUpperAsASCII(_szValue[_cchValue - 3]) == 'S' && CharUpperAsASCII(_szValue[_cchValue - 2]) == 'P' && CharUpperAsASCII(_szValue[_cchValue - 1]) == 'T')
+                {
+                    _cchValue -= 3;
+                    _pValue->Type1 = UnitType::ScaleFontPoint;
                 }
             }
 
@@ -1347,7 +1362,7 @@ namespace YY
                     }
                     auto _pClass = *_ppClass;
 
-                    _hr = _pClass->CreateInstance(_pContext->iDPI, _pTopLevel, _pCooike, &_pCurrentElement);
+                    _hr = _pClass->CreateInstance(_pContext->oUnitMetrics, _pTopLevel, _pCooike, &_pCurrentElement);
                     if (FAILED(_hr))
                         break;
                     _pCooike = nullptr;

@@ -176,6 +176,8 @@
     <ClInclude Include="..\Include\Base\Containers\ConstructorPolicy.h" />
     <ClInclude Include="..\Include\Base\Containers\HashSet.h" />
     <ClInclude Include="..\Include\Base\Containers\Optional.h" />
+    <ClInclude Include="..\Include\Base\Containers\DoublyLinkedList.h" />
+    <ClInclude Include="..\Include\Base\Containers\SingleLinkedList.h" />
     <ClInclude Include="..\Include\Base\Encoding.h" />
     <ClInclude Include="..\Include\Base\ErrorCode.h" />
     <ClInclude Include="..\Include\Base\Exception.h" />
@@ -229,6 +231,7 @@
     <ClInclude Include="..\Include\MegaUI\Core\Layout.h" />
     <ClInclude Include="..\Include\MegaUI\Core\Property.h" />
     <ClInclude Include="..\Include\MegaUI\Core\StyleSheet.h" />
+    <ClInclude Include="..\Include\MegaUI\Core\TextScaleManger.h" />
     <ClInclude Include="..\Include\MegaUI\Core\UIEvent.h" />
     <ClInclude Include="..\Include\MegaUI\Core\Unit.h" />
     <ClInclude Include="..\Include\MegaUI\Core\Value.h" />
@@ -254,7 +257,6 @@
     <ClInclude Include="Accessibility\UIAutomation\AccessibleEventManager.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h" />
-    <ClInclude Include="Core\UIEvent.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Parser\UIParser.h" />
     <ClInclude Include="Parser\ValueParser.h" />
@@ -310,6 +312,7 @@
     <ClCompile Include="Core\StyleSheet.cpp" />
     <ClCompile Include="Core\Unit.cpp" />
     <ClCompile Include="Core\Value.cpp" />
+    <ClCompile Include="Core\Windows\TextScaleManger.cpp" />
     <ClCompile Include="MegaUI.cpp" />
     <ClCompile Include="Parser\UIParser.cpp" />
     <ClCompile Include="pch.cpp">

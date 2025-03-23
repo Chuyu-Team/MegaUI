@@ -3,6 +3,7 @@
 #include <Base/Threading/TaskRunner.h>
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Containers/BitMap.h>
+#include <Base/Containers/SingleLinkedList.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -12,94 +13,13 @@ namespace YY
     {
         namespace Threading
         {
-            struct TimingWheelSimpleList
+            struct TimingWheelSimpleList : public SingleLinkedList<Timer>
             {
-                Timer* pFirst = nullptr;
-                Timer* pLast = nullptr;
-
-                constexpr TimingWheelSimpleList() = default;
-
-                ~TimingWheelSimpleList() noexcept
+                ~TimingWheelSimpleList()
                 {
                     Clear();
                 }
-
-                TimingWheelSimpleList(const TimingWheelSimpleList&) = delete;
-                TimingWheelSimpleList& operator=(const TimingWheelSimpleList&) = delete;
-
-                TimingWheelSimpleList& __YYAPI operator=(TimingWheelSimpleList&& _OtherList) noexcept
-                {
-                    if (this != &_OtherList)
-                    {
-                        Clear();
-                        pFirst = _OtherList.pFirst;
-                        pLast = _OtherList.pLast;
-                        _OtherList.pFirst = nullptr;
-                        _OtherList.pLast = nullptr;
-                    }
-
-                    return *this;
-                }
-
-                _Ret_maybenull_ Timer* __YYAPI Pop() noexcept
-                {
-                    if (pFirst == nullptr)
-                        return nullptr;
-
-                    auto _pOldFirst = pFirst;
-                    pFirst = _pOldFirst->pNext;
-
-                    if (!pFirst)
-                    {
-                        pLast = nullptr;
-                    }
-
-                    return _pOldFirst;
-                }
-
-                void __YYAPI Push(_In_ Timer* _pEntry) noexcept
-                {
-                    _pEntry->pNext = nullptr;
-
-                    if (pLast)
-                    {
-                        pLast->pNext = _pEntry;
-                    }
-                    else
-                    {
-                        pFirst = _pEntry;
-                    }
-
-                    pLast = _pEntry;
-                }
-
-                void __YYAPI Push(TimingWheelSimpleList&& _oList) noexcept
-                {
-                    if (this == &_oList)
-                        return;
-
-                    if (_oList.IsEmpty())
-                        return;
-
-                    if (pLast == nullptr)
-                    {
-                        pFirst = _oList.pFirst;
-                        pLast = _oList.pLast;
-                    }
-                    else
-                    {
-                        pLast->pNext = _oList.pFirst;
-                        pLast = _oList.pLast;
-                    }
-                    _oList.pFirst = nullptr;
-                    _oList.pLast = nullptr;
-                }
-
-                bool __YYAPI IsEmpty() const noexcept
-                {
-                    return pFirst == nullptr;
-                }
-
+                
                 void __YYAPI Clear() noexcept
                 {
                     while (auto _pTask = Pop())
@@ -110,7 +30,6 @@ namespace YY
                     }
                 }
             };
-
 
             // 采用时间轮算法: UI库一般定时数百毫秒或者几分钟所以轮子设计时越容纳1小时左右，超过1小时的全部进入 arrTimingWheelOthers
             class ThreadPoolTimerManger
@@ -674,7 +593,7 @@ namespace YY
                         }
                     }
 
-                    arrTimingWheelOthers = std::move(_oNewTimingWheelOthers);
+                    arrTimingWheelOthers.Push(std::move(_oNewTimingWheelOthers));
                 }
             };
         }

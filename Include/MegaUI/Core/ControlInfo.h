@@ -38,7 +38,7 @@ public:                                                                         
     static HRESULT __YYAPI Register();                                                      \
     static HRESULT __YYAPI UnRegister();                                                    \
     static HRESULT __YYAPI Create(                                                          \
-        _In_ int32_t _iDPI,                                                                       \
+        _In_ const UnitMetrics& _oUnitMetrics,                                                    \
         _In_ uint32_t _fCreate,                                                                   \
         _In_opt_ Element* _pTopLevel,                                                             \
         _Out_opt_ intptr_t* _pCooike,                                                             \
@@ -71,17 +71,17 @@ public:                                                                         
             return S_FALSE;                                                                                                                        \
         return g_ControlInfoData.pControlInfoPtr->UnRegister();                                                                                    \
     }                                                                                                                                              \
-    HRESULT __YYAPI _CONTROL_NAME::Create(int32_t _iDPI, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, _CONTROL_NAME** _ppOut) \
+    HRESULT __YYAPI _CONTROL_NAME::Create(const UnitMetrics& _oUnitMetrics, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike, _CONTROL_NAME** _ppOut) \
     {                                                                                                                                              \
         if (!_ppOut)                                                                                                                               \
             return E_INVALIDARG;                                                                                                                   \
         *_ppOut = nullptr;                                                                                                                         \
                                                                                                                                                    \
-        auto _pElement = New<_CONTROL_NAME>();                                                                                                    \
+        auto _pElement = New<_CONTROL_NAME>();                                                                                                     \
         if (!_pElement)                                                                                                                            \
             return E_OUTOFMEMORY;                                                                                                                  \
                                                                                                                                                    \
-        auto _hr = _pElement->Initialize(_iDPI, _fCreate, _pTopLevel, _pCooike);                                                                   \
+        auto _hr = _pElement->Initialize(_oUnitMetrics, _fCreate, _pTopLevel, _pCooike);                                                           \
         if (SUCCEEDED(_hr))                                                                                                                        \
         {                                                                                                                                          \
             *_ppOut = _pElement;                                                                                                                   \
@@ -115,7 +115,7 @@ namespace YY
             /// <param name="pCookies_">返回 Defer 的Cookies值，如果为 nullptr，那么不会触发Defer</param>
             /// <param name="ppElem_">返回创建的Element</param>
             /// <returns>如果函数成功，那么 >=0 </returns>
-            virtual HRESULT __YYAPI CreateInstance(_In_ int32_t _iDPI, _In_opt_ Element* _pTopLevelElem, _Out_opt_ intptr_t* _pCookies, _Outptr_ Element** _ppElem_) = 0;
+            virtual HRESULT __YYAPI CreateInstance(_In_ const UnitMetrics& _oUnitMetrics, _In_opt_ Element* _pTopLevelElem, _Out_opt_ intptr_t* _pCookies, _Outptr_ Element** _ppElem_) = 0;
 
             virtual _Ret_maybenull_ const PropertyInfo* __YYAPI EnumPropertyInfo(_In_ uint32_t _uIndex) = 0;
 

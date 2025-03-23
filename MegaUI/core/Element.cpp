@@ -165,10 +165,10 @@ namespace YY
         {
         }
 
-        HRESULT Element::Initialize(int32_t _iDPI, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
+        HRESULT Element::Initialize(const UnitMetrics& _oUnitMetrics, uint32_t _fCreate, Element* _pTopLevel, intptr_t* _pCooike)
         {
             pTopLevel = _pTopLevel;
-            LocUnitMetrics.uDpi = _iDPI;
+            LocUnitMetrics = _oUnitMetrics;
 
             if (_pCooike)
                 StartDefer(_pCooike);
@@ -538,6 +538,11 @@ namespace YY
         int32_t Element::GetDpi()
         {
             return LocUnitMetrics.uDpi;
+        }
+
+        float __YYAPI Element::GetTextScale() const noexcept
+        {
+            return LocUnitMetrics.nTextScale;
         }
 
         bool Element::OnPropertyChanging(_In_ const PropertyInfo& _Prop, _In_ PropertyIndicies _eIndicies, _In_ const Value& _OldValue, _In_ const Value& _NewValue)
@@ -2312,6 +2317,8 @@ namespace YY
             {
             case ValueType::int32_t:
                 return Value::CreateInt32(*(int32_t*)_pCache);
+            case ValueType::float_t:
+                return Value::CreateFloat(*(float*)_pCache);
             case ValueType::Unit:
                 if (_uCacheBit)
                 {
@@ -2515,6 +2522,9 @@ namespace YY
                 case ValueType::int32_t:
                     *(int32_t*)_pCache = *(int32_t*)_pDataBuffer;
                     break;
+                case ValueType::float_t:
+                    *(float*)_pCache = *(float*)_pDataBuffer;
+                    break;
                 case ValueType::Unit:
                     if (_uCacheBit)
                     {
@@ -2691,6 +2701,9 @@ namespace YY
             {
             case ValueType::int32_t:
                 _pInfo->Output.iResult = *(int32_t*)_pRawBuffer1 == *(int32_t*)_pRawBuffer2;
+                break;
+            case ValueType::float_t:
+                _pInfo->Output.iResult = *(float*)_pRawBuffer1 == *(float*)_pRawBuffer2;
                 break;
             case ValueType::Unit:
                 _pInfo->Output.iResult = *(Unit*)_pRawBuffer1 == *(Unit*)_pRawBuffer2;
@@ -2909,7 +2922,22 @@ namespace YY
             switch (_eType)
             {
             case CustomPropertyHandleType::GetDependencies:
-                return GetDpiPropDependencies((GetDependenciesHandleData*)_pHandleData);
+                return GetAnyScalePropDependencies((GetDependenciesHandleData*)_pHandleData);
+            case CustomPropertyHandleType::GetValue:
+            case CustomPropertyHandleType::SetValue:
+                break;
+            default:
+                break;
+            }
+            return false;
+        }
+
+        bool __YYAPI Element::TextScalePropHandle(CustomPropertyHandleType _eType, CustomPropertyBaseHandleData* _pHandleData)
+        {
+            switch (_eType)
+            {
+            case CustomPropertyHandleType::GetDependencies:
+                return GetAnyScalePropDependencies((GetDependenciesHandleData*)_pHandleData);
             case CustomPropertyHandleType::GetValue:
             case CustomPropertyHandleType::SetValue:
                 break;
@@ -2925,7 +2953,7 @@ namespace YY
             return false;
         }
 
-        bool __YYAPI Element::GetDpiPropDependencies(GetDependenciesHandleData* _pHandleData)
+        bool __YYAPI Element::GetAnyScalePropDependencies(GetDependenciesHandleData* _pHandleData)
         {
             auto _pControlInfo = GetControlInfo();
 
@@ -3866,18 +3894,39 @@ namespace YY
 
             intptr_t _Cooike = 0;
             pWindow = _pNewWindow;
-            if (_pNewWindow->IsInitialized() && LocUnitMetrics.uDpi != _pNewWindow->GetDpi())
+            if (_pNewWindow->IsInitialized())
             {
-                StartDefer(&_Cooike);
-                PreSourceChange(
-                    Element::g_ControlInfoData.DpiProp,
-                    PropertyIndicies::PI_Local,
-                    Value::CreateInt32(LocUnitMetrics.uDpi),
-                    Value::CreateInt32(_pNewWindow->GetDpi()));
+                if (LocUnitMetrics.uDpi != _pNewWindow->GetDpi())
+                {
+                    if (_Cooike == 0)
+                    {
+                        StartDefer(&_Cooike);
+                    }
+                    PreSourceChange(
+                        Element::g_ControlInfoData.DpiProp,
+                        PropertyIndicies::PI_Local,
+                        Value::CreateInt32(LocUnitMetrics.uDpi),
+                        Value::CreateInt32(_pNewWindow->GetDpi()));
 
-                LocUnitMetrics.uDpi = _pNewWindow->GetDpi();
+                    LocUnitMetrics.uDpi = _pNewWindow->GetDpi();
 
-                PostSourceChange();
+                    PostSourceChange();
+                }
+
+                if (LocUnitMetrics.nTextScale != _pNewWindow->GetTextScale())
+                {
+                    if (_Cooike == 0)
+                    {
+                        StartDefer(&_Cooike);
+                    }
+                    PreSourceChange(
+                        Element::g_ControlInfoData.TextScaleProp,
+                        PropertyIndicies::PI_Local,
+                        Value::CreateFloat(LocUnitMetrics.nTextScale),
+                        Value::CreateFloat(_pNewWindow->GetTextScale()));
+                    LocUnitMetrics.nTextScale = _pNewWindow->GetTextScale();
+                    PostSourceChange();
+                }
             }
 
             for (auto pElement : GetChildren())

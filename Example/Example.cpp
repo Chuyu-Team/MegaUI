@@ -28,6 +28,7 @@
 #include <Base/Threading/Coroutine.h>
 
 #include <Base/Utils/ComObjectImpl.h>
+#include <MegaUI/Core/TextScaleManger.h>
 
 using namespace YY;
 
@@ -499,7 +500,6 @@ int wmain()
     _Parser.ParserByXmlString(GetUiResource(IDR_UI1));
 
     UIParserPlayContext _Context;
-    _Context.iDPI = 96;
     if (auto _pD2D1_1Factory = DrawContextFactory::GetD2D1_1DrawContextFactory())
     {
         Window* _pTestWindow = New<Window>();

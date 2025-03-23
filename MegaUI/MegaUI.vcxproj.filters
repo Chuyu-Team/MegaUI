@@ -142,6 +142,9 @@
     <Filter Include="源文件\UI\Control">
       <UniqueIdentifier>{33cbca5b-e9af-4a6f-925d-ff8643527b56}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\UI\Core\Windows">
+      <UniqueIdentifier>{e560c40c-2159-48d8-8e1b-0dacbc13835f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -155,9 +158,6 @@
     </ClInclude>
     <ClInclude Include="Parser\ValueParser.h">
       <Filter>源文件\UI\Parser</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\UIEvent.h">
-      <Filter>源文件\UI\Core</Filter>
     </ClInclude>
     <ClInclude Include="Accessibility\UIAutomation\ElementAccessibleProviderImpl.h">
       <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
@@ -444,6 +444,15 @@
     <ClInclude Include="..\Include\MegaUI\Core\Unit.h">
       <Filter>头文件\Include\MegaUI\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\SingleLinkedList.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Base\Containers\DoublyLinkedList.h">
+      <Filter>头文件\Include\Base\Containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\MegaUI\Core\TextScaleManger.h">
+      <Filter>头文件\Include\MegaUI\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">
@@ -550,6 +559,12 @@
     </ClCompile>
     <ClCompile Include="..\Base\Utils\FileInfo.cpp">
       <Filter>源文件\Base\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Unit.cpp">
+      <Filter>源文件\UI\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Windows\TextScaleManger.cpp">
+      <Filter>源文件\UI\Core\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

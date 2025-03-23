@@ -3,6 +3,7 @@
 #include <Media/Rect.h>
 #include <Media/Size.h>
 #include <Media/Font.h>
+#include <MegaUI/Core/TextScaleManger.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -12,13 +13,17 @@ namespace YY
     {
         enum class UnitType : uint8_t
         {
-            None,
-            // 设备无关像素（缩写px），等价于 None
+            None = 0,
+            // 设备相关像素（缩写px），等价于 None
             Pixel = None,
-            // 设备相关像素（缩写 dp）, px = dp * dpi / 96
+            // 设备无关像素（缩写 dp或dip）, px = dp * dpi / USER_DEFAULT_SCREEN_DPI
             DevicePixel,
+            // 缩放无关像素（缩写 sp），px = (sp * TextScale) * dpi / USER_DEFAULT_SCREEN_DPI
+            ScalePixel,
             // 字体的点数，也称呼为磅（缩写 pt），px = pt * dpi / 72
             FontPoint,
+            // 缩放无关的字体的点数（缩写 spt），px = (spt * TextScale) * dpi / 72
+            ScaleFontPoint,
         };
         
         inline bool __YYAPI IsRelativeUnit(UnitType _eType) noexcept
@@ -31,16 +36,25 @@ namespace YY
             uint32_t uDpi = USER_DEFAULT_SCREEN_DPI;
             float nTextScale = 1.0f;
 
+            static UnitMetrics __YYAPI GetSystemMetrics() noexcept
+            {
+                return UnitMetrics {GetDpiForSystem(), GetSystemTextScale()};
+            }
+
             constexpr float __YYAPI ApplyDimension(UnitType _eType, float _nValue) const noexcept
             {
                 switch (_eType)
                 {
-                case YY::MegaUI::UnitType::Pixel:
+                case UnitType::Pixel:
                     return _nValue;
-                case YY::MegaUI::UnitType::DevicePixel:
+                case UnitType::DevicePixel:
                     return _nValue * uDpi / USER_DEFAULT_SCREEN_DPI;
-                case YY::MegaUI::UnitType::FontPoint:
+                case UnitType::ScalePixel:
+                    return _nValue * nTextScale * uDpi / USER_DEFAULT_SCREEN_DPI;
+                case UnitType::FontPoint:
                     return _nValue * uDpi / 72;
+                case UnitType::ScaleFontPoint:
+                    return _nValue * nTextScale * uDpi / 72;
                 default:
                     return 0.0f;
                 }
@@ -50,7 +64,7 @@ namespace YY
         struct Unit
         {
             float Value = 0.0f;
-            UnitType eType = UnitType::None;
+            UnitType eType = UnitType::Pixel;
             
             constexpr float __YYAPI ApplyDimension(const UnitMetrics& _oMetrics) const noexcept
             {
@@ -197,23 +211,6 @@ namespace YY
                 return Value != _oOther.Value || eLeftType != _oOther.eLeftType || eTopType != _oOther.eTopType || eRightType != _oOther.eRightType || eBottomType != _oOther.eBottomType;
             }
 #endif
-        };
-
-        struct UnitFont
-        {
-            // 字体名称
-            uString szFace;
-            // 字体大小
-            Unit iSize;
-            // 字体的粗细，FontWeight
-            uint32_t uWeight = 0;
-            // FontStyle 的位组合
-            FontStyle fStyle = FontStyle::None;
-
-            Font __YYAPI ApplyDimension(const UnitMetrics& _oMetrics) const noexcept
-            {
-                return Font {szFace, iSize.ApplyDimension(_oMetrics), uWeight, fStyle};
-            }
         };
     } // namespace MegaUI
 } // namespace YY

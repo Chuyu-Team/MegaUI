@@ -194,6 +194,7 @@ namespace YY
     _APPLY(FontWeight,     PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateInt32<FontWeight::Normal>, nullptr,                          nullptr, FontWeightEnumMaps, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, SpecFont.uWeight), 0), ValueType::int32_t) \
     _APPLY(FontStyle,      PF_Normal | PF_Cascade | PF_Inherit,   PG_AffectsDisplay,                              &Value::CreateInt32<(int32_t)FontStyle::None>, nullptr,                    nullptr, FontStyleEnumMap, _MEGA_UI_PROP_BIND_INT(0, YY_UFIELD_OFFSET(Element, SpecFont.fStyle), 0), ValueType::int32_t) \
     _APPLY(Dpi,            PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateDefaultSystemDpi,       &Element::DpiPropHandle,             nullptr, nullptr, _MEGA_UI_PROP_BIND_INT(YY_UFIELD_OFFSET(Element, LocUnitMetrics.uDpi), 0, 0),  ValueType::int32_t) \
+    _APPLY(TextScale,      PF_LocalOnly | PF_ReadOnly,            0,                                              &Value::CreateFloat<1>,               &Element::TextScalePropHandle,       nullptr, nullptr, _MEGA_UI_PROP_BIND_FLOAT(YY_UFIELD_OFFSET(Element, LocUnitMetrics.nTextScale), 0, 0), ValueType::float_t) \
     _APPLY(Accessible,     PF_Normal | PF_Cascade,                0,                                              &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecAccessible), 0), ValueType::boolean) \
     _APPLY(AccRole,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateInt32Zero,              nullptr,                             nullptr, AccRoleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                              ValueType::int32_t) \
     _APPLY(AccName,        PF_Normal | PF_Cascade,                0,                                              &Value::CreateEmptyString,            nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::String) \
@@ -374,7 +375,7 @@ namespace YY
             // 此函数来自 _APPLY_MEGA_UI_STATIC_CALSS_INFO_EXTERN
             // static HRESULT __YYAPI Create(_In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike, _Outptr_ Element** _ppOut);
 
-            HRESULT __YYAPI Initialize(_In_ int32_t _iDPI, _In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
+            HRESULT __YYAPI Initialize(_In_ const UnitMetrics& _oUnitMetrics, _In_ uint32_t _fCreate, _In_opt_ Element* _pTopLevel, _Out_opt_ intptr_t* _pCooike);
 
             /// <summary>
             /// 根据属性获取Value
@@ -479,6 +480,8 @@ namespace YY
             bool __YYAPI IsMouseFocused();
 
             int32_t __YYAPI GetDpi();
+
+            float __YYAPI GetTextScale() const noexcept;
 
             uString __YYAPI GetFontFamily();
 
@@ -767,9 +770,11 @@ namespace YY
 
             bool __YYAPI DpiPropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
 
+            bool __YYAPI TextScalePropHandle(_In_ CustomPropertyHandleType _eType, _Inout_ CustomPropertyBaseHandleData* _pHandleData);
+
             virtual bool __YYAPI OnDpiPropChanged(_In_ OnPropertyChangedHandleData* _pHandleData);
 
-            bool __YYAPI GetDpiPropDependencies(_In_ GetDependenciesHandleData* _pHandleData);
+            bool __YYAPI GetAnyScalePropDependencies(_In_ GetDependenciesHandleData* _pHandleData);
 
             void __YYAPI FlushDesiredSize(DeferCycle* _pDeferCycle);
 

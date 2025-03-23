@@ -29,7 +29,7 @@ namespace YY
 
         struct UIParserPlayContext
         {
-            int32_t iDPI = 96;
+            UnitMetrics oUnitMetrics = UnitMetrics::GetSystemMetrics();
             // 可选，顶层控件，创建控件时使用，用于加速StartDefer
             Element* pTopElement = nullptr;
         };

@@ -238,6 +238,19 @@ namespace YY
             return Value(pValue);
         }
 
+        Value __YYAPI Value::CreateFloat(float _iValue)
+        {
+            auto _pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
+            if (_pValue)
+            {
+                _pValue->eType = uint_t(ValueType::float_t);
+                _pValue->bSkipFree = 0;
+                _pValue->cRef = 1;
+                _pValue->floatValue = _iValue;
+            }
+            return Value(_pValue);
+        }
+
         Value __YYAPI Value::CreateUnit(const Unit& _iValue)
         {
             auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
@@ -433,6 +446,13 @@ namespace YY
             return pSharedData->int32Value;
         }
 
+        float __YYAPI Value::GetFloat() const
+        {
+            if (GetType() != ValueType::float_t)
+                throw Exception();
+            return pSharedData->floatValue;
+        }
+
         Unit& __YYAPI Value::GetUnit() const
         {
             if (GetType() != ValueType::Unit)
@@ -522,6 +542,7 @@ namespace YY
                 switch (GetType())
                 {
                 case ValueType::int32_t:
+                case ValueType::float_t:
                     return _Operation == ValueCmpOperation::Equal || _Operation == ValueCmpOperation::GreaterThanOrEqual || _Operation == ValueCmpOperation::LessThanOrEqual;
                     break;
                 default:
@@ -559,6 +580,33 @@ namespace YY
                     break;
                 }
                 break;
+            case ValueType::float_t:
+            {
+                auto _iLeft = pSharedData->floatValue;
+                auto _iRight = _Other.pSharedData->floatValue;
+                switch (_Operation)
+                {
+                case ValueCmpOperation::Equal:
+                    return _iLeft == _iRight;
+                    break;
+                case ValueCmpOperation::NotEqual:
+                    return _iLeft != _iRight;
+                    break;
+                case ValueCmpOperation::GreaterThan:
+                    return _iLeft > _iRight;
+                    break;
+                case ValueCmpOperation::GreaterThanOrEqual:
+                    return _iLeft >= _iRight;
+                    break;
+                case ValueCmpOperation::LessThan:
+                    return _iLeft < _iRight;
+                    break;
+                case ValueCmpOperation::LessThanOrEqual:
+                    return _iLeft <= _iRight;
+                    break;
+                }
+                break;
+            }
             case ValueType::Unit:
             {
                 switch (_Operation)

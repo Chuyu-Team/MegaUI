@@ -9,6 +9,7 @@
 #include <Base/Memory/UniquePtr.h>
 #include <Base/Sync/AutoLock.h>
 #include <Base/Threading/TaskRunnerImpl.h>
+#include <Base/Containers/DoublyLinkedList.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -18,159 +19,7 @@ namespace YY
     {
         namespace Threading
         {
-            template<typename ItemType>
-            class List
-            {
-            private:
-                ItemType* pFirst = nullptr;
-                ItemType* pLast = nullptr;
-                
-            public:
-                void __YYAPI Clear() noexcept
-                {
-                    pFirst = nullptr;
-                    pLast = nullptr;
-                }
-
-                List __YYAPI Flush() noexcept
-                {
-                    List _oList;
-                    _oList.pFirst = pFirst;
-                    _oList.pLast = pLast;
-                    Clear();
-                    return _oList;
-                }
-
-                void __YYAPI PushBack(_In_ ItemType* _pEntry) noexcept
-                {
-                    _pEntry->pPrior = pLast;
-                    _pEntry->pNext = nullptr;
-
-                    if (pLast)
-                    {
-                        pLast->pNext = _pEntry;
-                        pLast = _pEntry;
-                    }
-                    else
-                    {
-                        pFirst = pLast = _pEntry;           
-                    }
-                }
-
-                _Ret_maybenull_ ItemType* __YYAPI PopBack() noexcept
-                {
-                    auto _pRet = pLast;
-                    if (_pRet)
-                    {
-                        pLast = pLast->pPrior;
-                        if (pLast)
-                        {
-                            pLast->pNext = nullptr;
-                        }
-                        else
-                        {
-                            pFirst = nullptr;
-                        }
-
-                        _pRet->pPrior = nullptr;
-                    }
-
-                    return _pRet;
-                }
-
-                _Ret_maybenull_ ItemType* __YYAPI PopFront() noexcept
-                {
-                    auto _pRet = pFirst;
-                    if (_pRet)
-                    {
-                        pFirst = pFirst->pNext;
-                        if (pFirst)
-                        {
-                            pFirst->pPrior = nullptr;
-                        }
-                        else
-                        {
-                            pLast = nullptr;
-                        }
-                        _pRet->pNext = nullptr;
-                    }
-
-                    return _pRet;
-                }
-
-                void __YYAPI Insert(_In_ ItemType* _pWhere, _In_ ItemType* _pEntry) noexcept
-                {
-                    _pEntry->pPrior = _pWhere->pPrior;
-                    _pEntry->pNext = _pWhere;
-
-                    _pWhere->pPrior = _pEntry;
-
-                    if (pFirst == _pWhere)
-                    {
-                        pFirst = _pEntry;
-                    }
-                }
-
-                void __YYAPI Insert(_In_ ItemType* _pEntry) noexcept
-                {
-                    _pEntry->pPrior = nullptr;
-                    _pEntry->pNext = pFirst;
-                    if (pFirst)
-                    {
-                        pFirst->pPrior = _pEntry;
-                        pFirst = _pEntry;
-                    }
-                    else
-                    {
-                        pFirst = pLast = _pEntry;
-                    }
-                }
-
-                _Ret_maybenull_ ItemType* __YYAPI GetFirst() const noexcept
-                {
-                    return pFirst;
-                }
-
-                _Ret_maybenull_ ItemType* __YYAPI GetLast() const noexcept
-                {
-                    return pLast;
-                }
-
-                void __YYAPI Remove(_In_ ItemType* _pEntry) noexcept
-                {
-                    auto _pPrior = _pEntry->pPrior;
-                    _pEntry->pPrior = nullptr;
-                    auto _pNext = _pEntry->pNext;
-                    _pEntry->pNext = nullptr;
-
-                    if (_pPrior)
-                    {
-                        _pPrior->pNext = _pNext;
-                    }
-                    else
-                    {
-                        assert(pFirst == _pEntry);
-                        pFirst = _pNext;
-                    }
-
-                    if (_pNext)
-                    {
-                        _pNext->pPrior = _pPrior;
-                    }
-                    else
-                    {
-                        assert(pLast == _pEntry);
-                        pLast = _pPrior;
-                    }
-                }
-
-                bool __YYAPI IsEmpty() const noexcept
-                {
-                    return pFirst == nullptr;
-                }
-            };
-
-            struct WaitTaskList : public List<Wait>
+            struct WaitTaskList : public DoublyLinkedList<Wait>
             {
                 /// <summary>
                 /// 按超时时间，从近到远排序插入列表
@@ -349,7 +198,7 @@ namespace YY
                                 if (oDefaultWaitBlock.cWaitHandle != i)
                                 {
                                     oDefaultWaitBlock.hWaitHandles[i] = oDefaultWaitBlock.hWaitHandles[oDefaultWaitBlock.cWaitHandle];
-                                    oDefaultWaitBlock.oWaitTaskLists[i] = oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle];
+                                    oDefaultWaitBlock.oWaitTaskLists[i].PushBack(std::move(oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle]));
                                 }
                                 oDefaultWaitBlock.hWaitHandles[oDefaultWaitBlock.cWaitHandle] = nullptr;
                                 oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle].Flush();
@@ -399,7 +248,7 @@ namespace YY
                     if (oDefaultWaitBlock.cWaitHandle != _uDispatchIndex)
                     {
                         oDefaultWaitBlock.hWaitHandles[_uDispatchIndex] = oDefaultWaitBlock.hWaitHandles[oDefaultWaitBlock.cWaitHandle];
-                        oDefaultWaitBlock.oWaitTaskLists[_uDispatchIndex] = oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle];
+                        oDefaultWaitBlock.oWaitTaskLists[_uDispatchIndex].PushBack(std::move(oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle]));
                     }
                     oDefaultWaitBlock.hWaitHandles[oDefaultWaitBlock.cWaitHandle] = nullptr;
                     oDefaultWaitBlock.oWaitTaskLists[oDefaultWaitBlock.cWaitHandle].Flush();
@@ -530,7 +379,7 @@ namespace YY
                     }
                 };
 
-                struct WaitHandleHashList : public List<WaitHandleEntry>
+                struct WaitHandleHashList : public DoublyLinkedList<WaitHandleEntry>
                 {
                     SRWLock oLock;
                     
@@ -550,7 +399,7 @@ namespace YY
                 
                 // 当前服务线程提供的 WaitHandleBlock，充分利用服务线程进行等待，减少线程启动。
                 WaitHandleBlock oDefaultWaitBlock;
-                List<WaitHandleBlock> oWaitBlockTaskRunnerList;
+                DoublyLinkedList<WaitHandleBlock> oWaitBlockTaskRunnerList;
 
                 ThreadPoolWaitMangerForMultiThreading(HANDLE _hTaskRunnerServerHandle)
                     : oDefaultWaitBlock(_hTaskRunnerServerHandle)

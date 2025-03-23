@@ -43,12 +43,13 @@ namespace YY
             // 键盘焦点（全局）
             static Element* g_pLastKeyboardFocusedElement;
             Element* pLastPressedElement;
-            int32_t iDpi;
+            UnitMetrics oUnitMetrics;
+            void* pTextScaleFactorChangedCookie = nullptr;
             // WM_UPDATEUISTATE的缓存
             uint16_t fUIState = 0;
 
         public:
-            Window(_In_ int32_t _DefaultDpi = 96);
+            Window();
 
             Window(const Window&) = delete;
             Window& operator=(const Window&) = delete;
@@ -112,6 +113,8 @@ namespace YY
             Element* __YYAPI FindElementFromPoint(_In_ const Point& _ptPoint, _In_ uint32_t fFindMarks = FindVisible, _Out_opt_ Point* _pElementPoint = nullptr);
 
             int32_t __YYAPI GetDpi() const;
+
+            float __YYAPI GetTextScale() const noexcept;
 
             /// <summary>
             /// 原生窗口是否已经创建？
@@ -180,8 +183,16 @@ namespace YY
             void __YYAPI UpdateStyles(_In_opt_ uint32_t _uOld, _In_ uint32_t _uNew);
 
             void __YYAPI OnDpiChanged(int32_t _iNewDPI, const Rect* _pNewRect);
-
+            
             HRESULT __YYAPI UpdateDpi(Element* _pElement, Value _OldValue, const Value& _NewValue);
+            
+            HRESULT __YYAPI UpdateDpi(Element* _pElement, int32_t _iNewDPI);
+
+            void __YYAPI OnTextScaleFactorChanged(float _nTextScale);
+
+            HRESULT __YYAPI UpdateTextScaleFactor(Element* _pElement, Value _OldValue, const Value& _NewValue);
+
+            HRESULT __YYAPI UpdateTextScaleFactor(Element* _pElement, float _NewValue);
 
             void __YYAPI OnUpdateUiState(uint16_t _eType, uint16_t _fState);
 
