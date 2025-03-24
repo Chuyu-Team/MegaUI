@@ -43,6 +43,7 @@
     </StyleSheets>
     <Windows>
         <WindowElement ResourceID="测试窗口" Title="MegaUI Test" Height="600dp" Width="800dp" Background="ARGB(128, 255, 0, 0)" Sheet="MyStyleSheet">
+          <!--
           <TextBox LayoutPos="Absolute" X="10dp" Y="10dp" Height="50sp" Content="𤭢j你jā𤭢𤭢āā编辑框测试文字123456789" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)"
                    Background="ARGB(255, 163, 73, 164)" Foreground="RGB(50,0,0)" Padding="Rect(4dp, 4dp, 4dp, 4dp)"
                    BorderColor="ARGB(255, 255, 0, 0)" Active="Mouse|Keyboard" FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FontSize="16pt"
@@ -61,7 +62,10 @@
    的嘀咕嘀咕嘀咕嘀咕的嘀咕嘀咕的点的地方的于呵呵">
             <Button LayoutPos="Absolute" X="10dp" Y="140dp" Height="50dp" Width="40dp" Content="按" Class="背景黄变黑" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 0, 0)" Active="Mouse|Keyboard"
                        FocusThickness="Rect(2dp, 2dp, 2dp, 2dp)" FocusStyle="Solid" FocusColor="RGB(0, 0, 0)" AccName="内部小文本"/>
-          </Element>
+          </Element>-->
+          <TreeView LayoutPos="Absolute" X="10dp" Y="10dp" Height="500dp" Width="400dp" BorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" BorderColor="ARGB(255, 255, 0, 0)" Padding="Rect(4dp, 4dp, 4dp, 4dp)">
+            <TreeViewItem Foreground="RGB(50,0,0)" Content="测试文字" FontFamily="GetSystemFontFamily(MessageFont)" FontSize="20pt" FontWeight="Normal" FontStyle="Italic" FocusColor="RGB(0, 0, 0)" BorderThickness="Rect(2dp, 2dp, 2dp, 2dp)" BorderColor="ARGB(255, 0, 0, 0)"/>
+          </TreeView>
           <!--
           <Element LayoutPos="Absolute" X="300dp" Y="305dp" Height="400dp" Width="300dp" Background="ARGB(32, 255, 255, 0)" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 163, 73, 164)"/>
             <Element LayoutPos="Absolute" X="450dp" Y="205dp" Height="50dp" Width="40dp" Class="背景蓝色变原谅色" BorderThickness="Rect(2dp, 4dp, 6dp, 8dp)" BorderColor="ARGB(255, 255, 128, 192)" Active="Mouse | Keyboard"

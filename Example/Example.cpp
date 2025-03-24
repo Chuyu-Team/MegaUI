@@ -15,6 +15,7 @@
 #include <MegaUI/Parser/UIParser.h>
 #include <MegaUI/Control/Button.h>
 #include <MegaUI/Control/TextBox.h>
+#include <MegaUI/Control/TreeView.h>
 #endif
 #include <YY/Base/Strings/String.h>
 #include <YY/Base/Threading/TaskRunner.h>
@@ -323,11 +324,6 @@ Coroutine<void> TestCoroutine()
 
 int wmain()
 {
-    auto _Version = GetOperatingSystemVersion();
-    std::cout << " " << _Version.uMajor << "." << _Version.uMinor << "." << _Version.uBuild << "." << _Version.uRevision << "\n";
-
-    //TTTTT TTTT;
-
     //CComPtr<ITextProvider2> T1;
     //CComPtr<ITextProvider> T2;
     //CComPtr<IUnknown> T3;
@@ -492,6 +488,8 @@ int wmain()
     WindowElement::Register();
     Button::Register();
     TextBox::Register();
+    TreeView::Register();
+    TreeViewItem::Register();
 
     StyleSheet::AddGlobalStyleSheet(GetUiResource(IDR_UI_COMMON));
 
@@ -515,6 +513,7 @@ int wmain()
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
     }
 
+#if 0
     if (auto _pD2D1_0Factory = DrawContextFactory::GetD2D1_0DrawContextFactory())
     {
         Window* _pTestWindow = New<Window>();
@@ -529,7 +528,9 @@ int wmain()
         SetWindowTextW(_pTestWindow->GetWnd(), L"D2D1.0");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
     }
+#endif
 
+#if 0
     if (auto _pGdiPlusFactory = DrawContextFactory::GetGdiPlusDrawContextFactory())
     {
         Window* _pTestWindow = New<Window>();
@@ -544,6 +545,7 @@ int wmain()
         SetWindowTextW(_pTestWindow->GetWnd(), L"GDIPlus");
         _pTestWindow->ShowWindow(SW_SHOWNORMAL);
     }
+#endif
 #endif
 // YY::MegaUI::Element* p;
 // YY::MegaUI::Element::Create(0, _pWindows, &Cooike, &p);

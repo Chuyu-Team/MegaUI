@@ -171,6 +171,8 @@
     <ClInclude Include="..\Include\MegaUI\Base\MegaUITypeInt.h" />
     <ClInclude Include="..\Include\MegaUI\Control\Button.h" />
     <ClInclude Include="..\Include\MegaUI\Control\TextBox.h" />
+    <ClInclude Include="..\Include\MegaUI\Control\TreeView.h" />
+    <ClInclude Include="..\Include\MegaUI\Control\TreeViewItem.h" />
     <ClInclude Include="..\Include\MegaUI\Core\ControlInfo.h" />
     <ClInclude Include="..\Include\MegaUI\Core\ControlInfoImp.h" />
     <ClInclude Include="..\Include\MegaUI\Core\DeferCycle.h" />
@@ -238,6 +240,8 @@
     </ClCompile>
     <ClCompile Include="Control\Button.cpp" />
     <ClCompile Include="Control\TextBox.cpp" />
+    <ClCompile Include="Control\TreeView.cpp" />
+    <ClCompile Include="Control\TreeViewItem.cpp" />
     <ClCompile Include="Core\ControlInfo.cpp" />
     <ClCompile Include="Core\Element.cpp" />
     <ClCompile Include="Core\StyleSheet.cpp" />
