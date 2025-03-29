@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Base/YY.h>
 #include <Base/Time/Common.h>
+#include <Base/Utils/MathUtils.h>
 
 #if defined(_HAS_CXX20) && _HAS_CXX20
 #include <compare>
@@ -80,12 +81,14 @@ namespace YY
 
                 constexpr static TimeSpan __YYAPI FromMicroseconds(int64_t _uElapsedMicroseconds) noexcept
                 {
-                    return TimeSpan(_uElapsedMicroseconds * GetSecondsPerInternal() / (SecondsPerMillisecond * MillisecondsPerMicrosecond));
+                    // return TimeSpan(_uElapsedMicroseconds * GetSecondsPerInternal() / (SecondsPerMillisecond * MillisecondsPerMicrosecond));
+                    return TimeSpan(MulDiv64Fast(_uElapsedMicroseconds, GetSecondsPerInternal(), SecondsPerMillisecond * MillisecondsPerMicrosecond));
                 }
 
                 constexpr static TimeSpan __YYAPI FromMilliseconds(int64_t _uElapsedMilliseconds) noexcept
                 {
-                    return TimeSpan(_uElapsedMilliseconds * GetSecondsPerInternal() / SecondsPerMillisecond);
+                    // return TimeSpan(_uElapsedMilliseconds * GetSecondsPerInternal() / SecondsPerMillisecond);
+                    return TimeSpan(MulDiv64Fast(_uElapsedMilliseconds, GetSecondsPerInternal(), SecondsPerMillisecond));
                 }
 
                 constexpr static TimeSpan __YYAPI FromSeconds(int64_t _uElapsedSeconds) noexcept
@@ -110,12 +113,14 @@ namespace YY
         
                 constexpr int64_t __YYAPI GetMicroseconds() const noexcept
                 {
-                    return uElapsedInternal * SecondsPerMillisecond * MillisecondsPerMicrosecond / GetSecondsPerInternal();
+                    // return uElapsedInternal * SecondsPerMillisecond * MillisecondsPerMicrosecond / GetSecondsPerInternal();
+                    return MulDiv64Fast(uElapsedInternal, SecondsPerMillisecond * MillisecondsPerMicrosecond, GetSecondsPerInternal());
                 }
 
                 constexpr int64_t __YYAPI GetMilliseconds() const noexcept
                 {
-                    return uElapsedInternal * SecondsPerMillisecond / GetSecondsPerInternal();
+                    // return uElapsedInternal * SecondsPerMillisecond / GetSecondsPerInternal();
+                    return MulDiv64Fast(uElapsedInternal, SecondsPerMillisecond, GetSecondsPerInternal());
                 }
 
                 constexpr int64_t __YYAPI GetSeconds() const noexcept
