@@ -453,6 +453,9 @@
     <ClInclude Include="..\Include\MegaUI\Core\TextScaleManger.h">
       <Filter>头文件\Include\MegaUI\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\Base\Utils\MathUtils.h">
+      <Filter>头文件\Include\Base\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MegaUI.cpp">

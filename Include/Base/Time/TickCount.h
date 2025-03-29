@@ -2,6 +2,7 @@
 #include <Base/YY.h>
 #include <Base/Time/Common.h>
 #include <Base/Time/TimeSpan.h>
+#include <Base/Utils/MathUtils.h>
 
 #if defined(_HAS_CXX20) && _HAS_CXX20
 #include <compare>
@@ -217,7 +218,8 @@ namespace YY
                 template<TimePrecise InputPrecise>
                 constexpr TickCount& operator+=(const TimeSpan<InputPrecise>& _nSpan) noexcept
                 {
-                    uTickCountInternal += _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
+                    // uTickCountInternal += _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
+                    uTickCountInternal += UMulDiv64Fast(_nSpan.GetInternalValue(), GetSecondsPerInternal(), TimeSpan<InputPrecise>::GetSecondsPerInternal());
                     return *this;
                 }
 
@@ -232,7 +234,8 @@ namespace YY
                 template<TimePrecise InputPrecise>
                 constexpr TickCount& operator-=(const TimeSpan<InputPrecise>& _nSpan) noexcept
                 {
-                    uTickCountInternal -= _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
+                    // uTickCountInternal -= _nSpan.GetInternalValue() * GetSecondsPerInternal() / TimeSpan<InputPrecise>::GetSecondsPerInternal();
+                    uTickCountInternal -= UMulDiv64Fast(_nSpan.GetInternalValue(), GetSecondsPerInternal(), TimeSpan<InputPrecise>::GetSecondsPerInternal());
                     return *this;
                 }
 
@@ -246,7 +249,9 @@ namespace YY
 
                 constexpr TimeSpan<ePrecise> operator-(const TickCount& _oOther) const noexcept
                 {
-                    return TimeSpan<ePrecise>::FromInternalValue(int64_t(uTickCountInternal - _oOther.uTickCountInternal) * TimeSpan<ePrecise>::GetSecondsPerInternal() / int64_t(GetSecondsPerInternal()));
+                    int64_t _nSpanInternal = uTickCountInternal - _oOther.uTickCountInternal;
+                    // return TimeSpan<ePrecise>::FromInternalValue(_nSpanInternal * TimeSpan<ePrecise>::GetSecondsPerInternal() / int64_t(GetSecondsPerInternal()));
+                    return TimeSpan<ePrecise>::FromInternalValue(MulDiv64Fast(_nSpanInternal, TimeSpan<ePrecise>::GetSecondsPerInternal(), GetSecondsPerInternal()));
                 }
             };
         }

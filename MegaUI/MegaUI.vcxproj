@@ -209,6 +209,7 @@
     <ClInclude Include="..\Include\Base\Time\TimeSpan.h" />
     <ClInclude Include="..\Include\Base\Utils\ComObjectImpl.h" />
     <ClInclude Include="..\Include\Base\Utils\FileInfo.h" />
+    <ClInclude Include="..\Include\Base\Utils\MathUtils.h" />
     <ClInclude Include="..\Include\Base\Utils\SystemInfo.h" />
     <ClInclude Include="..\Include\Base\Utils\Version.h" />
     <ClInclude Include="..\Include\Base\YY.h" />
