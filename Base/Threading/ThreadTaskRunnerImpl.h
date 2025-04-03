@@ -40,21 +40,26 @@ namespace YY
                     volatile uint32_t uWakeupCountAndPushLock;
                     struct
                     {
-                        uint32_t bPushLock : 1;
-                        uint32_t bStopWakeup : 1;
-                        uint32_t bBackgroundLoop : 1;
-                        uint32_t uWakeupCount : 29;
+                        volatile uint32_t bPushLock : 1;
+                        volatile uint32_t bStopWakeup : 1;
+                        volatile uint32_t bInterrupt : 1;
+                        volatile uint32_t bBackgroundLoop : 1;
+                        uint32_t uWakeupCount : 28;
                     };
                 };
                 enum : uint32_t
                 {
                     LockedQueuePushBitIndex = 0,
                     StopWakeupBitIndex,
+                    InterruptBitIndex,
                     BackgroundLoopIndex,
                     WakeupCountStartBitIndex,
+                    StopWakeupRaw = 1 << StopWakeupBitIndex,
+                    InterruptRaw = 1 << InterruptBitIndex,
                     BackgroundLoopRaw = 1 << BackgroundLoopIndex,
                     WakeupOnceRaw = 1 << WakeupCountStartBitIndex,
                     UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
+                    TerminateTaskRunnerRaw = StopWakeupRaw | InterruptRaw,
                 };
 
                 volatile uint32_t uThreadId;
@@ -78,6 +83,10 @@ namespace YY
                 /////////////////////////////////////////////////////
                 // TaskRunner
                 virtual TaskRunnerStyle __YYAPI GetStyle() const noexcept override;
+
+                HRESULT __YYAPI Join(TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut) noexcept override;
+
+                HRESULT __YYAPI Interrupt() noexcept override;
 
                 /////////////////////////////////////////////////////
                 // ThreadTaskRunner

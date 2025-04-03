@@ -3,6 +3,7 @@
 #include <Base/Threading/TaskRunnerImpl.h>
 #include <Base/Sync/InterlockedQueue.h>
 #include <Base/Memory/UniquePtr.h>
+#include <Base/Sync/Sync.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -140,8 +141,9 @@ namespace YY
                     {
                         volatile uint32_t bPushLock : 1;
                         volatile uint32_t bStopWakeup : 1;
+                        volatile uint32_t bInterrupt : 1;
                         volatile uint32_t bPopLock : 1;
-                        int32_t uWakeupCount : 29;
+                        int32_t uWakeupCount : 28;
                         // 当前已经启动的线程数
                         uint32_t uParallelCurrent;
                     };
@@ -155,10 +157,14 @@ namespace YY
                 {
                     LockedQueuePushBitIndex = 0,
                     StopWakeupBitIndex,
+                    InterruptBitIndex,
                     LockedQueuePopBitIndex,
                     WakeupCountStartBitIndex,
+                    StopWakeupRaw = 1 << StopWakeupBitIndex,
+                    InterruptRaw = 1 << InterruptBitIndex,
                     WakeupOnceRaw = 1 << WakeupCountStartBitIndex,
                     UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
+                    TerminateTaskRunnerRaw = StopWakeupRaw | InterruptRaw,
                 };
 
                 uString szThreadDescription;
@@ -180,6 +186,36 @@ namespace YY
                 TaskRunnerStyle __YYAPI GetStyle() const noexcept override
                 {
                     return TaskRunnerStyle::None;
+                }
+
+                HRESULT __YYAPI Join(TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut) noexcept override
+                {
+                    if (GetCurrent() == this)
+                    {
+                        // 自己怎么Join自己？
+                        return E_UNEXPECTED;
+                    }
+
+                    const auto _uWakeupCountAndPushLock = Sync::BitOr(&TaskRunnerFlags.uWakeupCountAndPushLock, StopWakeupRaw);
+                    if (_uWakeupCountAndPushLock < WakeupOnceRaw)
+                    {
+                        return S_OK;
+                    }
+
+                    uint32_t _uTargetValye = TerminateTaskRunnerRaw;
+                    static_assert(sizeof(TaskRunnerFlags.uWakeupCountAndPushLock) == sizeof(_uTargetValye), "");
+                    if (!WaitEqualOnAddress(&TaskRunnerFlags.uWakeupCountAndPushLock, &_uTargetValye, sizeof(_uTargetValye), _nWaitTimeOut))
+                    {
+                        return __HRESULT_FROM_WIN32(ERROR_TIMEOUT);
+                    }
+
+                    return S_OK;
+                }
+
+                HRESULT __YYAPI Interrupt() noexcept override
+                {
+                    Sync::BitOr(&TaskRunnerFlags.uWakeupCountAndPushLock, StopWakeupRaw | InterruptRaw);
+                    return S_OK;
                 }
 
                 HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) override
@@ -276,6 +312,12 @@ namespace YY
 
                     ExecuteTaskRunner();
 
+                    if (IsShared() == false
+                        || TaskRunnerFlags.bInterrupt
+                        || (TaskRunnerFlags.bStopWakeup && TaskRunnerFlags.uWakeupCount == 0))
+                    {
+                        CleanupTaskQueue();
+                    }
 #if defined(_WIN32)
                     if (szThreadDescription.GetSize())
                         SetThreadDescription(GetCurrentThread(), _S(""));
@@ -292,6 +334,9 @@ namespace YY
                         // 如果为 1 (IsShared() == false)，那么说明用户已经释放了这个 TaskRunner
                         // 这时我们需要及时的退出，随后会将队列里的任务全部取消释放内存。
                         if (!IsShared())
+                            break;
+
+                        if (TaskRunnerFlags.bInterrupt)
                             break;
 
                         auto _pTask = PopTask();
@@ -345,13 +390,19 @@ namespace YY
 
                 void __YYAPI CleanupTaskQueue() noexcept
                 {
-                    for (;;)
+                    if (!Sync::BitSet(&TaskRunnerFlags.uWakeupCountAndPushLock, LockedQueuePopBitIndex))
                     {
-                        auto _pTask = RefPtr<TaskEntry>::FromPtr(oTaskQueue.Pop());
-                        if (!_pTask)
-                            break;
+                        for (;;)
+                        {
+                            auto _pTask = RefPtr<TaskEntry>::FromPtr(oTaskQueue.Pop());
+                            if (!_pTask)
+                                break;
 
-                        _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                            _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
+                        }
+
+                        Sync::Exchange(&TaskRunnerFlags.uWakeupCountAndPushLock, TerminateTaskRunnerRaw);
+                        WakeByAddressAll((PVOID)&TaskRunnerFlags.uWakeupCountAndPushLock);
                     }
                     return;
                 }

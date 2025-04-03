@@ -267,6 +267,7 @@
     <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
     <ClCompile Include="..\Base\Sync\CriticalSection.cpp" />
     <ClCompile Include="..\Base\Sync\SRWLock.cpp" />
+    <ClCompile Include="..\Base\Sync\Sync.cpp" />
     <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
     <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp" />

@@ -422,6 +422,11 @@ namespace YY
                 return Exchange(const_cast<volatile int32_t*>(_pDestination), _iExchange);
             }
 
+            inline uint32_t __YYAPI Exchange(volatile uint32_t* _pDestination, uint32_t _iExchange) noexcept
+            {
+                return (uint32_t)Exchange(reinterpret_cast<volatile int32_t*>(_pDestination), (int32_t)_iExchange);
+            }
+
             inline uint32_t __YYAPI Exchange(uint32_t* _pDestination, uint32_t _iExchange)
             {
                 return (uint32_t)Exchange((int32_t*)_pDestination, (int32_t)_iExchange);
@@ -436,9 +441,19 @@ namespace YY
 #endif
             }
 
+            inline uint64_t __YYAPI Exchange(volatile uint64_t* _pDestination, uint64_t _iExchange) noexcept
+            {
+                return (uint64_t)Exchange(reinterpret_cast<volatile int64_t*>(_pDestination), (int64_t)_iExchange);
+            }
+
             inline int64_t __YYAPI Exchange(int64_t* _pDestination, int64_t _iExchange)
             {
                 return Exchange(const_cast<volatile int64_t*>(_pDestination), _iExchange);
+            }
+
+            inline uint64_t __YYAPI Exchange(uint64_t* _pDestination, uint64_t _iExchange) noexcept
+            {
+                return (uint64_t)Exchange(reinterpret_cast<volatile uint64_t*>(_pDestination), _iExchange);
             }
 
             template<typename _Type>
@@ -465,7 +480,7 @@ namespace YY
                 return (_Type*)Exchange(reinterpret_cast<intptr_t*>(_ppDestination), (intptr_t)0);
             }
 
-            inline int32_t __YYAPI BitOr(_In_ int32_t* _pDestination, int32_t _iValue)
+            inline int32_t __YYAPI BitOr(_In_ volatile int32_t* _pDestination, int32_t _iValue) noexcept
             {
                 auto _iLastVlaue = *_pDestination;
 
@@ -481,9 +496,19 @@ namespace YY
                 return _iLastVlaue;
             }
 
-            inline uint32_t __YYAPI BitOr(_In_ uint32_t* _pDestination, uint32_t _iValue)
+            inline int32_t __YYAPI BitOr(_In_ int32_t* _pDestination, int32_t _iValue) noexcept
             {
-                return (uint32_t)BitOr((int32_t*)_pDestination, (int32_t)_iValue);
+                return BitOr(const_cast<volatile int32_t*>(_pDestination), _iValue);
+            }
+
+            inline uint32_t __YYAPI BitOr(_In_ volatile uint32_t* _pDestination, uint32_t _iValue) noexcept
+            {
+                return (uint32_t)BitOr((volatile int32_t*)_pDestination, (int32_t)_iValue);
+            }
+
+            inline uint32_t __YYAPI BitOr(_In_ uint32_t* _pDestination, uint32_t _iValue) noexcept
+            {
+                return BitOr((volatile uint32_t*)_pDestination, _iValue);
             }
 
             inline int32_t __YYAPI BitXor(_In_ int32_t* _pDestination, int32_t _iValue)

@@ -23,28 +23,31 @@ namespace YY
             private:
                 InterlockedQueue<TaskEntry> oTaskQueue;
 
-                // |uWeakupCount| bStopWakeup | bPushLock |
-                // | 31   ~   2 |     1       |    0      |
                 union
                 {
                     volatile uint32_t uWakeupCountAndPushLock;
                     struct
                     {
-                        uint32_t bPushLock : 1;
-                        uint32_t bStopWakeup : 1;
-                        uint32_t bBackgroundLoop : 1;
-                        uint32_t uWakeupCount : 29;
+                        volatile uint32_t bPushLock : 1;
+                        volatile uint32_t bStopWakeup : 1;
+                        volatile uint32_t bInterrupt : 1;
+                        volatile uint32_t bBackgroundLoop : 1;
+                        volatile uint32_t uWakeupCount : 29;
                     };
                 };
                 enum : uint32_t
                 {
                     LockedQueuePushBitIndex = 0,
                     StopWakeupBitIndex,
+                    InterruptBitIndex,
                     BackgroundLoopIndex,
                     WakeupCountStartBitIndex,
+                    StopWakeupRaw = 1 << StopWakeupBitIndex,
+                    InterruptRaw = 1 << InterruptBitIndex,
                     BackgroundLoopRaw = 1 << BackgroundLoopIndex,
                     WakeupOnceRaw = 1 << WakeupCountStartBitIndex,
                     UnlockQueuePushLockBitAndWakeupOnceRaw = WakeupOnceRaw - (1u << LockedQueuePushBitIndex),
+                    TerminateTaskRunnerRaw = StopWakeupRaw | InterruptRaw,
                 };
 
                 uint32_t uThreadId = Threading::GetCurrentThreadId();
@@ -97,6 +100,35 @@ namespace YY
                 uint32_t __YYAPI GetThreadId() override
                 {
                     return uThreadId;
+                }
+
+                HRESULT __YYAPI Join(TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut) noexcept override
+                {
+                    if (GetCurrent() == this)
+                    {
+                        // 自己怎么Join自己？
+                        return E_UNEXPECTED;
+                    }
+                    const auto _uWakeupCountAndPushLock = Sync::BitOr(&uWakeupCountAndPushLock, StopWakeupRaw);
+                    if (_uWakeupCountAndPushLock < WakeupOnceRaw)
+                    {
+                        return S_OK;
+                    }
+
+                    uint32_t _uTargetValye = TerminateTaskRunnerRaw;
+                    static_assert(sizeof(uWakeupCountAndPushLock) == sizeof(_uTargetValye), "");
+                    if (!WaitEqualOnAddress(&uWakeupCountAndPushLock, &_uTargetValye, sizeof(_uTargetValye), _nWaitTimeOut))
+                    {
+                        return __HRESULT_FROM_WIN32(ERROR_TIMEOUT);
+                    }
+
+                    return S_OK;
+                }
+
+                HRESULT __YYAPI Interrupt() noexcept override
+                {
+                    Sync::BitOr(&uWakeupCountAndPushLock, StopWakeupRaw | InterruptRaw);
+                    return S_OK;
                 }
 
                 //
@@ -188,14 +220,17 @@ namespace YY
                             break;
 
                         _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-
-                        if (Sync::Subtract(&uWakeupCountAndPushLock, uint32_t(WakeupOnceRaw)) < uint32_t(WakeupOnceRaw))
-                            break;
                     }
+
+                    Sync::Exchange(&uWakeupCountAndPushLock, TerminateTaskRunnerRaw);
+                    WakeByAddressAll((PVOID)&uWakeupCountAndPushLock);
                 }
 
                 HRESULT __YYAPI Wakeup() noexcept
                 {
+                    if (bStopWakeup)
+                        return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
+
                     if (PostMessageW(hTaskRunnerWnd, kExecuteTaskRunnerMsg, 0, 0))
                         return S_OK;
 
@@ -212,6 +247,11 @@ namespace YY
                     do
                     {
                         if (!IsShared())
+                        {
+                            break;
+                        }
+
+                        if (bInterrupt)
                         {
                             break;
                         }
@@ -288,6 +328,13 @@ namespace YY
                         if (_uMsg == kExecuteTaskRunnerMsg)
                         {
                             _pThreadTaskRunner->ExecuteTaskRunner();
+
+                            if (_pThreadTaskRunner->IsShared() == false
+                                || _pThreadTaskRunner->bInterrupt
+                                || (_pThreadTaskRunner->bStopWakeup && _pThreadTaskRunner->uWakeupCount == 0))
+                            {
+                                _pThreadTaskRunner->CleanupTaskQueue();
+                            }
                         }
                         else if (_uMsg == WM_TIMER)
                         {

@@ -569,6 +569,9 @@
     <ClCompile Include="Core\Windows\TextScaleManger.cpp">
       <Filter>源文件\UI\Core\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\Base\Sync\Sync.cpp">
+      <Filter>源文件\Base\Sync</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="MegaUI.natvis">

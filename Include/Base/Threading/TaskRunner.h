@@ -408,6 +408,10 @@ namespace YY
                     return CreateWait(_hHandle, TimeSpan<TimePrecise::Millisecond>::GetMax(), std::move(_pfnTaskCallback));
                 }
 
+                virtual HRESULT __YYAPI Join(_In_ TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut = TimeSpan<TimePrecise::Millisecond>::GetMax()) noexcept = 0;
+
+                virtual HRESULT __YYAPI Interrupt() noexcept = 0;
+
             protected:
                 virtual HRESULT __YYAPI PostTaskInternal(_In_ RefPtr<TaskEntry> _pTask) = 0;
 

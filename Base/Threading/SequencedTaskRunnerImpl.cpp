@@ -29,6 +29,36 @@ namespace YY
                 return TaskRunnerStyle::Sequenced;
             }
 
+            HRESULT __YYAPI SequencedTaskRunnerImpl::Join(TimeSpan<TimePrecise::Millisecond> _nWaitTimeOut) noexcept
+            {
+                if (GetCurrent() == this)
+                {
+                    // 自己怎么Join自己？
+                    return E_UNEXPECTED;
+                }
+
+                const auto _uWakeupCountAndPushLock = Sync::BitOr(&uWakeupCountAndPushLock, StopWakeupRaw);
+                if (_uWakeupCountAndPushLock < WakeupOnceRaw)
+                {
+                    return S_OK;
+                }
+
+                uint32_t _uTargetValye = TerminateTaskRunnerRaw;
+                static_assert(sizeof(uWakeupCountAndPushLock) == sizeof(_uTargetValye), "");
+                if (!WaitEqualOnAddress(&uWakeupCountAndPushLock, &_uTargetValye, sizeof(_uTargetValye), _nWaitTimeOut))
+                {
+                    return __HRESULT_FROM_WIN32(ERROR_TIMEOUT);
+                }
+
+                return S_OK;
+            }
+
+            HRESULT __YYAPI SequencedTaskRunnerImpl::Interrupt() noexcept
+            {
+                Sync::BitOr(&uWakeupCountAndPushLock, StopWakeupRaw | InterruptRaw);
+                return S_OK;
+            }
+
             HRESULT __YYAPI SequencedTaskRunnerImpl::PostTaskInternal(RefPtr<TaskEntry> _pTask)
             {
                 _pTask->hr = E_PENDING;
@@ -36,7 +66,7 @@ namespace YY
                 auto _fFlags = uWakeupCountAndPushLock;
                 for (;;)
                 {
-                    if (_fFlags & (1 << StopWakeupBitIndex))
+                    if (_fFlags & StopWakeupRaw)
                     {
                         return YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED);
                     }
@@ -81,6 +111,13 @@ namespace YY
 
                 ExecuteTaskRunner();
 
+                if (IsShared() == false
+                    || bInterrupt
+                    || (bStopWakeup && uWakeupCount == 0))
+                {
+                    CleanupTaskQueue();
+                }
+
 #if defined(_WIN32)
                 if (szThreadDescription.GetSize())
                     SetThreadDescription(GetCurrentThread(), _S(""));
@@ -104,7 +141,12 @@ namespace YY
                         break;
                     _pTask->operator()();
                     _pTask->Release();
-                    if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
+
+                    const auto _uNewWakeupCountAndPushLock = Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw);
+                    if (_uNewWakeupCountAndPushLock & InterruptRaw)
+                        break;
+
+                    if (_uNewWakeupCountAndPushLock < WakeupOnceRaw)
                         break;
                 }
                 g_pTaskRunnerWeak = nullptr;
@@ -120,10 +162,9 @@ namespace YY
                         break;
 
                     _pTask->Wakeup(YY::Base::HRESULT_From_LSTATUS(ERROR_CANCELLED));
-
-                    if (Sync::Subtract(&uWakeupCountAndPushLock, WakeupOnceRaw) < WakeupOnceRaw)
-                        break;
                 }
+                Sync::Exchange(&uWakeupCountAndPushLock, TerminateTaskRunnerRaw);
+                WakeByAddressAll((PVOID)&uWakeupCountAndPushLock);
                 return;
             }
         }
