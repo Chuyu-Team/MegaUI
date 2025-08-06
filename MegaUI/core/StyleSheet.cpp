@@ -2,8 +2,8 @@
 #include <MegaUI/Core/StyleSheet.h>
 
 #include <MegaUI/Core/Element.h>
-#include <Base/Sync/Interlocked.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Sync/Interlocked.h>
+#include <YY/Base/Memory/RefPtr.h>
 
 #include <MegaUI/Parser/UIParser.h>
 
@@ -269,7 +269,7 @@ namespace YY
         {
             *_ppSheet = nullptr;
 
-            for (StyleSheet* _pSheet : g_GlobalStyleSheet)
+            for (RefPtr<StyleSheet> _pSheet : g_GlobalStyleSheet)
             {
                 auto _szDstId = _pSheet->GetSheetResourceID();
                 if (_szDstId.GetSize() != _szSheetResourceID.GetSize())

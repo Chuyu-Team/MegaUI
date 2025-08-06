@@ -1,10 +1,10 @@
 ﻿#pragma once
 // #include <dwrite.h>
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <Media/Rect.h>
 #include <Media/Color.h>
-#include <Base/Strings/StringView.h>
+#include <YY/Base/Strings/StringView.h>
 #include <Media/Font.h>
 
 #pragma pack(push, __YY_PACKING)

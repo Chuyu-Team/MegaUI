@@ -1,12 +1,12 @@
 ﻿#include "pch.h"
 #include <MegaUI/Parser/UIParser.h>
 
-#include <Base/Memory/Alloc.h>
-#include <Base/Strings/StringTransform.h>
+#include <YY/Base/Memory/Alloc.h>
+#include <YY/Base/Strings/StringTransform.h>
 #include <MegaUI/Parser/ValueParser.h>
 #include <MegaUI/Core/StyleSheet.h>
 #include <MegaUI/Render/FontEnumMap.h>
-#include <Base/SafeCast.h>
+#include <YY/Base/SafeCast.h>
 
 #define RAPIDXML_STATIC_POOL_SIZE 4 * 1024
 
@@ -418,7 +418,7 @@ namespace YY
         {
             *_ppSheet = nullptr;
 
-            for (StyleSheet* _pStyleSheet : StyleSheets)
+            for (RefPtr<StyleSheet> _pStyleSheet : StyleSheets)
             {
                 auto _szSheetResidTarget = _pStyleSheet->GetSheetResourceID();
                 if (_szSheetResourceID.GetSize() == _szSheetResidTarget.GetSize() && _szSheetResourceID.CompareI(_szSheetResidTarget.GetConstString()) == 0)

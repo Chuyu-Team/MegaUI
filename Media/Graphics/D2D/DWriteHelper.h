@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <dwrite.h>
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <Media/Graphics/DrawContext.h>
 
 #pragma pack(push, __YY_PACKING)

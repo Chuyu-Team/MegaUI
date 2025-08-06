@@ -5,7 +5,7 @@
 #include <GdiPlus.h>
 #endif
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <Media/Size.h>
 #include <Media/Point.h>
 

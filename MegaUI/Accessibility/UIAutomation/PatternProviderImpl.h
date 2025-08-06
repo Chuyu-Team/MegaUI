@@ -2,10 +2,10 @@
 #include <combaseapi.h>
 #include <UIAutomationCore.h>
 
-#include <Base/Utils/ComObjectImpl.h>
-#include <Base/Threading/TaskRunner.h>
+#include <YY/Base/Utils/ComObjectImpl.h>
+#include <YY/Base/Threading/TaskRunner.h>
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 

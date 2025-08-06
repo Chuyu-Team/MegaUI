@@ -159,60 +159,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp" />
-    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.h" />
-    <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h" />
-    <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h" />
-    <ClInclude Include="..\Base\Threading\ThreadPool.h" />
-    <ClInclude Include="..\Base\Threading\ThreadPoolForLinux.h" />
-    <ClInclude Include="..\Base\Threading\ThreadPoolForWindows.h" />
-    <ClInclude Include="..\Base\Threading\ThreadPoolWaitManger.h" />
-    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h" />
-    <ClInclude Include="..\Base\Threading\ThreadPoolTimerManger.h" />
-    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerProxyImpl.h" />
-    <ClInclude Include="..\Include\Base\Containers\Array.h" />
-    <ClInclude Include="..\Include\Base\Containers\ArrayView.h" />
-    <ClInclude Include="..\Include\Base\Containers\BitMap.h" />
-    <ClInclude Include="..\Include\Base\Containers\ConstructorPolicy.h" />
-    <ClInclude Include="..\Include\Base\Containers\HashSet.h" />
-    <ClInclude Include="..\Include\Base\Containers\Optional.h" />
-    <ClInclude Include="..\Include\Base\Containers\DoublyLinkedList.h" />
-    <ClInclude Include="..\Include\Base\Containers\SingleLinkedList.h" />
-    <ClInclude Include="..\Include\Base\Encoding.h" />
-    <ClInclude Include="..\Include\Base\ErrorCode.h" />
-    <ClInclude Include="..\Include\Base\Exception.h" />
-    <ClInclude Include="..\Include\Base\IO\File.h" />
-    <ClInclude Include="..\Include\Base\Memory\Alloc.h" />
-    <ClInclude Include="..\Include\Base\Memory\RefPtr.h" />
-    <ClInclude Include="..\Include\Base\Memory\UniquePtr.h" />
-    <ClInclude Include="..\Include\Base\Memory\WeakPtr.h" />
-    <ClInclude Include="..\Include\Base\SafeCast.h" />
-    <ClInclude Include="..\Include\Base\SAL.h" />
-    <ClInclude Include="..\Include\Base\Shared\Windows\km.h" />
-    <ClInclude Include="..\Include\Base\Strings\NString.h" />
-    <ClInclude Include="..\Include\Base\Strings\String.h" />
-    <ClInclude Include="..\Include\Base\Strings\StringTransform.h" />
-    <ClInclude Include="..\Include\Base\Strings\StringView.h" />
-    <ClInclude Include="..\Include\Base\Sync\AutoLock.h" />
-    <ClInclude Include="..\Include\Base\Sync\CriticalSection.h" />
-    <ClInclude Include="..\Include\Base\Sync\Interlocked.h" />
-    <ClInclude Include="..\Include\Base\Sync\InterlockedQueue.h" />
-    <ClInclude Include="..\Include\Base\Sync\InterlockedSingleLinkedList.h" />
-    <ClInclude Include="..\Include\Base\Sync\SRWLock.h" />
-    <ClInclude Include="..\Include\Base\Sync\Sync.h" />
-    <ClInclude Include="..\Include\Base\tchar.h" />
-    <ClInclude Include="..\Include\Base\Threading\Coroutine.h" />
-    <ClInclude Include="..\Include\Base\Threading\ProcessThreads.h" />
-    <ClInclude Include="..\Include\Base\Threading\TaskRunner.h" />
-    <ClInclude Include="..\Include\Base\Time\Common.h" />
-    <ClInclude Include="..\Include\Base\Time\TickCount.h" />
-    <ClInclude Include="..\Include\Base\Time\TimeSpan.h" />
-    <ClInclude Include="..\Include\Base\Utils\ComObjectImpl.h" />
-    <ClInclude Include="..\Include\Base\Utils\FileInfo.h" />
-    <ClInclude Include="..\Include\Base\Utils\MathUtils.h" />
-    <ClInclude Include="..\Include\Base\Utils\SystemInfo.h" />
-    <ClInclude Include="..\Include\Base\Utils\Version.h" />
-    <ClInclude Include="..\Include\Base\YY.h" />
     <ClInclude Include="..\Include\Media\Brushes\Brush.h" />
     <ClInclude Include="..\Include\Media\Color.h" />
     <ClInclude Include="..\Include\Media\Font.h" />
@@ -264,23 +210,6 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Base\Strings\StringTransform.cpp" />
-    <ClCompile Include="..\Base\Sync\CriticalSection.cpp" />
-    <ClCompile Include="..\Base\Sync\SRWLock.cpp" />
-    <ClCompile Include="..\Base\Sync\Sync.cpp" />
-    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp" />
-    <ClCompile Include="..\Base\Threading\TaskRunner.cpp" />
-    <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp" />
-    <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp" />
-    <ClCompile Include="..\Base\Threading\ThreadPoolForLinux.cpp">
-      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Linux'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp">
-      <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp" />
-    <ClCompile Include="..\Base\Utils\FileInfo.cpp" />
-    <ClCompile Include="..\Base\Utils\SystemInfo.cpp" />
     <ClCompile Include="..\Media\Font.cpp">
       <ExcludedFromBuild Condition="'$(TargetPlatformIdentifier)' != 'Windows'">true</ExcludedFromBuild>
     </ClCompile>
@@ -333,6 +262,13 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Common.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="YY.Base">
+      <Version>1.0.1-Beta5</Version>
+      <IncludeAssets>all</IncludeAssets>
+      <PrivateAssets>contentFiles</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

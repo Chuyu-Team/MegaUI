@@ -6,11 +6,11 @@
 #include <dwrite.h>
 #include <d3d10_1.h>
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <Media/Font.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Memory/RefPtr.h>
 #include <Media/Graphics/DrawContext.h>
-#include <Base/Containers/Optional.h>
+#include <YY/Base/Containers/Optional.h>
 
 #pragma pack(push, __YY_PACKING)
 

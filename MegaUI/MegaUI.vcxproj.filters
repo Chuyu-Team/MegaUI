@@ -13,65 +13,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="源文件\Base">
-      <UniqueIdentifier>{b2d76587-f02c-4e66-a9b6-103ca4da3552}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Threading">
-      <UniqueIdentifier>{70ce5618-1412-4047-91ac-176a84a368fd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Threading\TaskRunner">
-      <UniqueIdentifier>{681ed380-96c6-447f-a87b-2d6b7d841c64}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Threading\TaskRunner\Windows">
-      <UniqueIdentifier>{81d23f6c-2fdc-45b6-b240-e41605dfe965}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Threading\TaskRunner\Linux">
-      <UniqueIdentifier>{c80dc393-4130-4dd6-a910-4c2c57d23eb9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Strings">
-      <UniqueIdentifier>{a29a58ba-73ae-4a48-8891-56488d2ca06a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Sync">
-      <UniqueIdentifier>{9ecb9081-2f41-4782-9baa-920ce6eec0a0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Utils">
-      <UniqueIdentifier>{5fdb3ef6-6993-4ef6-bf1e-57de7c90cc1f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\Include">
       <UniqueIdentifier>{64fd5b21-1825-49cf-8923-81cf6eac6c6c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base">
-      <UniqueIdentifier>{e30bd8e3-a8a7-44aa-abbf-ba920351d532}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Containers">
-      <UniqueIdentifier>{696fcdf5-ced7-4242-aa7e-da88a476da7c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\IO">
-      <UniqueIdentifier>{d22b809b-c2fb-41e0-a337-1bbbfc3918d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Memory">
-      <UniqueIdentifier>{320545f1-bd27-4af4-8da0-35cc70b0ea97}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Shared">
-      <UniqueIdentifier>{0d182ba7-71ba-4589-b619-d1c43aa00303}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Shared\Windows">
-      <UniqueIdentifier>{9689aaa3-f9c5-4905-8bd5-67067aa40e1a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Strings">
-      <UniqueIdentifier>{fd319d94-0a21-40b2-86ce-6e49ac658c6c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Sync">
-      <UniqueIdentifier>{a23f385b-9577-41f7-8db5-45bd589b9ba4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Threading">
-      <UniqueIdentifier>{8add4361-75d9-4446-8112-7857ad81cb38}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Time">
-      <UniqueIdentifier>{96160f80-961d-426f-9391-03526d4d1e2e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\Include\Base\Utils">
-      <UniqueIdentifier>{78ad2869-9f57-4785-a879-d13d3510a8d7}</UniqueIdentifier>
     </Filter>
     <Filter Include="头文件\Include\Media">
       <UniqueIdentifier>{09ebb5ac-3bf9-4723-8b14-7fdf0a968aaf}</UniqueIdentifier>
@@ -195,30 +138,6 @@
     <ClInclude Include="..\Media\Graphics\GDIPlus\GDIPlusHelper.h">
       <Filter>源文件\Media\Graphics\GDIPlus</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\SequencedTaskRunnerImpl.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunnerDispatchImpl.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\TaskRunnerImpl.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerImpl.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ParallelTaskRunnerImpl.hpp">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadPool.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadPoolForWindows.h">
-      <Filter>源文件\Base\Threading\TaskRunner\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadPoolForLinux.h">
-      <Filter>源文件\Base\Threading\TaskRunner\Linux</Filter>
-    </ClInclude>
     <ClInclude Include="..\ThirdParty\rapidxml\rapidxml.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -233,132 +152,6 @@
     </ClInclude>
     <ClInclude Include="..\Media\Graphics\GDIPlus\GdiPlusTextLayout.hpp">
       <Filter>源文件\Media\Graphics\GDIPlus</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadPoolTimerManger.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadPoolWaitManger.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Encoding.h">
-      <Filter>头文件\Include\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\ErrorCode.h">
-      <Filter>头文件\Include\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Exception.h">
-      <Filter>头文件\Include\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\SafeCast.h">
-      <Filter>头文件\Include\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\SAL.h">
-      <Filter>头文件\Include\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\tchar.h">
-      <Filter>头文件\Include\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\YY.h">
-      <Filter>头文件\Include\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\Array.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\ArrayView.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\BitMap.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\ConstructorPolicy.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\HashSet.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\Optional.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\IO\File.h">
-      <Filter>头文件\Include\Base\IO</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Memory\Alloc.h">
-      <Filter>头文件\Include\Base\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Memory\RefPtr.h">
-      <Filter>头文件\Include\Base\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Memory\UniquePtr.h">
-      <Filter>头文件\Include\Base\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Memory\WeakPtr.h">
-      <Filter>头文件\Include\Base\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Strings\NString.h">
-      <Filter>头文件\Include\Base\Strings</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Strings\String.h">
-      <Filter>头文件\Include\Base\Strings</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Strings\StringTransform.h">
-      <Filter>头文件\Include\Base\Strings</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Strings\StringView.h">
-      <Filter>头文件\Include\Base\Strings</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Sync\AutoLock.h">
-      <Filter>头文件\Include\Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Sync\CriticalSection.h">
-      <Filter>头文件\Include\Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Sync\Interlocked.h">
-      <Filter>头文件\Include\Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Sync\InterlockedQueue.h">
-      <Filter>头文件\Include\Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Sync\InterlockedSingleLinkedList.h">
-      <Filter>头文件\Include\Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Sync\SRWLock.h">
-      <Filter>头文件\Include\Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Sync\Sync.h">
-      <Filter>头文件\Include\Base\Sync</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Threading\Coroutine.h">
-      <Filter>头文件\Include\Base\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Threading\ProcessThreads.h">
-      <Filter>头文件\Include\Base\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Threading\TaskRunner.h">
-      <Filter>头文件\Include\Base\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Time\Common.h">
-      <Filter>头文件\Include\Base\Time</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Time\TickCount.h">
-      <Filter>头文件\Include\Base\Time</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Time\TimeSpan.h">
-      <Filter>头文件\Include\Base\Time</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Utils\ComObjectImpl.h">
-      <Filter>头文件\Include\Base\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Utils\FileInfo.h">
-      <Filter>头文件\Include\Base\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Utils\SystemInfo.h">
-      <Filter>头文件\Include\Base\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Utils\Version.h">
-      <Filter>头文件\Include\Base\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Shared\Windows\km.h">
-      <Filter>头文件\Include\Base\Shared\Windows</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Media\Color.h">
       <Filter>头文件\Include\Media</Filter>
@@ -438,23 +231,11 @@
     <ClInclude Include="..\Include\MegaUI\Window\WindowElement.h">
       <Filter>头文件\Include\MegaUI\Window</Filter>
     </ClInclude>
-    <ClInclude Include="..\Base\Threading\ThreadTaskRunnerProxyImpl.h">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\MegaUI\Core\Unit.h">
       <Filter>头文件\Include\MegaUI\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\SingleLinkedList.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Containers\DoublyLinkedList.h">
-      <Filter>头文件\Include\Base\Containers</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\MegaUI\Core\TextScaleManger.h">
       <Filter>头文件\Include\MegaUI\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Base\Utils\MathUtils.h">
-      <Filter>头文件\Include\Base\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -503,9 +284,6 @@
     <ClCompile Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.cpp">
       <Filter>源文件\UI\Accessibility\UIAutomation</Filter>
     </ClCompile>
-    <ClCompile Include="..\Base\Strings\StringTransform.cpp">
-      <Filter>源文件\Base\Strings</Filter>
-    </ClCompile>
     <ClCompile Include="Control\Button.cpp">
       <Filter>源文件\UI\Control</Filter>
     </ClCompile>
@@ -527,50 +305,14 @@
     <ClCompile Include="..\Media\Graphics\DrawContext.cpp">
       <Filter>源文件\Media\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\Base\Threading\TaskRunner.cpp">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\TaskRunnerImpl.cpp">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\ThreadTaskRunnerImpl.cpp">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\TaskRunnerDispatchImpl.cpp">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\SequencedTaskRunnerImpl.cpp">
-      <Filter>源文件\Base\Threading\TaskRunner</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\ThreadPoolForWindows.cpp">
-      <Filter>源文件\Base\Threading\TaskRunner\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Threading\ThreadPoolForLinux.cpp">
-      <Filter>源文件\Base\Threading\TaskRunner\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Sync\SRWLock.cpp">
-      <Filter>源文件\Base\Sync</Filter>
-    </ClCompile>
     <ClCompile Include="Control\TextBox.cpp">
       <Filter>源文件\UI\Control</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Sync\CriticalSection.cpp">
-      <Filter>源文件\Base\Sync</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Utils\SystemInfo.cpp">
-      <Filter>源文件\Base\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Utils\FileInfo.cpp">
-      <Filter>源文件\Base\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Core\Unit.cpp">
       <Filter>源文件\UI\Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\Windows\TextScaleManger.cpp">
       <Filter>源文件\UI\Core\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Base\Sync\Sync.cpp">
-      <Filter>源文件\Base\Sync</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

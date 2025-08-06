@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <Media/Rect.h>
 #include <Media/Size.h>
 #include <Media/Font.h>

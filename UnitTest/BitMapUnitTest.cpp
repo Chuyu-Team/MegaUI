@@ -5,7 +5,7 @@
 #include <tchar.h>
 #include <string>
 
-#include <Base/Containers/BitMap.h>
+#include <YY/Base/Containers/BitMap.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
 #include "D2D1_1DrawContext.h"
 
-#include <Base/Sync/Interlocked.h>
+#include <YY/Base/Sync/Interlocked.h>
 #include <Media/Graphics/D2D/DWriteHelper.h>
-#include <Base/Memory/UniquePtr.h>
+#include <YY/Base/Memory/UniquePtr.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 

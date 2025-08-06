@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <MegaUI/Window/WindowElement.h>
-#include <Base/Containers/Array.h>
-#include <Base/Containers/ArrayView.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Containers/Array.h>
+#include <YY/Base/Containers/ArrayView.h>
+#include <YY/Base/Memory/RefPtr.h>
 
 #include <MegaUI/Core/Property.h>
 #include <MegaUI/Core/StyleSheet.h>

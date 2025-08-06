@@ -5,10 +5,10 @@
 #include <tchar.h>
 #include <string>
 
-#include <Base/Threading/TaskRunner.h>
-#include <Base/Threading/ProcessThreads.h>
-#include <Base/Time/TickCount.h>
-#include <Base/Strings/String.h>
+#include <YY/Base/Threading/TaskRunner.h>
+#include <YY/Base/Threading/ProcessThreads.h>
+#include <YY/Base/Time/TickCount.h>
+#include <YY/Base/Strings/String.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

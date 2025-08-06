@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include <Base/Containers/Array.h>
-#include <Base/Containers/HashSet.h>
+#include <YY/Base/Containers/Array.h>
+#include <YY/Base/Containers/HashSet.h>
 
-#include <Base/Memory/Alloc.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Memory/Alloc.h>
+#include <YY/Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 

@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <MegaUI/Core/ControlInfo.h>
-#include <Base/Memory/Alloc.h>
+#include <YY/Base/Memory/Alloc.h>
 #include <MegaUI/Core/Element.h>
 
 #pragma pack(push, __YY_PACKING)

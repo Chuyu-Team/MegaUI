@@ -6,12 +6,12 @@
 #include <Windows.h>
 #endif
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <MegaUI/Window/WindowElement.h>
-#include <Base/Containers/Array.h>
+#include <YY/Base/Containers/Array.h>
 #include <MegaUI/Core/UIEvent.h>
 #include <Media/Graphics/DrawContext.h>
-#include <Base/Memory/UniquePtr.h>
+#include <YY/Base/Memory/UniquePtr.h>
 
 #pragma pack(push, __YY_PACKING)
 

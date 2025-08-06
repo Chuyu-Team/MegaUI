@@ -5,12 +5,12 @@
 #include <dxgi1_2.h>
 #include <dcomp.h>
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <Media/Font.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Memory/RefPtr.h>
 #include <Media/Graphics/DrawContext.h>
-#include <Base/Containers/Optional.h>
-#include <Base/Sync/Interlocked.h>
+#include <YY/Base/Containers/Optional.h>
+#include <YY/Base/Sync/Interlocked.h>
 
 #pragma pack(push, __YY_PACKING)
 

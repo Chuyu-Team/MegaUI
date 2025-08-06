@@ -1,6 +1,6 @@
-#pragma once
+﻿#pragma once
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 
 #pragma pack(push, __YY_PACKING)
 

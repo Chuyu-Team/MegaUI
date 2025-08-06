@@ -5,7 +5,7 @@
 #include <GdiPlus.h>
 #endif
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 
 #pragma pack(push, __YY_PACKING)
 

@@ -16,18 +16,18 @@
 #include <MegaUI/Control/Button.h>
 #include <MegaUI/Control/TextBox.h>
 #endif
-#include <Base/Strings/String.h>
-#include <Base/Threading/TaskRunner.h>
-#include <Base/Sync/InterlockedQueue.h>
-#include <Base/Threading/ProcessThreads.h>
+#include <YY/Base/Strings/String.h>
+#include <YY/Base/Threading/TaskRunner.h>
+#include <YY/Base/Sync/InterlockedQueue.h>
+#include <YY/Base/Threading/ProcessThreads.h>
 
-#include <Base/IO/File.h>
+#include <YY/Base/IO/File.h>
 
 #include <functional>
 
-#include <Base/Threading/Coroutine.h>
+#include <YY/Base/Threading/Coroutine.h>
 
-#include <Base/Utils/ComObjectImpl.h>
+#include <YY/Base/Utils/ComObjectImpl.h>
 #include <MegaUI/Core/TextScaleManger.h>
 
 using namespace YY;
@@ -319,7 +319,7 @@ Coroutine<void> TestCoroutine()
 //};
 
 
-#include <Base/Utils/SystemInfo.h>
+#include <YY/Base/Utils/SystemInfo.h>
 
 int wmain()
 {

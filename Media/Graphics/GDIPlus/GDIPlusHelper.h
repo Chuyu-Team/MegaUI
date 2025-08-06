@@ -3,9 +3,9 @@
 #include <atlcomcli.h>
 #include <GdiPlus.h>
 
-#include <Base/YY.h>
-#include <Base/Sync/Interlocked.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/YY.h>
+#include <YY/Base/Sync/Interlocked.h>
+#include <YY/Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 

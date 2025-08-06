@@ -3,9 +3,9 @@
 
 #include <map>
 
-#include <Base/Containers/Array.h>
+#include <YY/Base/Containers/Array.h>
 
-#include <Base/Memory/Alloc.h>
+#include <YY/Base/Memory/Alloc.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 

@@ -5,7 +5,7 @@
 #include <Media/Brushes/Brush.h>
 #include <Media/Size.h>
 #include <Media/Rect.h>
-#include <Base/Strings/String.h>
+#include <YY/Base/Strings/String.h>
 #include <Media/Font.h>
 #include <Media/Pens/Pen.h>
 
