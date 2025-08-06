@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 
 #ifdef _WIN32
 #include <Windows.h>

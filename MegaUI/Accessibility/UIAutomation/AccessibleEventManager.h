@@ -3,7 +3,7 @@
 #include <combaseapi.h>
 #include <UIAutomationClient.h>
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 
 #include <MegaUI/core/Element.h>
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>

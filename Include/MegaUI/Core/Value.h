@@ -6,15 +6,15 @@
 #include <Windows.h>
 #endif
 
-#include <Base/YY.h>
-#include <Base/Containers/Array.h>
-#include <Base/Strings/String.h>
+#include <YY/Base/YY.h>
+#include <YY/Base/Containers/Array.h>
+#include <YY/Base/Strings/String.h>
 #include <Media/Color.h>
 #include <Media/Rect.h>
 #include <Media/Font.h>
 #include <Media/Size.h>
 #include <Media/Point.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Memory/RefPtr.h>
 #include <MegaUI/Core/Unit.h>
 
 #pragma pack(push, __YY_PACKING)

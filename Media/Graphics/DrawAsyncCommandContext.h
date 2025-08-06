@@ -5,13 +5,13 @@
 
 #include <Media/Brushes/Brush.h>
 #include <Media/Point.h>
-#include <Base/Containers/Array.h>
-#include <Base/Sync/InterlockedSingleLinkedList.h>
-#include <Base/Containers/ArrayView.h>
+#include <YY/Base/Containers/Array.h>
+#include <YY/Base/Sync/InterlockedSingleLinkedList.h>
+#include <YY/Base/Containers/ArrayView.h>
 #include <Media/Graphics/DrawContext.h>
-#include <Base/Memory/UniquePtr.h>
-#include <Base/Containers/Optional.h>
-#include <Base/Threading/TaskRunner.h>
+#include <YY/Base/Memory/UniquePtr.h>
+#include <YY/Base/Containers/Optional.h>
+#include <YY/Base/Threading/TaskRunner.h>
 
 #pragma pack(push, __YY_PACKING)
 

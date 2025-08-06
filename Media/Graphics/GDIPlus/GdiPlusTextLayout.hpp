@@ -2,11 +2,11 @@
 #include <dwrite.h>
 #include <gdiplus.h>
 
-#include <Base/YY.h>
-#include <Base/Sync/Interlocked.h>
-#include <Base/Strings/String.h>
+#include <YY/Base/YY.h>
+#include <YY/Base/Sync/Interlocked.h>
+#include <YY/Base/Strings/String.h>
 #include <Media/Graphics/GDIPlus/GDIPlusHelper.h>
-#include <Base/Containers/Array.h>
+#include <YY/Base/Containers/Array.h>
 
 #pragma pack(push, __YY_PACKING)
 

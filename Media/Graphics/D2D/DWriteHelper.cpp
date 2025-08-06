@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 #include "DWriteHelper.h"
 
-#include <Base/Sync/Interlocked.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Sync/Interlocked.h>
+#include <YY/Base/Memory/RefPtr.h>
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 

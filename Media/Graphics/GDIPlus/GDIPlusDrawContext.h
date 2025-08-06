@@ -3,11 +3,11 @@
 #include <atlcomcli.h>
 #include <GdiPlus.h>
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <Media/Font.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Memory/RefPtr.h>
 #include <Media/Graphics/DrawContext.h>
-#include <Base/Containers/Array.h>
+#include <YY/Base/Containers/Array.h>
 #include <Media/Graphics/GDIPlus/GDIPlusHelper.h>
 
 #pragma pack(push, __YY_PACKING)

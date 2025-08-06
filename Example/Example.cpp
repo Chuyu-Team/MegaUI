@@ -16,18 +16,18 @@
 #include <MegaUI/Control/Button.h>
 #include <MegaUI/Control/TextBox.h>
 #endif
-#include <Base/Strings/String.h>
-#include <Base/Threading/TaskRunner.h>
-#include <Base/Sync/InterlockedQueue.h>
-#include <Base/Threading/ProcessThreads.h>
+#include <YY/Base/Strings/String.h>
+#include <YY/Base/Threading/TaskRunner.h>
+#include <YY/Base/Sync/InterlockedQueue.h>
+#include <YY/Base/Threading/ProcessThreads.h>
 
-#include <Base/IO/File.h>
+#include <YY/Base/IO/File.h>
 
 #include <functional>
 
-#include <Base/Threading/Coroutine.h>
+#include <YY/Base/Threading/Coroutine.h>
 
-#include <Base/Utils/ComObjectImpl.h>
+#include <YY/Base/Utils/ComObjectImpl.h>
 #include <MegaUI/Core/TextScaleManger.h>
 
 using namespace YY;
@@ -319,7 +319,7 @@ Coroutine<void> TestCoroutine()
 //};
 
 
-#include <Base/Utils/SystemInfo.h>
+#include <YY/Base/Utils/SystemInfo.h>
 
 int wmain()
 {
@@ -349,7 +349,7 @@ int wmain()
             std::cout << "TID : " << ::GetCurrentThreadId() << "TickXXXXXXXX " << GetTickCount() << " 投递的任务需要等 RunUIMessageLoop 开始。\n";
 
             _pAsynTaskRunner->PostDelayTask(
-                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+                TimeSpan::FromMilliseconds(5000),
                 []()
                 {
                     std::cout << "TID : " << ::GetCurrentThreadId() << "TickBBBBBBBBB " << GetTickCount() << " 投递的任务需要等 RunUIMessageLoop 开始。\n";
@@ -366,12 +366,12 @@ int wmain()
         });
 
     /*_pMainThreadRunner->PostDelayTask(
-        TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(10000),
+        TimeSpan::FromMilliseconds(10000),
         [_hEevent, _pMainThreadRunner]()
         {
             SetEvent(_hEevent);
             _pMainThreadRunner->PostDelayTask(
-                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(10000),
+                TimeSpan::FromMilliseconds(10000),
                 [_hEevent]()
                 {
                     SetEvent(_hEevent);
@@ -379,17 +379,17 @@ int wmain()
         });*/
 
 //    _pMainThreadRunner->PostDelayTask(
-//        TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(15000),
+//        TimeSpan::FromMilliseconds(15000),
 //        [_hEevent, _pAsynTaskRunner]()
 //        {
-//            _pAsynTaskRunner->PostDelayTask(TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(15000), []()
+//            _pAsynTaskRunner->PostDelayTask(TimeSpan::FromMilliseconds(15000), []()
 //                {
 //                    int j = 0;
 //                });
 //
 //             SetEvent(_hEevent);
 //            _pMainThreadRunner->PostDelayTask(
-//                TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(10000),
+//                TimeSpan::FromMilliseconds(10000),
 //                [_hEevent]()
 //                {
 //                    SetEvent(_hEevent);
@@ -405,7 +405,7 @@ int wmain()
         });
 
 
-    /*auto _pTimer = _pMainThreadRunner->CreateTimer(TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(1000),
+    /*auto _pTimer = _pMainThreadRunner->CreateTimer(TimeSpan::FromMilliseconds(1000),
         []()
         {
             std::cout << "TID : " << ::GetCurrentThreadId() << " Tick " << GetTickCount() << " 5秒后定时任务。\n";
@@ -413,7 +413,7 @@ int wmain()
 
 
     //_pMainThreadRunner->PostDelayTask(
-    //    TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+    //    TimeSpan::FromMilliseconds(5000),
     //    );
 
     // 注意保留生命周期，如果TaskRunner生命周期结束则自动取消内部所有任务！
@@ -436,7 +436,7 @@ int wmain()
 
     //}
 
-    //_pAsynTaskRunner->PostDelayTask(TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+    //_pAsynTaskRunner->PostDelayTask(TimeSpan::FromMilliseconds(5000),
     //    [&_hEvents]()
     //    {
 
@@ -455,7 +455,7 @@ int wmain()
     
 
    auto _pTimer2 = _pAsynTaskRunner->CreateTimer(
-       TimeSpan<TimePrecise::Millisecond>::FromMilliseconds(5000),
+       TimeSpan::FromMilliseconds(5000),
         []()
         {
             std::cout << "TID : " << ::GetCurrentThreadId() << " Tick " << GetTickCount() << " 5秒后定时任务XXXXX。\n";

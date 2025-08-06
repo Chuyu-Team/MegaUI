@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <MegaUI/Core/Element.h>
-#include <Base/Containers/Array.h>
+#include <YY/Base/Containers/Array.h>
 
 #pragma pack(push, __YY_PACKING)
 /*

@@ -201,7 +201,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="YY-Thunks">
-      <Version>1.1.5-Beta1</Version>
+      <Version>1.1.8</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

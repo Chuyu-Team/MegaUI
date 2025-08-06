@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Base/YY.h>
+#include <YY/Base/YY.h>
 #include <MegaUI/Core/Value.h>
 
 #pragma pack(push, __YY_PACKING)

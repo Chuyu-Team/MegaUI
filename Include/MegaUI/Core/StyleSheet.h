@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include <Base/YY.h>
-#include <Base/Strings/String.h>
+#include <YY/Base/YY.h>
+#include <YY/Base/Strings/String.h>
 #include <MegaUI/Core/Value.h>
-#include <Base/Containers/Array.h>
-#include <Base/Containers/ArrayView.h>
-#include <Base/Memory/RefPtr.h>
+#include <YY/Base/Containers/Array.h>
+#include <YY/Base/Containers/ArrayView.h>
+#include <YY/Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
 

@@ -5,11 +5,11 @@
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 
-#include <Base/Sync/Interlocked.h>
-#include <Base/Threading/TaskRunner.h>
+#include <YY/Base/Sync/Interlocked.h>
+#include <YY/Base/Threading/TaskRunner.h>
 
 #include <MegaUI/core/Element.h>
-#include <Base/Utils/ComObjectImpl.h>
+#include <YY/Base/Utils/ComObjectImpl.h>
 
 #pragma pack(push, __YY_PACKING)
 
