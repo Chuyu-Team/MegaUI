@@ -29,9 +29,10 @@
 | ------------------ | --------- | --------------------- | ---------
 | bool               | b         | `bool bSuccess;`      |
 | 字符               | ch        | `char chDriveLetter;` | char，wchar_t 统一。
-| 带符号数字         | n         | `int64_t nSize;`      | int8_t、int16_t、int32_t、float、double均适用，不考虑长度。
+| 带符号数字         | i         | `int64_t iSize;`      | int8_t、int16_t、int32_t。
 | 无符号整形         | u         | `uint64_t uSize;`     | uint8_t、uint16_t、uint32_t均适用，不考虑长度。
-| Flags              | f         | `uint32_t fMark;`     | 
+| 浮点               | f         | `float fValue;`       | float、double均适用，不考虑长度。
+| 位域组合           | 无        | `XXXStyles eXXXStyles;`  | 这类按位组合强烈定义位域，使用`enum class`，而不是使用宏。
 | Buffer变量的字节数 | cb        | `uint32_t cbBuffer;`  | 必须为无符号数，不考虑长度。
 | Buffer变量元素个数 | c         | `uint32_t cBuffer;`   | 必须为无符号数，不考虑长度。
 | Buffer变量字符数   | cch       | `uint32_t cchBuffer;` | 与`c` 类似，只是更加明确为字符数量。
@@ -44,7 +45,7 @@
 | 以 0 结尾的字符串  | sz        | `auto szName = "YY";` | `char*`，`wchar_t*` 统一。
 | 句柄等内核对象     | h         | `HANDLE hFile;`       |
 | 迭代器             | it        | `auto it = T.begin();`|
-| 数组               | arr       | `vector<int> arrData;`|
+| 数组               | 根据Item确定 | `vector<int> iDataArray;` | 注意尾部，加上Array显式表面这是一片连续的空间。
 | 其他类型（Other)   | o         | `Brush oBrush;`       | 当其他前置无法表示时可以考虑添加此前置。
 
 # 3. 编码风格
@@ -119,8 +120,8 @@
 * #include "源文件自身对应的头文件"
 * #include <公共库头文件>
   - CRT、STL相关头文件
-  - OS平台 SDK相关头文件
-  - 第三方公共库头文件（比如WTL、ZLIB、CURL等）
+  - 第三方公共库头文件（比如ZLIB、CURL等） 
+  - OS平台相关头文件
 * #include "项目内自身头文件"
 
 ```cpp
@@ -132,10 +133,10 @@
 // CRT、STL相关头文件
 #include <stdint.h>
 #include <string>
+// 第三方公共库头文件（比如ZLIB、CURL等）
+#include <zlib.h>
 // OS平台 SDK相关头文件
 #include <Windows.h>
-// 第三方公共库头文件（比如WTL、ZLIB、CURL等）
-#include <zlib.h>
 
 // 项目内自身头文件
 #include "Value.h"
