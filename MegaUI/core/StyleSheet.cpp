@@ -28,7 +28,7 @@ namespace YY
         }
 
         template<typename ArrayType>
-        HRESULT __YYAPI AddDeps(ArrayType& Array, const ArrayView<Decl>& DeclArray)
+        HRESULT __YYAPI AddDeps(ArrayType& Array, const Span<Decl>& DeclArray)
         {
             for (auto& DeclItem : DeclArray)
             {
@@ -50,7 +50,7 @@ namespace YY
         {
         }
 
-        HRESULT __YYAPI StyleSheet::AddRule(uString _szRule, IControlInfo* _pControlInfo, Array<Cond> _CondArray, const ArrayView<Decl>& _DeclArray)
+        HRESULT __YYAPI StyleSheet::AddRule(uString _szRule, IControlInfo* _pControlInfo, Array<Cond> _CondArray, const Span<Decl>& _DeclArray)
         {
             // 添加规则必须要有匹配条件
             if (_pControlInfo == nullptr || _DeclArray.GetSize() == 0)
@@ -254,14 +254,7 @@ namespace YY
 
         HRESULT StyleSheet::SetInherit(StyleSheet* _pInheritStyle)
         {
-            if (_pInheritStyle)
-                _pInheritStyle->AddRef();
-
-            if (pInheritStyle)
-                pInheritStyle->Release();
-
             pInheritStyle = _pInheritStyle;
-
             return S_OK;
         }
 
@@ -277,8 +270,7 @@ namespace YY
 
                 if (_szDstId.CompareI(_szSheetResourceID) == 0)
                 {
-                    _pSheet->AddRef();
-                    *_ppSheet = _pSheet;
+                    *_ppSheet = _pSheet.Detach();
                     return S_OK;
                 }
             }

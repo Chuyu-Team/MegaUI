@@ -3,7 +3,7 @@
 #include <YY/Base/Strings/String.h>
 #include <MegaUI/Core/Value.h>
 #include <YY/Base/Containers/Array.h>
-#include <YY/Base/Containers/ArrayView.h>
+#include <YY/Base/Containers/Span.h>
 #include <YY/Base/Memory/RefPtr.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -227,7 +227,7 @@ namespace YY
             StyleSheet& operator=(StyleSheet const&) = delete;
 
             // 1
-            HRESULT __YYAPI AddRule(uString szRule, IControlInfo* _pControlInfo, Array<Cond> CondArray, const ArrayView<Decl>& DeclArray);
+            HRESULT __YYAPI AddRule(uString szRule, IControlInfo* _pControlInfo, Array<Cond> CondArray, const Span<Decl>& DeclArray);
             // 2
             void __YYAPI MakeImmutable();
             // 3

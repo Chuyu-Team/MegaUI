@@ -295,7 +295,7 @@ namespace YY
                 {
                     auto _pNext = _pEntry->pNext;
 
-                    YY::Base::Containers::ArrayView<const byte_t> _CommandDataView(_pEntry->oCommandData.GetData(), _pEntry->oCommandData.GetSize());
+                    YY::Base::Containers::Span<const byte_t> _CommandDataView(_pEntry->oCommandData.GetData(), _pEntry->oCommandData.GetSize());
 
                     while (_CommandDataView.GetSize() != 0)
                     {
@@ -374,7 +374,7 @@ namespace YY
 
                         pTargetDrawContext->PushAxisAlignedClip(Rect(0, 0, _pItem->PixelSize.Width, _pItem->PixelSize.Height));
 
-                        YY::Base::Containers::ArrayView<const byte_t> _CommandDataView(_pItem->oCommandData.GetData(), _pItem->oCommandData.GetSize());
+                        YY::Base::Containers::Span<const byte_t> _CommandDataView(_pItem->oCommandData.GetData(), _pItem->oCommandData.GetSize());
 
                         while (_CommandDataView.GetSize() != 0)
                         {

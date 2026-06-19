@@ -183,7 +183,7 @@ namespace YY
                     {
                         s_oD3D10Device1Cache.pDevice = nullptr;
                         s_oD3D10Device1Cache.bInit = false;
-                        _pD3D10Device1Cache->Release();
+                        _pD3D10Device1Cache.Reset();
                     }
 
                     ReleaseSRWLockExclusive(&s_oD3D10Device1Cache.oLock);

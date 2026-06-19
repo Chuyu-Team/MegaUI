@@ -797,7 +797,7 @@ namespace YY
                 // 随便写一个值，看起来比较特殊就可以了
                 *_pCooike = 0x12345;
 
-                _pDeferCycle->AddRef();
+                _pDeferCycle.Get()->AddRef();
                 ++_pDeferCycle->uEnter;
             }
         }
@@ -900,7 +900,7 @@ namespace YY
                         if (pGroupChangeRecord && pGroupChangeRecord->pElement)
                         {
                             pGroupChangeRecord->pElement->_iGCSlot = -1;
-                            _pDeferCycle->Release();
+                            _pDeferCycle.Get()->Release();
 
                             pGroupChangeRecord->pElement->OnGroupChanged(pGroupChangeRecord->fGroups & PropertyGroup::PG_NormalPriMask);
                         }
@@ -930,7 +930,7 @@ namespace YY
                         if (pGroupChangeRecord && pGroupChangeRecord->pElement)
                         {
                             pGroupChangeRecord->pElement->_iGCLPSlot = -1;
-                            _pDeferCycle->Release();
+                            _pDeferCycle.Get()->Release();
 
                             pGroupChangeRecord->pElement->OnGroupChanged(pGroupChangeRecord->fGroups & PropertyGroup::PG_LowPriMask);
                         }
@@ -1731,7 +1731,7 @@ namespace YY
 
             auto TempInt = _pDeferObject->uPropertyChangedPostSourceCount;
 
-            _pDeferObject->AddRef();
+            _pDeferObject.Get()->AddRef();
             _pPCRecord->iRefCount = 1;
             _pPCRecord->vC = -1;
             _pPCRecord->pElement = this;
@@ -1844,7 +1844,7 @@ namespace YY
                     {
                         pc->iRefCount = 0;
 
-                        pDeferObject->Release();
+                        pDeferObject.Get()->Release();
                     }
                     else
                     {
@@ -1901,7 +1901,7 @@ namespace YY
 
                         pPCRecord->iRefCount = 0;
 
-                        pDeferObject->Release();
+                        pDeferObject.Get()->Release();
                     }
 
                     if (pPCRecord->pElement && pDeferObject->uPropertyChangedFireCount == pPCRecord->pElement->_iPCTail)

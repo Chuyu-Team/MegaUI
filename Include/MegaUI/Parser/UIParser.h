@@ -3,7 +3,7 @@
 #include <YY/Base/YY.h>
 #include <MegaUI/Window/WindowElement.h>
 #include <YY/Base/Containers/Array.h>
-#include <YY/Base/Containers/ArrayView.h>
+#include <YY/Base/Containers/Span.h>
 #include <YY/Base/Memory/RefPtr.h>
 
 #include <MegaUI/Core/Property.h>
@@ -141,7 +141,7 @@ namespace YY
             static HRESULT __YYAPI ParserFontValue(ExprNode* _pExprNode, Value* _pValue);
 
             HRESULT __YYAPI Play(
-                _In_ ArrayView<const uint8_t>& _ByteCode,
+                _In_ Span<const uint8_t>& _ByteCode,
                 _In_ UIParserPlayContext* _pContext,
                 _In_opt_ Element* _pTopLevel,
                 _Out_opt_ intptr_t* _pCooike,

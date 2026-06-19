@@ -265,7 +265,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="YY.Base">
-      <Version>1.1.0-Beta1</Version>
+      <Version>1.1.2-Beta.3</Version>
       <IncludeAssets>all</IncludeAssets>
       <PrivateAssets>contentFiles</PrivateAssets>
     </PackageReference>

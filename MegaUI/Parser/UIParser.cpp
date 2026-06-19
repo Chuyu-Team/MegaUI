@@ -355,7 +355,7 @@ namespace YY
             {
                 if (Recorder.szResourceID.GetSize() != _szResID.GetSize() || _szResID.CompareI(Recorder.szResourceID.GetConstString()) != 0)
                     continue;
-                ArrayView<const uint8_t> _ByteCode(Recorder.ByteCode.GetData(), Recorder.ByteCode.GetSize());
+                Span<const uint8_t> _ByteCode(Recorder.ByteCode.GetData(), Recorder.ByteCode.GetSize());
 
                 if (_ByteCode.GetSize() <= sizeof(ByteCodeBegin) + sizeof(ByteCodeEnd))
                 {
@@ -423,8 +423,7 @@ namespace YY
                 auto _szSheetResidTarget = _pStyleSheet->GetSheetResourceID();
                 if (_szSheetResourceID.GetSize() == _szSheetResidTarget.GetSize() && _szSheetResourceID.CompareI(_szSheetResidTarget.GetConstString()) == 0)
                 {
-                    _pStyleSheet->AddRef();
-                    *_ppSheet = _pStyleSheet;
+                    *_ppSheet = _pStyleSheet.Detach();
                     return S_OK;
                 }
             }
@@ -1266,7 +1265,7 @@ namespace YY
             return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
         }
         
-        HRESULT __YYAPI UIParser::Play(ArrayView<const uint8_t>& _ByteCode, UIParserPlayContext* _pContext, Element* _pTopLevel, intptr_t* _pCooike, Array<Element*, AllocPolicy::SOO>* _pElementArray)
+        HRESULT __YYAPI UIParser::Play(Span<const uint8_t>& _ByteCode, UIParserPlayContext* _pContext, Element* _pTopLevel, intptr_t* _pCooike, Array<Element*, AllocPolicy::SOO>* _pElementArray)
         {
             if (_pCooike)
                 *_pCooike = 0;
@@ -1581,7 +1580,7 @@ namespace YY
                 _pDecl->oValue = std::move(_Value);
             }
 
-            return _pStyleSheet->AddRule(uString(), _pControlInfo, CondArray, ArrayView<Decl>(_DeclArray.GetData(), _DeclArray.GetSize()));
+            return _pStyleSheet->AddRule(uString(), _pControlInfo, CondArray, Span<Decl>(_DeclArray.GetData(), _DeclArray.GetSize()));
         }
     } // namespace MegaUI
 } // namespace YY

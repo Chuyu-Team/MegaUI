@@ -7,7 +7,7 @@
 #include <Media/Point.h>
 #include <YY/Base/Containers/Array.h>
 #include <YY/Base/Sync/InterlockedSingleLinkedList.h>
-#include <YY/Base/Containers/ArrayView.h>
+#include <YY/Base/Containers/Span.h>
 #include <Media/Graphics/DrawContext.h>
 #include <YY/Base/Memory/UniquePtr.h>
 #include <YY/Base/Containers/Optional.h>
