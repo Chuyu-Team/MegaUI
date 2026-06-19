@@ -15,25 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="StringUnitTest.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="DynamicArrayUnitTest.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="ValueParserUnitTest.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="TaskRunnerUnitTest.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="BitMapUnitTest.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="AsyncFileUnitTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
