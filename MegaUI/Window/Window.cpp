@@ -9,6 +9,8 @@
 
 #ifdef _WIN32
 #include <MegaUI/Accessibility/UIAutomation/ElementAccessibleProviderImpl.h>
+#include <imm.h>
+#pragma comment(lib, "Imm32.lib")
 #endif
 
 __YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
@@ -17,6 +19,65 @@ namespace YY
 {
     namespace MegaUI
     {
+#ifdef _WIN32
+        static bool __YYAPI GetImeCompositionText(HIMC _hIMC, LONG _lIndex, uString* _pText)
+        {
+            if (!_hIMC || !_pText)
+                return false;
+
+            const auto _cb = ImmGetCompositionStringW(_hIMC, _lIndex, nullptr, 0);
+            if (_cb <= 0)
+            {
+                _pText->Clear();
+                return _cb == 0;
+            }
+
+            const auto _uCharCount = size_t(_cb) / sizeof(wchar_t);
+            auto _pBuffer = _pText->LockBuffer(_uCharCount);
+            if (!_pBuffer)
+                return false;
+
+            auto _cbWritten = ImmGetCompositionStringW(_hIMC, _lIndex, _pBuffer, DWORD(_cb));
+            if (_cbWritten < 0)
+            {
+                _pText->UnlockBuffer(0);
+                return false;
+            }
+
+            _pText->UnlockBuffer(size_t(_cbWritten) / sizeof(wchar_t));
+            return true;
+        }
+
+        static void __YYAPI SyncImeWindowPosition(HWND _hWnd, Element* _pTarget, ITextInputClient* _pTextInputClient)
+        {
+            if (!_hWnd || !_pTarget || !_pTextInputClient)
+                return;
+
+            auto _CaretRect = _pTextInputClient->GetTextCaretRect();
+            Point _CaretPoint(_CaretRect.Left, _CaretRect.Bottom);
+            _pTarget->ElementToWindow(&_CaretPoint);
+
+            auto _hIMC = ImmGetContext(_hWnd);
+            if (!_hIMC)
+                return;
+
+            CANDIDATEFORM _CandidateForm = {};
+            _CandidateForm.dwIndex = 0;
+            _CandidateForm.dwStyle = CFS_CANDIDATEPOS;
+            _CandidateForm.ptCurrentPos.x = LONG(_CaretPoint.X);
+            _CandidateForm.ptCurrentPos.y = LONG(_CaretPoint.Y);
+            ImmSetCandidateWindow(_hIMC, &_CandidateForm);
+
+            COMPOSITIONFORM _CompositionForm = {};
+            _CompositionForm.dwStyle = CFS_POINT;
+            _CompositionForm.ptCurrentPos.x = LONG(_CaretPoint.X);
+            _CompositionForm.ptCurrentPos.y = LONG(_CaretPoint.Y);
+            ImmSetCompositionWindow(_hIMC, &_CompositionForm);
+
+            ImmReleaseContext(_hWnd, _hIMC);
+        }
+#endif
+
         thread_local size_t s_uWindowCount = 0;
 
         Element* Window::g_pLastKeyboardFocusedElement = nullptr;
@@ -801,8 +862,99 @@ namespace YY
                 OnKeyUp(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam }, KeyboardEvent::GetEventModifier()));
                 break;
             case WM_CHAR:
+            {
+                auto _pTarget = pLastFocusedElement ? pLastFocusedElement : pHost;
+                auto _pTextInputClient = _pTarget ? _pTarget->GetTextInputClient() : nullptr;
+                const auto _uChar = uint32_t(_wParam);
+                const auto _bPrintableChar = _uChar >= 0x20 && _uChar != 0x7F;
+                if (_bPrintableChar && _pTextInputClient && _pTextInputClient->IsTextInputEnabled())
+                {
+                    if (uSuppressImeCharCount)
+                    {
+                        --uSuppressImeCharCount;
+                        return 0;
+                    }
+
+                    uString _InputText;
+                    _InputText.AppendChar(u16char_t(_wParam));
+                    if (_pTextInputClient->InsertText(_InputText))
+                    {
+                        SyncImeWindowPosition(_hWnd, _pTarget, _pTextInputClient);
+                        return 0;
+                    }
+                }
+
                 OnChar(KeyboardEvent(pLastFocusedElement ? pLastFocusedElement : pHost, PlatformEvent{ _hWnd, _uMsg, _wParam, _lParam }, KeyboardEvent::GetEventModifier()));
                 break;
+            }
+            case WM_IME_STARTCOMPOSITION:
+            {
+                auto _pTarget = pLastFocusedElement ? pLastFocusedElement : pHost;
+                auto _pTextInputClient = _pTarget ? _pTarget->GetTextInputClient() : nullptr;
+                if (_pTextInputClient && _pTextInputClient->IsTextInputEnabled() && _pTextInputClient->StartComposition())
+                {
+                    SyncImeWindowPosition(_hWnd, _pTarget, _pTextInputClient);
+                    return 0;
+                }
+                break;
+            }
+            case WM_IME_COMPOSITION:
+            {
+                auto _pTarget = pLastFocusedElement ? pLastFocusedElement : pHost;
+                auto _pTextInputClient = _pTarget ? _pTarget->GetTextInputClient() : nullptr;
+                if (!_pTextInputClient || !_pTextInputClient->IsTextInputEnabled())
+                    break;
+
+                bool _bHandled = false;
+                auto _hIMC = ImmGetContext(_hWnd);
+                if (_hIMC)
+                {
+                    if (_lParam & GCS_RESULTSTR)
+                    {
+                        uString _ResultText;
+                        if (GetImeCompositionText(_hIMC, GCS_RESULTSTR, &_ResultText))
+                        {
+                            uSuppressImeCharCount += uint32_t(_ResultText.GetSize());
+                            _bHandled = _pTextInputClient->CommitComposition(_ResultText) || _bHandled;
+                        }
+                    }
+
+                    if (_lParam & GCS_COMPSTR)
+                    {
+                        uString _CompText;
+                        if (GetImeCompositionText(_hIMC, GCS_COMPSTR, &_CompText))
+                        {
+                            LONG _lCompCaret = ImmGetCompositionStringW(_hIMC, GCS_CURSORPOS, nullptr, 0);
+                            const auto _uCompCaret = _lCompCaret < 0 ? 0u : uint32_t(_lCompCaret);
+                            _bHandled = _pTextInputClient->UpdateComposition(_CompText, _uCompCaret) || _bHandled;
+                        }
+                    }
+
+                    ImmReleaseContext(_hWnd, _hIMC);
+                }
+
+                if ((_lParam & (GCS_COMPSTR | GCS_RESULTSTR)) == 0)
+                    _bHandled = _pTextInputClient->CancelComposition() || _bHandled;
+
+                if (_bHandled)
+                {
+                    SyncImeWindowPosition(_hWnd, _pTarget, _pTextInputClient);
+                    return 0;
+                }
+                break;
+            }
+            case WM_IME_ENDCOMPOSITION:
+            {
+                auto _pTarget = pLastFocusedElement ? pLastFocusedElement : pHost;
+                auto _pTextInputClient = _pTarget ? _pTarget->GetTextInputClient() : nullptr;
+                if (_pTextInputClient && _pTextInputClient->IsTextInputEnabled())
+                {
+                    _pTextInputClient->EndComposition();
+                    SyncImeWindowPosition(_hWnd, _pTarget, _pTextInputClient);
+                    return 0;
+                }
+                break;
+            }
             case WM_GETOBJECT:
             {
                 LRESULT _lResult = 0;

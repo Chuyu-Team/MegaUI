@@ -47,6 +47,7 @@ namespace YY
             void* pTextScaleFactorChangedCookie = nullptr;
             // WM_UPDATEUISTATE的缓存
             uint16_t fUIState = 0;
+            uint32_t uSuppressImeCharCount = 0;
 
         public:
             Window();

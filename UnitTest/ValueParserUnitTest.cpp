@@ -13,7 +13,7 @@ using namespace YY::MegaUI;
 using namespace YY::Base;
 using namespace YY;
 
-namespace UnitTest
+namespace Parser
 {
     TEST_CLASS(ValueParserUnitTest)
     {

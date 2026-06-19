@@ -4135,6 +4135,11 @@ namespace YY
             return false;
         }
 #endif
+
+        ITextInputClient* __YYAPI Element::GetTextInputClient()
+        {
+            return nullptr;
+        }
         
         bool Element::OnKeyboardNavigate(const KeyboardNavigateEvent& _KeyEvent)
         {

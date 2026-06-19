@@ -5,6 +5,8 @@
 #include <wrl/client.h>
 #include <wrl/event.h>
 
+#pragma comment(lib, "runtimeobject.lib")
+
 #include <YY/Base/Containers/DoublyLinkedList.h>
 
 using Microsoft::WRL::ComPtr;

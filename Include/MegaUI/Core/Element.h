@@ -5,6 +5,7 @@
 #include <MegaUI/Core/ControlInfo.h>
 #include <Media/Graphics/DrawContext.h>
 #include <MegaUI/Core/UIEvent.h>
+#include <MegaUI/Core/TextInput.h>
 #include <MegaUI/Render/Render.h>
 #include <YY/Base/Containers/Optional.h>
 
@@ -884,6 +885,8 @@ namespace YY
             virtual bool __YYAPI OnKeyUp(const KeyboardEvent& _KeyEvent);
 
             virtual bool __YYAPI OnChar(const KeyboardEvent& _KeyEvent);
+
+            virtual ITextInputClient* __YYAPI GetTextInputClient();
 
             /// <summary>
             /// 处理键盘导航事件。
