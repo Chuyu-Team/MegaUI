@@ -13,7 +13,9 @@ namespace YY
         // clang-format off
         //     属性名称             属性Flags                                        属性组FLAGS                       DefaultValue函数                         CustomPropertyHandle                      pEnumMaps              BindCache                                                                    ValidValueType
 #define _MEGA_UI_TEXT_BOX_PROPERTY_TABLE(_APPLY) \
-    _APPLY(ReadOnly, PF_Normal, 0, &Value::CreateBoolFalse, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::boolean)
+    _APPLY(ReadOnly, PF_Normal, 0, &Value::CreateBoolFalse, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::boolean) \
+    _APPLY(AcceptsReturn, PF_Normal, 0, &Value::CreateBoolFalse, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::boolean) \
+    _APPLY(AcceptsTab, PF_Normal, 0, &Value::CreateBoolFalse, nullptr, nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(), ValueType::boolean)
 
     // clang-format on
 
@@ -34,6 +36,8 @@ namespace YY
             uint32_t uCompositionCaret = 0;
             uint32_t uSuppressNextCharCount = 0;
             uString szCompositionText;
+            bool bPreferredCaretXValid = false;
+            float nPreferredCaretX = 0;
 
         public:
             TextBox();
@@ -41,6 +45,14 @@ namespace YY
             bool __YYAPI IsReadOnly();
 
             HRESULT __YYAPI SetReadOnly(bool _bReadOnly);
+
+            bool __YYAPI IsAcceptsReturn();
+
+            HRESULT __YYAPI SetAcceptsReturn(bool _bAcceptsReturn);
+
+            bool __YYAPI IsAcceptsTab();
+
+            HRESULT __YYAPI SetAcceptsTab(bool _bAcceptsTab);
 
             uString __YYAPI GetText();
             
@@ -60,6 +72,12 @@ namespace YY
             void UpdateCaret(const Point& _Position, bool _bMoveAnchor);
 
             void GetCaret(/*const Point& _oTextLayoutOrigin, */Rect* _poCaretRect, TextBoxSelectedItems* _poSecectedRangeRect);
+
+            bool TryGetCaretMetrics(FLOAT* _pnX, FLOAT* _pnY, FLOAT* _pnHeight, Rect* _pBounds, RefPtr<IDWriteTextLayout>* _ppTextLayout);
+
+            bool MoveCaretVertically(bool _bMoveDown, bool _bExtendSelection);
+
+            bool MoveCaretToVisualLineBoundary(bool _bMoveToEnd, bool _bExtendSelection);
 
             void PaintCaret(_In_ DrawContext* _pDrawContext, _In_ const Point& _Origin);
 
@@ -107,6 +125,12 @@ namespace YY
 
             void NormalizeCaret(const uString& _Text);
 
+            uint32_t NormalizeCaretPosition(const uString& _Text, uint32_t _uPosition) const;
+
+            uint32_t GetPreviousCaretPosition(const uString& _Text, uint32_t _uPosition) const;
+
+            uint32_t GetNextCaretPosition(const uString& _Text, uint32_t _uPosition) const;
+
             bool TryGetSelectionRange(uint32_t* _puStart, uint32_t* _puEnd);
 
             bool ReplaceSelection(const uString& _Text);
@@ -120,6 +144,8 @@ namespace YY
             uint32_t GetDeleteBackwardLength(const uString& _Text) const;
 
             uint32_t GetDeleteForwardLength(const uString& _Text) const;
+
+            void ResetPreferredCaretX();
 
             void InvalidateTextBox();
 

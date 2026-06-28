@@ -8,6 +8,21 @@ namespace YY
 {
     namespace MegaUI
     {
+        namespace
+        {
+            inline bool IsHighSurrogate(u16char_t _ch)
+            {
+                const auto _uValue = uint32_t(_ch);
+                return _uValue >= 0xD800u && _uValue <= 0xDBFFu;
+            }
+
+            inline bool IsLowSurrogate(u16char_t _ch)
+            {
+                const auto _uValue = uint32_t(_ch);
+                return _uValue >= 0xDC00u && _uValue <= 0xDFFFu;
+            }
+        }
+
         _APPLY_MEGA_UI_STATIC_CONTROL_INFO(TextBox, _MEGA_UI_TEXT_BOX_PROPERTY_TABLE);
 
         TextBox::TextBox() = default;
@@ -21,6 +36,28 @@ namespace YY
         HRESULT __YYAPI TextBox::SetReadOnly(bool _bReadOnly)
         {
             return SetValue(TextBox::g_ControlInfoData.ReadOnlyProp, Value::CreateBool(_bReadOnly));
+        }
+
+        bool __YYAPI TextBox::IsAcceptsReturn()
+        {
+            auto _Value = GetValue(TextBox::g_ControlInfoData.AcceptsReturnProp);
+            return _Value.GetType() == ValueType::boolean && _Value.GetBool();
+        }
+
+        HRESULT __YYAPI TextBox::SetAcceptsReturn(bool _bAcceptsReturn)
+        {
+            return SetValue(TextBox::g_ControlInfoData.AcceptsReturnProp, Value::CreateBool(_bAcceptsReturn));
+        }
+
+        bool __YYAPI TextBox::IsAcceptsTab()
+        {
+            auto _Value = GetValue(TextBox::g_ControlInfoData.AcceptsTabProp);
+            return _Value.GetType() == ValueType::boolean && _Value.GetBool();
+        }
+
+        HRESULT __YYAPI TextBox::SetAcceptsTab(bool _bAcceptsTab)
+        {
+            return SetValue(TextBox::g_ControlInfoData.AcceptsTabProp, Value::CreateBool(_bAcceptsTab));
         }
 
         bool __YYAPI TextBox::IsTextInputEnabled()
@@ -149,13 +186,75 @@ namespace YY
 
         void TextBox::NormalizeCaret(const uString& _szText)
         {
-            const auto _uLength = uint32_t(_szText.GetSize());
+            if (uCaretPosition == UINT32_MAX)
+                uCaretPosition = uint32_t(_szText.GetSize());
+            else
+                uCaretPosition = NormalizeCaretPosition(_szText, uCaretPosition);
 
-            if (uCaretPosition == UINT32_MAX || uCaretPosition > _uLength)
-                uCaretPosition = _uLength;
-
-            if (uCaretAnchor == UINT32_MAX || uCaretAnchor > _uLength)
+            if (uCaretAnchor == UINT32_MAX)
                 uCaretAnchor = uCaretPosition;
+            else
+                uCaretAnchor = NormalizeCaretPosition(_szText, uCaretAnchor);
+        }
+
+        uint32_t TextBox::NormalizeCaretPosition(const uString& _szText, uint32_t _uPosition) const
+        {
+            const auto _uLength = uint32_t(_szText.GetSize());
+            if (_uPosition > _uLength)
+                _uPosition = _uLength;
+
+            if (_uPosition > 0 && _uPosition < _uLength)
+            {
+                if (_szText[_uPosition - 1] == u16char_t('\r') && _szText[_uPosition] == u16char_t('\n'))
+                    --_uPosition;
+                else if (IsHighSurrogate(_szText[_uPosition - 1]) && IsLowSurrogate(_szText[_uPosition]))
+                    --_uPosition;
+            }
+
+            return _uPosition;
+        }
+
+        uint32_t TextBox::GetPreviousCaretPosition(const uString& _szText, uint32_t _uPosition) const
+        {
+            _uPosition = NormalizeCaretPosition(_szText, _uPosition);
+            if (_uPosition == 0)
+                return 0;
+
+            if (_uPosition >= 2)
+            {
+                if (_szText[_uPosition - 2] == u16char_t('\r') && _szText[_uPosition - 1] == u16char_t('\n'))
+                    return _uPosition - 2;
+
+                if (IsHighSurrogate(_szText[_uPosition - 2]) && IsLowSurrogate(_szText[_uPosition - 1]))
+                    return _uPosition - 2;
+            }
+
+            return _uPosition - 1;
+        }
+
+        uint32_t TextBox::GetNextCaretPosition(const uString& _szText, uint32_t _uPosition) const
+        {
+            _uPosition = NormalizeCaretPosition(_szText, _uPosition);
+
+            const auto _uLength = uint32_t(_szText.GetSize());
+            if (_uPosition >= _uLength)
+                return _uLength;
+
+            if (_uPosition + 1 < _uLength)
+            {
+                if (_szText[_uPosition] == u16char_t('\r') && _szText[_uPosition + 1] == u16char_t('\n'))
+                    return _uPosition + 2;
+
+                if (IsHighSurrogate(_szText[_uPosition]) && IsLowSurrogate(_szText[_uPosition + 1]))
+                    return _uPosition + 2;
+            }
+
+            return _uPosition + 1;
+        }
+
+        void TextBox::ResetPreferredCaretX()
+        {
+            bPreferredCaretXValid = false;
         }
 
         bool TextBox::TryGetSelectionRange(uint32_t* _puStart, uint32_t* _puEnd)
@@ -210,6 +309,7 @@ namespace YY
                 return false;
 
             uCaretAnchor = uCaretPosition = _uSelectionStart + uint32_t(_szText.GetSize());
+            ResetPreferredCaretX();
             InvalidateTextBox();
             return true;
         }
@@ -245,6 +345,7 @@ namespace YY
                 return false;
 
             uCaretAnchor = uCaretPosition = uCaretPosition - _uDeleteLength;
+            ResetPreferredCaretX();
             InvalidateTextBox();
             return true;
         }
@@ -271,6 +372,7 @@ namespace YY
                 return false;
 
             uCaretAnchor = uCaretPosition;
+            ResetPreferredCaretX();
             InvalidateTextBox();
             return true;
         }
@@ -280,15 +382,8 @@ namespace YY
             if (uCaretPosition == 0 || uCaretPosition > _szText.GetSize())
                 return 0;
 
-            if (uCaretPosition >= 2)
-            {
-                const auto _uLow = uint32_t(_szText[uCaretPosition - 1]);
-                const auto _uHigh = uint32_t(_szText[uCaretPosition - 2]);
-                if (_uHigh >= 0xD800 && _uHigh <= 0xDBFF && _uLow >= 0xDC00 && _uLow <= 0xDFFF)
-                    return 2;
-            }
-
-            return 1;
+            const auto _uPrevious = GetPreviousCaretPosition(_szText, uCaretPosition);
+            return uCaretPosition - _uPrevious;
         }
 
         uint32_t TextBox::GetDeleteForwardLength(const uString& _szText) const
@@ -296,15 +391,8 @@ namespace YY
             if (uCaretPosition >= _szText.GetSize())
                 return 0;
 
-            if (uCaretPosition + 1 < _szText.GetSize())
-            {
-                const auto _uHigh = uint32_t(_szText[uCaretPosition]);
-                const auto _uLow = uint32_t(_szText[uCaretPosition + 1]);
-                if (_uHigh >= 0xD800 && _uHigh <= 0xDBFF && _uLow >= 0xDC00 && _uLow <= 0xDFFF)
-                    return 2;
-            }
-
-            return 1;
+            const auto _uNext = GetNextCaretPosition(_szText, uCaretPosition);
+            return _uNext - uCaretPosition;
         }
 
         void TextBox::InvalidateTextBox()
@@ -451,9 +539,12 @@ namespace YY
             }
 
             uCaretPosition = ToCommittedPosition(_uDisplayPos);
+            uCaretPosition = NormalizeCaretPosition(GetText(), uCaretPosition);
 
             if (_bMoveAnchor)
                 uCaretAnchor = uCaretPosition;
+
+            ResetPreferredCaretX();
 
             GetWindow()->InvalidateRect(nullptr);
             // PaintCaret();
@@ -550,6 +641,120 @@ namespace YY
 
         }
 
+        bool TextBox::TryGetCaretMetrics(FLOAT* _pnX, FLOAT* _pnY, FLOAT* _pnHeight, Rect* _pBounds, RefPtr<IDWriteTextLayout>* _ppTextLayout)
+        {
+            if (!_pnX || !_pnY || !_pnHeight)
+                return false;
+
+            auto _szText = GetText();
+            NormalizeCaret(_szText);
+
+            Rect _Bounds(Point(0, 0), GetExtent());
+            _Bounds.DeflateRect(ApplyFlowDirection(CmpBorderThickness));
+            _Bounds.DeflateRect(ApplyFlowDirection(CmpPadding));
+
+            auto _pTextLayout = CreateActiveTextLayout(_Bounds.GetSize());
+            if (!_pTextLayout)
+                return false;
+
+            DWRITE_HIT_TEST_METRICS _HitTestMetrics;
+            const auto _uDisplayCaretPosition = ToDisplayPosition(uCaretPosition);
+            if (FAILED(_pTextLayout->HitTestTextPosition(_uDisplayCaretPosition, FALSE, _pnX, _pnY, &_HitTestMetrics)))
+                return false;
+
+            *_pnHeight = _HitTestMetrics.height;
+
+            if (_pBounds)
+                *_pBounds = _Bounds;
+
+            if (_ppTextLayout)
+                *_ppTextLayout = _pTextLayout;
+
+            return true;
+        }
+
+        bool TextBox::MoveCaretVertically(bool _bMoveDown, bool _bExtendSelection)
+        {
+            FLOAT _nCurrentX = 0;
+            FLOAT _nCurrentY = 0;
+            FLOAT _nCurrentHeight = 0;
+            RefPtr<IDWriteTextLayout> _pTextLayout;
+            if (!TryGetCaretMetrics(&_nCurrentX, &_nCurrentY, &_nCurrentHeight, nullptr, &_pTextLayout))
+                return false;
+
+            if (!bPreferredCaretXValid)
+            {
+                nPreferredCaretX = _nCurrentX;
+                bPreferredCaretXValid = true;
+            }
+
+            const auto _nTargetY = _bMoveDown ? (_nCurrentY + _nCurrentHeight + 1.0f) : (_nCurrentY - 1.0f);
+
+            BOOL _bTrailingHit = FALSE;
+            BOOL _bInside = FALSE;
+            DWRITE_HIT_TEST_METRICS _HitTestMetrics;
+            if (FAILED(_pTextLayout->HitTestPoint(nPreferredCaretX, _nTargetY, &_bTrailingHit, &_bInside, &_HitTestMetrics)))
+                return false;
+
+            uint32_t _uDisplayPosition = _HitTestMetrics.textPosition;
+            if (_bTrailingHit)
+                _uDisplayPosition += _HitTestMetrics.length;
+
+            auto _szText = GetText();
+            const auto _uCommittedPosition = NormalizeCaretPosition(_szText, ToCommittedPosition(_uDisplayPosition));
+
+            if (_bExtendSelection)
+            {
+                uCaretPosition = _uCommittedPosition;
+            }
+            else
+            {
+                uCaretAnchor = uCaretPosition = _uCommittedPosition;
+            }
+
+            InvalidateTextBox();
+            return true;
+        }
+
+        bool TextBox::MoveCaretToVisualLineBoundary(bool _bMoveToEnd, bool _bExtendSelection)
+        {
+            FLOAT _nCurrentX = 0;
+            FLOAT _nCurrentY = 0;
+            FLOAT _nCurrentHeight = 0;
+            Rect _Bounds;
+            RefPtr<IDWriteTextLayout> _pTextLayout;
+            if (!TryGetCaretMetrics(&_nCurrentX, &_nCurrentY, &_nCurrentHeight, &_Bounds, &_pTextLayout))
+                return false;
+
+            BOOL _bTrailingHit = FALSE;
+            BOOL _bInside = FALSE;
+            DWRITE_HIT_TEST_METRICS _HitTestMetrics;
+            const auto _nTargetX = _bMoveToEnd ? (_Bounds.GetSize().Width + 1.0f) : -1.0f;
+            const auto _nTargetY = _nCurrentY + _nCurrentHeight * 0.5f;
+            if (FAILED(_pTextLayout->HitTestPoint(_nTargetX, _nTargetY, &_bTrailingHit, &_bInside, &_HitTestMetrics)))
+                return false;
+
+            uint32_t _uDisplayPosition = _HitTestMetrics.textPosition;
+            if (_bTrailingHit)
+                _uDisplayPosition += _HitTestMetrics.length;
+
+            auto _szText = GetText();
+            const auto _uCommittedPosition = NormalizeCaretPosition(_szText, ToCommittedPosition(_uDisplayPosition));
+
+            if (_bExtendSelection)
+            {
+                uCaretPosition = _uCommittedPosition;
+            }
+            else
+            {
+                uCaretAnchor = uCaretPosition = _uCommittedPosition;
+            }
+
+            ResetPreferredCaretX();
+            InvalidateTextBox();
+            return true;
+        }
+
         void TextBox::PaintCaret(_In_ DrawContext* _pDrawContext, _In_ const Point& _Origin)
         {
             if (uCaretPosition == UINT32_MAX)
@@ -632,116 +837,110 @@ namespace YY
 
                 return IsReadOnly();
             case VK_DOWN:
-                // _NavigateType = NavigatingType::Down;
-                break;
+            {
+                const auto _bShift = HasFlags(_KeyEvent.fModifiers, EventModifier::Shift);
+                return MoveCaretVertically(true, _bShift);
+            }
             case VK_UP:
-                // _NavigateType = NavigatingType::Up;
-                break;
+            {
+                const auto _bShift = HasFlags(_KeyEvent.fModifiers, EventModifier::Shift);
+                return MoveCaretVertically(false, _bShift);
+            }
             case VK_LEFT:
-                if (uCaretPosition == UINT32_MAX)
+            {
+                auto _szText = GetText();
+                NormalizeCaret(_szText);
+                ResetPreferredCaretX();
+
+                const auto _bShift = HasFlags(_KeyEvent.fModifiers, EventModifier::Shift);
+                uint32_t _uSelectionStart = 0;
+                uint32_t _uSelectionEnd = 0;
+
+                if (!_bShift && TryGetSelectionRange(&_uSelectionStart, &_uSelectionEnd))
                 {
-                    uCaretAnchor = 0;
-                    uCaretPosition = 0;
-                }
-                else if (uCaretAnchor != uCaretPosition)
-                {
-                    if (HasFlags(_KeyEvent.fModifiers, EventModifier::Shift))
-                    {
-                        if (uCaretAnchor != 0)
-                        {
-                            FLOAT nPointX, nPointY;
-                            DWRITE_HIT_TEST_METRICS _HitTestMetrics;
-                            if (SUCCEEDED(pTextLayout->HitTestTextPosition(uCaretAnchor - 1, TRUE, &nPointX, &nPointY, &_HitTestMetrics)))
-                            {
-                                uCaretAnchor = _HitTestMetrics.textPosition;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        uCaretPosition = uCaretAnchor;
-                    }
+                    uCaretAnchor = uCaretPosition = _uSelectionStart;
                 }
                 else
                 {
-                    if (uCaretAnchor != 0)
+                    const auto _uNewPosition = GetPreviousCaretPosition(_szText, uCaretPosition);
+                    if (_bShift)
                     {
-                        FLOAT nPointX, nPointY;
-                        DWRITE_HIT_TEST_METRICS _HitTestMetrics;
-                        if (SUCCEEDED(pTextLayout->HitTestTextPosition(uCaretAnchor - 1, FALSE, &nPointX, &nPointY, &_HitTestMetrics)))
-                        {
-                            if (HasFlags(_KeyEvent.fModifiers, EventModifier::Shift))
-                            {
-                                uCaretAnchor = _HitTestMetrics.textPosition;
-                            }
-                            else
-                            {
-                                uCaretAnchor = uCaretPosition = _HitTestMetrics.textPosition;
-                            }
-                        }
+                        uCaretPosition = _uNewPosition;
+                    }
+                    else
+                    {
+                        uCaretAnchor = uCaretPosition = _uNewPosition;
                     }
                 }
-                GetWindow()->InvalidateRect(nullptr);
+
+                InvalidateTextBox();
                 break;
+            }
             case VK_RIGHT:
-                if (uCaretPosition == UINT32_MAX)
+            {
+                auto _szText = GetText();
+                NormalizeCaret(_szText);
+                ResetPreferredCaretX();
+
+                const auto _bShift = HasFlags(_KeyEvent.fModifiers, EventModifier::Shift);
+                uint32_t _uSelectionStart = 0;
+                uint32_t _uSelectionEnd = 0;
+
+                if (!_bShift && TryGetSelectionRange(&_uSelectionStart, &_uSelectionEnd))
                 {
-                    uCaretAnchor = 0;
-                    uCaretPosition = 0;
-                }
-                else if (uCaretAnchor != uCaretPosition)
-                {
-                    if (HasFlags(_KeyEvent.fModifiers, EventModifier::Shift))
-                    {
-                        FLOAT nPointX, nPointY;
-                        DWRITE_HIT_TEST_METRICS _HitTestMetrics;
-                        if (SUCCEEDED(pTextLayout->HitTestTextPosition(uCaretAnchor, TRUE, &nPointX, &nPointY, &_HitTestMetrics)))
-                        {
-                            uCaretAnchor = _HitTestMetrics.textPosition + _HitTestMetrics.length;
-                        }
-                    }
-                    else
-                    {
-                        uCaretAnchor = uCaretPosition;
-                    }
+                    uCaretAnchor = uCaretPosition = _uSelectionEnd;
                 }
                 else
                 {
-                    FLOAT nPointX, nPointY;
-                    DWRITE_HIT_TEST_METRICS _HitTestMetrics;
-                    if (SUCCEEDED(pTextLayout->HitTestTextPosition(uCaretPosition, TRUE, &nPointX, &nPointY, &_HitTestMetrics)))
+                    const auto _uNewPosition = GetNextCaretPosition(_szText, uCaretPosition);
+                    if (_bShift)
                     {
-                        if (HasFlags(_KeyEvent.fModifiers, EventModifier::Shift))
-                        {
-                            uCaretAnchor = _HitTestMetrics.textPosition + _HitTestMetrics.length;
-                        }
-                        else
-                        {
-                            uCaretAnchor = uCaretPosition = _HitTestMetrics.textPosition + _HitTestMetrics.length;
-                        }
+                        uCaretPosition = _uNewPosition;
+                    }
+                    else
+                    {
+                        uCaretAnchor = uCaretPosition = _uNewPosition;
                     }
                 }
-                GetWindow()->InvalidateRect(nullptr);
+
+                InvalidateTextBox();
                 break;
+            }
             case VK_HOME:
             {
                 auto _szText = GetText();
                 NormalizeCaret(_szText);
 
-                if (HasFlags(_KeyEvent.fModifiers, EventModifier::Shift))
-                {
-                    if (uCaretAnchor == UINT32_MAX)
-                        uCaretAnchor = uCaretPosition;
+                const auto _bShift = HasFlags(_KeyEvent.fModifiers, EventModifier::Shift);
+                const auto _bCtrl = HasFlags(_KeyEvent.fModifiers, EventModifier::Control);
 
+                if (_bCtrl)
+                {
+                    if (_bShift)
+                    {
+                        uCaretPosition = 0;
+                    }
+                    else
+                    {
+                        uCaretAnchor = uCaretPosition = 0;
+                    }
+
+                    ResetPreferredCaretX();
+                    InvalidateTextBox();
+                    break;
+                }
+
+                if (MoveCaretToVisualLineBoundary(false, _bShift))
+                    return true;
+
+                if (_bShift)
                     uCaretPosition = 0;
-                }
                 else
-                {
                     uCaretAnchor = uCaretPosition = 0;
-                }
 
+                ResetPreferredCaretX();
                 InvalidateTextBox();
-                break;
+                return true;
             }
             case VK_END:
             {
@@ -749,20 +948,36 @@ namespace YY
                 NormalizeCaret(_szText);
 
                 const auto _uTextLength = uint32_t(_szText.GetSize());
-                if (HasFlags(_KeyEvent.fModifiers, EventModifier::Shift))
-                {
-                    if (uCaretAnchor == UINT32_MAX)
-                        uCaretAnchor = uCaretPosition;
+                const auto _bShift = HasFlags(_KeyEvent.fModifiers, EventModifier::Shift);
+                const auto _bCtrl = HasFlags(_KeyEvent.fModifiers, EventModifier::Control);
 
+                if (_bCtrl)
+                {
+                    if (_bShift)
+                    {
+                        uCaretPosition = _uTextLength;
+                    }
+                    else
+                    {
+                        uCaretAnchor = uCaretPosition = _uTextLength;
+                    }
+
+                    ResetPreferredCaretX();
+                    InvalidateTextBox();
+                    break;
+                }
+
+                if (MoveCaretToVisualLineBoundary(true, _bShift))
+                    return true;
+
+                if (_bShift)
                     uCaretPosition = _uTextLength;
-                }
                 else
-                {
                     uCaretAnchor = uCaretPosition = _uTextLength;
-                }
 
+                ResetPreferredCaretX();
                 InvalidateTextBox();
-                break;
+                return true;
             }
             default:
                 return false;
@@ -774,12 +989,36 @@ namespace YY
         bool __YYAPI TextBox::OnChar(const KeyboardEvent& _KeyEvent)
         {
             if (_KeyEvent.vKey == VK_TAB)
-                return Element::OnChar(_KeyEvent);
+            {
+                if (!IsAcceptsTab())
+                    return Element::OnChar(_KeyEvent);
+
+                if (IsReadOnly())
+                    return true;
+
+                uString _szTab;
+                _szTab.AppendChar(u16char_t('\t'));
+                return InsertTextCore(_szTab);
+            }
 
             if (uSuppressNextCharCount)
             {
                 --uSuppressNextCharCount;
                 return true;
+            }
+
+            if (_KeyEvent.vKey == VK_RETURN)
+            {
+                if (!IsAcceptsReturn())
+                    return false;
+
+                if (IsReadOnly())
+                    return true;
+
+                uString _szNewLine;
+                _szNewLine.AppendChar(u16char_t('\r'));
+                _szNewLine.AppendChar(u16char_t('\n'));
+                return InsertTextCore(_szNewLine);
             }
 
             if (_KeyEvent.vKey < 0x20)

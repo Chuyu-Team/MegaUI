@@ -19,6 +19,11 @@ namespace Control
                 return OnKeyDown(KeyboardEvent(this, PlatformEvent{ nullptr, WM_KEYDOWN, _uVKey, 0 }, _fModifiers));
             }
 
+            bool SendChar(u16char_t _uChar, EventModifier _fModifiers = EventModifier::None)
+            {
+                return OnChar(KeyboardEvent(this, PlatformEvent{ nullptr, WM_CHAR, _uChar, 0 }, _fModifiers));
+            }
+
             bool __YYAPI InsertText(const uString& _szText)
             {
                 return TextBox::InsertText(_szText);
@@ -55,6 +60,78 @@ namespace Control
     TEST_CLASS(TextBoxUnitTest)
     {
     public:
+        TEST_METHOD(AcceptsReturn与AcceptsTab默认应为false)
+        {
+            Assert::IsTrue(SUCCEEDED(TextBox::Register()));
+
+            TestTextBox _TextBox;
+            Assert::IsFalse(_TextBox.IsAcceptsReturn());
+            Assert::IsFalse(_TextBox.IsAcceptsTab());
+        }
+
+        TEST_METHOD(AcceptsReturn为false时回车不应插入换行)
+        {
+            Assert::IsTrue(SUCCEEDED(TextBox::Register()));
+
+            TestTextBox _TextBox;
+            Assert::IsTrue(_TextBox.InsertText(MakeText(L"ab")));
+
+            Assert::IsFalse(_TextBox.SendChar(VK_RETURN));
+            Assert::IsTrue(IsTextEqual(_TextBox, L"ab"));
+        }
+
+        TEST_METHOD(AcceptsTab为false时Tab不应插入文本)
+        {
+            Assert::IsTrue(SUCCEEDED(TextBox::Register()));
+
+            TestTextBox _TextBox;
+            Assert::IsTrue(_TextBox.InsertText(MakeText(L"ab")));
+
+            _TextBox.SendChar(VK_TAB);
+            Assert::IsTrue(IsTextEqual(_TextBox, L"ab"));
+        }
+
+        TEST_METHOD(AcceptsReturn与AcceptsTab启用后应插入对应字符)
+        {
+            Assert::IsTrue(SUCCEEDED(TextBox::Register()));
+
+            TestTextBox _TextBox;
+            Assert::IsTrue(SUCCEEDED(_TextBox.SetAcceptsReturn(true)));
+            Assert::IsTrue(SUCCEEDED(_TextBox.SetAcceptsTab(true)));
+
+            Assert::IsTrue(_TextBox.SendChar(VK_RETURN));
+            Assert::IsTrue(_TextBox.SendChar(VK_TAB));
+
+            Assert::IsTrue(IsTextEqual(_TextBox, L"\r\n\t"));
+        }
+
+        TEST_METHOD(CRLF应一次Backspace删除)
+        {
+            Assert::IsTrue(SUCCEEDED(TextBox::Register()));
+
+            TestTextBox _TextBox;
+            Assert::IsTrue(SUCCEEDED(_TextBox.SetAcceptsReturn(true)));
+            Assert::IsTrue(_TextBox.InsertText(MakeText(L"a")));
+            Assert::IsTrue(_TextBox.SendChar(VK_RETURN));
+
+            Assert::IsTrue(IsTextEqual(_TextBox, L"a\r\n"));
+            Assert::IsTrue(_TextBox.DeleteBackward());
+            Assert::IsTrue(IsTextEqual(_TextBox, L"a"));
+        }
+
+        TEST_METHOD(CRLF应一次DeleteForward删除)
+        {
+            Assert::IsTrue(SUCCEEDED(TextBox::Register()));
+
+            TestTextBox _TextBox;
+            Assert::IsTrue(_TextBox.InsertText(MakeText(L"a\r\nb")));
+            Assert::IsTrue(_TextBox.SendKeyDown(VK_HOME));
+            Assert::IsTrue(_TextBox.SendKeyDown(VK_RIGHT));
+
+            Assert::IsTrue(_TextBox.DeleteForward());
+            Assert::IsTrue(IsTextEqual(_TextBox, L"ab"));
+        }
+
         TEST_METHOD(连续Backspace应删除到空)
         {
             Assert::IsTrue(SUCCEEDED(TextBox::Register()));
@@ -125,6 +202,21 @@ namespace Control
 
             Assert::IsFalse(_TextBox.DeleteBackward());
             Assert::IsTrue(IsTextEqual(_TextBox, L"abcd"));
+        }
+
+        TEST_METHOD(只读模式下回车和Tab不应修改文本)
+        {
+            Assert::IsTrue(SUCCEEDED(TextBox::Register()));
+
+            TestTextBox _TextBox;
+            Assert::IsTrue(SUCCEEDED(_TextBox.SetAcceptsReturn(true)));
+            Assert::IsTrue(SUCCEEDED(_TextBox.SetAcceptsTab(true)));
+            Assert::IsTrue(_TextBox.InsertText(MakeText(L"ab")));
+            Assert::IsTrue(SUCCEEDED(_TextBox.SetReadOnly(true)));
+
+            Assert::IsTrue(_TextBox.SendChar(VK_RETURN));
+            Assert::IsTrue(_TextBox.SendChar(VK_TAB));
+            Assert::IsTrue(IsTextEqual(_TextBox, L"ab"));
         }
     };
 } // namespace UnitTest
