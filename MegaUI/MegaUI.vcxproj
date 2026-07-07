@@ -205,7 +205,6 @@
     <ClInclude Include="Accessibility\UIAutomation\WindowElementAccessibleProviderImpl.h" />
     <ClInclude Include="Accessibility\UIAutomation\WindowElementPatternProviderImpl.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="Parser\UIParser.h" />
     <ClInclude Include="Parser\ValueParser.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
@@ -240,11 +239,11 @@
     <ClCompile Include="Control\TextBox.cpp" />
     <ClCompile Include="Core\ControlInfo.cpp" />
     <ClCompile Include="Core\Element.cpp" />
+    <ClCompile Include="Core\Layout.cpp" />
     <ClCompile Include="Core\StyleSheet.cpp" />
     <ClCompile Include="Core\Unit.cpp" />
     <ClCompile Include="Core\Value.cpp" />
     <ClCompile Include="Core\Windows\TextScaleManger.cpp" />
-    <ClCompile Include="MegaUI.cpp" />
     <ClCompile Include="Parser\UIParser.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

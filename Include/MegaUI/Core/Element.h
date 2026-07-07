@@ -233,6 +233,7 @@ namespace YY
             friend NativeWindowHost;
             friend StyleSheet;
             friend Window;
+            friend Layout;
 
         protected:
             ElementRenderNode RenderNode;

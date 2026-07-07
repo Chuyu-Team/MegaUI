@@ -1,0 +1,77 @@
+﻿# SDD 执行状态 - linear-layout
+
+- 特性：linear-layout
+- 整体状态：🔄 进行中
+- 最新审查结论等级：✅ 可继续推进
+- 最新审查文档：无
+- 是否待复审：否
+- 最近阻断原因：
+- 最近审查时间：
+- 前次架构总览更新时间：
+- 最后更新：2026-07-07 18:18
+
+## 关联文档
+- PRD: docs/linear-layout/prd/PRD-linear-layout-v1.0.md
+- Specs: docs/linear-layout/specs/SPEC-linear-layout-v2.0.md
+- 架构文档: docs/linear-layout/architecture/ARCH-linear-layout-v1.0.md
+- 测试计划: docs/linear-layout/testing/TESTPLAN-linear-layout-v1.0.md
+- 实施计划: docs/linear-layout/plan/PLAN-linear-layout-v1.0.md
+- 详细测试用例: docs/linear-layout/testing/TESTCASE-linear-layout-v1.0.md
+
+## 步骤
+- ✅ 步骤 1 - 需求接收
+- ✅ 步骤 2 - 可行性检查
+- ✅ 步骤 3 - PRD
+- ✅ 步骤 4 - Specs
+- ✅ 步骤 5 - AI 技术审查
+- ✅ 步骤 6 - 架构文档
+- ✅ 步骤 7 - 更新 Wiki
+- ✅ 步骤 8 - 测试策略与测试计划
+- ✅ 步骤 9 - AI 测试策略与计划审查
+- ✅ 步骤 10 - 实施计划
+- ✅ 步骤 11 - 详细测试用例
+- ✅ 步骤 12 - AI 详细测试用例审查
+- 🔄 步骤 13 - 骨架构建验证
+- ⬜ 步骤 14 - 实现
+- ⬜ 步骤 15 - 构建与验证闭环
+- ⬜ 步骤 16 - AI审查
+- ⬜ 步骤 17 - 人工审查
+- ⬜ 步骤 18 - 维护项目架构总览
+- ⬜ 步骤 19 - 维护编码规范
+
+## 任务进度
+| 任务编号 | 任务名称 | 状态 | 备注 |
+| --- | --- | --- | --- |
+| T1 | Margin 属性落地 | ⬜ 待开始 | |
+| T2 | Element GetDesiredSize + Layout 路径 | ⬜ 待开始 | |
+| T3 | Value::CreateLayout | ⬜ 待开始 | |
+| T4 | Layout 基类工厂注册表 | ⬜ 待开始 | |
+| T5 | LinearLayout 骨架 + 头文件 | ⬜ 待开始 | |
+| T6 | LinearLayout UpdateDesiredSize | ⬜ 待开始 | |
+| T7 | LinearLayout DoLayout | ⬜ 待开始 | |
+| T8 | UIParser 适配 | ⬜ 待开始 | |
+| T9 | 单元测试 | ⬜ 待开始 | |
+| T10 | 工程文件更新 + 骨架构建 | ⬜ 待开始 | |
+
+## 已生成文件
+- PRD: docs/linear-layout/prd/PRD-linear-layout-v1.0.md
+- Specs: docs/linear-layout/specs/SPEC-linear-layout-v2.0.md
+- 架构文档: docs/linear-layout/architecture/ARCH-linear-layout-v1.0.md
+- 测试计划: docs/linear-layout/testing/TESTPLAN-linear-layout-v1.0.md
+- 实施计划: docs/linear-layout/plan/PLAN-linear-layout-v1.0.md
+- 详细测试用例: docs/linear-layout/testing/TESTCASE-linear-layout-v1.0.md
+- 状态文件: docs/linear-layout/SDD-linear-layout-status.md
+
+## 下一步动作
+- 骨架构建验证
+
+## 备注
+- 交叉轴对齐需求已纳入全部文档
+- FlushLayout 已确认跳过 LP_Absolute
+
+
+## 待确认问题
+- 
+
+## 风险
+- 

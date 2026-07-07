@@ -96,9 +96,6 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Parser\UIParser.h">
-      <Filter>源文件\UI\Parser</Filter>
-    </ClInclude>
     <ClInclude Include="Parser\ValueParser.h">
       <Filter>源文件\UI\Parser</Filter>
     </ClInclude>
@@ -239,9 +236,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MegaUI.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -313,6 +307,9 @@
     </ClCompile>
     <ClCompile Include="Core\Windows\TextScaleManger.cpp">
       <Filter>源文件\UI\Core\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Layout.cpp">
+      <Filter>源文件\UI\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
