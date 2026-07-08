@@ -2,7 +2,7 @@
 
 > 版本：v1.0
 > 状态：草稿
-> 最后更新：2026-07-07 17:14
+> 最后更新：2026-07-08 11:11
 > 关联 PRD：docs/linear-layout/prd/PRD-linear-layout-v1.0.md
 > 关联 Specs：docs/linear-layout/specs/SPEC-linear-layout-v2.0.md
 
@@ -30,8 +30,7 @@
 | `LinearLayout` | `UpdateDesiredSize`、`DoLayout`（垂直+水平，四种交叉轴对齐 × 两种方向） |
 | `Margin` 属性 | Get/Set、Cascade、Cmp 像素转换、间距计算 |
 | `Element::UpdateDesiredSize` | Layout 路径启用后正确调用 `Layout::UpdateDesiredSize` |
-| `Layout::LookupFactory` | 查找存在/不存在的布局名 |
-| `UIParser` | `ParserLayoutValue` 解析无参数/有参数/非法名称 |
+| `UIParser` | `ParserLayoutValue` 解析无参数/有参数/非法名称；`LookupLayoutParser` 查找存在/不存在的布局名 |
 | LP_None / LP_Absolute | 跳过逻辑 |
 
 ### 不覆盖
@@ -87,7 +86,7 @@
 | `"LinearLayout(Vertical, Center)"` | 创建 Vertical + Center |
 | `"UnknownLayout"` | 返回 ERROR_BAD_FORMAT |
 
-### 5.5 Layout::LookupFactory
+### 5.5 UIParser LookupLayoutParser
 
 | 场景 | 关键验证点 |
 |------|-----------|

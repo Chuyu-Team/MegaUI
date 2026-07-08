@@ -28,21 +28,9 @@ LinearLayoutOrientation __YYAPI LinearLayout::GetOrientation() const
     return eOrientation;
 }
 
-HRESULT __YYAPI LinearLayout::SetOrientation(LinearLayoutOrientation _eOrientation)
-{
-    eOrientation = _eOrientation;
-    return S_OK;
-}
-
 CrossAxisAlignment __YYAPI LinearLayout::GetCrossAxisAlignment() const
 {
     return eCrossAlign;
-}
-
-HRESULT __YYAPI LinearLayout::SetCrossAxisAlignment(CrossAxisAlignment _eAlign)
-{
-    eCrossAlign = _eAlign;
-    return S_OK;
 }
 
 void __YYAPI LinearLayout::DoLayout(Element* pElem, Size _oSize)

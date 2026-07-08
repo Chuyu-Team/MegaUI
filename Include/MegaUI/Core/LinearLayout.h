@@ -53,30 +53,16 @@ public:
         _Outptr_ Layout** _ppLayout);
 
     /// <summary>
-    /// 获取排列方向。
+    /// 获取排列方向（构造时确定，不可变）。
     /// </summary>
     /// <returns>当前排列方向。</returns>
     LinearLayoutOrientation __YYAPI GetOrientation() const;
 
     /// <summary>
-    /// 设置排列方向。
-    /// </summary>
-    /// <param name="_eOrientation">新的排列方向。</param>
-    /// <returns>操作成功返回 S_OK。</returns>
-    HRESULT __YYAPI SetOrientation(LinearLayoutOrientation _eOrientation);
-
-    /// <summary>
-    /// 获取交叉轴对齐方式。
+    /// 获取交叉轴对齐方式（构造时确定，不可变）。
     /// </summary>
     /// <returns>当前交叉轴对齐方式。</returns>
     CrossAxisAlignment __YYAPI GetCrossAxisAlignment() const;
-
-    /// <summary>
-    /// 设置交叉轴对齐方式。
-    /// </summary>
-    /// <param name="_eAlign">新的交叉轴对齐方式。</param>
-    /// <returns>操作成功返回 S_OK。</returns>
-    HRESULT __YYAPI SetCrossAxisAlignment(CrossAxisAlignment _eAlign);
 
 private:
     // --- 重写 Layout 虚函数 ---

@@ -151,12 +151,9 @@ public:
     // 仅 Create 工厂需要，ParserLinearLayout 在 UIParser.cpp 中实现
     // LinearLayout 类本身不包含解析逻辑
 
-    // 属性访问
+    // 属性访问（只读，方向与对齐方式由构造时确定）
     LinearLayoutOrientation __YYAPI GetOrientation() const;
-    HRESULT __YYAPI SetOrientation(LinearLayoutOrientation _eOrientation);
-
     CrossAxisAlignment __YYAPI GetCrossAxisAlignment() const;
-    HRESULT __YYAPI SetCrossAxisAlignment(CrossAxisAlignment _eAlign);
 
 private:
     LinearLayoutOrientation eOrientation = LinearLayoutOrientation::Vertical;
@@ -225,7 +222,9 @@ private:
 };
 ```
 
-### 4.2 ParserLinearLayout（UIParser.cpp 内部静态函数）
+> 方向与交叉轴对齐方式由 `Create()` 构造时确定，构造后不可变更。
+
+### 4.2
 
 `ParserLinearLayout` 是 `UIParser.cpp` 的文件作用域静态函数，通过 `g_LayoutFactoryTable` 注册。
 
@@ -514,7 +513,7 @@ LinearLayout 无需重写 OnAdd/OnRemove/OnLayoutPosChanged/Attach/Detach，复�
 ### 新增
 | 文件 | 说明 |
 |------|------|
-| `Include/MegaUI/Core/LinearLayout.h` | LinearLayout 类声明（Create/GetOrientation/SetOrientation/GetCrossAxisAlignment/SetCrossAxisAlignment/DoLayout/UpdateDesiredSize） |
+
 | `MegaUI/Core/LinearLayout.cpp` | LinearLayout 实现（Create + DoLayout + UpdateDesiredSize 等，不含解析逻辑） |
 
 ### 修改
