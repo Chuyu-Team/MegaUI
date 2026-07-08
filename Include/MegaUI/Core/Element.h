@@ -174,6 +174,7 @@ namespace YY
     _APPLY(BorderStyle,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                             nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                          ValueType::int32_t ) \
     _APPLY(BorderColor,    PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateColorTransparant,       nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_NONE(),                                                     ValueType::Color  ) \
     _APPLY(Padding,        PF_TriLevel | PF_Cascade,              PG_AffectsDisplay | PG_AffectsDesiredSize,      &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecPadding), 0, YY_UFIELD_OFFSET(Element, CmpPadding), 1), ValueType::UnitRect) \
+    _APPLY(Margin,         PF_TriLevel | PF_Cascade,              PG_AffectsDesiredSize | PG_AffectsLayout | PG_AffectsParentLayout, &Value::CreateRectZero,     nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecMargin), 0, YY_UFIELD_OFFSET(Element, CmpMargin), 1), ValueType::UnitRect) \
     _APPLY(FocusVisible,   PF_Normal | PF_Cascade,                PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateBoolFalse,              nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_BOOL(0, UFIELD_BITMAP_OFFSET(Element, ElementBits, bSpecFocusVisible), 0), ValueType::boolean ) \
     _APPLY(FocusThickness, PF_TriLevel | PF_Cascade,              PG_AffectsDesiredSize|PG_AffectsDisplay,        &Value::CreateRectZero,               nullptr,                             nullptr, nullptr, _MEGA_UI_PROP_BIND_RECT_EX(0, 0, YY_UFIELD_OFFSET(Element, SpecFocusThickness), 0, YY_UFIELD_OFFSET(Element, CmpFocusThickness), 1), ValueType::UnitRect) \
     _APPLY(FocusStyle,     PF_Normal | PF_Cascade,                PG_AffectsDisplay,                              &Value::CreateInt32Zero,              nullptr,                             nullptr, BorderStyleEnumMap, _MEGA_UI_PROP_BIND_NONE(),                                          ValueType::int32_t) \
@@ -346,6 +347,9 @@ namespace YY
             // 内边距
             UnitRect SpecPadding;
             Rect CmpPadding;
+            // 外边距
+            UnitRect SpecMargin;
+            Rect CmpMargin;
             // 边框宽度，四个方向，左上右下
             UnitRect SpecFocusThickness;
             Rect CmpFocusThickness;

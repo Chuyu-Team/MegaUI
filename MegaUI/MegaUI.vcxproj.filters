@@ -311,6 +311,9 @@
     <ClCompile Include="Core\Layout.cpp">
       <Filter>源文件\UI\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\LinearLayout.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="MegaUI.natvis">

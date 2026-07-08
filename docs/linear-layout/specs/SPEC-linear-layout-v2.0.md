@@ -40,7 +40,7 @@
 |------|------|------|
 | `LinearLayout` | `Include/MegaUI/Core/LinearLayout.h` + `MegaUI/Core/LinearLayout.cpp` | 继承 `Layout`，实现垂直/水平线性排列 |
 | `Margin` 属性 | `Element` 成员 + 属性表 | Element 级外边距，类型 `UnitRect`，默认 0 |
-| `Layout` 基类扩展 | `Layout.h` + `Layout.cpp` | 新增静态工厂注册/查找、`g_LayoutFactoryTable` |
+| `Layout` 基类 | `Layout.h` + `Layout.cpp` | 虚函数基类，不新增任何成员 |
 | UIParser 适配 | `UIParser` | 新增 `ParserLayoutValue()` + `case ValueType::Layout` |
 
 ---
@@ -93,13 +93,14 @@ _APPLY(Margin, PF_TriLevel | PF_Cascade,
 
 > **重点**：`_COMPUTED_IS_RECT=1` 表示 Computed 层存储的是像素 `Rect`（非 `UnitRect`），由 Element 框架在 DPI/TextScale 变化时自动从 `SpecMargin`（UnitRect）重新计算。`LinearLayout` 直接读取 `CmpMargin` 即可。
 
-### 3.3 布局工厂注册表（Layout 静态方法）
+### 3.3 布局解析（UIParser 内部闭环）
+
+布局解析完全在 `UIParser.cpp` 内部实现，Core 层（Layout/Element）无任何变更：
 
 ```cpp
-// 前向声明（避免 Core 层头文件依赖 Parser 层头文件）
-struct ExprNode;
+// 以下均在 UIParser.cpp 文件作用域定义，不对外暴露
 
-// 通用解析函数签名：各布局类自行解析 ExprNode 参数并创建布局实例
+// 通用解析函数签名
 typedef HRESULT(__YYAPI* LayoutParserFunc)(
     _In_ ExprNode* _pExprNode,
     _Outptr_ Layout** _ppLayout);
@@ -111,24 +112,21 @@ struct LayoutFactoryEntry
     LayoutParserFunc pfnParser;
 };
 
-// Layout 基类新增静态方法（在 Layout.h 声明，Layout.cpp 实现）
-class Layout
+// 注册表
+static const LayoutFactoryEntry g_LayoutFactoryTable[] =
 {
-public:
-    // ... 已有成员 ...
-
-    /// <summary>
-    /// 按名称查找布局解析函数。
-    /// </summary>
-    /// <param name="_pszName">布局名称，如 u8"LinearLayout"。</param>
-    /// <returns>找到返回解析函数指针，未找到返回 nullptr。</returns>
-    _Ret_maybenull_ static LayoutParserFunc __YYAPI LookupFactory(
-        _In_z_ const u8char_t* _pszName);
+    { u8"LinearLayout", &ParserLinearLayout },
 };
 
-// 在 Layout.cpp 中注册
-extern const LayoutFactoryEntry g_LayoutFactoryTable[];
-extern const size_t g_cLayoutFactoryEntries;
+// 查找函数
+_Ret_maybenull_ static LayoutParserFunc __fastcall LookupLayoutParser(
+    _In_z_ const u8char_t* _pszName)
+{
+    for (auto& _Entry : g_LayoutFactoryTable)
+        if (u8Stricmp(_Entry.pszName, _pszName) == 0)
+            return _Entry.pfnParser;
+    return nullptr;
+}
 ```
 
 ---
@@ -150,10 +148,8 @@ public:
         _In_ CrossAxisAlignment _eCrossAlign,
         _Outptr_ Layout** _ppLayout);
 
-    // UIParser 解析接口：由 UIParser 调用，ExprNode 传入布局自行解析参数
-    static HRESULT __YYAPI ParserLayout(
-        _In_ ExprNode* _pExprNode,
-        _Outptr_ Layout** _ppLayout);
+    // 仅 Create 工厂需要，ParserLinearLayout 在 UIParser.cpp 中实现
+    // LinearLayout 类本身不包含解析逻辑
 
     // 属性访问
     LinearLayoutOrientation __YYAPI GetOrientation() const;
@@ -229,41 +225,25 @@ private:
 };
 ```
 
-### 4.2 ParserLayout 接口约定
+### 4.2 ParserLinearLayout（UIParser.cpp 内部静态函数）
+
+`ParserLinearLayout` 是 `UIParser.cpp` 的文件作用域静态函数，通过 `g_LayoutFactoryTable` 注册。
 
 ```cpp
-/// <summary>
-/// 从 ExprNode 解析布局参数并创建 LinearLayout 实例。
-/// 内部使用 UIParser::ParserFunction 简化枚举参数解析。
-/// </summary>
-/// <param name="_pExprNode">解析后的表达式树。
-///   无参数时为 BaseIdentifier "LinearLayout"。
-///   带参数时为 Funcall("LinearLayout", [参数...])，如 "LinearLayout(Horizontal)"。
-/// </param>
-/// <param name="_ppLayout">接收创建的 Layout 实例。</param>
-/// <returns>操作成功返回 S_OK。</returns>
-static HRESULT __YYAPI LinearLayout::ParserLayout(
+// 在 UIParser.cpp 中定义
+static HRESULT __YYAPI ParserLinearLayout(
     _In_ ExprNode* _pExprNode,
     _Outptr_ Layout** _ppLayout)
 {
-    // 内部定义解析器用的枚举映射
     static constexpr const EnumMap s_OrientationEnumMap[] =
     {
-        { u8"Vertical", 0 },
-        { u8"Horizontal", 1 },
-        { },
+        { u8"Vertical", 0 }, { u8"Horizontal", 1 }, { },
     };
-
     static constexpr const EnumMap s_CrossAxisAlignmentEnumMap[] =
     {
-        { u8"Start", 0 },
-        { u8"Center", 1 },
-        { u8"End", 2 },
-        { u8"Stretch", 3 },
-        { },
+        { u8"Start", 0 }, { u8"Center", 1 }, { u8"End", 2 }, { u8"Stretch", 3 }, { },
     };
 
-    // 设默认值
     ParsedArg _Args[] =
     {
         { ParsedArgType::int32_t, s_OrientationEnumMap },
@@ -272,15 +252,13 @@ static HRESULT __YYAPI LinearLayout::ParserLayout(
     _Args[0].iNumber = static_cast<int32_t>(LinearLayoutOrientation::Vertical);
     _Args[1].iNumber = static_cast<int32_t>(CrossAxisAlignment::Stretch);
 
-    // _pExprNode 为 BaseIdentifier 时无参数，直接使用默认值
     HRESULT hr = S_OK;
     if (_pExprNode->Type == ExprNodeType::Funcall)
     {
         auto _cChildren = _pExprNode->ChildExprNode.GetSize();
         if (_cChildren > _countof(_Args))
             return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
-        hr = UIParser::ParserFunction(
-            _pExprNode->szValue, _pExprNode, _Args, _cChildren);
+        hr = ParserFunction(_pExprNode->szValue, _pExprNode, _Args, _cChildren);
         if (FAILED(hr))
             return hr;
     }
@@ -291,8 +269,6 @@ static HRESULT __YYAPI LinearLayout::ParserLayout(
         _ppLayout);
 }
 ```
-
-> 说明：`ParserFunction` 无参数时直接成功且不修改 `_Args[].iNumber`，因此需在调用前将 `_Args[1]` 显式设为 `CrossAxisAlignment::Stretch` 以确保默认拉伸行为。
 
 ### 4.3 Element Margin Getter/Setter
 
@@ -328,7 +304,7 @@ case ValueType::Layout:
 1. 从 ExprNode 提取布局名称：
    - 若为 BaseIdentifier：名称即 szValue（如 u8"LinearLayout"）
    - 若为 Funcall：名称即 Funcall 自身的 szValue（如 u8"LinearLayout"）
-2. 调用 Layout::LookupFactory(pszName) 查找解析函数
+2. 调用内部 `LookupLayoutParser(pszName)` 查找解析函数
    - 若返回 nullptr，报 ERROR_BAD_FORMAT
 3. 调用 pfnParser(pExprNode, &pLayout)
 4. 将 pLayout 包装为 Value：*_pValue = Value::CreateLayout(pLayout)
@@ -538,18 +514,18 @@ LinearLayout 无需重写 OnAdd/OnRemove/OnLayoutPosChanged/Attach/Detach，复�
 ### 新增
 | 文件 | 说明 |
 |------|------|
-| `Include/MegaUI/Core/LinearLayout.h` | LinearLayout 类声明 |
-| `MegaUI/Core/LinearLayout.cpp` | LinearLayout 实现 |
+| `Include/MegaUI/Core/LinearLayout.h` | LinearLayout 类声明（Create/GetOrientation/SetOrientation/GetCrossAxisAlignment/SetCrossAxisAlignment/DoLayout/UpdateDesiredSize） |
+| `MegaUI/Core/LinearLayout.cpp` | LinearLayout 实现（Create + DoLayout + UpdateDesiredSize 等，不含解析逻辑） |
 
 ### 修改
 | 文件 | 变更 |
 |------|------|
 | `Include/MegaUI/Core/Element.h` | 新增 Margin 属性行 + `SpecMargin`/`CmpMargin` + `GetMargin()`/`SetMargin()` + `GetDesiredSize()` 声明 |
 | `MegaUI/Core/Element.cpp` | Margin getter/setter + `Value::CreateLayout()` + 启用 Layout UpdateDesiredSize 路径 |
-| `Include/MegaUI/Core/Layout.h` | 新增 `ExprNode` 前向声明 + `LayoutFactoryEntry` + `LayoutParserFunc` + 静态 `LookupFactory()` + 注册表声明 |
-| `MegaUI/Core/Layout.cpp` | 新增 `g_LayoutFactoryTable` 注册表定义 |
-| `MegaUI/Parser/UIParser.h` | 新增 `ParserLayoutValue()` 声明 |
-| `MegaUI/Parser/UIParser.cpp` | `case ValueType::Layout` + `ParserLayoutValue()` 实现 |
+| `Include/MegaUI/Core/Layout.h` | 无变更 |
+| `MegaUI/Core/Layout.cpp` | 无变更 |
+| `MegaUI/Parser/UIParser.cpp` | `ParserLinearLayout`(内部静态) + `LookupLayoutParser`(内部静态) + `g_LayoutFactoryTable`(文件作用域) + `case ValueType::Layout` + `ParserLayoutValue()` |
+| `MegaUI/Parser/UIParser.h` | 无变更（不暴露布局解析内部实现） |
 | `MegaUI/MegaUI.vcxproj` / `.vcxproj.filters` | 新增 `LinearLayout.h`、`LinearLayout.cpp` |
 | `MegaUI/Core/Value.h` | 新增 `CreateLayout()` 声明 |
 | `MegaUI/Core/Value.cpp` | 新增 `CreateLayout()` 实现 |
@@ -560,7 +536,7 @@ LinearLayout 无需重写 OnAdd/OnRemove/OnLayoutPosChanged/Attach/Detach，复�
 
 - 不修改 `Layout` 基类虚函数签名
 - `Margin` 默认值为 0，现有 Element 不受影响
-- UIParser 新增分支不影响已有类型的解析路径
+- 布局解析工厂完全在 UIParser.cpp 内部闭环，Core 层（Layout.h/Element.h）无任何新增
 
 ---
 

@@ -70,12 +70,14 @@
 | TC-024 | `SetMargin_设置后正确读取` | Element | SetMargin(UnitRect(10,20,5,15)) | GetMargin() 返回 (10,20,5,15) |
 | TC-025 | `SetMargin_通过SetValue设置_触发PropertyChanged` | Element | SetValue(MarginProp, Rect(5,5,5,5)) | GetMargin() 返回 (5,5,5,5) |
 
-## 5. Layout::LookupFactory
+## 5. LookupLayoutParser（UIParser 内部）
+
+> 注：`LookupLayoutParser` 为 UIParser.cpp 内部静态函数，通过 `ParserLayoutValue` 间接验证。
 
 | 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
 |------|----------|----------|------|----------|
-| TC-026 | `LookupFactory_已注册名称_返回非空` | g_LayoutFactoryTable 含 "LinearLayout" | LookupFactory(u8"LinearLayout") | 返回非 nullptr 函数指针 |
-| TC-027 | `LookupFactory_未注册名称_返回空` | - | LookupFactory(u8"UnknownLayout") | 返回 nullptr |
+| TC-026 | `ParserLayoutValue_已注册名称_创建成功` | g_LayoutFactoryTable 含 "LinearLayout" | 解析 "LinearLayout" | 返回 S_OK，创建的 LinearLayout 实例有效 |
+| TC-027 | `ParserLayoutValue_未注册名称_返回错误` | - | 解析 "UnknownLayout" | 返回 ERROR_BAD_FORMAT |
 
 ## 6. UIParser::ParserLayoutValue
 
@@ -84,8 +86,8 @@
 | TC-028 | `ParserLayoutValue_无参数_创建默认实例` | - | 解析 "LinearLayout" | LinearLayout.Orientation=Vertical, CrossAlign=Stretch |
 | TC-029 | `ParserLayoutValue_一个参数_创建指定Orientation` | - | 解析 "LinearLayout(Horizontal)" | LinearLayout.Orientation=Horizontal, CrossAlign=Stretch |
 | TC-030 | `ParserLayoutValue_两个参数_创建完整配置` | - | 解析 "LinearLayout(Horizontal, Center)" | LinearLayout.Orientation=Horizontal, CrossAlign=Center |
-| TC-031 | `ParserLayoutValue_多余参数_返回错误` | - | 解析 "LinearLayout(Vertical, Stretch, Extra)" | 返回 ERROR_BAD_FORMAT |
-| TC-032 | `ParserLayoutValue_非法名称_返回错误` | - | 解析 "UnknownLayout" | 返回 ERROR_BAD_FORMAT |
+| TC-031 | `ParserLayoutValue_多余参数_返回错误` | - | 解析 "LinearLayout(Vertical, Stretch, Extra)" | 返回 HRESULT_From_LSTATUS(ERROR_BAD_FORMAT) |
+| TC-032 | `ParserLayoutValue_非法名称_返回错误` | - | 解析 "UnknownLayout" | 返回 HRESULT_From_LSTATUS(ERROR_BAD_FORMAT) |
 
 ## 7. Element::UpdateDesiredSize Layout 路径
 
