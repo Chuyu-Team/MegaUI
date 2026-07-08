@@ -140,6 +140,19 @@ namespace YY
 
             static HRESULT __YYAPI ParserFontValue(ExprNode* _pExprNode, Value* _pValue);
 
+        public:
+            /// <summary>LinearLayout 解析函数。</summary>
+            static HRESULT __YYAPI ParserLinearLayoutValue(
+                _In_ ExprNode* _pExprNode,
+                _Outptr_ Layout** _ppLayout);
+
+            /// <summary>
+            /// 解析 Layout 类型的属性值，通过查找注册表调用对应布局的 Create 工厂。
+            /// </summary>
+            static HRESULT __YYAPI ParserLayoutValue(ExprNode* _pExprNode, Value* _pValue);
+
+        protected:
+
             HRESULT __YYAPI Play(
                 _In_ Span<const uint8_t>& _ByteCode,
                 _In_ UIParserPlayContext* _pContext,

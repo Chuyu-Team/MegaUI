@@ -171,6 +171,27 @@ namespace YY
             _RETUNR_CONST_VALUE(ValueType::Layout, nullptr);
         }
 
+        /// <summary>
+        /// 创建一个 Layout 类型的 Value，包装指定布局实例。
+        /// </summary>
+        /// <param name="_pLayout">布局实例指针，可为 nullptr。</param>
+        /// <returns>包装后的 Value 对象。</returns>
+        Value __YYAPI Value::CreateLayout(Layout* _pLayout)
+        {
+            if (_pLayout == nullptr)
+                return CreateLayoutNull();
+
+            auto pValue = (Value::SharedData*)Alloc(sizeof(Value::SharedData));
+            if (pValue)
+            {
+                pValue->eType = uint_t(ValueType::Layout);
+                pValue->bSkipFree = 0;
+                pValue->cRef = 1;
+                pValue->pLayout = _pLayout;
+            }
+            return Value(pValue);
+        }
+
         Value __YYAPI Value::CreateDefaultFontFamily()
         {
             return Value::CreateString(_S("Arial"));

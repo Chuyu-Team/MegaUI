@@ -15,13 +15,6 @@ HRESULT __YYAPI Layout::Create(Layout** ppLayout)
     return S_OK;
 }
 
-void __YYAPI Layout::Initialize()
-{
-    pClient = nullptr;
-    IgnoreList.Clear();
-    SetCacheDirty();
-}
-
 void __YYAPI Layout::OnAdd(Element* pElem, Element** ppElemAdd, size_t uCountOfElementAdd)
 {
     bool fReSort = false;
@@ -142,6 +135,23 @@ void __YYAPI Layout::UpdateLayoutRect(Element* pElem, Size _oContainerSize, Elem
 void __YYAPI Layout::Destroy()
 {
     delete this;
+}
+
+void __YYAPI Layout::DoLayout(Element* pElem, Size _oSize)
+{
+    // 基类默认空实现
+}
+
+Size __YYAPI Layout::UpdateDesiredSize(Element* pElem, Size _ConstraintSize)
+{
+    // 基类默认空实现
+    return Size(0, 0);
+}
+
+Element* __YYAPI Layout::GetAdjacent(Element* pElem, Element* _pFrom, int iNavDir, NavReference const* pnr, bool _bKeyableOnly)
+{
+    // 基类默认空实现
+    return nullptr;
 }
 
 Element* __YYAPI Layout::GetChildFromLayoutIndex(Element* pElem, int iLayoutIndex, Array<Element*>* pArray)

@@ -8,7 +8,7 @@ namespace YY
 {
     namespace MegaUI
     {
-        class Layout
+        class Layout : public RefValue
         {
         private:
             // 4
@@ -40,7 +40,6 @@ namespace YY
 
             int __YYAPI GetLayoutIndexFromChild(Element* pElem, Element* pChild);
 
-            void __YYAPI Initialize();
             // 0
             virtual void __YYAPI DoLayout(Element* pElem, Size _oSize);
 
@@ -77,6 +76,30 @@ namespace YY
             }
 
             void __YYAPI ReSortIgnoreList();
+
+            /// <summary>
+            /// 调用子元素的 UpdateDesiredSize（桥接 Element protected 方法，供 Layout 子类使用）。
+            /// </summary>
+            static Size __YYAPI UpdateChildDesiredSize(_In_ Element* _pChild, Size _ConstraintSize)
+            {
+                return _pChild->UpdateDesiredSize(_ConstraintSize);
+            }
+
+            /// <summary>
+            /// 获取子元素的计算后外边距（桥接 Element protected 成员，供 Layout 子类使用）。
+            /// </summary>
+            static const Rect& __YYAPI GetChildMargin(_In_ Element* _pChild)
+            {
+                return _pChild->CmpMargin;
+            }
+
+            /// <summary>
+            /// 获取子元素的期望尺寸（便捷访问）。
+            /// </summary>
+            static Size __YYAPI GetChildDesiredSize(_In_ Element* _pChild)
+            {
+                return _pChild->GetDesiredSize();
+            }
         };
     }
 } // namespace YY

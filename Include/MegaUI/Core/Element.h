@@ -426,6 +426,15 @@ namespace YY
 
             ValueIs<ValueType::Layout> __YYAPI GetLayout();
 
+            /// <summary>
+            /// 获取元素当前计算后的期望尺寸。
+            /// </summary>
+            /// <returns>期望尺寸（像素值）。</returns>
+            Size __YYAPI GetDesiredSize() const
+            {
+                return LocDesiredSize;
+            }
+
             BorderStyle __YYAPI GetBorderStyle();
 
             HRESULT __YYAPI SetBorderStyle(BorderStyle _eBorderStyle);

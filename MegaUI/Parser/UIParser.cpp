@@ -5,6 +5,7 @@
 #include <YY/Base/Strings/StringTransform.h>
 #include <MegaUI/Parser/ValueParser.h>
 #include <MegaUI/Core/StyleSheet.h>
+#include <MegaUI/Core/LinearLayout.h>
 #include <MegaUI/Render/FontEnumMap.h>
 #include <YY/Base/SafeCast.h>
 
@@ -659,6 +660,9 @@ namespace YY
                 case ValueType::StyleSheet:
                     _hr = ParserStyleSheetValue(&_ExprNode, &_Value);
                     break;
+                case ValueType::Layout:
+                    _hr = ParserLayoutValue(&_ExprNode, &_Value);
+                    break;
                 default:
                     break;
                 }
@@ -1235,6 +1239,115 @@ namespace YY
             auto _Value = Value::CreateColor(_Color);
             if (_Value == nullptr)
                 return E_OUTOFMEMORY;
+            *_pValue = std::move(_Value);
+            return S_OK;
+        }
+
+        // --- 布局解析基础设施（文件作用域，不对外暴露）---
+
+        /// <summary>解析函数签名。</summary>
+        typedef HRESULT(__YYAPI* LayoutParserFunc)(
+            _In_ ExprNode* _pExprNode,
+            _Outptr_ Layout** _ppLayout);
+
+        /// <summary>注册表条目。</summary>
+        struct LayoutFactoryEntry
+        {
+            const u8char_t* pszName;
+            LayoutParserFunc pfnParser;
+        };
+
+        /// <summary>LinearLayout 解析函数。</summary>
+        HRESULT __YYAPI UIParser::ParserLinearLayoutValue(
+            _In_ ExprNode* _pExprNode,
+            _Outptr_ Layout** _ppLayout)
+        {
+            static constexpr const EnumMap s_OrientationEnumMap[] =
+            {
+                { u8"Vertical", 0 }, { u8"Horizontal", 1 }, { },
+            };
+            static constexpr const EnumMap s_CrossAxisAlignmentEnumMap[] =
+            {
+                { u8"Start", 0 }, { u8"Center", 1 }, { u8"End", 2 }, { u8"Stretch", 3 }, { },
+            };
+
+            ParsedArg _Args[] =
+            {
+                { ParsedArgType::int32_t, s_OrientationEnumMap },
+                { ParsedArgType::int32_t, s_CrossAxisAlignmentEnumMap },
+            };
+            _Args[0].iNumber = static_cast<int32_t>(LinearLayoutOrientation::Vertical);
+            _Args[1].iNumber = static_cast<int32_t>(CrossAxisAlignment::Stretch);
+
+            if (_pExprNode->Type == ExprNodeType::Funcall)
+            {
+                auto _cChildren = _pExprNode->ChildExprNode.GetSize();
+                if (_cChildren > _countof(_Args))
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
+                HRESULT hr = ParserFunction(u8"LinearLayout", _pExprNode, _Args, _cChildren);
+                if (FAILED(hr))
+                    return hr;
+            }
+
+            return LinearLayout::Create(
+                static_cast<LinearLayoutOrientation>(_Args[0].iNumber),
+                static_cast<CrossAxisAlignment>(_Args[1].iNumber),
+                _ppLayout);
+        }
+
+        /// <summary>注册表。</summary>
+        static const LayoutFactoryEntry g_LayoutFactoryTable[] =
+        {
+            { u8"LinearLayout", &UIParser::ParserLinearLayoutValue },
+        };
+
+        /// <summary>根据布局名称查找解析函数。</summary>
+        static LayoutParserFunc __YYAPI LookupLayoutParser(_In_z_ const u8char_t* _pszName)
+        {
+            auto _cchName = u8StringView(_pszName).GetSize();
+            for (auto& _Entry : g_LayoutFactoryTable)
+            {
+                auto _cchEntry = u8StringView(_Entry.pszName).GetSize();
+                if (_cchName == _cchEntry
+                    && StringCompareIgnoreAsASCII(_pszName, _Entry.pszName, _cchName) == 0)
+                    return _Entry.pfnParser;
+            }
+            return nullptr;
+        }
+
+        /// <summary>
+        /// 解析 Layout 类型的属性值，通过查找注册表调用对应布局的 Create 工厂。
+        /// </summary>
+        HRESULT __YYAPI UIParser::ParserLayoutValue(ExprNode* _pExprNode, Value* _pValue)
+        {
+            // 从 ExprNode 提取布局名称
+            const u8char_t* pszName = nullptr;
+            if (_pExprNode->Type == ExprNodeType::BaseIdentifier)
+            {
+                pszName = _pExprNode->szValue.GetData();
+            }
+            else if (_pExprNode->Type == ExprNodeType::Funcall)
+            {
+                pszName = _pExprNode->szValue.GetData();
+            }
+            else
+            {
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
+            }
+
+            auto pfnParser = LookupLayoutParser(pszName);
+            if (pfnParser == nullptr)
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
+
+            Layout* pLayout = nullptr;
+            auto _hr = pfnParser(_pExprNode, &pLayout);
+            if (FAILED(_hr))
+                return _hr;
+
+            auto _Value = Value::CreateLayout(pLayout);
+            if (_Value == nullptr)
+                return E_OUTOFMEMORY;
+
             *_pValue = std::move(_Value);
             return S_OK;
         }

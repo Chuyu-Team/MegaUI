@@ -247,6 +247,13 @@ namespace YY
             static Value __YYAPI CreateLayoutNull();
 
             /// <summary>
+            /// 创建一个 Layout 类型的 Value，包装指定布局实例。
+            /// </summary>
+            /// <param name="_pLayout">布局实例指针，可为 nullptr（表示空布局）。</param>
+            /// <returns>包装后的 Value 对象。</returns>
+            static Value __YYAPI CreateLayout(_In_opt_ Layout* _pLayout);
+
+            /// <summary>
             /// 获取默认字体信息。
             /// </summary>
             /// <returns></returns>

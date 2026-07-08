@@ -2,101 +2,161 @@
 
 > 版本：v1.0
 > 状态：草稿
-> 最后更新：2026-07-07 18:12
+> 最后更新：2026-07-08 11:21
 > 关联 Specs：docs/linear-layout/specs/SPEC-linear-layout-v2.0.md
-> 关联 Plan：docs/linear-layout/plan/PLAN-linear-layout-v1.0.md
+> 关联 Plan：docs/linear-layout/plan/PLAN-linear-layout-v1.1.md
+> 关联测试计划：docs/linear-layout/testing/TESTPLAN-linear-layout-v1.0.md
 
-## 1. LinearLayout::UpdateDesiredSize
+## 1. 测试用例总览
 
-### 1.1 垂直模式
+| 分组 | 编号范围 | 用例数 |
+|---|---|---|
+| Create 工厂 + Getter | TC-001 ~ TC-005 | 5 |
+| Margin 属性 | TC-006 ~ TC-010 | 5 |
+| Element::GetDesiredSize | TC-011 | 1 |
+| UpdateDesiredSize - 垂直 | TC-012 ~ TC-018 | 7 |
+| UpdateDesiredSize - 水平 | TC-019 ~ TC-024 | 6 |
+| DoLayout - 垂直 | TC-025 ~ TC-032 | 8 |
+| DoLayout - 水平 | TC-033 ~ TC-040 | 8 |
+| LP_None / LP_Absolute | TC-041 ~ TC-043 | 3 |
+| UIParser LookupLayoutParser | TC-044 ~ TC-045 | 2 |
+| UIParser ParserLayoutValue | TC-046 ~ TC-049 | 4 |
+| Value::CreateLayout | TC-050 ~ TC-051 | 2 |
+| 集成测试 | TC-052 ~ TC-053 | 2 |
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-001 | `UpdateDesiredSize_空子元素_返回零尺寸` | 容器无子元素 | Orientation=Vertical, ConstraintSize=(400, -1) | 返回 Size(0, 0) |
-| TC-002 | `UpdateDesiredSize_单子元素无Margin_返回子元素尺寸` | 1个子元素DesiredSize=(100,50), Margin=0 | Orientation=Vertical, ConstraintSize=(400, -1) | 返回 Size(100, 50) |
-| TC-003 | `UpdateDesiredSize_单子元素有Margin_返回含Margin尺寸` | 1个子元素DesiredSize=(100,50), Margin=(10,20,5,15) | Orientation=Vertical, ConstraintSize=(400, -1) | 返回 Size(115, 85)。宽=100+10+5=115，高=20+50+15=85 |
-| TC-004 | `UpdateDesiredSize_三子元素垂直排列_累计高度` | A=(100,50) M=(10,5,5,10); B=(200,80) M=(5,20,5,0); C=(150,40) M=(0,10,5,8) | Orientation=Vertical, ConstraintSize=(400, -1) | 宽=max(100+10+5, 200+5+5, 150+0+5)=max(115,210,155)=210; 高=5+50+max(10,20)+80+max(0,10)+40+8=5+50+20+80+10+40+8=213 |
-| TC-005 | `UpdateDesiredSize_全部LP_None_返回零尺寸` | 3个子元素全部 LP_None | Orientation=Vertical, ConstraintSize=(400, -1) | 返回 Size(0, 0) |
-| TC-006 | `UpdateDesiredSize_混合LP_Absolute_仅计算LP_Auto` | A(LP_Auto, 100×50), B(LP_Absolute, 200×80), C(LP_Auto, 150×40) | Orientation=Vertical | 仅A和C参与：宽=max(100,150)=150，高=50+40=90 |
+> 总计：53 个测试用例
 
-### 1.2 水平模式
+---
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-007 | `UpdateDesiredSize_水平单子元素有Margin_返回含Margin尺寸` | 1个子元素DesiredSize=(50,100), Margin=(10,20,5,15) | Orientation=Horizontal, ConstraintSize=(-1, 300) | 宽=10+50+5=65，高=100+20+15=135 |
-| TC-008 | `UpdateDesiredSize_水平三子元素_累计宽度` | A=(50,100) M=(10,5,5,0); B=(80,200) M=(5,0,5,10); C=(40,150) M=(0,10,5,8) | Orientation=Horizontal | 宽=10+50+max(5,5)+80+max(5,0)+40+5=10+50+5+80+5+40+5=195; 高=max(100+0+0, 200+0+10, 150+10+8)=max(100,210,168)=210 |
-| TC-009 | `UpdateDesiredSize_水平空子元素_返回零尺寸` | 无子元素 | Orientation=Horizontal | 返回 Size(0, 0) |
+## 2. 详细测试用例
 
-## 2. LinearLayout::DoLayout
+### 2.1 Create 工厂 + Getter（TC-001 ~ TC-005）
 
-### 2.1 垂直模式 × 交叉轴对齐
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-001 | `Create_默认参数_创建成功且Getter返回值一致` | `Create` / `GetOrientation` / `GetCrossAxisAlignment` | 无 | `Vertical, Stretch` | 调用 `Create(Vertical, Stretch, &pLayout)` | 返回 `S_OK`；`GetOrientation() == Vertical`；`GetCrossAxisAlignment() == Stretch` | 单元测试 |
+| TC-002 | `Create_Horizontal方向_返回Horizontal` | `Create` | 无 | `Horizontal, Stretch` | 调用 `Create(Horizontal, Stretch, &pLayout)` | 返回 `S_OK`；`GetOrientation() == Horizontal` | 单元测试 |
+| TC-003 | `Create_交叉轴Start对齐_返回Start` | `Create` | 无 | `Vertical, Start` | 调用 `Create(Vertical, Start, &pLayout)` | 返回 `S_OK`；`GetCrossAxisAlignment() == Start` | 单元测试 |
+| TC-004 | `Create_交叉轴Center对齐_返回Center` | `Create` | 无 | `Vertical, Center` | 调用 `Create(Vertical, Center, &pLayout)` | 返回 `S_OK`；`GetCrossAxisAlignment() == Center` | 单元测试 |
+| TC-005 | `Create_ppLayout为nullptr_返回E_POINTER` | `Create` | 无 | `nullptr` | 调用 `Create(Vertical, Stretch, nullptr)` | 返回 `E_POINTER` | 单元测试 |
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-010 | `DoLayout_垂直Stretch_宽度拉伸填满` | 1个子元素DesiredSize=(100,50), Margin=(10,5,5,15) | oSize=(400,300), CrossAlign=Stretch | PosInLayout=(10, 5), SizeInLayout.Width=max(0, 400-10-5)=385 |
-| TC-011 | `DoLayout_垂直Start_左对齐` | 1个子元素DesiredSize=(100,50), Margin=(10,5,30,15) | oSize=(400,300), CrossAlign=Start | PosInLayout=(10, 5), SizeInLayout=(100, 50) |
-| TC-012 | `DoLayout_垂直Center_居中` | 1个子元素DesiredSize=(100,50), Margin=(10,5,20,15) | oSize=(400,300), CrossAlign=Center | childX=(400-100)/2=150, 150≥10且150≤400-20-100=280 → PosInLayout=(150, 5) |
-| TC-013 | `DoLayout_垂直Center_Margin限制_被推到Margin边界` | 1个子元素DesiredSize=(350,50), Margin=(30,5,20,15) | oSize=(400,300), CrossAlign=Center | childX=(400-350)/2=25, 25<30 → 被推到30 → PosInLayout=(30, 5) |
-| TC-014 | `DoLayout_垂直End_右对齐` | 1个子元素DesiredSize=(100,50), Margin=(10,5,20,15) | oSize=(400,300), CrossAlign=End | childX=400-100-20=280, PosInLayout=(280, 5) |
-| TC-015 | `DoLayout_垂直三子元素_纵向间距取最大值` | A=(100,50) M=(5,10,5,15); B=(200,80) M=(5,20,5,5); C=(150,40) M=(0,10,5,8), CrossAlign=Start | oSize=(400, 300) | A: Pos=(5,10), Size=(100,50); B: Pos=(5, 10+50+max(15,20)=85), Size=(200,80); C: Pos=(0, 85+80+max(5,10)=175), Size=(150,40) |
+### 2.2 Margin 属性（TC-006 ~ TC-010）
 
-### 2.2 水平模式 × 交叉轴对齐
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-006 | `Margin_默认值_全为0` | `GetValue(Margin)` | Element 已初始化 | 无 | 读取 Margin 属性值 | `GetValue(Margin).GetRect() == UnitRect(0,0,0,0)` | 单元测试 |
+| TC-007 | `Margin_SetValue后GetValue_返回设置值` | `SetValue` / `GetValue` | Element 已初始化 | `UnitRect(1,2,3,4)` | 设置后读取 | `GetValue(Margin).GetRect() == UnitRect(1,2,3,4)` | 单元测试 |
+| TC-008 | `Margin_Cascade_子元素继承父元素值` | Margin PF_Cascade | 父子 Element | 父 Margin=5 | 父设置 Margin=5，子读取 | 子元素 Margin == `UnitRect(5,5,5,5)` | 单元测试 |
+| TC-009 | `Margin_DPI变化_CmpMargin自动重算` | CmpMargin | Element DPI=96 | 像素值 10 | DPI 切换为 192 (2x) | `CmpMargin == Rect(20,20,20,20)` | 集成测试 |
+| TC-010 | `Margin_CmpMargin像素值与SpecMargin对应` | CmpMargin | Element 已初始化 | 像素 (10,20,5,8) | 设置 SpecMargin 后触发 FlushDesiredSize | `CmpMargin == Rect(10,20,5,8)` | 单元测试 |
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-016 | `DoLayout_水平Stretch_高度拉伸填满` | 1个子元素DesiredSize=(50,100), Margin=(10,20,5,15) | oSize=(400,300), CrossAlign=Stretch | PosInLayout=(10, 20), SizeInLayout.Height=max(0, 300-20-15)=265 |
-| TC-017 | `DoLayout_水平Start_顶对齐` | 1个子元素DesiredSize=(50,100), Margin=(10,20,5,5) | oSize=(400,300), CrossAlign=Start | PosInLayout=(10, 20), SizeInLayout=(50, 100) |
-| TC-018 | `DoLayout_水平Center_居中` | 1个子元素DesiredSize=(50,100), Margin=(10,20,5,5) | oSize=(400,300), CrossAlign=Center | childY=(300-100)/2=100, 100≥20且100≤300-5-100=195 → PosInLayout=(10, 100) |
-| TC-019 | `DoLayout_水平End_底对齐` | 1个子元素DesiredSize=(50,100), Margin=(10,20,5,5) | oSize=(400,300), CrossAlign=End | childY=300-100-5=195, PosInLayout=(10, 195) |
+### 2.3 Element::GetDesiredSize（TC-011）
 
-### 2.3 LP_None / LP_Absolute 过滤
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-011 | `GetDesiredSize_返回LocDesiredSize` | `GetDesiredSize()` | Element 已完成 FlushDesiredSize | 无 | 触发 UpdateDesiredSize 后调用 | 返回值等于 `LocDesiredSize`，`Width >= 0, Height >= 0` | 单元测试 |
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-020 | `DoLayout_LP_None子元素_位置和尺寸归零` | A(LP_Auto, 100×50), B(LP_None, 200×80), C(LP_Auto, 150×40) | Orientation=Vertical, CrossAlign=Start | B.PosInLayout=(0,0), B.SizeInLayout=(0,0); A和C正常排列 |
-| TC-021 | `DoLayout_LP_Absolute子元素_不参与排列` | A(LP_Auto, 100×50), B(LP_Absolute, 200×80), C(LP_Auto, 150×40) | Orientation=Vertical, CrossAlign=Stretch | B不被DoLayout设置；FlushLayout已跳过LP_Absolute的FlushLayout调用，B保持原PosInLayout/SizeInLayout |
+### 2.4 UpdateDesiredSize - 垂直模式（TC-012 ~ TC-018）
 
-## 3. Element::GetDesiredSize
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-012 | `UpdateDesiredSize_垂直空子元素_返回SizeZero` | `UpdateDesiredSizeVertical` | LinearLayout Vertical, 无子元素 | `(400,-1)` | 调用 UpdateDesiredSize | 返回 `Size(0, 0)` | 单元测试 |
+| TC-013 | `UpdateDesiredSize_垂直单子无Margin_返回子元素DesiredSize` | 同上 | 1 子 DesiredSize=(100,50) Margin=0 | `(400,-1)` | 调用 UpdateDesiredSize | `Size(100, 50)` | 单元测试 |
+| TC-014 | `UpdateDesiredSize_垂直单子带Margin_宽高含Margin` | 同上 | 1 子 DesiredSize=(100,50) Margin=(5,10,5,10) | `(400,-1)` | 调用 | W=110 H=70 | 单元测试 |
+| TC-015 | `UpdateDesiredSize_垂直三子带Margin_高度累加取max间距` | 同上 | A:h=50 mb=5; B:h=80 mt=15; C:h=40 mt=0 mb=8 | `(400,-1)` | 调用 | H=10+50+max(5,15)+80+max(0,0)+40+8=203 | 单元测试 |
+| TC-016 | `UpdateDesiredSize_垂直子元素LP_None全部跳过_返回SizeZero` | 同上 | 3 子全 LP_None | `(400,-1)` | 调用 | `Size(0,0)` | 单元测试 |
+| TC-017 | `UpdateDesiredSize_垂直混合LP_Absolute_仅LP_Auto参与` | 同上 | A LP_Auto h=50, B LP_Absolute h=100, C LP_Auto h=30 | `(400,-1)` | 调用 | H=80 (B被跳过) | 单元测试 |
+| TC-018 | `UpdateDesiredSize_垂直ConstraintSize限制宽度_不限制高度` | 同上 | 1 子 DesiredSize=(500,50) | `(200,-1)` | 调用 | W=500 H=50 | 单元测试 |
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-022 | `GetDesiredSize_返回缓存期望尺寸` | Element 已完成 UpdateDesiredSize, LocDesiredSize=(120, 60) | 调用 GetDesiredSize() | 返回 Size(120, 60) |
+### 2.5 UpdateDesiredSize - 水平模式（TC-019 ~ TC-024）
 
-## 4. Margin 属性
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-019 | `UpdateDesiredSize_水平空子元素_返回SizeZero` | `UpdateDesiredSizeHorizontal` | LinearLayout Horizontal, 无子元素 | `(-1,300)` | 调用 | `Size(0,0)` | 单元测试 |
+| TC-020 | `UpdateDesiredSize_水平单子无Margin_返回子元素DesiredSize` | 同上 | 1 子 (100,50) Margin=0 | `(-1,300)` | 调用 | `Size(100,50)` | 单元测试 |
+| TC-021 | `UpdateDesiredSize_水平单子带Margin_宽高含Margin` | 同上 | 1 子 (100,50) Margin=(10,5,10,5) | `(-1,300)` | 调用 | W=120 H=60 | 单元测试 |
+| TC-022 | `UpdateDesiredSize_水平三子带Margin_宽度累加取max间距` | 同上 | A:w=50 mr=5; B:w=80 ml=15; C:w=40 mr=8 | `(-1,300)` | 调用 | W=10+50+max(5,15)+80+max(0,0)+40+8=203 | 单元测试 |
+| TC-023 | `UpdateDesiredSize_水平全部LP_None跳过_返回SizeZero` | 同上 | 3 子全 LP_None | `(-1,300)` | 调用 | `Size(0,0)` | 单元测试 |
+| TC-024 | `UpdateDesiredSize_水平ConstraintSize限制高度_不限制宽度` | 同上 | 1 子 (50,500) | `(-1,200)` | 调用 | W=50 H=500 | 单元测试 |
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-023 | `GetMargin_默认值为零` | 新建 Element | GetMargin() | 返回 UnitRect(0,0,0,0) |
-| TC-024 | `SetMargin_设置后正确读取` | Element | SetMargin(UnitRect(10,20,5,15)) | GetMargin() 返回 (10,20,5,15) |
-| TC-025 | `SetMargin_通过SetValue设置_触发PropertyChanged` | Element | SetValue(MarginProp, Rect(5,5,5,5)) | GetMargin() 返回 (5,5,5,5) |
+### 2.6 DoLayout - 垂直模式（TC-025 ~ TC-032）
 
-## 5. LookupLayoutParser（UIParser 内部）
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-025 | `DoLayout_垂直Stretch对齐_宽度拉伸填满Margin内空间` | `DoLayoutVertical` CrossAlign=Stretch | 1 子 (50,30) Margin=(10,0,5,0) 容器W=400 | `ContainerSize(400,200)` | 调用 | PosInLayout.X=10; SizeInLayout.W=385 | 单元测试 |
+| TC-026 | `DoLayout_垂直Start对齐_靠左贴MarginLeft` | 同上 CrossAlign=Start | 1 子 (50,30) Margin=(10,0,5,0) 容器W=400 | `(400,200)` | 调用 | PosInLayout.X=10; SizeInLayout.W=50 | 单元测试 |
+| TC-027 | `DoLayout_垂直Center对齐_X在容器中水平居中` | 同上 CrossAlign=Center | 1 子 (100,30) Margin=0 容器W=400 | `(400,200)` | 调用 | PosInLayout.X=150 | 单元测试 |
+| TC-028 | `DoLayout_垂直Center对齐_Margin约束边界` | 同上 | 1 子 (100,30) Margin=(50,0,0,0) 容器W=200 | `(200,200)` | 调用 | X>=50 且 X<=100 | 单元测试 |
+| TC-029 | `DoLayout_垂直End对齐_靠右贴MarginRight` | 同上 CrossAlign=End | 1 子 (100,30) Margin=(0,0,20,0) 容器W=400 | `(400,200)` | 调用 | PosInLayout.X=280 | 单元测试 |
+| TC-030 | `DoLayout_垂直三子Margin间距_位置正确累加` | 同上 CrossAlign=Start | A:h=50 mb=5; B:h=80 mt=15; C:h=40 mt=0 | `(400,300)` | 调用 | A.Y=mt; B.Y=A.Y+A.h+max(A.mb,B.mt); C.Y=B.Y+B.h+max(B.mb,C.mt) | 单元测试 |
+| TC-031 | `DoLayout_垂直Stretch_Margin超过容器时宽度为0` | 同上 CrossAlign=Stretch | Margin=(300,0,200,0) 容器W=400 | `(400,200)` | 调用 | SizeInLayout.W=max(0,400-300-200)=0 | 单元测试 |
+| TC-032 | `DoLayout_垂直空子元素_无操作不崩溃` | 同上 | 无子元素 | `(400,200)` | 调用 | 不崩溃 | 单元测试 |
 
-> 注：`LookupLayoutParser` 为 UIParser.cpp 内部静态函数，通过 `ParserLayoutValue` 间接验证。
+### 2.7 DoLayout - 水平模式（TC-033 ~ TC-040）
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-026 | `ParserLayoutValue_已注册名称_创建成功` | g_LayoutFactoryTable 含 "LinearLayout" | 解析 "LinearLayout" | 返回 S_OK，创建的 LinearLayout 实例有效 |
-| TC-027 | `ParserLayoutValue_未注册名称_返回错误` | - | 解析 "UnknownLayout" | 返回 ERROR_BAD_FORMAT |
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-033 | `DoLayout_水平Stretch对齐_高度拉伸填满Margin内空间` | `DoLayoutHorizontal` CrossAlign=Stretch | 1 子 (50,30) Margin=(0,10,0,5) 容器H=300 | `(200,300)` | 调用 | PosInLayout.Y=10; SizeInLayout.H=285 | 单元测试 |
+| TC-034 | `DoLayout_水平Start对齐_靠顶贴MarginTop` | 同上 CrossAlign=Start | 1 子 (50,30) Margin=(0,10,0,5) 容器H=300 | `(200,300)` | 调用 | PosInLayout.Y=10; SizeInLayout.H=30 | 单元测试 |
+| TC-035 | `DoLayout_水平Center对齐_Y在容器中垂直居中` | 同上 CrossAlign=Center | 1 子 (50,100) Margin=0 容器H=300 | `(200,300)` | 调用 | PosInLayout.Y=100 | 单元测试 |
+| TC-036 | `DoLayout_水平Center对齐_Margin约束到Top边界` | 同上 | 1 子 (50,100) Margin=(0,120,0,0) 容器H=200 | `(200,200)` | 调用 | Y>=120 且 Y<=100→钳位到120 | 单元测试 |
+| TC-037 | `DoLayout_水平End对齐_靠底贴MarginBottom` | 同上 CrossAlign=End | 1 子 (50,100) Margin=(0,0,0,20) 容器H=300 | `(200,300)` | 调用 | PosInLayout.Y=180 | 单元测试 |
+| TC-038 | `DoLayout_水平三子Margin间距_位置正确累加` | 同上 CrossAlign=Start | A:w=50 mr=5; B:w=80 ml=15; C:w=40 ml=0 | `(400,200)` | 调用 | A.X=ml; B.X=A.X+A.w+max(A.mr,B.ml); C.X=B.X+B.w+max(B.mr,C.ml) | 单元测试 |
+| TC-039 | `DoLayout_水平Stretch_Margin超过容器时高度为0` | 同上 CrossAlign=Stretch | Margin=(0,200,0,150) 容器H=300 | `(200,300)` | 调用 | SizeInLayout.H=max(0,300-200-150)=0 | 单元测试 |
+| TC-040 | `DoLayout_水平空子元素_无操作不崩溃` | 同上 | 无子元素 | `(200,300)` | 调用 | 不崩溃 | 单元测试 |
 
-## 6. UIParser::ParserLayoutValue
+### 2.8 LP_None / LP_Absolute 跳过逻辑（TC-041 ~ TC-043）
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-028 | `ParserLayoutValue_无参数_创建默认实例` | - | 解析 "LinearLayout" | LinearLayout.Orientation=Vertical, CrossAlign=Stretch |
-| TC-029 | `ParserLayoutValue_一个参数_创建指定Orientation` | - | 解析 "LinearLayout(Horizontal)" | LinearLayout.Orientation=Horizontal, CrossAlign=Stretch |
-| TC-030 | `ParserLayoutValue_两个参数_创建完整配置` | - | 解析 "LinearLayout(Horizontal, Center)" | LinearLayout.Orientation=Horizontal, CrossAlign=Center |
-| TC-031 | `ParserLayoutValue_多余参数_返回错误` | - | 解析 "LinearLayout(Vertical, Stretch, Extra)" | 返回 HRESULT_From_LSTATUS(ERROR_BAD_FORMAT) |
-| TC-032 | `ParserLayoutValue_非法名称_返回错误` | - | 解析 "UnknownLayout" | 返回 HRESULT_From_LSTATUS(ERROR_BAD_FORMAT) |
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-041 | `DoLayout_LP_None跳过_子元素不在布局结果中` | `DoLayout` | A LP_Auto h=50, B LP_None h=30 | `(400,200)` Vertical | 调用 | B 的 PosInLayout 未被更新 | 单元测试 |
+| TC-042 | `DoLayout_LP_Absolute跳过_子元素位置保持不变` | `DoLayout` | A LP_Auto, B LP_Absolute Pos=(99,99) | `(400,200)` Vertical | 调用 | B 的 PosInLayout 仍为 (99,99) | 单元测试 |
+| TC-043 | `UpdateDesiredSize_混合LP_None和LP_Absolute全部跳过_返回SizeZero` | `UpdateDesiredSize` | A LP_None, B LP_Absolute | `(400,-1)` Vertical | 调用 | `Size(0,0)` | 单元测试 |
 
-## 7. Element::UpdateDesiredSize Layout 路径
+### 2.9 UIParser LookupLayoutParser（TC-044 ~ TC-045）
 
-| 编号 | 用例名称 | 前置条件 | 输入 | 预期结果 |
-|------|----------|----------|------|----------|
-| TC-033 | `UpdateDesiredSize_有Layout_走Layout路径` | Element 设置了 LinearLayout, bSelfLayout=false | UpdateDesiredSize(400, -1) | 调用 LinearLayout::UpdateDesiredSize，非 GetContentSize |
-| TC-034 | `UpdateDesiredSize_无Layout_走GetContentSize` | Element 未设置 Layout | UpdateDesiredSize(400, -1) | 走原 GetContentSize 路径，行为不变 |
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-044 | `LookupLayoutParser_已注册名称LinearLayout_返回非nullptr` | `LookupLayoutParser` | g_LayoutFactoryTable 初始化 | `"LinearLayout"` | 调用 | 返回非 nullptr | 单元测试 |
+| TC-045 | `LookupLayoutParser_未注册名称UnknownLayout_返回nullptr` | `LookupLayoutParser` | 同上 | `"UnknownLayout"` | 调用 | 返回 nullptr | 单元测试 |
 
-## 8. 待确认
+### 2.10 UIParser ParserLayoutValue（TC-046 ~ TC-049）
 
-- 以上用例假设 `UpdateDesiredSize` 可通过构造最小 Element 树测试，具体 fixture 设计在实现阶段确定
-- TC-021（LP_Absolute 不参与排列）需确认 Element 框架在 FlushLayout 中是否已跳过 LP_Absolute 子元素的 FlushLayout 调用（当前代码确已跳过）
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-046 | `ParserLayoutValue_无参默认_创建VerticalStretch实例` | `ParserLayoutValue` | UIParser 初始化 | ExprNode `"LinearLayout"` | 调用 | Orientation=Vertical, CrossAlign=Stretch | 单元测试 |
+| TC-047 | `ParserLayoutValue_单参Horizontal_创建HorizontalStretch实例` | 同上 | 同上 | ExprNode `"LinearLayout(Horizontal)"` | 调用 | Orientation=Horizontal, CrossAlign=Stretch | 单元测试 |
+| TC-048 | `ParserLayoutValue_双参VerticalCenter_创建VerticalCenter实例` | 同上 | 同上 | ExprNode `"LinearLayout(Vertical, Center)"` | 调用 | Orientation=Vertical, CrossAlign=Center | 单元测试 |
+| TC-049 | `ParserLayoutValue_未知布局名_返回BAD_FORMAT` | 同上 | 同上 | ExprNode `"UnknownLayout"` | 调用 | `HRESULT_From_LSTATUS(ERROR_BAD_FORMAT)` | 单元测试 |
+
+### 2.11 Value::CreateLayout（TC-050 ~ TC-051）
+
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-050 | `CreateLayout_非nullptr输入_GetType为Layout且指针可恢复` | `Value::CreateLayout` | 有效 `Layout*` | `pLayout` | 创建 Value 后验证 | `GetType()==Layout`；RawBuffer 指针等于 pLayout | 单元测试 |
+| TC-051 | `CreateLayout_nullptr输入_Type为Layout指针为nullptr` | 同上 | 无 | `nullptr` | 创建 Value 后验证 | `GetType()==Layout`；指针为 nullptr | 单元测试 |
+
+### 2.12 集成测试（TC-052 ~ TC-053）
+
+| 用例编号 | 用例名称 | 测试对象 | 前置条件 | 输入 | 执行步骤 | 预期结果 | 测试层次 |
+|---|---|---|---|---|---|---|---|
+| TC-052 | `集成_垂直布局_FlushDesiredSize后FlushLayout位置正确` | 完整流水线 | Element Layout=LinearLayout(Vertical,Stretch) 3 子 Margin=0 | `(400,-1)` | FlushDesiredSize → FlushLayout → 读取子元素 PosInLayout | 子元素 Y 依次累加；X=0 宽度拉伸到 400 | 集成测试 |
+| TC-053 | `集成_水平布局_FlushDesiredSize后FlushLayout位置正确` | 完整流水线 | Element Layout=LinearLayout(Horizontal,Stretch) 3 子 Margin=0 | `(-1,300)` | 同上 | 子元素 X 依次累加；Y=0 高度拉伸到 300 | 集成测试 |
+
+---
+
+## 3. 用例与 Plan 任务映射
+
+| Plan 任务 | 关联用例 |
+|---|---|
+| T1 Margin 属性落地 | TC-006 ~ TC-010 |
+| T2 GetDesiredSize + 启用 Layout 路径 | TC-011 |
+| T3 Value::CreateLayout | TC-050 ~ TC-051 |
+| T4 UIParser 布局解析基础设施 | TC-044 ~ TC-045 |
+| T5 LinearLayout 骨架 + 头文件 | TC-001 ~ TC-005 |
+| T6 LinearLayout UpdateDesiredSize 实现 | TC-012 ~ TC-024 |
+| T7 LinearLayout DoLayout 实现 | TC-025 ~ TC-040 |
+| T8 UIParser 布局解析适配 | TC-046 ~ TC-049 |
+| T9 单元测试 | TC-001 ~ TC-053 全量 |
+| LP_None / LP_Absolute | TC-041 ~ TC-043 |
+| 集成测试 | TC-052 ~ TC-053 |
