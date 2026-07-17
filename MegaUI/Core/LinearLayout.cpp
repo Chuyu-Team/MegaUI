@@ -1,6 +1,10 @@
 ﻿#include "pch.h"
 #include <MegaUI/Core/LinearLayout.h>
+#include <MegaUI/Core/Element.h>
+
 #include <algorithm>
+
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY {
 namespace MegaUI {

@@ -1302,15 +1302,15 @@ namespace YY
         };
 
         /// <summary>根据布局名称查找解析函数。</summary>
-        static LayoutParserFunc __YYAPI LookupLayoutParser(_In_z_ const u8char_t* _pszName)
+        static LayoutParserFunc __YYAPI LookupLayoutParser(_In_z_ const YY::u8StringView& _sName)
         {
-            auto _cchName = u8StringView(_pszName).GetSize();
+            auto _cchName = _sName.GetSize();
             for (auto& _Entry : g_LayoutFactoryTable)
             {
-                auto _cchEntry = u8StringView(_Entry.pszName).GetSize();
-                if (_cchName == _cchEntry
-                    && StringCompareIgnoreAsASCII(_pszName, _Entry.pszName, _cchName) == 0)
+                if (_sName.CompareI(_Entry.pszName) == 0)
+                {
                     return _Entry.pfnParser;
+                }
             }
             return nullptr;
         }
@@ -1320,22 +1320,18 @@ namespace YY
         /// </summary>
         HRESULT __YYAPI UIParser::ParserLayoutValue(ExprNode* _pExprNode, Value* _pValue)
         {
-            // 从 ExprNode 提取布局名称
-            const u8char_t* pszName = nullptr;
-            if (_pExprNode->Type == ExprNodeType::BaseIdentifier)
+            if (_pExprNode->Type == ExprNodeType::Root)
             {
-                pszName = _pExprNode->szValue.GetData();
-            }
-            else if (_pExprNode->Type == ExprNodeType::Funcall)
-            {
-                pszName = _pExprNode->szValue.GetData();
-            }
-            else
-            {
-                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
+                if (_pExprNode->ChildExprNode.GetSize() == 0)
+                    return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
+
+                _pExprNode = _pExprNode->ChildExprNode.GetData();
             }
 
-            auto pfnParser = LookupLayoutParser(pszName);
+            if (_pExprNode->Type != ExprNodeType::BaseIdentifier && _pExprNode->Type != ExprNodeType::Funcall)
+                return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
+
+            auto pfnParser = LookupLayoutParser(_pExprNode->szValue);
             if (pfnParser == nullptr)
                 return HRESULT_From_LSTATUS(ERROR_BAD_FORMAT);
 

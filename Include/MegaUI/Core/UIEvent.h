@@ -164,56 +164,6 @@ namespace YY
             }
 #endif
         };
-        
-        enum class NavigatingStyle
-        {
-            // 逻辑上的，如果没有此标志位则表示 定向的
-            Logical = 0x00000001u,
-            // 向前，如果没有此标志位则表示 向后
-            Forward = 0x00000002u,
-            // 垂直方向，如果没有此标志位则表示 水平方向
-            Vertical = 0x00000004u,
-            // 相对的，如果没有此标志位则表示 绝对的
-            Relative = 0x00000008u,
-        };
-
-        YY_APPLY_ENUM_CALSS_BIT_OPERATOR(NavigatingStyle);
-
-        enum class NavigatingType
-        {
-            First = (int32_t)NavigatingStyle::Forward | (int32_t)NavigatingStyle::Logical,
-            Last = (int32_t)NavigatingStyle::Logical,
-            Up = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Vertical,
-            Down = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Vertical | (int32_t)NavigatingStyle::Forward,
-            Left = (int32_t)NavigatingStyle::Relative,
-            Right = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Forward,
-            Next = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Forward | (int32_t)NavigatingStyle::Logical,
-            Previous = (int32_t)NavigatingStyle::Relative | (int32_t)NavigatingStyle::Logical,
-        };
-        
-        
-        inline constexpr NavigatingType& operator&=(NavigatingType& _eLeft, NavigatingStyle _eRight)
-        {
-            using _LeftType = std::underlying_type<NavigatingType>::type;
-            using _RigthType = std::underlying_type<NavigatingStyle>::type;
-            (_LeftType&)_eLeft &= _LeftType((_RigthType)_eRight);
-            return _eLeft;
-        }
-
-        inline constexpr NavigatingType& operator^=(NavigatingType& _eLeft, NavigatingStyle _eRight)
-        {
-            using _LeftType = std::underlying_type<NavigatingType>::type;
-            using _RigthType = std::underlying_type<NavigatingStyle>::type;
-            (_LeftType&)_eLeft ^= _LeftType((_RigthType)_eRight);
-            return _eLeft;
-        }
-
-        inline constexpr bool HasFlags(NavigatingType _eLeft, NavigatingStyle _eRight)
-        {
-            using _LeftType = std::underlying_type<NavigatingType>::type;
-            using _RigthType = std::underlying_type<NavigatingStyle>::type;
-            return (_LeftType)_eLeft & (_RigthType)_eRight;
-        }
 
         struct KeyboardNavigateEvent : public BaseEvent
         {

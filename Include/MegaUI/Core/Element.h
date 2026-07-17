@@ -214,20 +214,6 @@ namespace YY
         class UIParser;
         class ElementAccessibleProvider;
 
-        struct NavReference
-        {
-            uint32_t cbSize;
-            Element* pElement;
-            Rect* pRect;
-
-            NavReference(Element* _pElement, Rect* _pRect = nullptr)
-                : cbSize(sizeof(NavReference))
-                , pElement(_pElement)
-                , pRect(_pRect)
-            {
-            }
-        };
-
         class Element
         {
             _APPLY_MEGA_UI_STATIC_CONTROL_INFO_EXTERN(Element, void, ControlInfoImp<Element>, 0u, _MEGA_UI_ELEMENT_PROPERTY_TABLE);

@@ -1,4 +1,7 @@
 ﻿#include <MegaUI/Core/Layout.h>
+#include <MegaUI/Core/Element.h>
+
+__YY_IGNORE_INCONSISTENT_ANNOTATION_FOR_FUNCTION()
 
 namespace YY {
 namespace MegaUI {
@@ -109,6 +112,21 @@ void __YYAPI Layout::ReSortIgnoreList()
         });
 
     SetCacheDirty();
+}
+
+Size __YYAPI Layout::UpdateChildDesiredSize(Element* _pChild, Size _ConstraintSize)
+{
+    return _pChild->UpdateDesiredSize(_ConstraintSize);
+}
+
+const Rect& __YYAPI Layout::GetChildMargin(Element* _pChild)
+{
+    return _pChild->CmpMargin;
+}
+
+Size __YYAPI Layout::GetChildDesiredSize(Element* _pChild)
+{
+    return _pChild->GetDesiredSize();
 }
 
 void __YYAPI Layout::UpdateLayoutRect(Element* pElem, Size _oContainerSize, Element* peChild, Point _oElementPoint, Size _oElementSize)
