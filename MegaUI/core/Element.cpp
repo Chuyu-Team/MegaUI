@@ -383,9 +383,15 @@ namespace YY
             return _Extent;
         }
 
-        ValueIs<ValueType::Layout> Element::GetLayout()
+        YY::RefPtr<Layout> Element::GetLayout()
         {
-            return GetValue(Element::g_ControlInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
+            auto _oLayoutValue = GetValue(Element::g_ControlInfoData.LayoutProp, PropertyIndicies::PI_Specified, false);
+            if(_oLayoutValue.GetType() == ValueType::Layout)
+            {
+                return _oLayoutValue.GetLayout();
+            }
+
+            return nullptr;
         }
 
         BorderStyle Element::GetBorderStyle()
@@ -3016,8 +3022,8 @@ namespace YY
 
             if (_fNeedsLayout == LC_Normal)
             {
-                auto _Layout = GetLayout();
-                if ((_Layout.HasValue() && _Layout.GetValue()) || bSelfLayout)
+                auto _pLayout = GetLayout();
+                if (_pLayout || bSelfLayout)
                 {
                     auto Extent = GetExtent();
 
@@ -3036,7 +3042,7 @@ namespace YY
                     if (bSelfLayout)
                         SelfLayoutDoLayout(Extent);
                     else
-                        _Layout.GetValue()->DoLayout(this, Extent);
+                        _pLayout->DoLayout(this, Extent);
                 }
 
                 for (auto pChildren : GetChildren())

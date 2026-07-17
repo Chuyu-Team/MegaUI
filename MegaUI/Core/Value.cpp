@@ -556,6 +556,13 @@ namespace YY
             return pSharedData->rectVal;
         }
 
+        YY::RefPtr<Layout> __YYAPI Value::GetLayout() const
+        {
+            if (GetType() != ValueType::Layout)
+                throw Exception();
+            return YY::RefPtr<Layout>(pSharedData->pLayout);
+        }
+
         bool __YYAPI Value::CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi) const
         {
             if (pSharedData == _Other.pSharedData)

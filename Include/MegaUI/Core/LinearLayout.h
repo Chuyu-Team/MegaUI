@@ -64,7 +64,6 @@ public:
     /// <returns>当前交叉轴对齐方式。</returns>
     CrossAxisAlignment __YYAPI GetCrossAxisAlignment() const;
 
-private:
     // --- 重写 Layout 虚函数 ---
 
     /// <summary>
@@ -72,7 +71,7 @@ private:
     /// </summary>
     /// <param name="pElem">布局容器元素。</param>
     /// <param name="_oSize">容器可用空间（已扣除容器自身的 Border/Padding）。</param>
-    virtual void __YYAPI DoLayout(
+    void __YYAPI DoLayout(
         _In_ Element* pElem,
         Size _oSize) override;
 
@@ -82,9 +81,14 @@ private:
     /// <param name="pElem">布局容器元素。</param>
     /// <param name="_ConstraintSize">容器可用空间约束（已扣除容器自身的 Border/Padding）。</param>
     /// <returns>所有参与排列子元素所需的总体尺寸。</returns>
-    virtual Size __YYAPI UpdateDesiredSize(
+    Size __YYAPI UpdateDesiredSize(
         _In_ Element* pElem,
         Size _ConstraintSize) override;
+
+
+    Element* __YYAPI GetAdjacent(Element* pElem, Element* _pFrom, NavigatingType _eNavigate, NavReference const* pnr, bool _bKeyableOnly) override;
+
+private:
 
     // --- 内部辅助 ---
 

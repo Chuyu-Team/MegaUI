@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <YY/Base/YY.h>
+#include <YY/Base/Memory/RefPtr.h>
 #include <MegaUI/Core/Element.h>
 
 #pragma pack(push, __YY_PACKING)
@@ -28,23 +29,19 @@ namespace YY
 
             Layout& operator=(const Layout&) = delete;
 
-            static HRESULT __YYAPI Create(Layout** ppLayout);
-
             static void __YYAPI UpdateLayoutRect(Element* pElem, Size _oContainerSize, Element* peChild, Point _oElementPoint, Size _oElementSize);
 
-            void __YYAPI Destroy();
-
-            Element* __YYAPI GetChildFromLayoutIndex(Element* pElem, int iLayoutIndex, Array<Element*>* pArray);
+            Element* __YYAPI GetChildFromLayoutIndex(Element* pElem, size_t _uLayoutIndex, Array<Element*>* pArray);
 
             size_t __YYAPI GetLayoutChildCount(Element* pElem);
 
             int __YYAPI GetLayoutIndexFromChild(Element* pElem, Element* pChild);
 
             // 0
-            virtual void __YYAPI DoLayout(Element* pElem, Size _oSize);
+            virtual void __YYAPI DoLayout(Element* pElem, Size _oSize) = 0;
 
             // 1
-            virtual Size __YYAPI UpdateDesiredSize(Element* pElem, Size _ConstraintSize);
+            virtual Size __YYAPI UpdateDesiredSize(Element* pElem, Size _ConstraintSize) = 0;
             // 2
             virtual void __YYAPI OnAdd(Element* pElem, Element** ppElemAdd, size_t uCountOfElementAdd);
             // 3
@@ -57,7 +54,7 @@ namespace YY
             // 6
             virtual void __YYAPI Detach(Element* pElem);
             // 7
-            virtual Element* __YYAPI GetAdjacent(Element* pElem, Element* _pFrom, int iNavDir, NavReference const* pnr, bool _bKeyableOnly);
+            virtual _Ret_maybenull_ Element* __YYAPI GetAdjacent(Element* pElem, Element* _pFrom, NavigatingType _eNavigate, NavReference const* pnr, bool _bKeyableOnly) = 0;
 
         protected:
             void __YYAPI ClearCacheDirty()

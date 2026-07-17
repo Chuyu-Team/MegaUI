@@ -424,7 +424,7 @@ namespace YY
 
             Size __YYAPI GetExtent();
 
-            ValueIs<ValueType::Layout> __YYAPI GetLayout();
+            YY::RefPtr<Layout> __YYAPI GetLayout();
 
             /// <summary>
             /// 获取元素当前计算后的期望尺寸。
@@ -709,6 +709,16 @@ namespace YY
 
             void __YYAPI WindowToElement(_Inout_ Point* _poPoint);
 
+            /// <summary>
+            /// 选取靠近_pFrom 附近的元素。此函数可能向上搜索。
+            /// </summary>
+            /// <param name="_pFrom"></param>
+            /// <param name="_eNavigate"></param>
+            /// <param name="_pnr"></param>
+            /// <param name="_bKeyableOnly"></param>
+            /// <returns></returns>
+            virtual Element* __YYAPI GetAdjacent(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
+
         protected:
             RefPtr<IDWriteTextLayout> __YYAPI GetTextLayout(Size _ConstraintSize);
 
@@ -883,16 +893,6 @@ namespace YY
             /// <param name="_bKeyableOnly"></param>
             /// <returns>需要移动的新元素。</returns>
             virtual Element* __YYAPI GetAdjacentChild(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
-
-            /// <summary>
-            /// 选取靠近_pFrom 附近的元素。此函数可能向上搜索。
-            /// </summary>
-            /// <param name="_pFrom"></param>
-            /// <param name="_eNavigate"></param>
-            /// <param name="_pnr"></param>
-            /// <param name="_bKeyableOnly"></param>
-            /// <returns></returns>
-            virtual Element* __YYAPI GetAdjacent(_In_opt_ Element* _pFrom, _In_ NavigatingType _eNavigate, _In_opt_ NavReference const* _pnr, _In_ bool _bKeyableOnly);
 
             virtual bool __YYAPI OnKeyDown(const KeyboardEvent& _KeyEvent);
 

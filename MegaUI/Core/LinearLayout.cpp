@@ -56,9 +56,34 @@ Size __YYAPI LinearLayout::UpdateDesiredSize(Element* pElem, Size _ConstraintSiz
         return UpdateDesiredSizeHorizontal(pElem, _ConstraintSize);
 }
 
-/// <summary>
-/// 计算垂直方向排列时的期望尺寸。
-/// </summary>
+Element* __YYAPI LinearLayout::GetAdjacent(Element* pElem, Element* _pFrom, NavigatingType _eNavigate, NavReference const* pnr, bool _bKeyableOnly)
+{
+    if (HasFlags(_eNavigate, NavigatingStyle::Logical))
+        return nullptr;
+
+    if (_pFrom == nullptr || _pFrom == pElem)
+        return nullptr;
+
+    size_t _cChildren = GetLayoutChildCount(pElem);
+
+    ElementList _oChildrenList = pElem->GetChildren();
+
+    for (size_t i = 0; i < _cChildren; i++)
+    {
+        auto _pChild = GetChildFromLayoutIndex(pElem, i, &_oChildrenList);
+        if (!_pChild)
+            continue;
+
+        Element* _pTo = _pChild->GetAdjacent(nullptr, _eNavigate, pnr, _bKeyableOnly);
+        if (_pTo)
+        {
+            return _pTo;
+        }
+    }
+
+    return nullptr;
+}
+
 Size __YYAPI LinearLayout::UpdateDesiredSizeVertical(Element* pElem, Size _ConstraintSize)
 {
     float widthDesired = 0;
@@ -97,9 +122,6 @@ Size __YYAPI LinearLayout::UpdateDesiredSizeVertical(Element* pElem, Size _Const
     return Size(widthDesired, heightDesired);
 }
 
-/// <summary>
-/// 计算水平方向排列时的期望尺寸。
-/// </summary>
 Size __YYAPI LinearLayout::UpdateDesiredSizeHorizontal(Element* pElem, Size _ConstraintSize)
 {
     float widthDesired = 0;

@@ -16,6 +16,7 @@
 #include <Media/Point.h>
 #include <YY/Base/Memory/RefPtr.h>
 #include <MegaUI/Core/Unit.h>
+#include <MegaUI/Core/Layout.h>
 
 #pragma pack(push, __YY_PACKING)
 
@@ -328,6 +329,11 @@ namespace YY
             StyleSheet* __YYAPI GetStyleSheet() const;
 
             UnitRect& __YYAPI GetRect() const;
+
+            /// <summary>
+            /// 获取 Layout 引用。如果类型不是 Layout 则抛出异常。
+            /// </summary>
+            YY::RefPtr<Layout> __YYAPI GetLayout() const;
 
             bool __YYAPI CmpValue(const Value& _Other, ValueCmpOperation _Operation, bool _bIgnoreDpi = true) const;
 

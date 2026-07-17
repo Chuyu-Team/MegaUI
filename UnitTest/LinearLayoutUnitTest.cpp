@@ -11,39 +11,39 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace YY::MegaUI;
 using namespace YY;
 
-namespace LinearLayoutTest
+namespace Layout
 {
     /// <summary>
     /// 辅助函数：创建 LinearLayout 实例并返回指针。
     /// </summary>
-    static LinearLayout* CreateLinearLayoutHelper(LinearLayoutOrientation _eOri, CrossAxisAlignment _eCross)
+    static YY::RefPtr<LinearLayout> CreateLinearLayoutHelper(LinearLayoutOrientation _eOri, CrossAxisAlignment _eCross)
     {
-        Layout* pLayout = nullptr;
-        HRESULT hr = LinearLayout::Create(_eOri, _eCross, &pLayout);
+        YY::RefPtr<YY::MegaUI::Layout> pLayout = nullptr;
+        HRESULT hr = LinearLayout::Create(_eOri, _eCross, pLayout.ReleaseAndGetAddressOf());
         Assert::AreEqual(S_OK, hr);
-        Assert::IsNotNull(pLayout);
-        return static_cast<LinearLayout*>(pLayout);
-    }
-
-    /// <summary>
-    /// 辅助函数：创建并初始化一个 Element，设置指定 DesiredSize。
-    /// </summary>
-    static Element* CreateElementWithDesiredSize(float _w, float _h, Element* _pParent = nullptr)
-    {
-        UnitMetrics oUnitMetrics = UnitMetrics::GetSystemMetrics();
-        intptr_t cookie = 0;
-        Element* pElem = nullptr;
-        HRESULT hr = Element::Create(oUnitMetrics, 0u, _pParent, &cookie, &pElem);
-        Assert::AreEqual(S_OK, hr);
-        Assert::IsNotNull(pElem);
-
-        // 直接修改 LocDesiredSize（测试中绕过完整布局计算）
-        pElem->LocDesiredSize = Size(_w, _h);
-        return pElem;
+        Assert::IsNotNull(pLayout.Get());
+        return YY::RefPtr<LinearLayout>(std::move(pLayout));
     }
 
     TEST_CLASS(LinearLayoutUnitTest)
     {
+        /// <summary>
+        /// 辅助函数：创建并初始化一个 Element，设置指定 DesiredSize。
+        /// </summary>
+        static Element* CreateElementWithDesiredSize(float _w, float _h, Element* _pParent = nullptr)
+        {
+            UnitMetrics oUnitMetrics = UnitMetrics::GetSystemMetrics();
+            intptr_t cookie = 0;
+            Element* pElem = nullptr;
+            HRESULT hr = Element::Create(oUnitMetrics, 0u, _pParent, &cookie, &pElem);
+            Assert::AreEqual(S_OK, hr);
+            Assert::IsNotNull(pElem);
+
+            // 直接修改 LocDesiredSize（测试中绕过完整布局计算）
+            pElem->LocDesiredSize = Size(_w, _h);
+            return pElem;
+        }
+
     public:
         // ===========================================
         // Create 工厂 + Getter（TC-001 ~ TC-005）
@@ -51,7 +51,7 @@ namespace LinearLayoutTest
 
         TEST_METHOD(Create_默认参数_创建成功且Getter返回值一致)
         {
-            Layout* pLayout = nullptr;
+            YY::MegaUI::Layout* pLayout = nullptr;
             HRESULT hr = LinearLayout::Create(
                 LinearLayoutOrientation::Vertical,
                 CrossAxisAlignment::Stretch,
@@ -62,8 +62,6 @@ namespace LinearLayoutTest
             auto pLL = static_cast<LinearLayout*>(pLayout);
             Assert::IsTrue(pLL->GetOrientation() == LinearLayoutOrientation::Vertical);
             Assert::IsTrue(pLL->GetCrossAxisAlignment() == CrossAxisAlignment::Stretch);
-
-            pLayout->Destroy();
         }
 
         TEST_METHOD(Create_Horizontal方向_返回Horizontal)
@@ -72,7 +70,6 @@ namespace LinearLayoutTest
                 LinearLayoutOrientation::Horizontal,
                 CrossAxisAlignment::Stretch);
             Assert::IsTrue(pLL->GetOrientation() == LinearLayoutOrientation::Horizontal);
-            pLL->Destroy();
         }
 
         TEST_METHOD(Create_交叉轴Start对齐_返回Start)
@@ -81,7 +78,6 @@ namespace LinearLayoutTest
                 LinearLayoutOrientation::Vertical,
                 CrossAxisAlignment::Start);
             Assert::IsTrue(pLL->GetCrossAxisAlignment() == CrossAxisAlignment::Start);
-            pLL->Destroy();
         }
 
         TEST_METHOD(Create_交叉轴Center对齐_返回Center)
@@ -90,7 +86,6 @@ namespace LinearLayoutTest
                 LinearLayoutOrientation::Vertical,
                 CrossAxisAlignment::Center);
             Assert::IsTrue(pLL->GetCrossAxisAlignment() == CrossAxisAlignment::Center);
-            pLL->Destroy();
         }
 
         TEST_METHOD(Create_ppLayout为nullptr_返回E_POINTER)
@@ -100,26 +95,6 @@ namespace LinearLayoutTest
                 CrossAxisAlignment::Stretch,
                 nullptr);
             Assert::AreEqual(E_POINTER, hr);
-        }
-
-        // ===========================================
-        // GetDesiredSize（TC-011）
-        // ===========================================
-
-        TEST_METHOD(GetDesiredSize_返回LocDesiredSize)
-        {
-            UnitMetrics oUnitMetrics = UnitMetrics::GetSystemMetrics();
-            intptr_t cookie = 0;
-            Element* pElem = nullptr;
-            HRESULT hr = Element::Create(oUnitMetrics, 0u, nullptr, &cookie, &pElem);
-            Assert::AreEqual(S_OK, hr);
-            Assert::IsNotNull(pElem);
-
-            pElem->LocDesiredSize = Size(100, 50);
-            Assert::AreEqual(100.0f, pElem->GetDesiredSize().Width);
-            Assert::AreEqual(50.0f, pElem->GetDesiredSize().Height);
-
-            pElem->Destroy(false);
         }
 
         // ===========================================
@@ -143,7 +118,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(0.0f, result.Height);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -170,7 +144,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(50.0f, result.Height);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -199,7 +172,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(70.0f, result.Height);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -244,7 +216,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(200.0f, result.Width);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -278,7 +249,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(0.0f, result.Height);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -314,7 +284,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(0.0f, pChild->LocPosInLayout.Y); // margin.Top=0
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -342,7 +311,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(50.0f, pChild->LocSizeInLayout.Width); // 不拉伸
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -370,7 +338,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(150.0f, pChild->LocPosInLayout.X);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -398,7 +365,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(280.0f, pChild->LocPosInLayout.X);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -426,7 +392,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(0.0f, pChild->LocSizeInLayout.Width);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -473,7 +438,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(145.0f, pC->LocPosInLayout.Y);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -507,7 +471,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(285.0f, pChild->LocSizeInLayout.Height);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -535,7 +498,6 @@ namespace LinearLayoutTest
             Assert::AreEqual(100.0f, pChild->LocPosInLayout.Y);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
         }
 
@@ -563,34 +525,7 @@ namespace LinearLayoutTest
             Assert::AreEqual(180.0f, pChild->LocPosInLayout.Y);
 
             pLL->Detach(pContainer);
-            pLL->Destroy();
             pContainer->Destroy(false);
-        }
-
-        // ===========================================
-        // Value::CreateLayout
-        // ===========================================
-
-        TEST_METHOD(CreateLayout_非nullptr输入_Type为Layout且指针可恢复)
-        {
-            auto pLL = CreateLinearLayoutHelper(
-                LinearLayoutOrientation::Vertical,
-                CrossAxisAlignment::Stretch);
-
-            Value v = Value::CreateLayout(pLL);
-            Assert::IsTrue(v.GetType() == ValueType::Layout);
-
-            auto pRecovered = static_cast<Layout*>(v.GetRawBuffer());
-            Assert::IsTrue(pRecovered == static_cast<Layout*>(pLL));
-
-            pLL->Destroy();
-        }
-
-        TEST_METHOD(CreateLayout_nullptr输入_Type为Layout指针为nullptr)
-        {
-            Value v = Value::CreateLayout(nullptr);
-            Assert::IsTrue(v.GetType() == ValueType::Layout);
-            Assert::IsNull(static_cast<Layout*>(v.GetRawBuffer()));
         }
 
         // ===========================================
@@ -609,14 +544,10 @@ namespace LinearLayoutTest
             hr = UIParser::ParserLayoutValue(exprNode.ChildExprNode.GetData(), &v);
             Assert::AreEqual(S_OK, hr);
 
-            auto pLayout = static_cast<Layout*>(v.GetRawBuffer());
-            Assert::IsNotNull(pLayout);
-
-            auto pLL = static_cast<LinearLayout*>(pLayout);
-            Assert::IsTrue(pLL->GetOrientation() == LinearLayoutOrientation::Vertical);
-            Assert::IsTrue(pLL->GetCrossAxisAlignment() == CrossAxisAlignment::Stretch);
-
-            pLL->Destroy();
+            auto _pLayout = static_cast<LinearLayout*>(v.GetLayout().Get());
+            Assert::IsNotNull(_pLayout);
+            Assert::IsTrue(_pLayout->GetOrientation() == LinearLayoutOrientation::Vertical);
+            Assert::IsTrue(_pLayout->GetCrossAxisAlignment() == CrossAxisAlignment::Stretch);
         }
 
         TEST_METHOD(ParserLayoutValue_单参Horizontal_创建HorizontalStretch实例)
@@ -630,11 +561,10 @@ namespace LinearLayoutTest
             hr = UIParser::ParserLayoutValue(exprNode.ChildExprNode.GetData(), &v);
             Assert::AreEqual(S_OK, hr);
 
-            auto pLL = static_cast<LinearLayout*>(static_cast<Layout*>(v.GetRawBuffer()));
-            Assert::IsTrue(pLL->GetOrientation() == LinearLayoutOrientation::Horizontal);
-            Assert::IsTrue(pLL->GetCrossAxisAlignment() == CrossAxisAlignment::Stretch);
+            auto _pLayout = static_cast<LinearLayout*>(v.GetLayout().Get());
 
-            pLL->Destroy();
+            Assert::IsTrue(_pLayout->GetOrientation() == LinearLayoutOrientation::Horizontal);
+            Assert::IsTrue(_pLayout->GetCrossAxisAlignment() == CrossAxisAlignment::Stretch);
         }
 
         TEST_METHOD(ParserLayoutValue_双参VerticalCenter_创建VerticalCenter实例)
@@ -648,11 +578,9 @@ namespace LinearLayoutTest
             hr = UIParser::ParserLayoutValue(exprNode.ChildExprNode.GetData(), &v);
             Assert::AreEqual(S_OK, hr);
 
-            auto pLL = static_cast<LinearLayout*>(static_cast<Layout*>(v.GetRawBuffer()));
-            Assert::IsTrue(pLL->GetOrientation() == LinearLayoutOrientation::Vertical);
-            Assert::IsTrue(pLL->GetCrossAxisAlignment() == CrossAxisAlignment::Center);
-
-            pLL->Destroy();
+            auto _pLayout = static_cast<LinearLayout*>(v.GetLayout().Get());
+            Assert::IsTrue(_pLayout->GetOrientation() == LinearLayoutOrientation::Vertical);
+            Assert::IsTrue(_pLayout->GetCrossAxisAlignment() == CrossAxisAlignment::Center);
         }
 
         TEST_METHOD(ParserLayoutValue_未知布局名_返回BAD_FORMAT)

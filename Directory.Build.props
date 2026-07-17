@@ -4,11 +4,9 @@
     <!--强制引入PackageReferences-->
     <ProjectCapability Include="PackageReferences" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
-    <!--指定自己的体系为native-->
-    <NuGetTargetMoniker Condition="'$(NuGetTargetMoniker)' == ''">native,Version=v0.0</NuGetTargetMoniker>
-    <!--如果不指定这一行，那么arm64平台会找不到RID而失败-->
-    <RuntimeIdentifiers Condition="'$(RuntimeIdentifiers)' == ''">win;win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
+  <PropertyGroup>
+    <EnableNativePackageReferenceSupport>true</EnableNativePackageReferenceSupport>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\LinuxTarget.props" Condition="exists('$(MSBuildThisFileDirectory)\LinuxTarget.props')"/>
   <!--从兼容性考虑，继续向上搜索 Directory.Build.props-->
